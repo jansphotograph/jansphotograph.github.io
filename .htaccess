@@ -1,4 +1,3 @@
 RewriteEngine On
 
-RewriteRule ^home$   index.html
-RewriteRule ^Portafolio$   portafolio.html
+RewriteRule ^portafolio/?$   assets/pages/portafolio.html
