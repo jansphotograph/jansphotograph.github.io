@@ -489,7 +489,7 @@ html {
 
 /* ========= PRINCIPAL CONTENT ========= */
 .principal-content-container {
-    background-image: linear-gradient(100deg, #00000083, #ffffff04), url(/assets/images/portrait_principal.jpg);
+    background-image: linear-gradient(100deg, #00000083, #ffffff04), url(/assets/images/portrait_principal.webp);
     background-size: cover;
     background-position: center;
     height: 494px;
