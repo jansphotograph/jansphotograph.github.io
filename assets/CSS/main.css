@@ -85,6 +85,7 @@ body {
     color: var(--hover-color);
 }
 
+
 /* ========= MAIN CONTENT ========= */
 
 html {
@@ -140,6 +141,10 @@ html {
 #principal_button:hover {
     background-color: rgb(176,0,92);
     transform: scale(1.1);
+}
+
+.inwork {
+    display: none;
 }
 
 /* ========= SLIDER ========= */
@@ -394,10 +399,46 @@ html {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (max-width: 992px) {
+@media (min-width:557px) and (max-width: 1000px) {
+    .header-container {
+        display: none;
+    }
+    .nav-bar {
+        display: none;
+    }
+
     .principal-content-info {
         width: 100%;
     }
+    .container {
+        display: none;
+    }
+    .igFeed-section {
+        display: none !important;
+    }
+    .lastvideoyt {
+        display: none;
+    }
+    .extsvbg {
+        display: none;
+    }
+    #Footer {
+        display: none;
+    }
+    .inwork {
+        display: block;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 150px;
+    }
+    .inwork h3 {
+        color: rgb(255, 255, 255);
+        font-size: 25px;
+    }
+    
 
 /* ========= PLANS CONTENT & PRICES ========= */
 .imagen-container {
