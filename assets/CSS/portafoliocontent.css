@@ -22,7 +22,7 @@ body {
 /* =========HEADER========= */
 .header-container {
     background-color: var(--header-color);
-    height: 120px;
+    height: 95px;
     color: white;
     display: flex;
     align-items: center;
@@ -31,12 +31,12 @@ body {
 }
 
 .header-container h1 {
-    font-size: 40px;
+    font-size: 30px;
 }
 
 .header-logo {
-    height: 80px;
-    width: 80px;
+    height: 60px;
+    width: 60px;
 }
 
 .header-logo img {
@@ -45,8 +45,8 @@ body {
 }
 
 .menu-responsive {
-    height: 80px;
-    width: 80px;
+    height: 60px;
+    width: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -54,7 +54,7 @@ body {
 }
 
 .menu-responsive #whatsapp {
-    font-size: 60px;
+    font-size: 50px;
 }
 .menu-responsive a {
     text-decoration: none;
