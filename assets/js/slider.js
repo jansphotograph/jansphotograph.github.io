@@ -2,7 +2,7 @@ const slides = document.querySelectorAll('.slide');
   const prevBtn = document.querySelector('.arrow.left');
   const nextBtn = document.querySelector('.arrow.right');
   let currentSlide = 0;
-  let interval = setInterval(nextSlide, 10000); // cada 10 segundos
+  let interval = setInterval(nextSlide, 5000); // cada 5 segundos
 
   function showSlide(index) {
     slides.forEach((slide, i) => {
@@ -32,7 +32,7 @@ const slides = document.querySelectorAll('.slide');
 
   function resetInterval() {
     clearInterval(interval);
-    interval = setInterval(nextSlide, 10000);
+    interval = setInterval(nextSlide, 5000);
   }
 
   // Inicial
