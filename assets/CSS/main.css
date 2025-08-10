@@ -92,6 +92,22 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Banner */
+.offerBannerLink {
+    cursor: pointer;
+    text-decoration: none;
+}
+.offerBanner {
+    width: auto;
+    height: 60px;
+}
+.offerBanner picture, .offerBanner img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 /* ========= PRINCIPAL CONTENT ========= */
 .principal-content-container {
     background-image: linear-gradient(100deg, #00000083, #ffffff04), url(/assets/images/portrait_principal.webp);
@@ -644,6 +660,11 @@ html {
     background-color: rgb(176,0,92);
     transform: scale(1.1);
 }
+/* ========= Promotional Banner ========= */
+.offerBanner {
+    height: 40px;
+}
+
 /* ========= SLIDER ========= */
 .container-background {
     height: 100%;
