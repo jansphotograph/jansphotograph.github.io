@@ -423,7 +423,7 @@ html {
         display: none;
     }
     .offerBannerLink {
-        display: none;
+        display: none !important;
     }
     .principal-content-info {
         width: 100%;
