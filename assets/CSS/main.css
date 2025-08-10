@@ -422,7 +422,9 @@ html {
     .nav-bar {
         display: none;
     }
-
+    .offerBannerLink {
+        display: none;
+    }
     .principal-content-info {
         width: 100%;
     }
