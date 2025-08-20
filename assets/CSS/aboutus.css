@@ -217,6 +217,111 @@ body {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
+@media (min-width:557px) and (max-width: 1000px) {
+
+        /* ========= MAIN CONTENT ========= */
+    .about {
+        flex-direction: column;
+        height: 100%;
+        margin-top: 30px;
+    }
+    .card img {
+        height: 280px;
+    }
+
+    .info {
+        height: auto;
+    }
+    .info h2 {
+        width: auto;
+        font-size: 20px;
+        padding: 30px;
+    }
+    
+        /* ======= FOOTER ======= */
+
+    .footer-content {
+        height: 100px;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 5px;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+    .footer-items {
+        justify-content: first baseline;
+        align-content: center;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        height: 80px;
+        width: 150px;
+        gap: 10px;
+    }
+    .footer-tittle {
+        color: #ffffff;
+        font-size: 15px;
+    }
+    .footer-content .social {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+    .footer-content .social i {
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .footer-content .social i:hover {
+        color: var(--hover-color);
+    }
+    .footer-content a {
+        color: #ffffff;
+        text-decoration: none;
+    }
+    .footer-content i {
+        color: #ffffff;
+        font-size: 15px;
+    }
+    .footer-content span {
+        color: #ffffff;
+    }
+    .contact-section {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        justify-content: center;
+        align-items: center;
+    }
+    .contact-section .contact-card {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        color: #ffffff;
+        font-size: 10px;
+    }
+    .contact-section .contact-card i {
+        font-size: 10px;
+    }
+    .contact-card a {
+        cursor: pointer;
+    }
+    .contact-card a:hover {
+        color: var(--hover-color);
+    }
+    .footer-comment {
+        font-size: 10px;
+    }
+    .footer-comment a {
+        color: var(--hover-color);
+        cursor: pointer;
+    }
+}
+
 @media (max-width: 556px) {
     /* =========HEADER========= */
     .header-container {
