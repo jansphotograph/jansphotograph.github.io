@@ -447,12 +447,15 @@ html {
     .nav-list {
         list-style: none;
         display: flex;
-        gap: 15px;
+        gap: 50px;
     }
     .nav-list li a {
         text-decoration: none;
-        font-size: 20px;
+        font-size: 25px;
         color: black;
+    }
+    #home {
+        color: var(--hover-color);
     }
     /* ========= MAIN CONTENT ========= */
     /* ========= Promotional Banner ========= */
