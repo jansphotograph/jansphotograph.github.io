@@ -415,7 +415,7 @@ html {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1000px) {
+@media (min-width:557px) and (max-width: 1500px) {
     /* =========HEADER========= */
     .header-container {
         height: 75px;

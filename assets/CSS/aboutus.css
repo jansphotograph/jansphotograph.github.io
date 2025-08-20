@@ -90,8 +90,8 @@ body {
         background-image: url(/assets/images/abtus/background.png);
         background-size: cover;
         height: 80dvh;
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: repeat(4, auto);
         gap: 40px;
         justify-content: center;
     }
@@ -217,11 +217,11 @@ body {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1000px) {
+@media (min-width:557px) and (max-width: 1500px) {
 
         /* ========= MAIN CONTENT ========= */
     .about {
-        flex-direction: column;
+        grid-template-columns: repeat(2, auto);
         height: 100%;
         margin-top: 30px;
     }
@@ -366,7 +366,7 @@ body {
     
     /* ========= MAIN CONTENT ========= */
     .about {
-        flex-direction: column;
+        grid-template-columns: repeat(1, auto);
         height: 100%;
         margin-top: 30px;
     }

@@ -264,7 +264,7 @@ body {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1000px) {
+@media (min-width:557px) and (max-width: 1500px) {
 
 /*============= MAIN =============*/
 
@@ -365,7 +365,7 @@ body {
     /*background-color: rgb(166, 157, 100);*/
     background-image: url(/assets/images/portafolio/IMG_1835.jpeg);
     background-size: cover;
-    background-position: center -75px;
+    background-position: center -170px;
     height: 250px;
     width: auto;
     margin-right: 0px;
