@@ -579,7 +579,7 @@ ol .notinclude p {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1500px) {
+@media (min-width:557px) and (max-width: 1000px) {
     /* =========HEADER========= */
     .header-container {
         height: 75px;
@@ -651,7 +651,7 @@ ol .notinclude p {
 .offercards {
     height: auto;
     display: grid;
-    grid-template-columns: repeat(3, auto);
+    grid-template-columns: repeat(2, auto);
     gap: 10px;
     justify-content: space-evenly;
 }
