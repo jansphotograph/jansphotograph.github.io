@@ -391,7 +391,7 @@ ol .notinclude p {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1500px) {
+@media (min-width:557px) and (max-width: 1000px) {
 
     .dispsect {
         display: flex;
@@ -467,7 +467,7 @@ ol .notinclude p {
     .offercards {
         height: auto;
         display: grid;
-        grid-template-columns: repeat(3, auto);
+        grid-template-columns: repeat(2, auto);
         gap: 10px;
     }
     .offercard {
@@ -660,6 +660,27 @@ ol .notinclude p {
     .footer-comment a {
         color: var(--hover-color);
         cursor: pointer;
+    }
+}
+
+@media (min-width:1001px) and (max-width: 1500px) {
+    /*============= Images display =============*/
+    .portafoliodisplay .portafolio-img-cont {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, auto);
+        gap: 15px;
+        justify-content: center;
+        align-content: center;
+        text-align: center;
+    }
+    /*============= Offer Plans =============*/
+
+    .offercards {
+        height: auto;
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        gap: 10px;
     }
 }
 
