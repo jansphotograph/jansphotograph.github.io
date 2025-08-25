@@ -264,7 +264,7 @@ body {
 
 /* ========== RESPONSIVE DESIGN ========== */
 
-@media (min-width:557px) and (max-width: 1500px) {
+@media (min-width:768px) and (max-width: 1024px) {
 
 /*============= MAIN =============*/
 
@@ -366,7 +366,7 @@ body {
     background-image: url(/assets/images/portafolio/IMG_1835.jpeg);
     background-size: cover;
     background-position: center -170px;
-    height: 250px;
+    height: 300px;
     width: auto;
     margin-right: 0px;
 }
@@ -455,7 +455,7 @@ body {
     }
 }
 
-@media (max-width: 556px) {
+@media (max-width: 767px) {
 /* =========HEADER========= */
 
 .header-container {
@@ -596,8 +596,8 @@ body {
     /*background-color: rgb(166, 157, 100);*/
     background-image: url(/assets/images/portafolio/IMG_1835.jpeg);
     background-size: cover;
-    background-position: center -60px;
-    height: 130px;
+    background-position: center -100px;
+    height: 200px;
     width: auto;
     margin-right: 0px;
 }

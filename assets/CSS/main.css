@@ -99,7 +99,9 @@ html {
 }
 .offerBanner {
     width: auto;
-    height: 60px;
+    height: auto;
+    justify-content: center;
+    align-items: center;
 }
 .offerBanner picture, .offerBanner img {
     width: 100%;
@@ -413,9 +415,9 @@ html {
     cursor: pointer;
 }
 
-/* ========== RESPONSIVE DESIGN ========== */
+/* ========== RESPONSIVE DESIGN TABS ========== */
 
-@media (min-width:557px) and (max-width: 1500px) {
+@media /*(min-width:768px) and*/ (max-width: 1024px) {
     /* =========HEADER========= */
     .header-container {
         height: 75px;
@@ -460,7 +462,7 @@ html {
     /* ========= MAIN CONTENT ========= */
     /* ========= Promotional Banner ========= */
     .offerBanner {
-        height: 60px;
+        height: auto;
     }
     /* ========= SLIDER ========= */
     .container-background {
@@ -734,7 +736,8 @@ html {
     }
 }
 
-@media (max-width: 556px) {
+/* =========RESPONSIVE MOBILE========= */
+@media (max-width: 767px) {
     
 /* =========HEADER========= */
 .header-container {
@@ -830,7 +833,7 @@ html {
 }
 /* ========= Promotional Banner ========= */
 .offerBanner {
-    height: 40px;
+    height: auto;
 }
 
 /* ========= SLIDER ========= */
