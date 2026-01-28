@@ -92,24 +92,6 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Banner */
-.offerBannerLink {
-    cursor: pointer;
-    text-decoration: none;
-}
-.offerBanner {
-    width: auto;
-    height: auto;
-    justify-content: center;
-    align-items: center;
-}
-.offerBanner picture, .offerBanner img {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
 /* ========= PRINCIPAL CONTENT ========= */
 .principal-content-container {
     background-image: linear-gradient(100deg, #00000083, #ffffff04), url(/assets/images/portrait_principal.webp);
@@ -460,10 +442,7 @@ html {
         color: var(--hover-color);
     }
     /* ========= MAIN CONTENT ========= */
-    /* ========= Promotional Banner ========= */
-    .offerBanner {
-        height: auto;
-    }
+    
     /* ========= SLIDER ========= */
     .container-background {
         height: 100%;
@@ -830,10 +809,6 @@ html {
 #principal_button:hover {
     background-color: rgb(176,0,92);
     transform: scale(1.1);
-}
-/* ========= Promotional Banner ========= */
-.offerBanner {
-    height: auto;
 }
 
 /* ========= SLIDER ========= */
