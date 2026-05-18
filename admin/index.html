@@ -414,10 +414,9 @@ main{padding:26px;max-width:1120px;margin:0 auto;}
 const JBIN_KEY  = '$2a$10$DKygGUiuDLYa/FEGoWI2ruRgfYdsDxZ11ePj5nqmWft7.dfKseoXy';
 const JBIN_BASE = 'https://api.jsonbin.io/v3';
 
-// IDs de los bins — se crean automáticamente la primera vez
-// y se guardan en el navegador para las siguientes sesiones
-let BIN_AUTH = localStorage.getItem('jp_bin_auth') || null;
-let BIN_DATA = localStorage.getItem('jp_bin_data') || null;
+// IDs fijos de JSONbin
+const BIN_AUTH = '6a0b20676610dd3ae8654a5d';
+const BIN_DATA = '6a0b2087ee5a733b12dc092f';
 
 // ══════════════════════════════════════════
 //  JSONBIN HELPERS
@@ -439,21 +438,6 @@ async function jbWrite(binId, data) {
   if (!r.ok) throw new Error('Error guardando datos');
 }
 
-async function jbCreate(data, name) {
-  const r = await fetch(`${JBIN_BASE}/b`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JBIN_KEY,
-      'X-Bin-Name': name,
-      'X-Bin-Private': 'true'
-    },
-    body: JSON.stringify(data)
-  });
-  if (!r.ok) throw new Error('Error creando bin');
-  return (await r.json()).metadata.id;
-}
-
 // ══════════════════════════════════════════
 //  ESTADO
 // ══════════════════════════════════════════
@@ -466,27 +450,7 @@ let currentItems=[], currentExtras=[];
 let editingId=null, editItems=[], editExtras=[], editingItemId=null;
 let currentUser='';
 
-// ══════════════════════════════════════════
-//  BOOTSTRAP — primer uso crea los bins
-// ══════════════════════════════════════════
-async function bootstrap() {
-  if (!BIN_AUTH) {
-    toast('⚙️ Primer inicio: configurando sistema…');
-    BIN_AUTH = await jbCreate(
-      { username:'admin', password:'jans2024' },
-      'jans-auth'
-    );
-    localStorage.setItem('jp_bin_auth', BIN_AUTH);
-  }
-  if (!BIN_DATA) {
-    BIN_DATA = await jbCreate(
-      { cotizaciones:[], categorias:[], extrasCatalog:[],
-        itemsCatalog:[], config:{prefix:'COT-',nextNum:1,empresa:{},logo:null} },
-      'jans-data'
-    );
-    localStorage.setItem('jp_bin_data', BIN_DATA);
-  }
-}
+
 
 // ══════════════════════════════════════════
 //  LOGIN
@@ -502,7 +466,6 @@ async function doLogin() {
   btn.disabled = true; err.style.display = 'none';
 
   try {
-    await bootstrap();
     const auth = await jbRead(BIN_AUTH);
     if (auth.username === user && auth.password === pass) {
       const data = await jbRead(BIN_DATA);
