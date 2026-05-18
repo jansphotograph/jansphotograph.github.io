@@ -681,9 +681,12 @@ async function saveCotizacion() {
   if (!nombre) { toast('⚠️ El nombre del cliente es requerido'); return; }
   const cat=document.getElementById('cot-categoria').value;
   if (!cat) { toast('⚠️ Selecciona una categoría'); return; }
+
   const num=String(state.config.nextNum||1).padStart(4,'0');
+  const numero=(state.config.prefix||'COT-')+num;
+
   const cot={
-    id:Date.now(),numero:(state.config.prefix||'COT-')+num,
+    id:Date.now(),numero,
     fecha:document.getElementById('cot-fecha').value,estado:'pending',
     cliente:{nombre,email:document.getElementById('cli-email').value,
       tel:document.getElementById('cli-tel').value,dir:document.getElementById('cli-dir').value},
@@ -693,11 +696,23 @@ async function saveCotizacion() {
     extras:JSON.parse(JSON.stringify(currentExtras)),
     taxRate:parseFloat(document.getElementById('tax-rate').value)||0
   };
+
+  // Incrementar ANTES de guardar para que quede persistido
   state.cotizaciones.unshift(cot);
   state.config.nextNum=(state.config.nextNum||1)+1;
+
   toast('💾 Guardando…');
-  try { await persist(); renderCotNumber(); resetForm(); toast('✅ Cotización '+cot.numero+' guardada'); }
-  catch(e) { toast('❌ Error al guardar'); }
+  try {
+    await persist();
+    renderCotNumber();
+    resetForm();
+    toast('✅ Cotización '+numero+' guardada');
+  } catch(e) {
+    // Revertir si falla
+    state.cotizaciones.shift();
+    state.config.nextNum=(state.config.nextNum||2)-1;
+    toast('❌ Error al guardar');
+  }
 }
 
 function resetForm() {
@@ -1021,7 +1036,7 @@ function buildPDF(cot,tipo){
   if(state.config.logo){try{doc.addImage(state.config.logo,'JPEG',M,7,32,32);lx=M+36;}catch(e){}}
   doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...BRAND);
   doc.text(emp.nombre||'Jans Photograph',lx,18);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BRAND);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(30,30,30);
   let ey=25;
   if(emp.ruc){doc.text('RUC: '+emp.ruc,lx,ey);ey+=5;}
   if(emp.tel){doc.text('Tel: '+emp.tel,lx,ey);ey+=5;}
@@ -1030,7 +1045,7 @@ function buildPDF(cot,tipo){
   doc.setFont('helvetica','bold');doc.setFontSize(isConf?13:22);doc.setTextColor(...BRAND);
   doc.text(isConf?'CONFIRMACIÓN':'COTIZACIÓN',W-M,17,{align:'right'});
   doc.setFontSize(11);doc.setTextColor(...BRAND);doc.text(cot.numero,W-M,26,{align:'right'});
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,120);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(30,30,30);
   if(cot.fecha)doc.text('Fecha: '+cot.fecha,W-M,32,{align:'right'});
   if(cot.validez)doc.text('Validez: '+cot.validez,W-M,38,{align:'right'});
   if(cot.categoria)doc.text('Categoría: '+cot.categoria,W-M,44,{align:'right'});
