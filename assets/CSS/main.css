@@ -75,14 +75,33 @@ body {
     list-style: none;
     display: flex;
     gap: 50px;
+    align-items: center;
 }
 .nav-list li a {
     text-decoration: none;
     font-size: 25px;
     color: black;
+    transition: color 0.3s;
+}
+.nav-list li a:hover {
+    color: var(--hover-color);
 }
 #home {
     color: var(--hover-color);
+}
+
+/* Admin lock icon */
+.admin-link a {
+    font-size: 13px !important;
+    color: var(--hover-color) !important;
+    opacity: 0.22;
+    transition: opacity 0.3s !important;
+    display: flex;
+    align-items: center;
+}
+.admin-link a:hover {
+    opacity: 0.65;
+    color: var(--hover-color) !important;
 }
 
 
@@ -441,6 +460,9 @@ html {
     #home {
         color: var(--hover-color);
     }
+    .admin-link a {
+    font-size: 11px !important;
+}
     /* ========= MAIN CONTENT ========= */
     
     /* ========= SLIDER ========= */
@@ -756,6 +778,9 @@ html {
     text-decoration: none;
     font-size: 20px;
     color: black;
+}
+.admin-link a {
+    font-size: 11px !important;
 }
 
 /* ========= MAIN CONTENT ========= */
