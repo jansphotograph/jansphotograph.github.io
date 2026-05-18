@@ -62,22 +62,6 @@ body {
     font-size: 50px;
 }
 
-<style>
-  .admin-link a {
-    opacity: 0.20;
-    transition: opacity 0.3s, color 0.3s;
-    padding: 4px 10px !important;
-  }
-  .admin-link a:hover {
-    opacity: 0.60;
-    color: #b0005c !important;
-  }
-  .admin-link i {
-    color: #b0005c;
-    font-size: 13px;
-  }
-</style>
-
 
 /* =========NAVIGATION-BAR========= */
 .nav-bar {
