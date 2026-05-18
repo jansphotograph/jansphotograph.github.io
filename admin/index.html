@@ -522,13 +522,19 @@ async function updatePassword() {
 //  GUARDAR DATOS
 // ══════════════════════════════════════════
 async function persist() {
-  await jbWrite(BIN_DATA, {
+  const dataToSave = {
     cotizaciones: state.cotizaciones,
     categorias: state.categorias,
     extrasCatalog: state.extrasCatalog,
     itemsCatalog: state.itemsCatalog,
-    config: state.config
-  });
+    config: {
+      prefix: state.config.prefix,
+      nextNum: state.config.nextNum,
+      empresa: state.config.empresa
+      // logo NO se guarda en JSONbin, va en localStorage
+    }
+  };
+  await jbWrite(BIN_DATA, dataToSave);
 }
 
 function mergeState(data) {
@@ -538,6 +544,8 @@ function mergeState(data) {
   state.extrasCatalog = data.extrasCatalog || [];
   state.itemsCatalog  = data.itemsCatalog  || [];
   state.config        = data.config        || state.config;
+  // Logo se carga desde localStorage
+  state.config.logo   = localStorage.getItem('jp_logo') || null;
 }
 
 // ══════════════════════════════════════════
@@ -946,7 +954,8 @@ function loadConfigUI(){
   ['nombre','ruc','tel','email','web','dir','footer'].forEach(k=>{const el=document.getElementById('emp-'+k);if(el)el.value=e[k]||'';});
   document.getElementById('cfg-prefix').value=state.config.prefix||'COT-';
   document.getElementById('cfg-next').value=state.config.nextNum||1;
-  if(state.config.logo) document.getElementById('logo-preview-wrap').innerHTML=`<img src="${state.config.logo}" class="logo-preview">`;
+  const logo = localStorage.getItem('jp_logo');
+  if(logo) document.getElementById('logo-preview-wrap').innerHTML=`<img src="${logo}" class="logo-preview">`;
 }
 async function saveConfig(){
   state.config.prefix=document.getElementById('cfg-prefix').value||'COT-';
@@ -965,16 +974,19 @@ function handleLogoUpload(e){
   const file=e.target.files[0];if(!file)return;
   if(file.size>2*1024*1024){toast('⚠️ Máx 2MB');return;}
   const r=new FileReader();
-  r.onload=async ev=>{
-    state.config.logo=ev.target.result;
-    document.getElementById('logo-preview-wrap').innerHTML=`<img src="${state.config.logo}" class="logo-preview">`;
-    try{await persist();toast('✅ Logo guardado');}catch(e){toast('❌ Error al guardar logo');}
+  r.onload=ev=>{
+    const logoData=ev.target.result;
+    // Logo se guarda en localStorage (no en JSONbin por límite de tamaño)
+    localStorage.setItem('jp_logo', logoData);
+    state.config.logo=logoData;
+    document.getElementById('logo-preview-wrap').innerHTML=`<img src="${logoData}" class="logo-preview">`;
+    toast('✅ Logo guardado');
   };
   r.readAsDataURL(file);
 }
-async function removeLogo(){
+function removeLogo(){
+  localStorage.removeItem('jp_logo');
   state.config.logo=null;
-  try{await persist();}catch(e){}
   document.getElementById('logo-preview-wrap').innerHTML=`<div style="font-size:32px;margin-bottom:8px">🖼️</div><p style="color:var(--text2);font-weight:500">Haz clic para subir tu logo</p>`;
   toast('Logo eliminado');
 }
