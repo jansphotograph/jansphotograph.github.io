@@ -9,548 +9,183 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
+:root{
+  --brand:rgb(199,30,95);--brand-light:rgba(199,30,95,0.07);--brand-mid:rgba(199,30,95,0.18);
+  --brand-dark:rgb(160,20,74);--bg:#f5f5f7;--surface:#fff;--surface2:#f2f2f4;
+  --surface3:#e8e8ec;--border:#e0e0e6;--text:#1a1a2e;--text2:#6b6b80;--text3:#a0a0b0;
+  --success:#1a7a4a;--success-bg:#e8f5ee;--danger:#c0392b;--danger-bg:#fdf0ee;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 8px 32px rgba(0,0,0,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;}
 
-:root {
-  --brand: rgb(199, 30, 95);
-  --brand-light: rgba(199, 30, 95, 0.08);
-  --brand-mid: rgba(199, 30, 95, 0.18);
-  --brand-dark: rgb(160, 20, 74);
-  --bg: #f7f7f8;
-  --surface: #ffffff;
-  --surface2: #f2f2f4;
-  --surface3: #e8e8ec;
-  --border: #e0e0e6;
-  --text: #1a1a2e;
-  --text2: #6b6b80;
-  --text3: #a0a0b0;
-  --success: #1a7a4a;
-  --success-bg: #e8f5ee;
-  --danger: #c0392b;
-  --danger-bg: #fdf0ee;
-  --radius: 10px;
-  --shadow: 0 2px 12px rgba(0,0,0,0.07);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
-}
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff 0%,#fce8f0 100%);}
+.login-card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-lg);padding:48px 40px;width:100%;max-width:400px;text-align:center;}
+.login-logo{width:64px;height:64px;border-radius:50%;background:var(--brand-light);border:2px solid var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;}
+.login-title{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:4px;}
+.login-sub{color:var(--text3);font-size:13px;margin-bottom:32px;}
+.login-field{display:flex;flex-direction:column;gap:6px;text-align:left;margin-bottom:16px;}
+.login-field label{font-size:12px;font-weight:600;color:var(--text2);}
+.login-field input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;}
+.login-field input:focus{border-color:var(--brand);}
+.login-btn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;transition:background .2s;}
+.login-btn:hover{background:var(--brand-dark);}
+.login-error{color:var(--danger);font-size:12px;margin-top:12px;display:none;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* APP */
+#app{display:none;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:4px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.topbar-brand{font-family:'Playfair Display',serif;font-size:17px;color:var(--brand);margin-right:20px;white-space:nowrap;}
+.nav-btn{background:none;border:none;color:var(--text2);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.nav-btn:hover{background:var(--brand-light);color:var(--brand);}
+.nav-btn.active{background:var(--brand-light);color:var(--brand);font-weight:600;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.topbar-user{font-size:12px;color:var(--text3);}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;padding:5px 12px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.logout-btn:hover{border-color:var(--brand);color:var(--brand);}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  min-height: 100vh;
-}
+main{padding:26px;max-width:1120px;margin:0 auto;}
+.page{display:none;}.page.active{display:block;}
+.page-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px;}
+.page-sub{color:var(--text3);font-size:13px;margin-bottom:26px;}
+.num-badge{display:inline-block;background:var(--brand-light);border:1px solid rgba(199,30,95,.2);border-radius:5px;padding:2px 10px;font-size:12px;color:var(--brand);font-family:monospace;font-weight:700;}
 
-/* ── LOGIN ── */
-#login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #fff 0%, #fce8f0 100%);
-}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--brand);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--brand-mid);}
 
-.login-card {
-  background: var(--surface);
-  border-radius: 18px;
-  box-shadow: var(--shadow-lg);
-  padding: 48px 40px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:12px;color:var(--text2);font-weight:600;}
+.field input,.field select,.field textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:9px 12px;transition:border-color .18s;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);background:#fff;}
+.field textarea{resize:vertical;min-height:76px;}
 
-.login-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--brand-light);
-  border: 2px solid var(--brand);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
-  font-size: 28px;
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:9px 18px;transition:all .15s;}
+.btn-primary{background:var(--brand);color:#fff;}.btn-primary:hover{background:var(--brand-dark);}
+.btn-outline{background:#fff;color:var(--brand);border:1.5px solid var(--brand);}.btn-outline:hover{background:var(--brand-light);}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}.btn-ghost:hover{background:var(--surface3);color:var(--text);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:1px solid #f5c6c0;}.btn-danger:hover{background:#fce8e6;}
+.btn-success{background:var(--success-bg);color:var(--success);border:1px solid #b6ddc8;}.btn-success:hover{background:#d8eee2;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
 
-.login-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
-  color: var(--text);
-  margin-bottom: 4px;
-}
+/* CATALOG CHIPS */
+.catalog-picker{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;}
+.catalog-picker-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.catalog-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.catalog-chip{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.catalog-chip:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light);}
+.chip-price{color:var(--brand);font-weight:700;}
 
-.login-sub { color: var(--text3); font-size: 13px; margin-bottom: 32px; }
+/* ITEMS */
+.items-header{display:grid;grid-template-columns:2fr 70px 100px 100px 32px;gap:8px;padding:7px 12px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-radius:6px;margin-bottom:6px;}
+.item-row{display:grid;grid-template-columns:2fr 70px 100px 100px 32px;gap:8px;align-items:center;margin-bottom:6px;}
+.item-row input{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%;transition:border-color .15s;}
+.item-row input:focus{border-color:var(--brand);background:#fff;}
+.item-subtotal{background:var(--brand-light);border:1px solid rgba(199,30,95,.15);border-radius:7px;padding:8px 10px;color:var(--brand);font-size:13px;font-weight:600;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:4px 6px;border-radius:5px;transition:all .15s;line-height:1;}
+.del-btn:hover{color:var(--danger);background:var(--danger-bg);}
 
-.login-field {
-  display: flex; flex-direction: column; gap: 6px;
-  text-align: left; margin-bottom: 16px;
-}
-.login-field label { font-size: 12px; font-weight: 600; color: var(--text2); }
-.login-field input {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  padding: 11px 14px;
-  outline: none;
-  transition: border-color .2s;
-}
-.login-field input:focus { border-color: var(--brand); }
+/* TOTALS */
+.totals-box{margin-top:14px;border-top:1.5px solid var(--border);padding-top:14px;display:flex;flex-direction:column;align-items:flex-end;gap:7px;}
+.totals-row{display:flex;gap:40px;align-items:center;}
+.totals-row span:first-child{color:var(--text2);font-size:13px;}
+.totals-row span:last-child{font-size:14px;font-weight:600;min-width:110px;text-align:right;color:var(--text);}
+.totals-row.grand span:last-child{font-size:22px;font-weight:700;color:var(--brand);font-family:'Playfair Display',serif;}
 
-.login-btn {
-  width: 100%;
-  background: var(--brand);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: background .2s;
-  letter-spacing: 0.3px;
-}
-.login-btn:hover { background: var(--brand-dark); }
+/* EXTRAS */
+.extra-field-row{display:grid;grid-template-columns:150px 1fr 30px;gap:8px;margin-bottom:8px;align-items:center;}
+.extra-field-row .field-label{font-size:12px;font-weight:600;color:var(--text2);background:var(--surface2);border-radius:7px;padding:9px 12px;border:1px solid var(--border);}
 
-.login-error {
-  color: var(--danger);
-  font-size: 12px;
-  margin-top: 12px;
-  display: none;
-}
+/* HISTORY */
+.hist-table{width:100%;border-collapse:collapse;}
+.hist-table th{background:var(--surface2);color:var(--text3);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.hist-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.hist-table tr:last-child td{border-bottom:none;}
+.hist-table tr:hover td{background:var(--brand-light);}
+.status-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:5px 8px;cursor:pointer;outline:none;}
+.status-pending{border-color:#f5c842;background:#fffbeb;color:#b08a00;}
+.status-confirmed{border-color:#a8d8b8;background:var(--success-bg);color:var(--success);}
+.status-cancelled{border-color:#f5c6c0;background:var(--danger-bg);color:var(--danger);}
+.action-btns{display:flex;gap:5px;flex-wrap:wrap;}
 
-/* ── APP ── */
-#app { display: none; }
+/* CATALOG LIST */
+.catalog-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;transition:border-color .15s;}
+.catalog-item:hover{border-color:rgba(199,30,95,.3);}
+.catalog-item-info .name{font-weight:600;margin-bottom:3px;}
+.catalog-item-info .desc{font-size:11px;color:var(--text3);}
+.catalog-item-info .price{font-size:12px;color:var(--brand);font-weight:700;margin-top:3px;}
+.catalog-item-actions{display:flex;gap:6px;}
 
-/* ── TOP BAR ── */
-.topbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:14px;box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--brand);margin-bottom:20px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
 
-.topbar-brand {
-  font-family: 'Playfair Display', serif;
-  font-size: 17px;
-  color: var(--brand);
-  margin-right: 24px;
-  white-space: nowrap;
-}
+/* LOGO */
+.logo-upload{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
+.logo-upload:hover{border-color:var(--brand);background:var(--brand-light);}
+.logo-preview{max-height:90px;max-width:240px;border-radius:6px;}
 
-.nav-btn {
-  background: none;
-  border: none;
-  color: var(--text2);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all .15s;
-}
-.nav-btn:hover { background: var(--brand-light); color: var(--brand); }
-.nav-btn.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+.sep{height:1px;background:var(--border);margin:16px 0;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text3);}
+.empty-state .icon{font-size:36px;margin-bottom:10px;}
 
-.topbar-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.topbar-user {
-  font-size: 12px;
-  color: var(--text3);
-}
-.logout-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text2);
-  font-size: 12px;
-  padding: 5px 12px;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  transition: all .15s;
-}
-.logout-btn:hover { border-color: var(--brand); color: var(--brand); }
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── MAIN ── */
-main { padding: 28px; max-width: 1100px; margin: 0 auto; }
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;border-radius:8px;padding:11px 22px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none;box-shadow:var(--shadow-lg);white-space:nowrap;}
 
-.page { display: none; }
-.page.active { display: block; }
-
-/* ── PAGE HEADER ── */
-.page-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-.page-sub { color: var(--text3); font-size: 13px; margin-bottom: 28px; }
-.num-badge {
-  display: inline-block;
-  background: var(--brand-light);
-  border: 1px solid rgba(199,30,95,0.2);
-  border-radius: 5px;
-  padding: 2px 10px;
-  font-size: 12px;
-  color: var(--brand);
-  font-family: monospace;
-  font-weight: 700;
-}
-
-/* ── CARDS ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px;
-  margin-bottom: 18px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  color: var(--brand);
-  margin-bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.card-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--brand-mid);
-}
-
-/* ── FORM ── */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
-
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field label { font-size: 12px; color: var(--text2); font-weight: 600; }
-.field input, .field select, .field textarea {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  padding: 9px 12px;
-  transition: border-color .18s;
-  outline: none;
-}
-.field input:focus, .field select:focus, .field textarea:focus {
-  border-color: var(--brand);
-  background: #fff;
-}
-.field textarea { resize: vertical; min-height: 76px; }
-
-/* ── BUTTONS ── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  border: none; border-radius: 7px; cursor: pointer;
-  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-  padding: 9px 18px; transition: all .15s; letter-spacing: 0.2px;
-}
-.btn-primary { background: var(--brand); color: #fff; }
-.btn-primary:hover { background: var(--brand-dark); }
-.btn-outline { background: #fff; color: var(--brand); border: 1.5px solid var(--brand); }
-.btn-outline:hover { background: var(--brand-light); }
-.btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--surface3); color: var(--text); }
-.btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #f5c6c0; }
-.btn-danger:hover { background: #fce8e6; }
-.btn-success { background: var(--success-bg); color: var(--success); border: 1px solid #b6ddc8; }
-.btn-success:hover { background: #d8eee2; }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
-
-/* ── ITEMS TABLE ── */
-.items-header {
-  display: grid;
-  grid-template-columns: 2fr 75px 110px 110px 32px;
-  gap: 8px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text3);
-  background: var(--surface2);
-  border-radius: 6px;
-  margin-bottom: 6px;
-}
-.item-row {
-  display: grid;
-  grid-template-columns: 2fr 75px 110px 110px 32px;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.item-row input {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 7px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  padding: 8px 10px;
-  outline: none;
-  width: 100%;
-  transition: border-color .15s;
-}
-.item-row input:focus { border-color: var(--brand); background: #fff; }
-.item-subtotal {
-  background: var(--brand-light);
-  border: 1px solid rgba(199,30,95,0.15);
-  border-radius: 7px;
-  padding: 8px 10px;
-  color: var(--brand);
-  font-size: 13px;
-  font-weight: 600;
-}
-.del-btn {
-  background: none; border: none; cursor: pointer;
-  color: var(--text3); font-size: 15px; padding: 4px 6px;
-  border-radius: 5px; transition: all .15s;
-  line-height: 1;
-}
-.del-btn:hover { color: var(--danger); background: var(--danger-bg); }
-
-.totals-box {
-  margin-top: 14px;
-  border-top: 1.5px solid var(--border);
-  padding-top: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 7px;
-}
-.totals-row { display: flex; gap: 40px; align-items: center; }
-.totals-row span:first-child { color: var(--text2); font-size: 13px; }
-.totals-row span:last-child { font-size: 14px; font-weight: 600; min-width: 110px; text-align: right; color: var(--text); }
-.totals-row.grand span:last-child {
-  font-size: 22px; font-weight: 700; color: var(--brand);
-  font-family: 'Playfair Display', serif;
-}
-
-/* ── EXTRA FIELDS ── */
-.extra-field-row {
-  display: grid;
-  grid-template-columns: 160px 1fr 30px;
-  gap: 8px;
-  margin-bottom: 8px;
-  align-items: center;
-}
-.extra-field-row .field-label {
-  font-size: 12px; font-weight: 600; color: var(--text2);
-  background: var(--surface2);
-  border-radius: 7px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-}
-
-/* ── HISTORY ── */
-.hist-table { width: 100%; border-collapse: collapse; }
-.hist-table th {
-  background: var(--surface2);
-  color: var(--text3);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-.hist-table th:first-child { border-radius: 8px 0 0 0; }
-.hist-table th:last-child { border-radius: 0 8px 0 0; }
-.hist-table td {
-  padding: 13px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-  vertical-align: middle;
-}
-.hist-table tr:last-child td { border-bottom: none; }
-.hist-table tr:hover td { background: var(--brand-light); }
-
-.status-sel {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 8px;
-  cursor: pointer;
-  outline: none;
-}
-.status-pending { border-color: #f5c842; background: #fffbeb; color: #b08a00; }
-.status-confirmed { border-color: #a8d8b8; background: var(--success-bg); color: var(--success); }
-.status-cancelled { border-color: #f5c6c0; background: var(--danger-bg); color: var(--danger); }
-
-.action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
-
-/* ── CATALOG ── */
-.catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.catalog-item {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: border-color .15s;
-}
-.catalog-item:hover { border-color: rgba(199,30,95,0.3); }
-.catalog-item-info .name { font-weight: 600; margin-bottom: 3px; font-size: 14px; }
-.catalog-item-info .desc { font-size: 11px; color: var(--text3); }
-
-/* ── MODAL ── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.40);
-  z-index: 200;
-  align-items: center; justify-content: center;
-  backdrop-filter: blur(2px);
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--surface);
-  border-radius: 14px;
-  box-shadow: var(--shadow-lg);
-  padding: 28px;
-  width: 100%; max-width: 540px;
-  max-height: 90vh; overflow-y: auto;
-}
-.modal-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
-  color: var(--brand);
-  margin-bottom: 20px;
-}
-.modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
-
-/* ── SETTINGS ── */
-.logo-upload {
-  border: 2px dashed var(--border);
-  border-radius: 10px;
-  padding: 28px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-}
-.logo-upload:hover { border-color: var(--brand); background: var(--brand-light); }
-.logo-preview { max-height: 90px; max-width: 240px; border-radius: 6px; }
-
-/* ── MISC ── */
-.sep { height: 1px; background: var(--border); margin: 18px 0; }
-.empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
-.empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-
-/* ── LOADING ── */
-.spinner {
-  display: inline-block; width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── TOAST ── */
-#toast {
-  position: fixed; bottom: 24px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--text);
-  color: #fff;
-  border-radius: 8px;
-  padding: 11px 22px;
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0;
-  transition: all .3s;
-  z-index: 999;
-  pointer-events: none;
-  box-shadow: var(--shadow-lg);
-}
-
-@media (max-width: 680px) {
-  main { padding: 14px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .form-grid.three { grid-template-columns: 1fr; }
-  .catalog-grid { grid-template-columns: 1fr; }
-  .items-header, .item-row { grid-template-columns: 1fr 60px 85px 85px 30px; }
-  .topbar { padding: 0 12px; gap: 2px; }
-  .topbar-brand { margin-right: 8px; font-size: 14px; }
+@media(max-width:680px){
+  main{padding:12px;}
+  .form-grid{grid-template-columns:1fr;}
+  .items-header,.item-row{grid-template-columns:1fr 55px 80px 80px 28px;}
+  .topbar{padding:0 10px;gap:2px;}
+  .topbar-brand{font-size:14px;margin-right:8px;}
+  .hist-table{display:block;overflow-x:auto;}
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════ LOGIN ═══════════════ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">📷</div>
     <h1 class="login-title">Jans Photograph</h1>
-    <p class="login-sub">Panel de Administración — Acceso restringido</p>
-
-    <div class="login-field">
-      <label>USUARIO</label>
-      <input id="login-user" type="text" placeholder="Tu usuario" autocomplete="username">
-    </div>
-    <div class="login-field">
-      <label>CONTRASEÑA</label>
-      <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"
-        onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
+    <p class="login-sub">Panel de Administración</p>
+    <div class="login-field"><label>USUARIO</label><input id="login-user" type="text" placeholder="Tu usuario" autocomplete="username"></div>
+    <div class="login-field"><label>CONTRASEÑA</label><input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Iniciar sesión</button>
-    <p class="login-error" id="login-error">Usuario o contraseña incorrectos.</p>
-    <p style="font-size:11px;color:var(--text3);margin-top:20px">
-      <a href="/" style="color:var(--text3)">← Volver al sitio</a>
-    </p>
+    <p class="login-error" id="login-error"></p>
+    <p style="font-size:11px;color:var(--text3);margin-top:20px"><a href="/" style="color:var(--text3)">← Volver al sitio</a></p>
   </div>
 </div>
 
-<!-- ═══════════════ APP ═══════════════ -->
+<!-- APP -->
 <div id="app">
-
 <nav class="topbar">
-  <span class="topbar-brand">Jans Photograph Admin</span>
-  <button class="nav-btn active" onclick="showPage('nueva',this)">+ Nueva Cotización</button>
+  <span class="topbar-brand">Jans Admin</span>
+  <button class="nav-btn active" onclick="showPage('nueva',this)">+ Nueva</button>
   <button class="nav-btn" onclick="showPage('historial',this)">Historial</button>
   <button class="nav-btn" onclick="showPage('categorias',this)">Categorías</button>
   <button class="nav-btn" onclick="showPage('configuracion',this)">Configuración</button>
   <div class="topbar-right">
     <span class="topbar-user" id="user-label"></span>
-    <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    <button class="logout-btn" onclick="doLogout()">Salir</button>
   </div>
 </nav>
 
 <main>
 
-  <!-- ══ NUEVA COTIZACIÓN ══ -->
+  <!-- NUEVA COTIZACIÓN -->
   <div id="page-nueva" class="page active">
     <h1 class="page-title">Nueva Cotización</h1>
     <p class="page-sub" id="cot-number-label">Cargando…</p>
@@ -566,34 +201,33 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
     </div>
 
     <div class="card">
-      <div class="card-title">Detalles de la Cotización</div>
+      <div class="card-title">Detalles</div>
       <div class="form-grid">
-        <div class="field">
-          <label>Categoría *</label>
-          <select id="cot-categoria"><option value="">— Seleccionar —</option></select>
-        </div>
+        <div class="field"><label>Categoría *</label><select id="cot-categoria"><option value="">— Seleccionar —</option></select></div>
         <div class="field"><label>Fecha</label><input id="cot-fecha" type="date"></div>
         <div class="field"><label>Validez</label><input id="cot-validez" type="text" placeholder="Ej: 30 días"></div>
-        <div class="field"><label>Notas / Observaciones</label><textarea id="cot-notas" placeholder="Condiciones, notas para el cliente…"></textarea></div>
+        <div class="field"><label>Notas</label><textarea id="cot-notas" placeholder="Observaciones, condiciones…"></textarea></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Ítems / Servicios</div>
-      <div class="items-header">
-        <span>Descripción</span><span>Cant.</span><span>Precio Unit.</span><span>Subtotal</span><span></span>
+      <div class="catalog-picker">
+        <div class="catalog-picker-title">Agregar desde catálogo</div>
+        <div class="catalog-chips" id="catalog-chips">
+          <span style="color:var(--text3);font-size:12px;font-style:italic">Sin ítems en catálogo. Créalos en Configuración.</span>
+        </div>
       </div>
+      <div class="items-header"><span>Descripción</span><span>Cant.</span><span>Precio Unit.</span><span>Subtotal</span><span></span></div>
       <div id="items-container"></div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addItem()">+ Agregar ítem</button>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addItem()">+ Agregar ítem manual</button>
       <div class="totals-box">
         <div class="totals-row"><span>Subtotal</span><span id="tot-subtotal">$0.00</span></div>
         <div class="totals-row">
           <span>Impuesto
             <select id="tax-rate" onchange="calcTotals()" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:3px 6px;margin-left:6px;font-family:'Inter',sans-serif;">
-              <option value="0">0%</option>
-              <option value="7" selected>ITBMS 7%</option>
-              <option value="10">10%</option>
-              <option value="15">15%</option>
+              <option value="0">0%</option><option value="7" selected>ITBMS 7%</option>
+              <option value="10">10%</option><option value="15">15%</option>
             </select>
           </span>
           <span id="tot-tax">$0.00</span>
@@ -604,9 +238,7 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
 
     <div class="card">
       <div class="card-title">Datos Adicionales</div>
-      <div id="extra-fields-container">
-        <p style="color:var(--text3);font-size:13px;margin-bottom:6px">Agrega información extra que aparecerá en el PDF.</p>
-      </div>
+      <div id="extra-fields-container"><p style="color:var(--text3);font-size:13px">Sin campos adicionales aún.</p></div>
       <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="openAddExtraModal()">+ Agregar dato adicional</button>
     </div>
 
@@ -617,17 +249,17 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
     </div>
   </div>
 
-  <!-- ══ HISTORIAL ══ -->
+  <!-- HISTORIAL -->
   <div id="page-historial" class="page">
-    <h1 class="page-title">Historial de Cotizaciones</h1>
+    <h1 class="page-title">Historial</h1>
     <p class="page-sub">Todas tus cotizaciones guardadas en la nube</p>
     <div id="historial-content"></div>
   </div>
 
-  <!-- ══ CATEGORÍAS ══ -->
+  <!-- CATEGORÍAS -->
   <div id="page-categorias" class="page">
     <h1 class="page-title">Categorías y Campos</h1>
-    <p class="page-sub">Gestiona las categorías de cotización y los campos adicionales disponibles</p>
+    <p class="page-sub">Gestiona categorías y campos adicionales</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
       <div class="card">
         <div class="card-title">Categorías</div>
@@ -644,13 +276,21 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
     </div>
   </div>
 
-  <!-- ══ CONFIGURACIÓN ══ -->
+  <!-- CONFIGURACIÓN -->
   <div id="page-configuracion" class="page">
     <h1 class="page-title">Configuración</h1>
-    <p class="page-sub">Datos de tu empresa y preferencias de documentos</p>
+    <p class="page-sub">Catálogo de ítems, datos de empresa y preferencias</p>
 
     <div class="card">
-      <div class="card-title">Logotipo de Empresa</div>
+      <div class="card-title">Catálogo de Ítems / Servicios</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Crea tus servicios para seleccionarlos rápido al cotizar.</p>
+      <div id="items-catalog-list"></div>
+      <div class="sep"></div>
+      <button class="btn btn-outline btn-sm" onclick="openItemCatalogModal()">+ Nuevo Ítem</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Logotipo</div>
       <div class="logo-upload" onclick="document.getElementById('logo-input').click()">
         <div id="logo-preview-wrap">
           <div style="font-size:32px;margin-bottom:8px">🖼️</div>
@@ -668,52 +308,42 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
     <div class="card">
       <div class="card-title">Datos de Empresa</div>
       <div class="form-grid">
-        <div class="field"><label>Nombre de Empresa *</label><input id="emp-nombre" type="text" placeholder="Jans Photograph"></div>
+        <div class="field"><label>Nombre *</label><input id="emp-nombre" type="text" placeholder="Jans Photograph"></div>
         <div class="field"><label>RUC / Cédula</label><input id="emp-ruc" type="text" placeholder="000-000-000"></div>
         <div class="field"><label>Teléfono</label><input id="emp-tel" type="text" placeholder="+507 68622402"></div>
         <div class="field"><label>Email</label><input id="emp-email" type="email" placeholder="jans.pty@gmail.com"></div>
-        <div class="field"><label>Sitio Web</label><input id="emp-web" type="text" placeholder="jansphotograph.github.io"></div>
+        <div class="field"><label>Sitio Web</label><input id="emp-web" type="text" placeholder="jansphotograph.com"></div>
         <div class="field"><label>Dirección</label><input id="emp-dir" type="text" placeholder="Panamá, Coclé"></div>
       </div>
-      <div class="field" style="margin-top:14px">
-        <label>Pie de Página en PDFs</label>
-        <textarea id="emp-footer" placeholder="Ej: Precios en USD. Sujeto a disponibilidad. Vigencia 30 días."></textarea>
-      </div>
+      <div class="field" style="margin-top:14px"><label>Pie de Página en PDFs</label><textarea id="emp-footer" placeholder="Ej: Precios en USD. Sujeto a disponibilidad."></textarea></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Numeración de Cotizaciones</div>
+      <div class="card-title">Numeración</div>
       <div class="form-grid">
         <div class="field"><label>Prefijo</label><input id="cfg-prefix" type="text" placeholder="COT-"></div>
-        <div class="field"><label>Número siguiente</label><input id="cfg-next" type="number" min="1" value="1"></div>
+        <div class="field"><label>Número siguiente</label><input id="cfg-next" type="number" min="1"></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Seguridad — Cambiar Credenciales</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Las credenciales se guardan en JSONbin. Solo tú con la API key puedes modificarlas.</p>
+      <div class="card-title">Cambiar Contraseña</div>
       <div class="form-grid">
-        <div class="field"><label>Nuevo Usuario</label><input id="new-user" type="text" placeholder="Nuevo usuario"></div>
         <div class="field"><label>Nueva Contraseña</label><input id="new-pass" type="password" placeholder="Nueva contraseña"></div>
+        <div class="field"><label>Confirmar Contraseña</label><input id="new-pass2" type="password" placeholder="Repite la contraseña"></div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-danger btn-sm" onclick="updateCredentials()">🔐 Actualizar Credenciales</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-danger btn-sm" onclick="updatePassword()">🔐 Cambiar Contraseña</button></div>
     </div>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar Configuración</button>
-    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveConfig()">💾 Guardar Configuración</button></div>
   </div>
 
 </main>
 </div>
 
-<!-- ═══ MODALES ═══ -->
-
-<!-- Edit Cotización -->
+<!-- MODALES -->
 <div class="modal-overlay" id="modal-edit">
-  <div class="modal" style="max-width:700px">
+  <div class="modal" style="max-width:720px">
     <div class="modal-title">✏️ Editar Cotización</div>
     <div id="modal-edit-content"></div>
     <div class="modal-actions">
@@ -723,18 +353,24 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
   </div>
 </div>
 
-<!-- Nueva Categoría -->
+<div class="modal-overlay" id="modal-item-catalog">
+  <div class="modal">
+    <div class="modal-title" id="item-modal-title">Nuevo Ítem</div>
+    <div class="field" style="margin-bottom:12px"><label>Nombre *</label><input id="ic-nombre" type="text" placeholder="Ej: Sesión fotográfica 1 hora"></div>
+    <div class="field" style="margin-bottom:12px"><label>Descripción (opcional)</label><input id="ic-desc" type="text" placeholder="Breve descripción"></div>
+    <div class="field"><label>Precio unitario ($)</label><input id="ic-precio" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-item-catalog');editingItemId=null">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveItemCatalog()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-categoria">
   <div class="modal">
     <div class="modal-title">Nueva Categoría</div>
-    <div class="field" style="margin-bottom:12px">
-      <label>Nombre</label>
-      <input id="cat-nombre-input" type="text" placeholder="Ej: Sesión Fotográfica">
-    </div>
-    <div class="field">
-      <label>Descripción (opcional)</label>
-      <input id="cat-desc-input" type="text" placeholder="Breve descripción">
-    </div>
+    <div class="field" style="margin-bottom:12px"><label>Nombre</label><input id="cat-nombre-input" type="text" placeholder="Ej: Sesión Fotográfica"></div>
+    <div class="field"><label>Descripción (opcional)</label><input id="cat-desc-input" type="text" placeholder="Breve descripción"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-categoria')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveCategoria()">Guardar</button>
@@ -742,22 +378,12 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
   </div>
 </div>
 
-<!-- Campo Extra Catálogo -->
 <div class="modal-overlay" id="modal-extra-catalog">
   <div class="modal">
     <div class="modal-title">Nuevo Campo Adicional</div>
-    <div class="field" style="margin-bottom:12px">
-      <label>Etiqueta</label>
-      <input id="ext-cat-label" type="text" placeholder="Ej: Plazo de entrega">
-    </div>
-    <div class="field">
-      <label>Tipo de campo</label>
-      <select id="ext-cat-type">
-        <option value="text">Texto</option>
-        <option value="number">Número</option>
-        <option value="date">Fecha</option>
-        <option value="textarea">Texto largo</option>
-      </select>
+    <div class="field" style="margin-bottom:12px"><label>Etiqueta</label><input id="ext-cat-label" type="text" placeholder="Ej: Plazo de entrega"></div>
+    <div class="field"><label>Tipo</label>
+      <select id="ext-cat-type"><option value="text">Texto</option><option value="number">Número</option><option value="date">Fecha</option><option value="textarea">Texto largo</option></select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-extra-catalog')">Cancelar</button>
@@ -766,19 +392,12 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
   </div>
 </div>
 
-<!-- Agregar Extra a Cotización -->
 <div class="modal-overlay" id="modal-extra-add">
   <div class="modal">
     <div class="modal-title">Agregar Dato Adicional</div>
-    <div class="field" style="margin-bottom:14px">
-      <label>Seleccionar del catálogo</label>
-      <select id="extra-select"></select>
-    </div>
+    <div class="field" style="margin-bottom:14px"><label>Seleccionar del catálogo</label><select id="extra-select"></select></div>
     <div style="text-align:center;color:var(--text3);font-size:12px;margin-bottom:10px">— o crear uno nuevo —</div>
-    <div class="field">
-      <label>Etiqueta personalizada</label>
-      <input id="extra-new-label" type="text" placeholder="Nombre del campo">
-    </div>
+    <div class="field"><label>Etiqueta personalizada</label><input id="extra-new-label" type="text" placeholder="Nombre del campo"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-extra-add')">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmAddExtra()">Agregar</button>
@@ -789,449 +408,394 @@ main { padding: 28px; max-width: 1100px; margin: 0 auto; }
 <div id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════
-//  JSONBIN CONFIG
-// ═══════════════════════════════════════
-const JBIN_KEY = '$2a$10$DKygGUiuDLYa/FEGoWI2ruRgfYdsDxZ11ePj5nqmWft7.dfKseoXy';
+// ══════════════════════════════════════════
+//  CONFIGURACIÓN — solo cambia esto
+// ══════════════════════════════════════════
+const JBIN_KEY  = '$2a$10$DKygGUiuDLYa/FEGoWI2ruRgfYdsDxZ11ePj5nqmWft7.dfKseoXy';
 const JBIN_BASE = 'https://api.jsonbin.io/v3';
 
-// Bin IDs — se crean automáticamente la primera vez.
-// Se guardan en localStorage para persistir entre sesiones.
-let BIN_AUTH = localStorage.getItem('jbin_auth_id') || null;
-let BIN_DATA = localStorage.getItem('jbin_data_id') || null;
+// IDs de los bins — se crean automáticamente la primera vez
+// y se guardan en el navegador para las siguientes sesiones
+let BIN_AUTH = localStorage.getItem('jp_bin_auth') || null;
+let BIN_DATA = localStorage.getItem('jp_bin_data') || null;
 
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let state = {
-  cotizaciones: [],
-  categorias: [],
-  extrasCatalog: [],
-  config: { prefix: 'COT-', nextNum: 1, empresa: {}, logo: null }
-};
-
-let currentItems = [];
-let currentExtras = [];
-let editingId = null;
-let editItems = [];
-let editExtras = [];
-let currentUser = '';
-
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  JSONBIN HELPERS
-// ═══════════════════════════════════════
-async function jbinCreate(data, name, isPrivate = true) {
+// ══════════════════════════════════════════
+async function jbRead(binId) {
+  const r = await fetch(`${JBIN_BASE}/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': JBIN_KEY }
+  });
+  if (!r.ok) throw new Error('Error leyendo datos');
+  return (await r.json()).record;
+}
+
+async function jbWrite(binId, data) {
+  const r = await fetch(`${JBIN_BASE}/b/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JBIN_KEY },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error('Error guardando datos');
+}
+
+async function jbCreate(data, name) {
   const r = await fetch(`${JBIN_BASE}/b`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Master-Key': JBIN_KEY,
       'X-Bin-Name': name,
-      'X-Bin-Private': isPrivate ? 'true' : 'false'
+      'X-Bin-Private': 'true'
     },
     body: JSON.stringify(data)
   });
-  const json = await r.json();
-  return json.metadata?.id || null;
+  if (!r.ok) throw new Error('Error creando bin');
+  return (await r.json()).metadata.id;
 }
 
-async function jbinRead(binId) {
-  const r = await fetch(`${JBIN_BASE}/b/${binId}/latest`, {
-    headers: { 'X-Master-Key': JBIN_KEY }
-  });
-  const json = await r.json();
-  return json.record;
-}
+// ══════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════
+let state = {
+  cotizaciones:[], categorias:[], extrasCatalog:[],
+  itemsCatalog:[], config:{prefix:'COT-',nextNum:1,empresa:{},logo:null},
+  auth:{username:'admin',password:'jans2024'}
+};
+let currentItems=[], currentExtras=[];
+let editingId=null, editItems=[], editExtras=[], editingItemId=null;
+let currentUser='';
 
-async function jbinUpdate(binId, data) {
-  await fetch(`${JBIN_BASE}/b/${binId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JBIN_KEY
-    },
-    body: JSON.stringify(data)
-  });
-}
-
-// ═══════════════════════════════════════
-//  BOOTSTRAP — create bins on first run
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  BOOTSTRAP — primer uso crea los bins
+// ══════════════════════════════════════════
 async function bootstrap() {
-  // Create AUTH bin with default credentials
   if (!BIN_AUTH) {
-    toast('⚙️ Primer inicio: creando sistema…');
-    BIN_AUTH = await jbinCreate(
-      { users: [{ username: 'admin', password: 'jans2024' }] },
+    toast('⚙️ Primer inicio: configurando sistema…');
+    BIN_AUTH = await jbCreate(
+      { username:'admin', password:'jans2024' },
       'jans-auth'
     );
-    localStorage.setItem('jbin_auth_id', BIN_AUTH);
+    localStorage.setItem('jp_bin_auth', BIN_AUTH);
   }
-  // Create DATA bin
   if (!BIN_DATA) {
-    BIN_DATA = await jbinCreate(
-      { cotizaciones: [], categorias: [], extrasCatalog: [], config: { prefix: 'COT-', nextNum: 1, empresa: {}, logo: null } },
-      'jans-cotizaciones'
+    BIN_DATA = await jbCreate(
+      { cotizaciones:[], categorias:[], extrasCatalog:[],
+        itemsCatalog:[], config:{prefix:'COT-',nextNum:1,empresa:{},logo:null} },
+      'jans-data'
     );
-    localStorage.setItem('jbin_data_id', BIN_DATA);
+    localStorage.setItem('jp_bin_data', BIN_DATA);
   }
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  LOGIN
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 async function doLogin() {
   const user = document.getElementById('login-user').value.trim();
   const pass = document.getElementById('login-pass').value;
-  const btn = document.getElementById('login-btn');
-  const err = document.getElementById('login-error');
-
-  if (!user || !pass) { err.textContent = 'Completa todos los campos.'; err.style.display = 'block'; return; }
+  const btn  = document.getElementById('login-btn');
+  const err  = document.getElementById('login-error');
+  if (!user || !pass) { showErr('Completa todos los campos.'); return; }
 
   btn.innerHTML = '<span class="spinner"></span> Verificando…';
-  btn.disabled = true;
-  err.style.display = 'none';
+  btn.disabled = true; err.style.display = 'none';
 
   try {
     await bootstrap();
-    const authData = await jbinRead(BIN_AUTH);
-    const valid = authData.users.find(u => u.username === user && u.password === pass);
-
-    if (valid) {
+    const auth = await jbRead(BIN_AUTH);
+    if (auth.username === user && auth.password === pass) {
+      const data = await jbRead(BIN_DATA);
+      mergeState(data);
       currentUser = user;
       document.getElementById('user-label').textContent = '👤 ' + user;
-      await loadData();
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       initApp();
     } else {
-      err.textContent = 'Usuario o contraseña incorrectos.';
-      err.style.display = 'block';
+      showErr('Usuario o contraseña incorrectos.');
     }
   } catch(e) {
-    err.textContent = 'Error de conexión. Verifica tu internet.';
-    err.style.display = 'block';
+    showErr('Error de conexión. Verifica tu internet.');
   }
-  btn.innerHTML = 'Iniciar sesión';
-  btn.disabled = false;
+  btn.innerHTML = 'Iniciar sesión'; btn.disabled = false;
+}
+
+function showErr(msg) {
+  const err = document.getElementById('login-error');
+  err.textContent = msg; err.style.display = 'block';
 }
 
 function doLogout() {
-  currentUser = '';
+  currentUser = ''; currentItems = []; currentExtras = [];
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-user').value = '';
   document.getElementById('login-pass').value = '';
 }
 
-async function updateCredentials() {
-  const nu = document.getElementById('new-user').value.trim();
+async function updatePassword() {
   const np = document.getElementById('new-pass').value;
-  if (!nu || !np) { toast('⚠️ Completa usuario y contraseña nuevos'); return; }
-  if (!confirm(`¿Actualizar credenciales?\nNuevo usuario: ${nu}`)) return;
+  const np2 = document.getElementById('new-pass2').value;
+  if (!np || !np2) { toast('⚠️ Completa ambos campos'); return; }
+  if (np !== np2) { toast('⚠️ Las contraseñas no coinciden'); return; }
+  if (!confirm('¿Cambiar la contraseña?')) return;
   try {
-    await jbinUpdate(BIN_AUTH, { users: [{ username: nu, password: np }] });
-    document.getElementById('new-user').value = '';
+    await jbWrite(BIN_AUTH, { username: currentUser, password: np });
     document.getElementById('new-pass').value = '';
-    toast('✅ Credenciales actualizadas');
+    document.getElementById('new-pass2').value = '';
+    toast('✅ Contraseña actualizada');
   } catch(e) { toast('❌ Error al actualizar'); }
 }
 
-// ═══════════════════════════════════════
-//  DATA PERSISTENCE
-// ═══════════════════════════════════════
-async function loadData() {
-  try {
-    const d = await jbinRead(BIN_DATA);
-    if (d) {
-      state.cotizaciones = d.cotizaciones || [];
-      state.categorias = d.categorias || [];
-      state.extrasCatalog = d.extrasCatalog || [];
-      state.config = d.config || state.config;
-    }
-  } catch(e) { console.warn('loadData error', e); }
+// ══════════════════════════════════════════
+//  GUARDAR DATOS
+// ══════════════════════════════════════════
+async function persist() {
+  await jbWrite(BIN_DATA, {
+    cotizaciones: state.cotizaciones,
+    categorias: state.categorias,
+    extrasCatalog: state.extrasCatalog,
+    itemsCatalog: state.itemsCatalog,
+    config: state.config
+  });
 }
 
-async function saveData() {
-  try {
-    await jbinUpdate(BIN_DATA, state);
-  } catch(e) { toast('⚠️ Error al guardar en la nube'); }
+function mergeState(data) {
+  if (!data) return;
+  state.cotizaciones  = data.cotizaciones  || [];
+  state.categorias    = data.categorias    || [];
+  state.extrasCatalog = data.extrasCatalog || [];
+  state.itemsCatalog  = data.itemsCatalog  || [];
+  state.config        = data.config        || state.config;
 }
 
-// ═══════════════════════════════════════
-//  INIT APP
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
 function initApp() {
-  renderCotNumber();
-  populateCategorySelect();
-  renderExtraFields();
-  if (currentItems.length === 0) addItem();
-  setTodayDate();
-  loadConfigUI();
+  renderCotNumber(); populateCategorySelect();
+  renderCatalogChips(); renderExtraFields();
+  if (!currentItems.length) addItem();
+  setTodayDate(); loadConfigUI();
 }
 
 function setTodayDate() {
   document.getElementById('cot-fecha').value = new Date().toISOString().split('T')[0];
 }
 
-// ═══════════════════════════════════════
-//  NAVIGATION
-// ═══════════════════════════════════════
 function showPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'historial') renderHistorial();
-  if (id === 'categorias') { renderCategorias(); renderExtrasCatalog(); }
-  if (id === 'configuracion') loadConfigUI();
+  if (id==='historial') renderHistorial();
+  if (id==='categorias') { renderCategorias(); renderExtrasCatalog(); }
+  if (id==='configuracion') { loadConfigUI(); renderItemsCatalog(); }
 }
 
-// ═══════════════════════════════════════
-//  COT NUMBER
-// ═══════════════════════════════════════
 function renderCotNumber() {
-  const num = String(state.config.nextNum || 1).padStart(4, '0');
+  const num = String(state.config.nextNum||1).padStart(4,'0');
   document.getElementById('cot-number-label').innerHTML =
-    `Número: <span class="num-badge">${state.config.prefix || 'COT-'}${num}</span>`;
+    `Número: <span class="num-badge">${state.config.prefix||'COT-'}${num}</span>`;
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  CATALOG CHIPS
+// ══════════════════════════════════════════
+function renderCatalogChips() {
+  const c = document.getElementById('catalog-chips');
+  if (!state.itemsCatalog.length) {
+    c.innerHTML='<span style="color:var(--text3);font-size:12px;font-style:italic">Sin ítems en catálogo. Créalos en Configuración.</span>'; return;
+  }
+  c.innerHTML='';
+  state.itemsCatalog.forEach(item=>{
+    const chip=document.createElement('div'); chip.className='catalog-chip';
+    chip.innerHTML=`${esc(item.nombre)} <span class="chip-price">$${parseFloat(item.precio||0).toFixed(2)}</span>`;
+    chip.onclick=()=>addItemFromCatalog(item);
+    c.appendChild(chip);
+  });
+}
+
+function addItemFromCatalog(item) {
+  const exists = currentItems.find(i=>i.catalogId===item.id);
+  if (exists) { exists.qty=(exists.qty||1)+1; renderItems(); toast(`+1 ${item.nombre}`); return; }
+  currentItems.push({id:Date.now()+Math.random(),catalogId:item.id,
+    desc:item.nombre+(item.desc?' — '+item.desc:''),qty:1,price:parseFloat(item.precio||0)});
+  renderItems(); toast(`✅ ${item.nombre} agregado`);
+}
+
+// ══════════════════════════════════════════
 //  ITEMS
-// ═══════════════════════════════════════
-function addItem(desc='', qty=1, price=0) {
-  currentItems.push({ id: Date.now() + Math.random(), desc, qty, price });
-  renderItems();
-}
-
-function removeItem(id) {
-  currentItems = currentItems.filter(i => i.id !== id);
-  renderItems();
-}
+// ══════════════════════════════════════════
+function addItem(desc='',qty=1,price=0) { currentItems.push({id:Date.now()+Math.random(),desc,qty,price}); renderItems(); }
+function removeItem(id) { currentItems=currentItems.filter(i=>i.id!==id); renderItems(); }
 
 function renderItems() {
-  const c = document.getElementById('items-container');
-  c.innerHTML = '';
-  currentItems.forEach(item => {
-    const sub = (item.qty||0) * (item.price||0);
-    const div = document.createElement('div');
-    div.className = 'item-row';
-    div.innerHTML = `
-      <input type="text" placeholder="Descripción del ítem o servicio" value="${esc(item.desc)}"
-        oninput="updateItem(${item.id},'desc',this.value)">
-      <input type="number" min="0" step="1" value="${item.qty}"
-        oninput="updateItem(${item.id},'qty',this.value)" style="text-align:center">
-      <input type="number" min="0" step="0.01" placeholder="0.00" value="${item.price||''}"
-        oninput="updateItem(${item.id},'price',this.value)">
+  const c=document.getElementById('items-container'); c.innerHTML='';
+  currentItems.forEach(item=>{
+    const sub=(item.qty||0)*(item.price||0);
+    const div=document.createElement('div'); div.className='item-row';
+    div.innerHTML=`<input type="text" placeholder="Descripción" value="${esc(item.desc)}" oninput="updateItem(${item.id},'desc',this.value)">
+      <input type="number" min="0" step="1" value="${item.qty}" oninput="updateItem(${item.id},'qty',this.value)" style="text-align:center">
+      <input type="number" min="0" step="0.01" placeholder="0.00" value="${item.price||''}" oninput="updateItem(${item.id},'price',this.value)">
       <div class="item-subtotal" id="sub-${item.id}">$${sub.toFixed(2)}</div>
-      <button class="del-btn" onclick="removeItem(${item.id})">✕</button>
-    `;
+      <button class="del-btn" onclick="removeItem(${item.id})">✕</button>`;
     c.appendChild(div);
   });
   calcTotals();
 }
 
-function updateItem(id, field, val) {
-  const item = currentItems.find(i => i.id === id);
-  if (!item) return;
-  item[field] = field === 'desc' ? val : (parseFloat(val)||0);
-  const s = document.getElementById('sub-'+id);
-  if (s) s.textContent = '$' + ((item.qty||0)*(item.price||0)).toFixed(2);
+function updateItem(id,f,v) {
+  const i=currentItems.find(x=>x.id===id); if(!i) return;
+  i[f]=f==='desc'?v:(parseFloat(v)||0);
+  const s=document.getElementById('sub-'+id); if(s) s.textContent='$'+((i.qty||0)*(i.price||0)).toFixed(2);
   calcTotals();
 }
 
 function calcTotals() {
-  const sub = currentItems.reduce((a,i) => a+(i.qty||0)*(i.price||0), 0);
-  const rate = parseFloat(document.getElementById('tax-rate').value)||0;
-  const tax = sub * rate / 100;
-  document.getElementById('tot-subtotal').textContent = '$' + sub.toFixed(2);
-  document.getElementById('tot-tax').textContent = '$' + tax.toFixed(2);
-  document.getElementById('tot-total').textContent = '$' + (sub+tax).toFixed(2);
+  const sub=currentItems.reduce((a,i)=>a+(i.qty||0)*(i.price||0),0);
+  const rate=parseFloat(document.getElementById('tax-rate').value)||0;
+  const tax=sub*rate/100;
+  document.getElementById('tot-subtotal').textContent='$'+sub.toFixed(2);
+  document.getElementById('tot-tax').textContent='$'+tax.toFixed(2);
+  document.getElementById('tot-total').textContent='$'+(sub+tax).toFixed(2);
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  EXTRA FIELDS
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 function openAddExtraModal() {
-  const sel = document.getElementById('extra-select');
-  sel.innerHTML = '<option value="">— Seleccionar del catálogo —</option>';
-  state.extrasCatalog.forEach(e => {
-    sel.innerHTML += `<option value="${e.id}">${esc(e.label)}</option>`;
-  });
-  document.getElementById('extra-new-label').value = '';
+  const sel=document.getElementById('extra-select');
+  sel.innerHTML='<option value="">— Seleccionar —</option>';
+  state.extrasCatalog.forEach(e=>{sel.innerHTML+=`<option value="${e.id}">${esc(e.label)}</option>`;});
+  document.getElementById('extra-new-label').value='';
   openModal('modal-extra-add');
 }
-
 function confirmAddExtra() {
-  const sel = document.getElementById('extra-select');
-  const newLabel = document.getElementById('extra-new-label').value.trim();
-  if (sel.value) {
-    const cat = state.extrasCatalog.find(e => e.id == sel.value);
-    if (cat) currentExtras.push({ id: Date.now(), label: cat.label, type: cat.type, value: '' });
-  } else if (newLabel) {
-    currentExtras.push({ id: Date.now(), label: newLabel, type: 'text', value: '' });
-  } else { toast('Selecciona o escribe un campo'); return; }
-  closeModal('modal-extra-add');
-  renderExtraFields();
+  const sel=document.getElementById('extra-select');
+  const nl=document.getElementById('extra-new-label').value.trim();
+  if (sel.value) { const cat=state.extrasCatalog.find(e=>e.id==sel.value); if(cat) currentExtras.push({id:Date.now(),label:cat.label,type:cat.type,value:''}); }
+  else if (nl) { currentExtras.push({id:Date.now(),label:nl,type:'text',value:''}); }
+  else { toast('Selecciona o escribe un campo'); return; }
+  closeModal('modal-extra-add'); renderExtraFields();
 }
-
 function renderExtraFields() {
-  const c = document.getElementById('extra-fields-container');
-  c.innerHTML = '';
-  if (!currentExtras.length) {
-    c.innerHTML = '<p style="color:var(--text3);font-size:13px">Sin campos adicionales aún.</p>';
-    return;
-  }
-  currentExtras.forEach(ex => {
-    const div = document.createElement('div');
-    div.className = 'extra-field-row';
-    const inp = ex.type === 'textarea'
-      ? `<textarea oninput="updateExtra(${ex.id},this.value)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%;resize:vertical;min-height:55px">${esc(ex.value)}</textarea>`
-      : `<input type="${ex.type}" value="${esc(ex.value)}" oninput="updateExtra(${ex.id},this.value)"
-          style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%">`;
-    div.innerHTML = `<div class="field-label">${esc(ex.label)}</div>${inp}<button class="del-btn" onclick="removeExtra(${ex.id})">✕</button>`;
+  const c=document.getElementById('extra-fields-container'); c.innerHTML='';
+  if (!currentExtras.length) { c.innerHTML='<p style="color:var(--text3);font-size:13px">Sin campos adicionales aún.</p>'; return; }
+  currentExtras.forEach(ex=>{
+    const div=document.createElement('div'); div.className='extra-field-row';
+    const inp=ex.type==='textarea'
+      ?`<textarea oninput="updateExtra(${ex.id},this.value)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%;resize:vertical;min-height:55px">${esc(ex.value)}</textarea>`
+      :`<input type="${ex.type}" value="${esc(ex.value)}" oninput="updateExtra(${ex.id},this.value)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%">`;
+    div.innerHTML=`<div class="field-label">${esc(ex.label)}</div>${inp}<button class="del-btn" onclick="removeExtra(${ex.id})">✕</button>`;
     c.appendChild(div);
   });
 }
+function updateExtra(id,v){const e=currentExtras.find(x=>x.id===id);if(e)e.value=v;}
+function removeExtra(id){currentExtras=currentExtras.filter(e=>e.id!==id);renderExtraFields();}
 
-function updateExtra(id, val) { const e = currentExtras.find(x => x.id===id); if(e) e.value=val; }
-function removeExtra(id) { currentExtras = currentExtras.filter(e => e.id!==id); renderExtraFields(); }
-
-// ═══════════════════════════════════════
-//  SAVE COTIZACIÓN
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  GUARDAR COTIZACIÓN
+// ══════════════════════════════════════════
 async function saveCotizacion() {
-  const nombre = document.getElementById('cli-nombre').value.trim();
+  const nombre=document.getElementById('cli-nombre').value.trim();
   if (!nombre) { toast('⚠️ El nombre del cliente es requerido'); return; }
-  const cat = document.getElementById('cot-categoria').value;
+  const cat=document.getElementById('cot-categoria').value;
   if (!cat) { toast('⚠️ Selecciona una categoría'); return; }
-
-  const num = String(state.config.nextNum||1).padStart(4,'0');
-  const numero = (state.config.prefix||'COT-') + num;
-  state.config.nextNum = (state.config.nextNum||1) + 1;
-
-  const cot = {
-    id: Date.now(),
-    numero,
-    fecha: document.getElementById('cot-fecha').value,
-    estado: 'pending',
-    cliente: {
-      nombre, email: document.getElementById('cli-email').value,
-      tel: document.getElementById('cli-tel').value,
-      dir: document.getElementById('cli-dir').value
-    },
-    categoria: cat,
-    validez: document.getElementById('cot-validez').value,
-    notas: document.getElementById('cot-notas').value,
-    items: JSON.parse(JSON.stringify(currentItems)),
-    extras: JSON.parse(JSON.stringify(currentExtras)),
-    taxRate: parseFloat(document.getElementById('tax-rate').value)||0
+  const num=String(state.config.nextNum||1).padStart(4,'0');
+  const cot={
+    id:Date.now(),numero:(state.config.prefix||'COT-')+num,
+    fecha:document.getElementById('cot-fecha').value,estado:'pending',
+    cliente:{nombre,email:document.getElementById('cli-email').value,
+      tel:document.getElementById('cli-tel').value,dir:document.getElementById('cli-dir').value},
+    categoria:cat,validez:document.getElementById('cot-validez').value,
+    notas:document.getElementById('cot-notas').value,
+    items:JSON.parse(JSON.stringify(currentItems)),
+    extras:JSON.parse(JSON.stringify(currentExtras)),
+    taxRate:parseFloat(document.getElementById('tax-rate').value)||0
   };
-
   state.cotizaciones.unshift(cot);
-  toast('💾 Guardando en la nube…');
-  await saveData();
-  toast('✅ Cotización ' + numero + ' guardada');
-  resetForm();
-  renderCotNumber();
+  state.config.nextNum=(state.config.nextNum||1)+1;
+  toast('💾 Guardando…');
+  try { await persist(); renderCotNumber(); resetForm(); toast('✅ Cotización '+cot.numero+' guardada'); }
+  catch(e) { toast('❌ Error al guardar'); }
 }
 
 function resetForm() {
-  ['cli-nombre','cli-email','cli-tel','cli-dir','cot-validez','cot-notas'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('cot-categoria').value = '';
-  document.getElementById('tax-rate').value = '7';
-  currentItems = []; currentExtras = [];
-  addItem(); renderExtraFields();
-  setTodayDate();
+  ['cli-nombre','cli-email','cli-tel','cli-dir','cot-validez','cot-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cot-categoria').value='';
+  document.getElementById('tax-rate').value='7';
+  currentItems=[];currentExtras=[];addItem();renderExtraFields();setTodayDate();
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  HISTORIAL
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 function renderHistorial() {
-  const c = document.getElementById('historial-content');
-  if (!state.cotizaciones.length) {
-    c.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No hay cotizaciones guardadas aún.</p></div>`;
-    return;
-  }
-  const sl = { pending:'status-pending', confirmed:'status-confirmed', cancelled:'status-cancelled' };
-  const sn = { pending:'Pendiente', confirmed:'Confirmada', cancelled:'Cancelada' };
-  let h = `<div class="card" style="padding:0;overflow:hidden">
-    <table class="hist-table"><thead><tr>
-      <th>N°</th><th>Fecha</th><th>Cliente</th><th>Categoría</th><th>Total</th><th>Estado</th><th>Acciones</th>
-    </tr></thead><tbody>`;
-
-  state.cotizaciones.forEach(cot => {
-    const sub = cot.items.reduce((a,i)=>a+(i.qty||0)*(i.price||0),0);
-    const total = sub + sub*(cot.taxRate||0)/100;
-    h += `<tr>
+  const c=document.getElementById('historial-content');
+  if (!state.cotizaciones.length) { c.innerHTML=`<div class="empty-state"><div class="icon">📋</div><p>No hay cotizaciones aún.</p></div>`; return; }
+  const sl={pending:'status-pending',confirmed:'status-confirmed',cancelled:'status-cancelled'};
+  const sn={pending:'Pendiente',confirmed:'Confirmada',cancelled:'Cancelada'};
+  let h=`<div class="card" style="padding:0;overflow:hidden"><table class="hist-table"><thead><tr>
+    <th>N°</th><th>Fecha</th><th>Cliente</th><th>Categoría</th><th>Total</th><th>Estado</th><th>Acciones</th>
+  </tr></thead><tbody>`;
+  state.cotizaciones.forEach(cot=>{
+    const sub=cot.items.reduce((a,i)=>a+(i.qty||0)*(i.price||0),0);
+    const total=sub+sub*(cot.taxRate||0)/100;
+    h+=`<tr>
       <td><span class="num-badge">${esc(cot.numero)}</span></td>
       <td>${cot.fecha||'—'}</td>
       <td><strong>${esc(cot.cliente.nombre)}</strong>${cot.cliente.email?`<br><span style="color:var(--text3);font-size:11px">${esc(cot.cliente.email)}</span>`:''}</td>
       <td>${esc(cot.categoria)}</td>
       <td><strong style="color:var(--brand)">$${total.toFixed(2)}</strong></td>
-      <td>
-        <select class="status-sel ${sl[cot.estado]||''}" onchange="changeEstado(${cot.id},this)">
-          ${['pending','confirmed','cancelled'].map(e=>`<option value="${e}" ${cot.estado===e?'selected':''}>${sn[e]}</option>`).join('')}
-        </select>
-      </td>
-      <td>
-        <div class="action-btns">
-          <button class="btn btn-ghost btn-sm" onclick="openEditModal(${cot.id})">✏️</button>
-          <button class="btn btn-outline btn-sm" onclick="generatePDF(${cot.id},'cotizacion')">📄 PDF</button>
-          <button class="btn btn-success btn-sm" onclick="generatePDF(${cot.id},'confirmacion')">✅ Confirmar</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteCot(${cot.id})">🗑</button>
-        </div>
-      </td>
+      <td><select class="status-sel ${sl[cot.estado]||''}" onchange="changeEstado(${cot.id},this)">
+        ${['pending','confirmed','cancelled'].map(e=>`<option value="${e}" ${cot.estado===e?'selected':''}>${sn[e]}</option>`).join('')}
+      </select></td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm" onclick="openEditModal(${cot.id})">✏️ Editar</button>
+        <button class="btn btn-outline btn-sm" onclick="generatePDF(${cot.id},'cotizacion')">📄 PDF</button>
+        <button class="btn btn-success btn-sm" onclick="generatePDF(${cot.id},'confirmacion')">✅ Confirmar</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCot(${cot.id})">🗑</button>
+      </div></td>
     </tr>`;
   });
-  h += '</tbody></table></div>';
-  c.innerHTML = h;
+  h+='</tbody></table></div>'; c.innerHTML=h;
 }
 
-async function changeEstado(id, sel) {
-  const cot = state.cotizaciones.find(c => c.id===id);
-  if (!cot) return;
-  cot.estado = sel.value;
-  const sl = { pending:'status-pending', confirmed:'status-confirmed', cancelled:'status-cancelled' };
-  sel.className = 'status-sel ' + (sl[sel.value]||'');
-  await saveData();
+async function changeEstado(id,sel) {
+  const cot=state.cotizaciones.find(c=>c.id===id); if(!cot) return;
+  cot.estado=sel.value;
+  const sl={pending:'status-pending',confirmed:'status-confirmed',cancelled:'status-cancelled'};
+  sel.className='status-sel '+(sl[sel.value]||'');
+  try { await persist(); } catch(e) { toast('❌ Error al guardar estado'); }
 }
 
 async function deleteCot(id) {
-  if (!confirm('¿Eliminar esta cotización? Esta acción no se puede deshacer.')) return;
-  state.cotizaciones = state.cotizaciones.filter(c => c.id!==id);
-  await saveData();
-  renderHistorial();
-  toast('Cotización eliminada');
+  if (!confirm('¿Eliminar esta cotización?')) return;
+  state.cotizaciones=state.cotizaciones.filter(c=>c.id!==id);
+  try { await persist(); renderHistorial(); toast('Cotización eliminada'); }
+  catch(e) { toast('❌ Error al eliminar'); }
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  EDIT MODAL
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 function openEditModal(id) {
-  editingId = id;
-  const cot = state.cotizaciones.find(c => c.id===id);
-  if (!cot) return;
-  editItems = JSON.parse(JSON.stringify(cot.items));
-  editExtras = JSON.parse(JSON.stringify(cot.extras||[]));
-
-  const catOpts = state.categorias.map(c =>
-    `<option value="${esc(c.nombre)}" ${cot.categoria===c.nombre?'selected':''}>${esc(c.nombre)}</option>`
-  ).join('');
-
-  document.getElementById('modal-edit-content').innerHTML = `
+  editingId=id; const cot=state.cotizaciones.find(c=>c.id===id); if(!cot) return;
+  editItems=JSON.parse(JSON.stringify(cot.items));
+  editExtras=JSON.parse(JSON.stringify(cot.extras||[]));
+  const catOpts=state.categorias.map(c=>`<option value="${esc(c.nombre)}" ${cot.categoria===c.nombre?'selected':''}>${esc(c.nombre)}</option>`).join('');
+  document.getElementById('modal-edit-content').innerHTML=`
     <div class="form-grid" style="margin-bottom:14px">
-      <div class="field"><label>Nombre / Empresa</label><input id="e-nombre" type="text" value="${esc(cot.cliente.nombre)}"></div>
+      <div class="field"><label>Nombre / Empresa</label><input id="e-nombre" value="${esc(cot.cliente.nombre)}"></div>
       <div class="field"><label>Email</label><input id="e-email" type="email" value="${esc(cot.cliente.email||'')}"></div>
-      <div class="field"><label>Teléfono</label><input id="e-tel" type="text" value="${esc(cot.cliente.tel||'')}"></div>
-      <div class="field"><label>Dirección</label><input id="e-dir" type="text" value="${esc(cot.cliente.dir||'')}"></div>
+      <div class="field"><label>Teléfono</label><input id="e-tel" value="${esc(cot.cliente.tel||'')}"></div>
+      <div class="field"><label>Dirección</label><input id="e-dir" value="${esc(cot.cliente.dir||'')}"></div>
       <div class="field"><label>Categoría</label><select id="e-cat"><option value="">—</option>${catOpts}</select></div>
       <div class="field"><label>Fecha</label><input id="e-fecha" type="date" value="${cot.fecha||''}"></div>
-      <div class="field"><label>Validez</label><input id="e-validez" type="text" value="${esc(cot.validez||'')}"></div>
-      <div class="field"><label>ITBMS</label><select id="e-tax">
-        ${[0,7,10,15].map(v=>`<option value="${v}" ${cot.taxRate==v?'selected':''}>${v}%</option>`).join('')}
-      </select></div>
+      <div class="field"><label>Validez</label><input id="e-validez" value="${esc(cot.validez||'')}"></div>
+      <div class="field"><label>ITBMS</label><select id="e-tax">${[0,7,10,15].map(v=>`<option value="${v}" ${cot.taxRate==v?'selected':''}>${v}%</option>`).join('')}</select></div>
     </div>
     <div class="field" style="margin-bottom:14px"><label>Notas</label><textarea id="e-notas">${esc(cot.notas||'')}</textarea></div>
     <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--brand);margin-bottom:8px">Ítems</div>
@@ -1240,19 +804,15 @@ function openEditModal(id) {
     <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditItem()">+ Agregar ítem</button>
     <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--brand);margin:14px 0 8px">Datos Adicionales</div>
     <div id="edit-extras-c"></div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditExtra()">+ Agregar campo</button>
-  `;
-  renderEditItems(); renderEditExtras();
-  openModal('modal-edit');
+    <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addEditExtra()">+ Agregar campo</button>`;
+  renderEditItems(); renderEditExtras(); openModal('modal-edit');
 }
-
-function renderEditItems() {
-  const c = document.getElementById('edit-items-c'); if(!c) return; c.innerHTML='';
-  editItems.forEach(item => {
-    const sub = (item.qty||0)*(item.price||0);
-    const div = document.createElement('div'); div.className='item-row';
-    div.innerHTML=`
-      <input type="text" value="${esc(item.desc||'')}" oninput="upEI(${item.id},'desc',this.value)">
+function renderEditItems(){
+  const c=document.getElementById('edit-items-c');if(!c)return;c.innerHTML='';
+  editItems.forEach(item=>{
+    const sub=(item.qty||0)*(item.price||0);
+    const div=document.createElement('div');div.className='item-row';
+    div.innerHTML=`<input type="text" value="${esc(item.desc||'')}" oninput="upEI(${item.id},'desc',this.value)">
       <input type="number" value="${item.qty||1}" oninput="upEI(${item.id},'qty',this.value)" style="text-align:center">
       <input type="number" value="${item.price||''}" oninput="upEI(${item.id},'price',this.value)">
       <div class="item-subtotal" id="esub-${item.id}">$${sub.toFixed(2)}</div>
@@ -1260,366 +820,295 @@ function renderEditItems() {
     c.appendChild(div);
   });
 }
-function addEditItem() { editItems.push({id:Date.now()+Math.random(),desc:'',qty:1,price:0}); renderEditItems(); }
-function rmEI(id) { editItems=editItems.filter(i=>i.id!==id); renderEditItems(); }
-function upEI(id,f,v) {
-  const i=editItems.find(x=>x.id===id); if(!i) return;
-  i[f]=f==='desc'?v:(parseFloat(v)||0);
-  const s=document.getElementById('esub-'+id); if(s) s.textContent='$'+((i.qty||0)*(i.price||0)).toFixed(2);
-}
-
-function renderEditExtras() {
-  const c=document.getElementById('edit-extras-c'); if(!c) return; c.innerHTML='';
+function addEditItem(){editItems.push({id:Date.now()+Math.random(),desc:'',qty:1,price:0});renderEditItems();}
+function rmEI(id){editItems=editItems.filter(i=>i.id!==id);renderEditItems();}
+function upEI(id,f,v){const i=editItems.find(x=>x.id===id);if(!i)return;i[f]=f==='desc'?v:(parseFloat(v)||0);const s=document.getElementById('esub-'+id);if(s)s.textContent='$'+((i.qty||0)*(i.price||0)).toFixed(2);}
+function renderEditExtras(){
+  const c=document.getElementById('edit-extras-c');if(!c)return;c.innerHTML='';
   editExtras.forEach(ex=>{
-    const div=document.createElement('div'); div.className='extra-field-row';
+    const div=document.createElement('div');div.className='extra-field-row';
     div.innerHTML=`<div class="field-label">${esc(ex.label)}</div>
-      <input type="text" value="${esc(ex.value||'')}" oninput="upEE(${ex.id},this.value)"
-        style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%">
+      <input type="text" value="${esc(ex.value||'')}" oninput="upEE(${ex.id},this.value)" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;outline:none;width:100%">
       <button class="del-btn" onclick="rmEE(${ex.id})">✕</button>`;
     c.appendChild(div);
   });
 }
-function addEditExtra() { const l=prompt('Etiqueta del campo:'); if(!l) return; editExtras.push({id:Date.now(),label:l,type:'text',value:''}); renderEditExtras(); }
-function upEE(id,v) { const e=editExtras.find(x=>x.id===id); if(e) e.value=v; }
-function rmEE(id) { editExtras=editExtras.filter(e=>e.id!==id); renderEditExtras(); }
-
-async function saveEditCotizacion() {
-  const cot=state.cotizaciones.find(c=>c.id===editingId); if(!cot) return;
-  cot.cliente.nombre=document.getElementById('e-nombre').value;
-  cot.cliente.email=document.getElementById('e-email').value;
-  cot.cliente.tel=document.getElementById('e-tel').value;
-  cot.cliente.dir=document.getElementById('e-dir').value;
-  cot.categoria=document.getElementById('e-cat').value;
-  cot.fecha=document.getElementById('e-fecha').value;
-  cot.validez=document.getElementById('e-validez').value;
-  cot.notas=document.getElementById('e-notas').value;
-  cot.taxRate=parseFloat(document.getElementById('e-tax').value)||0;
-  cot.items=JSON.parse(JSON.stringify(editItems));
-  cot.extras=JSON.parse(JSON.stringify(editExtras));
+function addEditExtra(){const l=prompt('Etiqueta:');if(!l)return;editExtras.push({id:Date.now(),label:l,type:'text',value:''});renderEditExtras();}
+function upEE(id,v){const e=editExtras.find(x=>x.id===id);if(e)e.value=v;}
+function rmEE(id){editExtras=editExtras.filter(e=>e.id!==id);renderEditExtras();}
+async function saveEditCotizacion(){
+  const cot=state.cotizaciones.find(c=>c.id===editingId);if(!cot)return;
+  Object.assign(cot,{
+    cliente:{nombre:document.getElementById('e-nombre').value,email:document.getElementById('e-email').value,
+      tel:document.getElementById('e-tel').value,dir:document.getElementById('e-dir').value},
+    categoria:document.getElementById('e-cat').value,fecha:document.getElementById('e-fecha').value,
+    validez:document.getElementById('e-validez').value,notas:document.getElementById('e-notas').value,
+    taxRate:parseFloat(document.getElementById('e-tax').value)||0,
+    items:JSON.parse(JSON.stringify(editItems)),extras:JSON.parse(JSON.stringify(editExtras))
+  });
   toast('💾 Guardando…');
-  await saveData();
-  closeModal('modal-edit');
-  renderHistorial();
-  toast('✅ Cotización actualizada');
+  try{await persist();closeModal('modal-edit');renderHistorial();toast('✅ Cotización actualizada');}
+  catch(e){toast('❌ '+e.message);}
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  ÍTEMS CATÁLOGO
+// ══════════════════════════════════════════
+function renderItemsCatalog(){
+  const c=document.getElementById('items-catalog-list');
+  if(!state.itemsCatalog.length){c.innerHTML='<p style="color:var(--text3);font-size:13px">Sin ítems aún.</p>';return;}
+  c.innerHTML='';
+  state.itemsCatalog.forEach(item=>{
+    const div=document.createElement('div');div.className='catalog-item';
+    div.innerHTML=`<div class="catalog-item-info">
+      <div class="name">${esc(item.nombre)}</div><div class="desc">${esc(item.desc||'')}</div>
+      <div class="price">$${parseFloat(item.precio||0).toFixed(2)}</div></div>
+      <div class="catalog-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="openEditItemModal(${item.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItemCatalog(${item.id})">✕</button>
+      </div>`;
+    c.appendChild(div);
+  });
+}
+function openItemCatalogModal(){
+  editingItemId=null;
+  document.getElementById('item-modal-title').textContent='Nuevo Ítem';
+  ['ic-nombre','ic-desc','ic-precio'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-item-catalog');
+}
+function openEditItemModal(id){
+  const item=state.itemsCatalog.find(i=>i.id===id);if(!item)return;
+  editingItemId=id;
+  document.getElementById('item-modal-title').textContent='Editar Ítem';
+  document.getElementById('ic-nombre').value=item.nombre||'';
+  document.getElementById('ic-desc').value=item.desc||'';
+  document.getElementById('ic-precio').value=item.precio||'';
+  openModal('modal-item-catalog');
+}
+async function saveItemCatalog(){
+  const nombre=document.getElementById('ic-nombre').value.trim();
+  if(!nombre){toast('⚠️ El nombre es requerido');return;}
+  const data={nombre,desc:document.getElementById('ic-desc').value.trim(),precio:parseFloat(document.getElementById('ic-precio').value)||0};
+  if(editingItemId){
+    const idx=state.itemsCatalog.findIndex(i=>i.id===editingItemId);
+    if(idx>=0) state.itemsCatalog[idx]={...state.itemsCatalog[idx],...data};
+  } else {
+    state.itemsCatalog.push({id:Date.now(),...data});
+  }
+  try{await persist();closeModal('modal-item-catalog');editingItemId=null;renderItemsCatalog();renderCatalogChips();toast('✅ Ítem guardado');}
+  catch(e){toast('❌ '+e.message);}
+}
+async function deleteItemCatalog(id){
+  if(!confirm('¿Eliminar este ítem?'))return;
+  state.itemsCatalog=state.itemsCatalog.filter(i=>i.id!==id);
+  try{await persist();renderItemsCatalog();renderCatalogChips();toast('Ítem eliminado');}
+  catch(e){toast('❌ '+e.message);}
+}
+
+// ══════════════════════════════════════════
 //  CATEGORÍAS
-// ═══════════════════════════════════════
-function populateCategorySelect() {
+// ══════════════════════════════════════════
+function populateCategorySelect(){
   const sel=document.getElementById('cot-categoria');
   sel.innerHTML='<option value="">— Seleccionar —</option>';
   state.categorias.forEach(c=>{sel.innerHTML+=`<option value="${esc(c.nombre)}">${esc(c.nombre)}</option>`;});
 }
-
-function renderCategorias() {
+function renderCategorias(){
   const c=document.getElementById('categorias-list');
   if(!state.categorias.length){c.innerHTML='<p style="color:var(--text3);font-size:13px">Sin categorías aún.</p>';return;}
   c.innerHTML='';
   state.categorias.forEach(cat=>{
-    const div=document.createElement('div'); div.className='catalog-item'; div.style.marginBottom='8px';
+    const div=document.createElement('div');div.className='catalog-item';
     div.innerHTML=`<div class="catalog-item-info"><div class="name">${esc(cat.nombre)}</div><div class="desc">${esc(cat.desc||'')}</div></div>
       <button class="btn btn-danger btn-sm" onclick="deleteCat(${cat.id})">✕</button>`;
     c.appendChild(div);
   });
 }
-
-function openCategoriaModal() {
-  document.getElementById('cat-nombre-input').value='';
-  document.getElementById('cat-desc-input').value='';
-  openModal('modal-categoria');
-}
-
-async function saveCategoria() {
+function openCategoriaModal(){document.getElementById('cat-nombre-input').value='';document.getElementById('cat-desc-input').value='';openModal('modal-categoria');}
+async function saveCategoria(){
   const nombre=document.getElementById('cat-nombre-input').value.trim();
   if(!nombre){toast('Escribe un nombre');return;}
   state.categorias.push({id:Date.now(),nombre,desc:document.getElementById('cat-desc-input').value.trim()});
-  await saveData();
-  closeModal('modal-categoria');
-  renderCategorias(); populateCategorySelect();
-  toast('✅ Categoría guardada');
+  try{await persist();closeModal('modal-categoria');renderCategorias();populateCategorySelect();toast('✅ Categoría guardada');}
+  catch(e){toast('❌ '+e.message);}
 }
-
-async function deleteCat(id) {
-  if(!confirm('¿Eliminar categoría?')) return;
+async function deleteCat(id){
+  if(!confirm('¿Eliminar categoría?'))return;
   state.categorias=state.categorias.filter(c=>c.id!==id);
-  await saveData(); renderCategorias(); populateCategorySelect();
+  try{await persist();renderCategorias();populateCategorySelect();}
+  catch(e){toast('❌ '+e.message);}
 }
 
-// ═══════════════════════════════════════
-//  EXTRAS CATALOG
-// ═══════════════════════════════════════
-function renderExtrasCatalog() {
+// ══════════════════════════════════════════
+//  EXTRAS CATÁLOGO
+// ══════════════════════════════════════════
+function renderExtrasCatalog(){
   const c=document.getElementById('extras-catalog-list');
   if(!state.extrasCatalog.length){c.innerHTML='<p style="color:var(--text3);font-size:13px">Sin campos aún.</p>';return;}
   c.innerHTML='';
   state.extrasCatalog.forEach(ex=>{
-    const div=document.createElement('div'); div.className='catalog-item'; div.style.marginBottom='8px';
+    const div=document.createElement('div');div.className='catalog-item';
     div.innerHTML=`<div class="catalog-item-info"><div class="name">${esc(ex.label)}</div><div class="desc">Tipo: ${ex.type}</div></div>
       <button class="btn btn-danger btn-sm" onclick="deleteExt(${ex.id})">✕</button>`;
     c.appendChild(div);
   });
 }
-
-function openExtraCatalogModal() {
-  document.getElementById('ext-cat-label').value='';
-  document.getElementById('ext-cat-type').value='text';
-  openModal('modal-extra-catalog');
-}
-
-async function saveExtraCatalog() {
+function openExtraCatalogModal(){document.getElementById('ext-cat-label').value='';document.getElementById('ext-cat-type').value='text';openModal('modal-extra-catalog');}
+async function saveExtraCatalog(){
   const label=document.getElementById('ext-cat-label').value.trim();
   if(!label){toast('Escribe una etiqueta');return;}
   state.extrasCatalog.push({id:Date.now(),label,type:document.getElementById('ext-cat-type').value});
-  await saveData();
-  closeModal('modal-extra-catalog'); renderExtrasCatalog();
-  toast('✅ Campo guardado');
+  try{await persist();closeModal('modal-extra-catalog');renderExtrasCatalog();toast('✅ Campo guardado');}
+  catch(e){toast('❌ '+e.message);}
 }
-
-async function deleteExt(id) {
-  if(!confirm('¿Eliminar campo?')) return;
+async function deleteExt(id){
+  if(!confirm('¿Eliminar campo?'))return;
   state.extrasCatalog=state.extrasCatalog.filter(e=>e.id!==id);
-  await saveData(); renderExtrasCatalog();
+  try{await persist();renderExtrasCatalog();}
+  catch(e){toast('❌ '+e.message);}
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
 //  CONFIGURACIÓN
-// ═══════════════════════════════════════
-function loadConfigUI() {
+// ══════════════════════════════════════════
+function loadConfigUI(){
   const e=state.config.empresa||{};
-  ['nombre','ruc','tel','email','web','dir','footer'].forEach(k=>{
-    const el=document.getElementById('emp-'+k); if(el) el.value=e[k]||'';
-  });
+  ['nombre','ruc','tel','email','web','dir','footer'].forEach(k=>{const el=document.getElementById('emp-'+k);if(el)el.value=e[k]||'';});
   document.getElementById('cfg-prefix').value=state.config.prefix||'COT-';
   document.getElementById('cfg-next').value=state.config.nextNum||1;
-  if(state.config.logo){
-    document.getElementById('logo-preview-wrap').innerHTML=`<img src="${state.config.logo}" class="logo-preview">`;
-  }
+  if(state.config.logo) document.getElementById('logo-preview-wrap').innerHTML=`<img src="${state.config.logo}" class="logo-preview">`;
 }
-
-async function saveConfig() {
-  state.config.empresa={
-    nombre:document.getElementById('emp-nombre').value,
-    ruc:document.getElementById('emp-ruc').value,
-    tel:document.getElementById('emp-tel').value,
-    email:document.getElementById('emp-email').value,
-    web:document.getElementById('emp-web').value,
-    dir:document.getElementById('emp-dir').value,
-    footer:document.getElementById('emp-footer').value,
-  };
+async function saveConfig(){
   state.config.prefix=document.getElementById('cfg-prefix').value||'COT-';
   state.config.nextNum=parseInt(document.getElementById('cfg-next').value)||1;
+  state.config.empresa={
+    nombre:document.getElementById('emp-nombre').value,ruc:document.getElementById('emp-ruc').value,
+    tel:document.getElementById('emp-tel').value,email:document.getElementById('emp-email').value,
+    web:document.getElementById('emp-web').value,dir:document.getElementById('emp-dir').value,
+    footer:document.getElementById('emp-footer').value
+  };
   toast('💾 Guardando…');
-  await saveData();
-  renderCotNumber();
-  toast('✅ Configuración guardada');
+  try{await persist();renderCotNumber();toast('✅ Configuración guardada');}
+  catch(e){toast('❌ '+e.message);}
 }
-
-function handleLogoUpload(e) {
-  const file=e.target.files[0]; if(!file) return;
-  if(file.size>2*1024*1024){toast('⚠️ Imagen muy grande. Máx 2MB');return;}
+function handleLogoUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>2*1024*1024){toast('⚠️ Máx 2MB');return;}
   const r=new FileReader();
   r.onload=async ev=>{
     state.config.logo=ev.target.result;
-    await saveData();
     document.getElementById('logo-preview-wrap').innerHTML=`<img src="${state.config.logo}" class="logo-preview">`;
-    toast('✅ Logo actualizado');
+    try{await persist();toast('✅ Logo guardado');}catch(e){toast('❌ Error al guardar logo');}
   };
   r.readAsDataURL(file);
 }
-
-async function removeLogo() {
+async function removeLogo(){
   state.config.logo=null;
-  await saveData();
+  try{await persist();}catch(e){}
   document.getElementById('logo-preview-wrap').innerHTML=`<div style="font-size:32px;margin-bottom:8px">🖼️</div><p style="color:var(--text2);font-weight:500">Haz clic para subir tu logo</p>`;
   toast('Logo eliminado');
 }
 
-// ═══════════════════════════════════════
-//  PDF GENERATION
-// ═══════════════════════════════════════
-function generatePDF(cotId, tipo) {
+// ══════════════════════════════════════════
+//  PDF
+// ══════════════════════════════════════════
+function generatePDF(cotId,tipo){
   let cot;
-  if (cotId === null) {
+  if(cotId===null){
     const nombre=document.getElementById('cli-nombre').value.trim();
     if(!nombre){toast('⚠️ El nombre del cliente es requerido');return;}
     const num=String(state.config.nextNum||1).padStart(4,'0');
-    cot={
-      numero:(state.config.prefix||'COT-')+num,
-      fecha:document.getElementById('cot-fecha').value,
-      estado:'pending',
+    cot={numero:(state.config.prefix||'COT-')+num,fecha:document.getElementById('cot-fecha').value,estado:'pending',
       cliente:{nombre,email:document.getElementById('cli-email').value,tel:document.getElementById('cli-tel').value,dir:document.getElementById('cli-dir').value},
-      categoria:document.getElementById('cot-categoria').value,
-      validez:document.getElementById('cot-validez').value,
-      notas:document.getElementById('cot-notas').value,
-      items:JSON.parse(JSON.stringify(currentItems)),
-      extras:JSON.parse(JSON.stringify(currentExtras)),
-      taxRate:parseFloat(document.getElementById('tax-rate').value)||0
-    };
-  } else {
-    cot=state.cotizaciones.find(c=>c.id===cotId);
-  }
-  if(!cot) return;
-  buildPDF(cot, tipo);
+      categoria:document.getElementById('cot-categoria').value,validez:document.getElementById('cot-validez').value,
+      notas:document.getElementById('cot-notas').value,items:JSON.parse(JSON.stringify(currentItems)),
+      extras:JSON.parse(JSON.stringify(currentExtras)),taxRate:parseFloat(document.getElementById('tax-rate').value)||0};
+  } else { cot=state.cotizaciones.find(c=>c.id===cotId); }
+  if(!cot) return; buildPDF(cot,tipo);
 }
-
-function buildPDF(cot, tipo) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-  const emp = state.config.empresa || {};
-  const isConf = tipo === 'confirmacion';
-  const W=210, M=18;
-  const BRAND=[199,30,95];
-
-  // Header band
-  doc.setFillColor(...BRAND);
-  doc.rect(0,0,W,46,'F');
-
-  // Logo
+function buildPDF(cot,tipo){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const emp=state.config.empresa||{};const isConf=tipo==='confirmacion';
+  const W=210,M=18,BRAND=[199,30,95];
+  doc.setFillColor(...BRAND);doc.rect(0,0,W,46,'F');
   let lx=M;
-  if(state.config.logo){
-    try{ doc.addImage(state.config.logo,'JPEG',M,7,30,30); lx=M+34; }catch(e){}
-  }
-
-  // Empresa
-  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
-  doc.text(emp.nombre||'Jans Photograph', lx, 18);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(255,200,220);
+  if(state.config.logo){try{doc.addImage(state.config.logo,'JPEG',M,7,30,30);lx=M+34;}catch(e){}}
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(255,255,255);
+  doc.text(emp.nombre||'Jans Photograph',lx,18);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(255,200,220);
   let ey=24;
   if(emp.ruc){doc.text('RUC: '+emp.ruc,lx,ey);ey+=5;}
   if(emp.tel){doc.text('Tel: '+emp.tel,lx,ey);ey+=5;}
   if(emp.email){doc.text(emp.email,lx,ey);ey+=5;}
   if(emp.dir){doc.text(emp.dir,lx,ey);}
-
-  // Doc type right
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(isConf?13:20);
-  doc.setTextColor(255,255,255);
-  doc.text(isConf?'CONFIRMACIÓN':'COTIZACIÓN', W-M, 17, {align:'right'});
-  doc.setFontSize(10); doc.setTextColor(255,220,235);
-  doc.text(cot.numero, W-M, 25, {align:'right'});
-  doc.setFontSize(8); doc.setTextColor(255,200,220);
-  if(cot.fecha) doc.text('Fecha: '+cot.fecha, W-M, 31, {align:'right'});
-  if(cot.validez) doc.text('Validez: '+cot.validez, W-M, 37, {align:'right'});
-  if(cot.categoria) doc.text('Categoría: '+cot.categoria, W-M, 43, {align:'right'});
-
+  doc.setFont('helvetica','bold');doc.setFontSize(isConf?12:20);doc.setTextColor(255,255,255);
+  doc.text(isConf?'CONFIRMACIÓN':'COTIZACIÓN',W-M,17,{align:'right'});
+  doc.setFontSize(10);doc.setTextColor(255,220,235);doc.text(cot.numero,W-M,25,{align:'right'});
+  doc.setFontSize(8);doc.setTextColor(255,200,220);
+  if(cot.fecha)doc.text('Fecha: '+cot.fecha,W-M,31,{align:'right'});
+  if(cot.validez)doc.text('Validez: '+cot.validez,W-M,37,{align:'right'});
+  if(cot.categoria)doc.text('Categoría: '+cot.categoria,W-M,43,{align:'right'});
   let y=56;
-
-  // Client box
-  doc.setFillColor(252,245,248);
-  doc.setDrawColor(230,180,200);
+  doc.setFillColor(252,245,248);doc.setDrawColor(230,180,200);
   doc.roundedRect(M,y,W-M*2,26,3,3,'FD');
-  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...BRAND);
-  doc.text('CLIENTE',M+5,y+8);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(30,30,50);
-  doc.text(cot.cliente.nombre,M+5,y+17);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(100,100,120);
-  const cfs=[];
-  if(cot.cliente.email) cfs.push(cot.cliente.email);
-  if(cot.cliente.tel) cfs.push(cot.cliente.tel);
-  if(cot.cliente.dir) cfs.push(cot.cliente.dir);
-  if(cfs.length) doc.text(cfs.join('  ·  '),M+5,y+23);
-  y+=34;
-
-  // Items table
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...BRAND);doc.text('CLIENTE',M+5,y+8);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(30,30,50);doc.text(cot.cliente.nombre,M+5,y+17);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,120);
+  const cfs=[];if(cot.cliente.email)cfs.push(cot.cliente.email);if(cot.cliente.tel)cfs.push(cot.cliente.tel);if(cot.cliente.dir)cfs.push(cot.cliente.dir);
+  if(cfs.length)doc.text(cfs.join('  ·  '),M+5,y+23);y+=34;
   const sub=cot.items.reduce((a,i)=>a+(i.qty||0)*(i.price||0),0);
-  const tax=sub*(cot.taxRate||0)/100;
-  const total=sub+tax;
-
-  doc.autoTable({
-    startY:y,
+  const tax=sub*(cot.taxRate||0)/100;const total=sub+tax;
+  doc.autoTable({startY:y,
     head:[['Descripción','Cant.','Precio Unit.','Subtotal']],
     body:cot.items.map(it=>[it.desc||'',(it.qty||0).toString(),'$'+(it.price||0).toFixed(2),'$'+((it.qty||0)*(it.price||0)).toFixed(2)]),
-    foot:[
-      ['','','Subtotal','$'+sub.toFixed(2)],
-      ['','',`ITBMS (${cot.taxRate||0}%)`,'$'+tax.toFixed(2)],
-      ['','','TOTAL','$'+total.toFixed(2)]
-    ],
-    theme:'grid',
-    styles:{font:'helvetica',fontSize:9,textColor:[30,30,50],cellPadding:4},
+    foot:[['','','Subtotal','$'+sub.toFixed(2)],['','',`ITBMS (${cot.taxRate||0}%)`,'$'+tax.toFixed(2)],['','','TOTAL','$'+total.toFixed(2)]],
+    theme:'grid',styles:{font:'helvetica',fontSize:9,textColor:[30,30,50],cellPadding:4},
     headStyles:{fillColor:BRAND,textColor:[255,255,255],fontSize:9,fontStyle:'bold'},
     footStyles:{fillColor:[252,245,248],textColor:BRAND,fontStyle:'bold',fontSize:10},
     alternateRowStyles:{fillColor:[250,250,252]},
     columnStyles:{0:{cellWidth:'auto'},1:{halign:'center',cellWidth:18},2:{halign:'right',cellWidth:32},3:{halign:'right',cellWidth:32}},
-    margin:{left:M,right:M}
-  });
+    margin:{left:M,right:M}});
   y=doc.lastAutoTable.finalY+8;
-
-  // Extras
   if(cot.extras&&cot.extras.filter(e=>e.value).length>0){
-    doc.setFillColor(252,245,248); doc.setDrawColor(230,180,200);
-    const rows=cot.extras.filter(e=>e.value);
-    const bh=10+rows.length*7;
-    doc.roundedRect(M,y,W-M*2,bh,2,2,'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...BRAND);
-    doc.text('DATOS ADICIONALES',M+5,y+8);
+    const rows=cot.extras.filter(e=>e.value);const bh=12+rows.length*7;
+    doc.setFillColor(252,245,248);doc.setDrawColor(230,180,200);doc.roundedRect(M,y,W-M*2,bh,2,2,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...BRAND);doc.text('DATOS ADICIONALES',M+5,y+8);
     let ry=y+14;
-    rows.forEach(ex=>{
-      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(100,100,120);
-      doc.text(ex.label+':',M+5,ry);
-      doc.setFont('helvetica','normal'); doc.setTextColor(30,30,50);
-      doc.text(String(ex.value),M+48,ry);
-      ry+=7;
-    });
+    rows.forEach(ex=>{doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(100,100,120);doc.text(ex.label+':',M+5,ry);doc.setFont('helvetica','normal');doc.setTextColor(30,30,50);doc.text(String(ex.value),M+48,ry);ry+=7;});
     y+=bh+8;
   }
-
-  // Notes
   if(cot.notas){
-    doc.setFillColor(248,248,252); doc.setDrawColor(220,220,235);
-    const lines=doc.splitTextToSize(cot.notas,W-M*2-20);
-    const nh=14+lines.length*5;
-    doc.roundedRect(M,y,W-M*2,nh,2,2,'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...BRAND);
-    doc.text('NOTAS:',M+5,y+8);
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,100);
-    doc.text(lines,M+24,y+8);
-    y+=nh+8;
+    const lines=doc.splitTextToSize(cot.notas,W-M*2-24);const nh=14+lines.length*5;
+    doc.setFillColor(248,248,252);doc.setDrawColor(220,220,235);doc.roundedRect(M,y,W-M*2,nh,2,2,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...BRAND);doc.text('NOTAS:',M+5,y+8);
+    doc.setFont('helvetica','normal');doc.setTextColor(80,80,100);doc.text(lines,M+24,y+8);y+=nh+8;
   }
-
-  // Confirmation stamp
   if(isConf){
-    doc.setFillColor(230,248,238); doc.setDrawColor(100,180,130);
-    doc.roundedRect(M,y,W-M*2,22,3,3,'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,120,70);
-    doc.text('✓ COTIZACIÓN CONFIRMADA',W/2,y+10,{align:'center'});
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(40,140,90);
-    doc.text('N°: '+cot.numero+'  ·  Confirmado el '+new Date().toLocaleDateString('es-PA'),W/2,y+17,{align:'center'});
-    y+=28;
+    doc.setFillColor(230,248,238);doc.setDrawColor(100,180,130);doc.roundedRect(M,y,W-M*2,22,3,3,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(20,120,70);doc.text('✓ COTIZACIÓN CONFIRMADA',W/2,y+10,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(40,140,90);
+    doc.text('N°: '+cot.numero+'  ·  '+new Date().toLocaleDateString('es-PA'),W/2,y+17,{align:'center'});
   }
-
-  // Footer band
-  doc.setFillColor(...BRAND);
-  doc.rect(0,284,W,13,'F');
-  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(255,220,235);
-  if(emp.footer) doc.text(emp.footer,W/2,289,{align:'center'});
-  if(emp.web) doc.text(emp.web,W-M,293,{align:'right'});
+  doc.setFillColor(...BRAND);doc.rect(0,284,W,13,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(255,220,235);
+  if(emp.footer)doc.text(emp.footer,W/2,289,{align:'center'});
+  if(emp.web)doc.text(emp.web,W-M,293,{align:'right'});
   doc.text(cot.numero,M,293);
-
   doc.save(`${cot.numero}${isConf?'_confirmacion':''}.pdf`);
-  toast('📄 PDF generado: '+cot.numero+(isConf?'_confirmacion':'')+'.pdf');
+  toast('📄 '+cot.numero+(isConf?'_confirmacion':'')+'.pdf generado');
 }
 
-// ═══════════════════════════════════════
-//  MODAL & UTILS
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
-});
-
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
-  clearTimeout(t._t);
-  t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},3000);
-}
-
-// Enter on login
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},3200);}
 document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 </script>
 </body>
 </html>
