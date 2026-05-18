@@ -1013,25 +1013,28 @@ function buildPDF(cot,tipo){
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const emp=state.config.empresa||{};const isConf=tipo==='confirmacion';
   const W=210,M=18,BRAND=[199,30,95];
-  doc.setFillColor(...BRAND);doc.rect(0,0,W,46,'F');
+  // Header — fondo blanco con línea inferior en color de marca
+  doc.setFillColor(255,255,255);doc.rect(0,0,W,48,'F');
+  doc.setDrawColor(...BRAND);doc.setLineWidth(0.8);doc.line(M,48,W-M,48);
+
   let lx=M;
-  if(state.config.logo){try{doc.addImage(state.config.logo,'JPEG',M,7,30,30);lx=M+34;}catch(e){}}
-  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(255,255,255);
+  if(state.config.logo){try{doc.addImage(state.config.logo,'JPEG',M,7,32,32);lx=M+36;}catch(e){}}
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...BRAND);
   doc.text(emp.nombre||'Jans Photograph',lx,18);
-  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(255,200,220);
-  let ey=24;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...BRAND);
+  let ey=25;
   if(emp.ruc){doc.text('RUC: '+emp.ruc,lx,ey);ey+=5;}
   if(emp.tel){doc.text('Tel: '+emp.tel,lx,ey);ey+=5;}
   if(emp.email){doc.text(emp.email,lx,ey);ey+=5;}
   if(emp.dir){doc.text(emp.dir,lx,ey);}
-  doc.setFont('helvetica','bold');doc.setFontSize(isConf?12:20);doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');doc.setFontSize(isConf?13:22);doc.setTextColor(...BRAND);
   doc.text(isConf?'CONFIRMACIÓN':'COTIZACIÓN',W-M,17,{align:'right'});
-  doc.setFontSize(10);doc.setTextColor(255,220,235);doc.text(cot.numero,W-M,25,{align:'right'});
-  doc.setFontSize(8);doc.setTextColor(255,200,220);
-  if(cot.fecha)doc.text('Fecha: '+cot.fecha,W-M,31,{align:'right'});
-  if(cot.validez)doc.text('Validez: '+cot.validez,W-M,37,{align:'right'});
-  if(cot.categoria)doc.text('Categoría: '+cot.categoria,W-M,43,{align:'right'});
-  let y=56;
+  doc.setFontSize(11);doc.setTextColor(...BRAND);doc.text(cot.numero,W-M,26,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,120);
+  if(cot.fecha)doc.text('Fecha: '+cot.fecha,W-M,32,{align:'right'});
+  if(cot.validez)doc.text('Validez: '+cot.validez,W-M,38,{align:'right'});
+  if(cot.categoria)doc.text('Categoría: '+cot.categoria,W-M,44,{align:'right'});
+  let y=58;
   doc.setFillColor(252,245,248);doc.setDrawColor(230,180,200);
   doc.roundedRect(M,y,W-M*2,26,3,3,'FD');
   doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...BRAND);doc.text('CLIENTE',M+5,y+8);
@@ -1072,9 +1075,12 @@ function buildPDF(cot,tipo){
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(40,140,90);
     doc.text('N°: '+cot.numero+'  ·  '+new Date().toLocaleDateString('es-PA'),W/2,y+17,{align:'center'});
   }
-  doc.setFillColor(...BRAND);doc.rect(0,284,W,13,'F');
-  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(255,220,235);
+  // Footer — fondo blanco con línea superior en color de marca
+  doc.setDrawColor(...BRAND);doc.setLineWidth(0.8);doc.line(M,280,W-M,280);
+  doc.setFillColor(255,255,255);doc.rect(0,281,W,16,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...BRAND);
   if(emp.footer)doc.text(emp.footer,W/2,289,{align:'center'});
+  doc.setFontSize(8);doc.setTextColor(160,160,180);
   if(emp.web)doc.text(emp.web,W-M,293,{align:'right'});
   doc.text(cot.numero,M,293);
   doc.save(`${cot.numero}${isConf?'_confirmacion':''}.pdf`);
