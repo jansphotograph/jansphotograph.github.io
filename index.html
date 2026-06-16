@@ -290,28 +290,27 @@
 
   <script src="assets/js/main.js"></script>
   <script>
-    // ── Social links: lee localStorage primero (inmediato),
-    //    luego intenta GitHub para tener la versión más reciente ──
-    (async function() {
+    // ── Social links — espera DOM, lee localStorage al instante ──
+    document.addEventListener('DOMContentLoaded', async function() {
 
-      // ── Configura tu repo aquí ──
-      const OWNER = 'tu-usuario-github';  // ← reemplaza con tu usuario de GitHub
-      const REPO  = 'jans-photograph';    // ← reemplaza con el nombre de tu repo
+      const OWNER  = 'tu-usuario-github'; // ← tu usuario de GitHub
+      const REPO   = 'jans-photograph';   // ← nombre de tu repo de GitHub Pages
+      const LS_KEY = 'jans_ig_preview';
 
-      const LS_KEY = 'jans_ig_preview';   // clave localStorage compartida con Master
-
-      // ── Aplicar datos al DOM ──
       function applyIG(data) {
         if (!data) return;
         const igUrl     = data.igUrl     || 'https://www.instagram.com/jans_photograph/';
         const igCaption = data.igCaption || '✨ Últimas sesiones — momentos únicos capturados para siempre.';
 
+        // Botón seguir
         const igCta = document.querySelector('.ig-cta');
         if (igCta) igCta.href = igUrl;
 
+        // Caption
         const capEl = document.getElementById('igCaptionText');
         if (capEl) capEl.textContent = igCaption;
 
+        // Footer link
         const likesEl = document.getElementById('igLikesText');
         if (likesEl) {
           likesEl.innerHTML = data.igUrl
@@ -319,45 +318,49 @@
             : 'Ver en Instagram →';
         }
 
+        // Imagen — reemplaza TODO el contenido del wrap
         const igWrap = document.getElementById('igImageWrap');
-        if (igWrap && data.igImagePath) {
-          // Si la imagen viene de GitHub, usa raw.githubusercontent
+        if (!igWrap) return;
+
+        if (data.igImagePath) {
           const imgUrl = data.igImagePath.startsWith('data:')
-            ? data.igImagePath  // base64 guardado en localStorage
+            ? data.igImagePath
             : `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${data.igImagePath}?t=${Date.now()}`;
-          igWrap.innerHTML = `<a href="${igUrl}" target="_blank" rel="noopener" style="display:block;width:100%;height:100%">
-            <img src="${imgUrl}" alt="Último post Instagram"
-              style="width:100%;height:100%;object-fit:cover;display:block"
-              onerror="this.style.display='none'" />
-          </a>`;
-        } else if (igWrap) {
-          const link = document.getElementById('igImageLink');
-          if (link) link.href = igUrl;
+
+          igWrap.innerHTML = `
+            <a href="${igUrl}" target="_blank" rel="noopener"
+              style="display:block;width:100%;height:100%">
+              <img src="${imgUrl}" alt="Último post Instagram"
+                style="width:100%;height:100%;object-fit:cover;display:block" />
+            </a>`;
         }
+        // Si no hay imagen simplemente deja el fallback estático
       }
 
       function applyYT(data) {
-        if (!data?.ytId) return;
+        if (!data || !data.ytId) return;
         const wrap = document.querySelector('.yt-embed-wrap');
-        if (wrap) {
-          wrap.innerHTML = `<iframe
-            src="https://www.youtube.com/embed/${data.ytId}?rel=0&modestbranding=1"
-            title="Último video Jans Photograph"
-            allowfullscreen loading="lazy"
-            style="width:100%;aspect-ratio:16/9;border:none;display:block">
-          </iframe>`;
-        }
+        if (!wrap) return;
+        wrap.innerHTML = `<iframe
+          src="https://www.youtube.com/embed/${data.ytId}?rel=0&modestbranding=1"
+          title="Último video Jans Photograph"
+          allowfullscreen loading="lazy"
+          style="width:100%;aspect-ratio:16/9;border:none;display:block">
+        </iframe>`;
       }
 
-      // 1. Aplicar inmediatamente desde localStorage (sin esperar red)
+      // 1. localStorage — inmediato, sin red
       try {
-        const localIG = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+        const localIG = JSON.parse(localStorage.getItem(LS_KEY));
         if (localIG) applyIG(localIG);
-        const localYT = JSON.parse(localStorage.getItem('jans_yt_preview') || 'null');
+      } catch(e) {}
+
+      try {
+        const localYT = JSON.parse(localStorage.getItem('jans_yt_preview'));
         if (localYT) applyYT(localYT);
       } catch(e) {}
 
-      // 2. Intentar GitHub para versión más reciente (solo si OWNER está configurado)
+      // 2. GitHub — solo si está configurado
       if (OWNER === 'tu-usuario-github') return;
       const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
       try {
@@ -365,11 +368,19 @@
           fetch(`${BASE}/instagram.json?t=${Date.now()}`, { cache: 'no-cache' }),
           fetch(`${BASE}/youtube.json?t=${Date.now()}`,   { cache: 'no-cache' })
         ]);
-        if (igRes.ok) { const ig = await igRes.json(); applyIG(ig); localStorage.setItem(LS_KEY, JSON.stringify(ig)); }
-        if (ytRes.ok) { const yt = await ytRes.json(); applyYT(yt); localStorage.setItem('jans_yt_preview', JSON.stringify(yt)); }
+        if (igRes.ok) {
+          const ig = await igRes.json();
+          applyIG(ig);
+          localStorage.setItem(LS_KEY, JSON.stringify(ig));
+        }
+        if (ytRes.ok) {
+          const yt = await ytRes.json();
+          applyYT(yt);
+          localStorage.setItem('jans_yt_preview', JSON.stringify(yt));
+        }
       } catch(e) {}
 
-    })();
+    });
   </script>
 </body>
 </html>
