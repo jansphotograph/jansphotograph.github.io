@@ -814,54 +814,32 @@
             Último Post de Instagram
           </div>
 
-          <!-- Upload Zone -->
+          <!-- URL del post -->
           <div class="field">
-            <label>Imagen del post</label>
-            <div id="igDropZone" onclick="document.getElementById('igFileInput').click()"
-              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark);position:relative">
-              <input type="file" id="igFileInput" accept="image/*" style="display:none" onchange="handleIgFile(this.files[0])" />
-              <div id="igDropContent">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.6)" stroke-width="1.5" style="margin:0 auto 12px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
-                <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px">Haz clic para seleccionar la imagen</div>
-                <div style="font-size:0.78rem;color:var(--gray)">JPG, PNG, WEBP — máx. 5MB<br/>Descarga la foto de tu post de Instagram y súbela aquí</div>
-              </div>
-            </div>
-            <div style="font-size:0.75rem;color:var(--gray);margin-top:8px;line-height:1.6">
-              💡 <strong>Cómo obtener la imagen:</strong> Abre tu post en Instagram → mantén presionado (móvil) o clic derecho (PC) sobre la foto → "Guardar imagen" → súbela aquí.
-            </div>
-          </div>
-
-          <div class="field">
-            <label>URL del post <span style="color:var(--gray);font-weight:400">(para redirigir al hacer clic)</span></label>
+            <label>URL del post <span style="color:var(--gray);font-weight:400">(redirige al hacer clic en la imagen)</span></label>
             <input type="url" id="igPostUrl" placeholder="https://www.instagram.com/p/XXXXXXXX/" />
           </div>
 
+          <!-- Subir imagen -->
           <div class="field">
-            <label>Descripción / Caption</label>
-            <textarea id="igPostCaption" placeholder="Texto que aparecerá debajo de la imagen en la web..." style="min-height:64px" oninput="document.getElementById('igPreviewCaption').textContent=this.value||'El caption aparecerá aquí.'"></textarea>
-          </div>
-
-          <!-- Preview mockup -->
-          <div style="margin:18px 0;background:var(--dark);border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:360px">
-            <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
-              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e91e8c,#f77737);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-              </div>
-              <div>
-                <div style="font-weight:600;font-size:0.88rem">Jans Photograph</div>
-                <div style="font-size:0.72rem;color:var(--gray-l)">@jans_photograph</div>
-              </div>
-            </div>
-            <div id="igPreviewImg" style="aspect-ratio:1;background:var(--dark-mid,#232323);display:flex;align-items:center;justify-content:center;overflow:hidden">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
-            </div>
-            <div style="padding:12px 16px">
-              <div id="igPreviewCaption" style="font-size:0.82rem;color:rgba(255,255,255,0.7)">El caption aparecerá aquí.</div>
+            <label>Imagen del post</label>
+            <div id="igDropZone" onclick="document.getElementById('igFileInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="igFileInput" accept="image/*" style="display:none" onchange="handleIgFile(this.files[0])" />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 10px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+              <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Haz clic o arrastra la imagen aquí</div>
+              <div style="font-size:0.75rem;color:var(--gray)">Se guardará como <code>assets/images/social/ig/lastpost.jpg</code></div>
             </div>
           </div>
 
-          <!-- Upload status -->
-          <div id="igUploadStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:0.85rem;margin-bottom:12px"></div>
+          <!-- Preview -->
+          <div id="igPreviewWrap" style="display:none;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:320px">
+            <img id="igPreviewImg" src="" alt="Preview"
+              style="width:100%;aspect-ratio:1;object-fit:cover;display:block" />
+          </div>
+
+          <!-- Status -->
+          <div id="igUploadStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:0.84rem;margin-bottom:12px"></div>
 
           <div class="btn-row">
             <button class="btn btn-pink" id="igSaveBtn" onclick="saveIgLink()" disabled style="opacity:0.5;cursor:not-allowed">
@@ -875,7 +853,7 @@
           </div>
         </div>
 
-        <!-- YouTube -->
+                <!-- YouTube -->
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="#ff0000"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
@@ -1681,35 +1659,21 @@ async function testGithubConnection() {
 
 // ── Social Links ──
 const LS_SOCIAL = 'jans_social_links';
-let igFileData = null; // { base64, extension, mimeType }
+let igFileData = null;
 
 async function loadSocialLinksUI() {
-  const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
-  const headers = token
-    ? { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-    : { Accept: 'application/vnd.github.v3+json' };
+  // Pre-fill URL if saved
   try {
-    const [igRes, ytRes] = await Promise.all([
-      fetch(`${GH_BASE_PUBLIC()}/instagram.json`, { headers }),
-      fetch(`${GH_BASE_PUBLIC()}/youtube.json`,   { headers })
-    ]);
-    if (igRes.ok) {
-      const j = await igRes.json();
-      const d = JSON.parse(atob(j.content.replace(/\n/g, '')));
-      if (d.igUrl)     { document.getElementById('igPostUrl').value = d.igUrl; updateIgOpenLink(d.igUrl); }
-      if (d.igCaption) { document.getElementById('igPostCaption').value = d.igCaption; document.getElementById('igPreviewCaption').textContent = d.igCaption; }
-      if (d.igImagePath) {
-        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${d.igImagePath}?t=${Date.now()}`;
-        setIgPreviewImg(rawUrl);
-        igSetStatus('success', `Imagen actual: ${d.igImagePath}`);
-        enableIgSave();
-      }
+    const ig = JSON.parse(localStorage.getItem('jans_ig_preview'));
+    if (ig && ig.igUrl) {
+      document.getElementById('igPostUrl').value = ig.igUrl;
+      updateIgOpenLink(ig.igUrl);
     }
-    if (ytRes.ok) {
-      const j = await ytRes.json();
-      const d = JSON.parse(atob(j.content.replace(/\n/g, '')));
-      if (d.ytUrl) { document.getElementById('ytVideoUrl').value = d.ytUrl; previewYT(); }
-    }
+  } catch(e) {}
+  // Pre-fill YouTube
+  try {
+    const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
+    if (yt && yt.ytUrl) { document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT(); }
   } catch(e) {}
 }
 
@@ -1733,19 +1697,14 @@ function handleIgFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   const reader = new FileReader();
   reader.onload = function(e) {
-    const base64Full = e.target.result;
-    const base64     = base64Full.split(',')[1];
-    igFileData = { base64, extension: ext, mimeType: file.type, fileName: file.name };
-    setIgPreviewImg(base64Full);
-    igSetStatus('success', `✓ Lista: ${file.name} (${(file.size/1024).toFixed(0)}KB) — presiona "Subir y publicar"`);
+    igFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type };
+    // Show preview
+    document.getElementById('igPreviewImg').src = e.target.result;
+    document.getElementById('igPreviewWrap').style.display = 'block';
+    igSetStatus('success', `✓ Lista: ${file.name} (${(file.size/1024).toFixed(0)}KB)`);
     enableIgSave();
   };
   reader.readAsDataURL(file);
-}
-
-function setIgPreviewImg(src) {
-  document.getElementById('igPreviewImg').innerHTML =
-    `<img src="${src}" alt="Preview" style="width:100%;height:100%;object-fit:cover;display:block" />`;
 }
 
 function igSetStatus(type, msg) {
@@ -1756,7 +1715,7 @@ function igSetStatus(type, msg) {
     info:    ['rgba(59,130,246,0.1)', '1px solid rgba(59,130,246,0.3)', '#93c5fd'],
   };
   const [bg, border, color] = styles[type] || styles.info;
-  el.style.display = 'block'; el.style.background = bg; el.style.border = border; el.style.color = color;
+  el.style.cssText = `display:block;background:${bg};border:${border};color:${color};padding:10px 16px;border-radius:9px;font-size:0.84rem;margin-bottom:12px`;
   el.textContent = msg;
 }
 
@@ -1767,53 +1726,64 @@ function enableIgSave() {
 
 function updateIgOpenLink(url) {
   const btn = document.getElementById('igOpenLink');
-  if (url) { btn.href = url; btn.style.display = 'inline-flex'; } else { btn.style.display = 'none'; }
+  if (url) { btn.href = url; btn.style.display = 'inline-flex'; }
+  else      { btn.style.display = 'none'; }
 }
 
 async function saveIgLink() {
   if (!igFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
-  const igUrl     = document.getElementById('igPostUrl').value.trim();
-  const igCaption = document.getElementById('igPostCaption').value.trim();
-  const imagePath = `assets/images/social/lastpost.${igFileData.extension}`;
+  const igUrl = document.getElementById('igPostUrl').value.trim();
+
+  // Save URL to localStorage so index.html updates the link
+  localStorage.setItem('jans_ig_preview', JSON.stringify({ igUrl, updatedAt: new Date().toISOString() }));
+  updateIgOpenLink(igUrl);
+
+  // Upload image to public repo as lastpost.jpg
+  const imagePath = `assets/images/social/ig/lastpost.${igFileData.extension}`;
   igSetStatus('info', 'Subiendo imagen...');
-  // 1. Upload image to public repo
-  let imgSha = null;
+
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) {
+    igSetStatus('success', '✓ URL guardada. Configura GitHub para subir la imagen al repo.');
+    showToast('URL guardada ✓ — configura GitHub para la imagen');
+    igFileData = null;
+    return;
+  }
+
   try {
+    let sha = null;
     const getRes = await fetch(
       `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
       { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
     );
-    if (getRes.ok) { const j = await getRes.json(); imgSha = j.sha; }
-  } catch(e) {}
-  const imgBody = { message: 'update instagram post image', content: igFileData.base64 };
-  if (imgSha) imgBody.sha = imgSha;
-  const imgRes = await fetch(
-    `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
-    { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(imgBody) }
-  );
-  if (!imgRes.ok) { igSetStatus('error', 'Error al subir imagen — verifica token y repo'); showToast('Error al subir', 'error'); return; }
-  // 2. Update instagram.json
-  const payload = { igUrl, igCaption, igImagePath: imagePath, updatedAt: new Date().toISOString() };
-  const ok = await ghPutPublic('instagram.json', payload);
-  if (ok) {
-    igSetStatus('success', `✓ Publicado en ${imagePath}`);
-    showToast('Instagram actualizado ✓');
-    updateIgOpenLink(igUrl);
-    // Guardar también en localStorage para que index.html lo muestre de inmediato
-    const localPayload = {
-      igUrl, igCaption,
-      igImagePath: `data:${igFileData.mimeType};base64,${igFileData.base64}`, // base64 para uso local
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem('jans_ig_preview', JSON.stringify(localPayload));
-    igFileData = null;
-  } else {
-    igSetStatus('error', 'Imagen subida pero error al actualizar JSON');
-    showToast('Error parcial', 'error');
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+    const body = { message: 'update lastpost instagram', content: igFileData.base64 };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(
+      `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+      { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+
+    if (res.ok) {
+      // Also update instagram.json with the URL
+      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString() });
+      igSetStatus('success', `✓ Imagen publicada en ${imagePath}`);
+      showToast('Instagram publicado ✓');
+    } else {
+      igSetStatus('error', 'Error al subir — verifica token y repo');
+      showToast('Error al subir imagen', 'error');
+    }
+  } catch(e) {
+    igSetStatus('error', 'Sin conexión a GitHub');
+    showToast('Sin conexión', 'error');
   }
+
+  igFileData = null;
 }
 
-// YouTube
+// // YouTube
 function extractYtId(input) {
   if (!input) return '';
   // Full URL formats
