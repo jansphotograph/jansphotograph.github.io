@@ -44,7 +44,7 @@
     /* Login moved to assets/pages/auth/auth.html */
 
     /* ══════════════ MAIN APP ══════════════ */
-    #appScreen { display: none; min-height: 100vh; }
+    #appScreen { display: block; min-height: 100vh; }
 
     /* ── Top Bar ── */
     .topbar {
@@ -1055,15 +1055,23 @@ async function ghPutPublic(file, data) {
   return res.ok;
 }
 
-// ── Session guard — redirect to auth if not logged in ──
+// ── Session guard + init — wrapped in DOMContentLoaded ──
 const SESSION_KEY = 'jans_master_auth';
+
+// Redirect immediately if no session (before DOM paint)
 if (sessionStorage.getItem(SESSION_KEY) !== 'true') {
   window.location.replace('auth/auth.html');
 }
-// Set topbar username
-document.getElementById('topbarUser').textContent = 'Hola, ' + CONFIG.ADMIN_USER;
-state.loggedIn = true;
-loadAllData();
+
+// Once DOM is ready, initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('topbarUser').textContent = 'Hola, ' + CONFIG.ADMIN_USER;
+  state.loggedIn = true;
+  loadAllData();
+  renderCalendar();
+  loadGithubConfigUI();
+  loadSocialLinksUI();
+});
 
 // ── Logout — clear session and go to index ──
 function handleLogout() {
@@ -1867,13 +1875,11 @@ function exportAllJSON() {
   showToast('JSON exportado ✓');
 }
 
-// Init
-document.getElementById('qDate').min = new Date().toISOString().split('T')[0];
-renderCalendar();
-// Load saved GitHub config from localStorage into UI fields
-loadGithubConfigUI();
-// Load saved social links
-loadSocialLinksUI();
+// Set min date for quote form
+document.addEventListener('DOMContentLoaded', function() {
+  const qDate = document.getElementById('qDate');
+  if (qDate) qDate.min = new Date().toISOString().split('T')[0];
+});
 </script>
 </body>
 </html>
