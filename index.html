@@ -127,24 +127,31 @@
 
       <div class="ig-preview">
         <div class="ig-preview-header">
-          <div class="ig-avatar">
-            <svg viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <div class="ig-avatar" style="background:none;overflow:hidden;">
+            <img src="assets/images/icons/Janssocialmedialogo.png" alt="Jans Photograph"
+              style="width:100%;height:100%;object-fit:cover;border-radius:50%" />
           </div>
           <div>
             <div class="ig-username">Jans Photograph</div>
             <div class="ig-handle">@jans_photograph</div>
           </div>
         </div>
-        <div class="ig-image-wrap" id="igImageWrap">
-          <!-- Populated by Master panel or shows follow CTA -->
-          <a href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener" id="igImageLink" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;flex-direction:column;gap:14px;color:rgba(255,255,255,0.5);font-size:0.85rem;text-decoration:none">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
-            <span>Ver en Instagram →</span>
+        <div class="ig-image-wrap">
+          <a href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener"
+            id="igPostLink" style="display:block;width:100%;height:100%">
+            <img src="assets/images/social/ig/lastpost.jpg"
+              id="igLastPost"
+              alt="Último post de Instagram"
+              style="width:100%;height:100%;object-fit:cover;display:block"
+              onerror="this.style.display='none'" />
           </a>
         </div>
         <div class="ig-preview-footer">
           <div class="ig-caption" id="igCaptionText">✨ Últimas sesiones — momentos únicos capturados para siempre.</div>
-          <div class="ig-likes" id="igLikesText">Ver en Instagram →</div>
+          <div class="ig-likes" id="igLikesText">
+            <a href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener"
+              style="color:inherit">Ver en Instagram →</a>
+          </div>
         </div>
       </div>
     </div>
@@ -290,93 +297,46 @@
 
   <script src="assets/js/main.js"></script>
   <script>
-    // ── Social links — espera DOM, lee localStorage al instante ──
-    document.addEventListener('DOMContentLoaded', async function() {
+    // ── Social links — actualiza URL del post e caption desde localStorage ──
+    document.addEventListener('DOMContentLoaded', function() {
 
-      const OWNER  = 'tu-usuario-github'; // ← tu usuario de GitHub
-      const REPO   = 'jans-photograph';   // ← nombre de tu repo de GitHub Pages
       const LS_KEY = 'jans_ig_preview';
 
-      function applyIG(data) {
-        if (!data) return;
-        const igUrl     = data.igUrl     || 'https://www.instagram.com/jans_photograph/';
-        const igCaption = data.igCaption || '✨ Últimas sesiones — momentos únicos capturados para siempre.';
-
-        // Botón seguir
-        const igCta = document.querySelector('.ig-cta');
-        if (igCta) igCta.href = igUrl;
-
-        // Caption
-        const capEl = document.getElementById('igCaptionText');
-        if (capEl) capEl.textContent = igCaption;
-
-        // Footer link
-        const likesEl = document.getElementById('igLikesText');
-        if (likesEl) {
-          likesEl.innerHTML = data.igUrl
-            ? `<a href="${data.igUrl}" target="_blank" rel="noopener" style="color:inherit">Ver publicación en Instagram →</a>`
-            : 'Ver en Instagram →';
-        }
-
-        // Imagen — reemplaza TODO el contenido del wrap
-        const igWrap = document.getElementById('igImageWrap');
-        if (!igWrap) return;
-
-        if (data.igImagePath) {
-          const imgUrl = data.igImagePath.startsWith('data:')
-            ? data.igImagePath
-            : `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${data.igImagePath}?t=${Date.now()}`;
-
-          igWrap.innerHTML = `
-            <a href="${igUrl}" target="_blank" rel="noopener"
-              style="display:block;width:100%;height:100%">
-              <img src="${imgUrl}" alt="Último post Instagram"
-                style="width:100%;height:100%;object-fit:cover;display:block" />
-            </a>`;
-        }
-        // Si no hay imagen simplemente deja el fallback estático
-      }
-
-      function applyYT(data) {
-        if (!data || !data.ytId) return;
-        const wrap = document.querySelector('.yt-embed-wrap');
-        if (!wrap) return;
-        wrap.innerHTML = `<iframe
-          src="https://www.youtube.com/embed/${data.ytId}?rel=0&modestbranding=1"
-          title="Último video Jans Photograph"
-          allowfullscreen loading="lazy"
-          style="width:100%;aspect-ratio:16/9;border:none;display:block">
-        </iframe>`;
-      }
-
-      // 1. localStorage — inmediato, sin red
+      // ── Instagram: solo actualiza el enlace y el caption ──
       try {
-        const localIG = JSON.parse(localStorage.getItem(LS_KEY));
-        if (localIG) applyIG(localIG);
+        const ig = JSON.parse(localStorage.getItem(LS_KEY));
+        if (ig) {
+          // URL del post en la imagen y en el footer
+          const igUrl = ig.igUrl || 'https://www.instagram.com/jans_photograph/';
+          const link  = document.getElementById('igPostLink');
+          if (link) link.href = igUrl;
+
+          const igCta = document.querySelector('.ig-cta');
+          if (igCta) igCta.href = igUrl;
+
+          const likesEl = document.getElementById('igLikesText');
+          if (likesEl) likesEl.innerHTML =
+            `<a href="${igUrl}" target="_blank" rel="noopener" style="color:inherit">Ver publicación en Instagram →</a>`;
+
+          // Caption
+          if (ig.igCaption) {
+            const capEl = document.getElementById('igCaptionText');
+            if (capEl) capEl.textContent = ig.igCaption;
+          }
+        }
       } catch(e) {}
 
+      // ── YouTube ──
       try {
-        const localYT = JSON.parse(localStorage.getItem('jans_yt_preview'));
-        if (localYT) applyYT(localYT);
-      } catch(e) {}
-
-      // 2. GitHub — solo si está configurado
-      if (OWNER === 'tu-usuario-github') return;
-      const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
-      try {
-        const [igRes, ytRes] = await Promise.all([
-          fetch(`${BASE}/instagram.json?t=${Date.now()}`, { cache: 'no-cache' }),
-          fetch(`${BASE}/youtube.json?t=${Date.now()}`,   { cache: 'no-cache' })
-        ]);
-        if (igRes.ok) {
-          const ig = await igRes.json();
-          applyIG(ig);
-          localStorage.setItem(LS_KEY, JSON.stringify(ig));
-        }
-        if (ytRes.ok) {
-          const yt = await ytRes.json();
-          applyYT(yt);
-          localStorage.setItem('jans_yt_preview', JSON.stringify(yt));
+        const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
+        if (yt && yt.ytId) {
+          const wrap = document.querySelector('.yt-embed-wrap');
+          if (wrap) wrap.innerHTML = `<iframe
+            src="https://www.youtube.com/embed/${yt.ytId}?rel=0&modestbranding=1"
+            title="Último video Jans Photograph"
+            allowfullscreen loading="lazy"
+            style="width:100%;aspect-ratio:16/9;border:none;display:block">
+          </iframe>`;
         }
       } catch(e) {}
 
