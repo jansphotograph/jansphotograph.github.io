@@ -1,0 +1,53 @@
+/* Inner page styles */
+.page-hero {
+  margin-top: 72px;
+  padding: 80px 32px;
+  text-align: center;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a0a10 50%, #0d0d0d 100%);
+  border-bottom: 1px solid rgba(233,30,140,0.18);
+  position: relative;
+  overflow: hidden;
+}
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(233,30,140,0.08) 0%, transparent 70%);
+}
+.page-hero .section-label { display: block; margin-bottom: 12px; }
+.page-hero h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: #fff;
+  position: relative;
+  margin-bottom: 16px;
+}
+.page-hero p {
+  color: rgba(255,255,255,0.65);
+  font-size: 1.05rem;
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.7;
+  position: relative;
+}
+
+.page-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+.coming-soon {
+  text-align: center;
+  padding: 80px 32px;
+  color: rgba(255,255,255,0.4);
+}
+.coming-soon svg { margin: 0 auto 20px; opacity: 0.2; }
+.coming-soon h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.8rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 12px;
+}
+.coming-soon p { font-size: 0.95rem; line-height: 1.7; }
