@@ -41,83 +41,7 @@
     ::-webkit-scrollbar-track { background: var(--dark); }
     ::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 3px; }
 
-    /* ══════════════ LOGIN SCREEN ══════════════ */
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse at 50% 40%, rgba(199,30,95,0.12) 0%, transparent 65%), var(--black);
-    }
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 48px 40px;
-      box-shadow: var(--shadow);
-    }
-    .login-logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .login-logo img { height: 56px; width: auto; margin: 0 auto 12px; }
-    .login-logo h1 { font-family: var(--serif); font-size: 1.4rem; color: var(--white); }
-    .login-logo span { color: var(--pink-l); }
-    .login-logo p { font-size: 0.78rem; color: var(--gray-l); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
-
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-l); margin-bottom: 8px; }
-    .form-group input {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--dark);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--white);
-      font-size: 0.95rem;
-      font-family: var(--font);
-      transition: border-color 0.2s;
-      outline: none;
-    }
-    .form-group input:focus { border-color: var(--pink); }
-
-    .btn-primary {
-      width: 100%;
-      padding: 13px;
-      background: var(--pink);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      font-family: var(--font);
-    }
-    .btn-primary:hover { background: var(--pink-l); transform: translateY(-1px); }
-
-    .login-error {
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.85rem;
-      color: #fca5a5;
-      margin-bottom: 18px;
-      display: none;
-    }
-    .github-config {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      font-size: 0.75rem;
-      color: var(--gray);
-      text-align: center;
-      line-height: 1.6;
-    }
-    .github-config a { color: var(--pink-l); }
+    /* Login moved to assets/pages/auth/auth.html */
 
     /* ══════════════ MAIN APP ══════════════ */
     #appScreen { display: none; min-height: 100vh; }
@@ -436,33 +360,7 @@
 <body>
 
 <!-- ══════════════════════════════════
-     LOGIN SCREEN
-══════════════════════════════════ -->
-<div id="loginScreen">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="../images/icons/Janssocialmedialogo.png" alt="Logo" />
-      <h1>Jans <span>Photograph</span></h1>
-      <p>Panel de Administración</p>
-    </div>
-    <div class="login-error" id="loginError">Usuario o contraseña incorrectos.</div>
-    <div class="form-group">
-      <label>Usuario</label>
-      <input type="text" id="loginUser" placeholder="admin" autocomplete="username" />
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
-    </div>
-    <button class="btn-primary" onclick="handleLogin()">Ingresar</button>
-    <div class="github-config">
-      <strong>Configuración requerida:</strong> Edita la sección <code>CONFIG</code> al inicio del script<br/>con tu token de GitHub, usuario, repositorio y credenciales de acceso.
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════
-     MAIN APP
+     MASTER APP
 ══════════════════════════════════ -->
 <div id="appScreen">
 
@@ -1157,30 +1055,20 @@ async function ghPutPublic(file, data) {
   return res.ok;
 }
 
-// ── Login ──
-function handleLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
-  const err = document.getElementById('loginError');
-  if (u === CONFIG.ADMIN_USER && p === CONFIG.ADMIN_PASS) {
-    err.style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display   = 'block';
-    document.getElementById('topbarUser').textContent = `Hola, ${u}`;
-    state.loggedIn = true;
-    loadAllData();
-  } else {
-    err.style.display = 'block';
-  }
+// ── Session guard — redirect to auth if not logged in ──
+const SESSION_KEY = 'jans_master_auth';
+if (sessionStorage.getItem(SESSION_KEY) !== 'true') {
+  window.location.replace('auth/auth.html');
 }
-document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
-document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+// Set topbar username
+document.getElementById('topbarUser').textContent = 'Hola, ' + CONFIG.ADMIN_USER;
+state.loggedIn = true;
+loadAllData();
 
+// ── Logout — clear session and go to index ──
 function handleLogout() {
-  state.loggedIn = false;
-  document.getElementById('appScreen').style.display   = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginPass').value = '';
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.replace('../../index.html');
 }
 
 // ── Load All Data ──
@@ -1903,6 +1791,13 @@ async function saveIgLink() {
     igSetStatus('success', `✓ Publicado en ${imagePath}`);
     showToast('Instagram actualizado ✓');
     updateIgOpenLink(igUrl);
+    // Guardar también en localStorage para que index.html lo muestre de inmediato
+    const localPayload = {
+      igUrl, igCaption,
+      igImagePath: `data:${igFileData.mimeType};base64,${igFileData.base64}`, // base64 para uso local
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('jans_ig_preview', JSON.stringify(localPayload));
     igFileData = null;
   } else {
     igSetStatus('error', 'Imagen subida pero error al actualizar JSON');
@@ -1956,8 +1851,12 @@ async function saveYtLink() {
   if (!id)    { showToast('No se pudo detectar el ID del video — verifica la URL', 'error'); return; }
   const payload = { ytUrl: input, ytId: id, updatedAt: new Date().toISOString() };
   const ok = await ghPutPublic('youtube.json', payload);
-  if (ok) showToast('YouTube actualizado y publicado ✓');
-  else    showToast('Error al publicar — verifica token y repo público', 'error');
+  if (ok) {
+    showToast('YouTube actualizado y publicado ✓');
+    localStorage.setItem('jans_yt_preview', JSON.stringify({ ytId: id, ytUrl: input }));
+  } else {
+    showToast('Error al publicar — verifica token y repo público', 'error');
+  }
 }
 
 // ── Export JSON ──
