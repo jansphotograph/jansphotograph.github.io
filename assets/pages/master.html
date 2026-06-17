@@ -159,30 +159,57 @@
     .cal-nav-btn:hover { border-color: var(--pink); color: var(--pink-l); }
     .cal-month { font-size: 1.05rem; font-weight: 700; min-width: 160px; text-align: center; }
 
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-dow { text-align: center; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); padding: 8px 0; }
-    .cal-day {
-      aspect-ratio: 1;
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-      padding: 6px 4px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      border: 1px solid transparent;
-      transition: all 0.15s;
-      position: relative;
-      min-height: 52px;
-    }
-    .cal-day:hover { background: rgba(255,255,255,0.05); border-color: var(--border); }
-    .cal-day.empty { cursor: default; }
-    .cal-day.today { border-color: var(--pink); }
-    .cal-day .day-num { font-weight: 600; }
-    .cal-day.today .day-num { color: var(--pink-l); }
-    .cal-day.has-event .day-num::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--pink-l); margin: 2px auto 0; }
-    .cal-day.booked { background: rgba(199,30,95,0.1); }
-    .cal-day.available { background: rgba(34,197,94,0.08); }
-    .cal-day .day-dots { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 3px; justify-content: center; }
-    .cal-day .dot { width: 5px; height: 5px; border-radius: 50%; }
+    /* ── Calendar views ── */
+    .cal-view-btns { display:flex; gap:6px; }
+    .cal-view-btn  { padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--gray-l); font-size:0.78rem; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+    .cal-view-btn.active { background:var(--pink); border-color:var(--pink); color:#fff; }
+    .cal-view-btn:hover:not(.active) { border-color:var(--white); color:var(--white); }
+    /* Month */
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-dow  { text-align:center; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray); padding:8px 0; }
+    .cal-day  { min-height:80px; display:flex; flex-direction:column; padding:6px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.15s; position:relative; overflow:hidden; }
+    .cal-day:hover:not(.empty) { border-color:rgba(233,30,140,0.35); background:rgba(255,255,255,0.03); }
+    .cal-day.empty   { cursor:default; }
+    .cal-day.today   { border-color:var(--pink); }
+    .cal-day.today .day-num { color:var(--pink-l); }
+    .cal-day.available { background:rgba(34,197,94,0.07); }
+    .cal-day.booked    { background:rgba(199,30,95,0.1); }
+    .cal-day.booked::after { content:'OCUPADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-15deg); font-size:0.55rem; font-weight:900; letter-spacing:0.12em; color:rgba(233,30,140,0.55); border:1px solid rgba(233,30,140,0.35); padding:2px 6px; border-radius:3px; white-space:nowrap; pointer-events:none; }
+    .cal-day .day-num  { font-weight:600; font-size:0.82rem; margin-bottom:4px; flex-shrink:0; }
+    .cal-day .day-events { display:flex; flex-direction:column; gap:2px; flex:1; overflow:hidden; }
+    .ev-pill { font-size:0.62rem; font-weight:600; padding:2px 5px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4; }
+    .ev-pill.ev-pending   { background:rgba(255,255,255,0.08); color:#999; }
+    .ev-pill.ev-confirmed { background:rgba(34,197,94,0.18);   color:#86efac; }
+    .ev-pill.ev-postponed { background:rgba(245,158,11,0.18);  color:#fcd34d; }
+    .ev-pill.ev-cancelled { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.25); text-decoration:line-through; }
+    /* Week */
+    .week-grid { display:grid; grid-template-columns:56px repeat(7,1fr); }
+    .week-header-cell { text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:700; color:var(--gray-l); border-bottom:1px solid var(--border); }
+    .week-header-cell.today-col { color:var(--pink-l); }
+    .week-time-label { font-size:0.68rem; color:var(--gray); padding:0 8px 0 0; text-align:right; line-height:1; margin-top:-7px; }
+    .week-cell { border-left:1px solid var(--border); border-bottom:1px solid rgba(255,255,255,0.03); min-height:44px; position:relative; padding:2px; }
+    .week-cell.today-col { background:rgba(233,30,140,0.03); }
+    .week-event { font-size:0.68rem; font-weight:600; padding:3px 6px; border-radius:5px; margin-bottom:2px; cursor:pointer; line-height:1.4; }
+    /* Day */
+    .day-timeline { display:grid; grid-template-columns:56px 1fr; }
+    .day-time-label { font-size:0.72rem; color:var(--gray); text-align:right; padding-right:12px; margin-top:-9px; line-height:1; }
+    .day-slot { border-bottom:1px solid rgba(255,255,255,0.04); min-height:52px; padding:4px 6px; position:relative; }
+    .day-slot.hour-block { border-bottom:1px solid rgba(255,255,255,0.08); }
+    .day-event { border-radius:7px; padding:5px 10px; margin-bottom:3px; cursor:pointer; }
+    .day-event .de-time { font-size:0.68rem; opacity:0.7; margin-bottom:2px; }
+    .day-event .de-name { font-size:0.82rem; font-weight:700; }
+    .day-event .de-plan { font-size:0.72rem; opacity:0.75; }
+    /* Context menu */
+    .cal-ctx-menu { position:fixed; z-index:9000; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:8px; min-width:196px; box-shadow:0 12px 40px rgba(0,0,0,0.55); display:none; }
+    .cal-ctx-menu.open { display:block; }
+    .ctx-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; font-size:0.88rem; cursor:pointer; color:var(--white); transition:background 0.15s; }
+    .ctx-item:hover { background:rgba(255,255,255,0.07); }
+    .ctx-item svg { width:15px; height:15px; flex-shrink:0; color:var(--pink-l); }
+    .ctx-divider { border:none; border-top:1px solid var(--border); margin:4px 0; }
+    .ctx-item.ctx-danger  { color:#fca5a5; }
+    .ctx-item.ctx-danger svg { color:#fca5a5; }
+    .ctx-item.ctx-success { color:#86efac; }
+    .ctx-item.ctx-success svg { color:#86efac; }
     .dot-quote { background: var(--blue); }
     .dot-book  { background: var(--pink-l); }
     .dot-avail { background: var(--green); }
@@ -481,36 +508,49 @@
 
       <!-- ── CALENDAR ── -->
       <div class="view" id="view-calendar">
-        <div class="page-header">
-          <h2>Calendario de Disponibilidad</h2>
-          <p>Gestiona fechas disponibles, reservas y cotizaciones</p>
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Calendario</h2>
+            <p id="calSubtitle">Gestiona disponibilidad y reservas</p>
+          </div>
+          <div class="cal-view-btns">
+            <button class="cal-view-btn active" id="btnViewMonth" onclick="setCalView('month')">Mes</button>
+            <button class="cal-view-btn"        id="btnViewWeek"  onclick="setCalView('week')">Semana</button>
+            <button class="cal-view-btn"        id="btnViewDay"   onclick="setCalView('day')">Día</button>
+          </div>
         </div>
+
         <div class="card">
-          <div class="calendar-header">
-            <div class="cal-nav">
+          <!-- Nav row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
               <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
-              <span class="cal-month" id="calMonthLabel"></span>
+              <span style="font-weight:700;font-size:1rem;min-width:200px;text-align:center" id="calMonthLabel"></span>
               <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-sm btn-green" onclick="markSelectedAvailable()">+ Disponible</button>
-              <button class="btn btn-sm btn-red"   onclick="markSelectedBooked()">× Reservado</button>
+              <button class="btn btn-sm btn-outline" onclick="calGoToday()" style="margin-left:6px">Hoy</button>
             </div>
           </div>
-          <div class="cal-grid" id="calGrid"></div>
-          <div class="cal-legend">
+
+          <!-- Views -->
+          <div id="calViewMonth">
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+          <div id="calViewWeek" style="display:none;overflow-x:auto">
+            <div class="week-grid" id="weekGrid"></div>
+          </div>
+          <div id="calViewDay" style="display:none">
+            <div class="day-timeline" id="dayTimeline"></div>
+          </div>
+
+          <!-- Legend -->
+          <div class="cal-legend" style="margin-top:16px">
             <div class="cal-legend-item"><div class="dot dot-avail"></div> Disponible</div>
-            <div class="cal-legend-item"><div class="dot dot-book"></div> Reservado</div>
-            <div class="cal-legend-item"><div class="dot dot-quote"></div> Cotización</div>
+            <div class="cal-legend-item"><div class="dot dot-book"></div> Ocupado</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(34,197,94,0.18)"></div> Confirmada</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.08)"></div> Pendiente</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(245,158,11,0.18)"></div> Aplazada</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.04);text-decoration:line-through"></div> Cancelada</div>
           </div>
-        </div>
-        <!-- Day Events panel -->
-        <div class="card" id="dayEventsPanel" style="display:none">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span id="dayEventTitle">Eventos del día</span>
-          </div>
-          <div id="dayEventsList"></div>
         </div>
       </div>
 
@@ -1091,6 +1131,23 @@
   </div>
 </div>
 
+<!-- ══ CALENDAR CONTEXT MENU ══ -->
+<div class="cal-ctx-menu" id="calCtxMenu">
+  <div class="ctx-item" onclick="ctxViewDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Ver reservas del día
+  </div>
+  <hr class="ctx-divider"/>
+  <div class="ctx-item ctx-success" onclick="ctxOpenDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Abrir disponibilidad
+  </div>
+  <div class="ctx-item ctx-danger" onclick="ctxCloseDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Cerrar disponibilidad
+  </div>
+</div>
+
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast">
   <div class="toast-dot"></div>
@@ -1342,59 +1399,249 @@ function statusLabel(s) {
 // ── Calendar ──
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const HOURS_CAL = [8,9,10,11,12,13,14,15,16,17,18,19,20];
+const HOUR_LABELS = ['8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM'];
 
-function calPrev() { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} renderCalendar(); }
-function calNext() { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} renderCalendar(); }
+let calView = 'month'; // 'month' | 'week' | 'day'
+let calViewDay = null; // selected day date string for day view
+
+// ── Event color helpers ──
+function evClass(status) {
+  return { confirmed:'ev-confirmed', postponed:'ev-postponed', cancelled:'ev-cancelled' }[status] || 'ev-pending';
+}
+function evBg(status) {
+  return { confirmed:'rgba(34,197,94,0.18)', postponed:'rgba(245,158,11,0.18)', cancelled:'rgba(255,255,255,0.04)' }[status] || 'rgba(255,255,255,0.08)';
+}
+function evColor(status) {
+  return { confirmed:'#86efac', postponed:'#fcd34d', cancelled:'rgba(255,255,255,0.25)' }[status] || '#999';
+}
+
+// Combine reservas + quotes for a date
+function getEventsForDate(ds) {
+  const res  = (JSON.parse(localStorage.getItem('jans_reservas')||'[]')).filter(r=>r.fecha===ds && r.status!=='deleted');
+  const quot = state.quotes.filter(q=>q.sessionDate===ds);
+  const evs  = [];
+  res.forEach(r  => evs.push({ name: r.nombre,         plan: r.plan||'—',   hora: r.hora||'',  horaVal: r.horaVal||0, status: r.status,   type:'res'   }));
+  quot.forEach(q => evs.push({ name: q.clientName,     plan: q.plan||'—',   hora: q.sessionTime||'', horaVal: parseInt((q.sessionTime||'0').split(':')[0])||0, status: q.status, type:'quote' }));
+  return evs;
+}
+
+// ── View switching ──
+function setCalView(v) {
+  calView = v;
+  ['month','week','day'].forEach(x => {
+    document.getElementById('calView'+x.charAt(0).toUpperCase()+x.slice(1)).style.display = x===v ? 'block' : 'none';
+    document.getElementById('btnView'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active', x===v);
+  });
+  renderCalendar();
+}
+
+function calGoToday() {
+  const now = new Date();
+  state.calYear  = now.getFullYear();
+  state.calMonth = now.getMonth();
+  if(calView==='day') {
+    calViewDay = now.toISOString().split('T')[0];
+  }
+  renderCalendar();
+}
+
+function calPrev() {
+  if(calView==='month') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
+  else if(calView==='week') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
+  else if(calView==='day' && calViewDay) {
+    const d = new Date(calViewDay); d.setDate(d.getDate()-1);
+    calViewDay = d.toISOString().split('T')[0];
+    state.calYear  = d.getFullYear();
+    state.calMonth = d.getMonth();
+  }
+  renderCalendar();
+}
+function calNext() {
+  if(calView==='month') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
+  else if(calView==='week') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
+  else if(calView==='day' && calViewDay) {
+    const d = new Date(calViewDay); d.setDate(d.getDate()+1);
+    calViewDay = d.toISOString().split('T')[0];
+    state.calYear  = d.getFullYear();
+    state.calMonth = d.getMonth();
+  }
+  renderCalendar();
+}
 
 function renderCalendar() {
-  const g = document.getElementById('calGrid'); g.innerHTML = '';
-  document.getElementById('calMonthLabel').textContent = `${MONTHS_ES[state.calMonth]} ${state.calYear}`;
+  const todayStr = new Date().toISOString().split('T')[0];
+  if(calView==='month')  renderMonthView(todayStr);
+  else if(calView==='week') renderWeekView(todayStr);
+  else if(calView==='day')  renderDayView(todayStr);
+}
+
+// ══════════════════════════════
+//  MONTH VIEW
+// ══════════════════════════════
+function renderMonthView(todayStr) {
+  document.getElementById('calMonthLabel').textContent = MONTHS_ES[state.calMonth] + ' ' + state.calYear;
+  document.getElementById('calSubtitle').textContent = 'Vista mensual';
+  const g = document.getElementById('calGrid');
+  g.innerHTML = '';
   DAYS_ES.forEach(d => { const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; g.appendChild(el); });
-  const firstDay = new Date(state.calYear, state.calMonth, 1).getDay();
+  const firstDay    = new Date(state.calYear, state.calMonth, 1).getDay();
   const daysInMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
-  for(let i=0;i<firstDay;i++) { const el=document.createElement('div'); el.className='cal-day empty'; g.appendChild(el); }
-  const today = new Date(); const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  for(let i=0;i<firstDay;i++){ const el=document.createElement('div'); el.className='cal-day empty'; g.appendChild(el); }
+
   for(let d=1;d<=daysInMonth;d++) {
-    const dateStr = `${state.calYear}-${String(state.calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const calStatus = state.calendar[dateStr];
-    const dayQuotes = state.quotes.filter(q=>q.sessionDate===dateStr);
-    const el = document.createElement('div');
+    const ds  = state.calYear+'-'+String(state.calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const st  = state.calendar[ds];
+    const evs = getEventsForDate(ds);
+    const el  = document.createElement('div');
     el.className = 'cal-day';
-    if(dateStr===todayStr) el.classList.add('today');
-    if(calStatus==='booked')    el.classList.add('booked');
-    if(calStatus==='available') el.classList.add('available');
-    if(dayQuotes.length>0)      el.classList.add('has-event');
-    el.innerHTML = `<span class="day-num">${d}</span><div class="day-dots">
-      ${dayQuotes.map(()=>'<div class="dot dot-quote"></div>').join('')}
-      ${calStatus==='booked'?'<div class="dot dot-book"></div>':''}
-      ${calStatus==='available'?'<div class="dot dot-avail"></div>':''}
-    </div>`;
-    el.addEventListener('click', () => openDayDetail(dateStr, d, dayQuotes, calStatus));
+    if(ds===todayStr) el.classList.add('today');
+    if(st==='booked')    el.classList.add('booked');
+    if(st==='available') el.classList.add('available');
+
+    // Event pills (max 3)
+    const pills = evs.slice(0,3).map(e =>
+      `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
+    ).join('');
+    const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
+
+    el.innerHTML = `<span class="day-num">${d}</span><div class="day-events">${pills}${more}</div>`;
+    el.addEventListener('click', e => openCtxMenu(e, ds));
     g.appendChild(el);
   }
 }
 
-function openDayDetail(dateStr, d, quotes, calStatus) {
-  state.selectedDay = dateStr;
-  const panel = document.getElementById('dayEventsPanel');
-  document.getElementById('dayEventTitle').textContent = `${d} de ${MONTHS_ES[state.calMonth]} ${state.calYear}`;
-  const list = document.getElementById('dayEventsList');
-  let html = '';
-  if(quotes.length>0) {
-    html += `<div style="margin-bottom:12px"><span class="section-label-sm">Cotizaciones del día</span>`;
-    quotes.forEach(q => {
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div><div style="font-weight:600;font-size:0.9rem">${q.clientName}</div><div style="font-size:0.78rem;color:var(--gray-l)">${q.plan||'Sin plan'} · $${(q.total||0).toFixed(2)}</div></div>
-        <span class="badge-status status-${q.status}">${statusLabel(q.status)}</span>
-      </div>`;
+// ══════════════════════════════
+//  WEEK VIEW
+// ══════════════════════════════
+function renderWeekView(todayStr) {
+  // Find Monday of current week relative to calYear/calMonth/1
+  const refDate   = new Date(state.calYear, state.calMonth, 1);
+  const dayOfWeek = refDate.getDay(); // 0=Sun
+  const monday    = new Date(refDate); monday.setDate(refDate.getDate() - dayOfWeek);
+  const days = Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
+  const startStr = days[0].toISOString().split('T')[0];
+  const endStr   = days[6].toISOString().split('T')[0];
+  document.getElementById('calMonthLabel').textContent = MONTHS_ES[days[0].getMonth()] + ' ' + days[0].getDate() + ' – ' + MONTHS_ES[days[6].getMonth()] + ' ' + days[6].getDate() + ', ' + days[6].getFullYear();
+  document.getElementById('calSubtitle').textContent = 'Vista semanal';
+
+  const g = document.getElementById('weekGrid'); g.innerHTML = '';
+
+  // Header row
+  const cornerEl = document.createElement('div'); cornerEl.className='week-header-cell'; g.appendChild(cornerEl);
+  days.forEach(d => {
+    const ds  = d.toISOString().split('T')[0];
+    const el  = document.createElement('div');
+    el.className = 'week-header-cell' + (ds===todayStr?' today-col':'');
+    el.innerHTML = DAYS_ES[d.getDay()] + '<br><strong style="font-size:0.95rem">' + d.getDate() + '</strong>';
+    g.appendChild(el);
+  });
+
+  // Hour rows
+  HOURS_CAL.forEach((h, hi) => {
+    const tlEl = document.createElement('div'); tlEl.className='week-time-label'; tlEl.style.cssText='display:flex;align-items:flex-start;padding:4px 8px 0 0;border-bottom:1px solid rgba(255,255,255,0.05)'; tlEl.textContent=HOUR_LABELS[hi]; g.appendChild(tlEl);
+    days.forEach(d => {
+      const ds  = d.toISOString().split('T')[0];
+      const evs = getEventsForDate(ds).filter(e=>e.horaVal===h);
+      const cell= document.createElement('div');
+      cell.className = 'week-cell' + (ds===todayStr?' today-col':'');
+      evs.forEach(e => {
+        const pill = document.createElement('div');
+        pill.className = 'week-event';
+        pill.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
+        pill.textContent = e.name.split(' ')[0] + (e.plan ? ' · ' + e.plan.substring(0,10) : '');
+        pill.title = e.name + ' — ' + e.plan + ' @ ' + e.hora;
+        cell.appendChild(pill);
+      });
+      cell.addEventListener('click', ev => openCtxMenu(ev, ds));
+      g.appendChild(cell);
     });
-    html += `</div>`;
-  } else {
-    html += `<p style="font-size:0.85rem;color:var(--gray);margin-bottom:14px">Sin cotizaciones para este día.</p>`;
+  });
+}
+
+// ══════════════════════════════
+//  DAY VIEW
+// ══════════════════════════════
+function renderDayView(todayStr) {
+  if(!calViewDay) calViewDay = todayStr;
+  const [y,m,d] = calViewDay.split('-');
+  const dateObj  = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  document.getElementById('calMonthLabel').textContent = DAYS_ES[dateObj.getDay()] + ', ' + parseInt(d) + ' de ' + MONTHS_ES[parseInt(m)-1] + ' ' + y;
+  document.getElementById('calSubtitle').textContent = 'Vista diaria';
+
+  const evs = getEventsForDate(calViewDay);
+  const tl  = document.getElementById('dayTimeline'); tl.innerHTML = '';
+
+  HOURS_CAL.forEach((h, hi) => {
+    const tlEl = document.createElement('div'); tlEl.className='day-time-label'; tlEl.style.cssText='padding-top:14px;'; tlEl.textContent=HOUR_LABELS[hi]; tl.appendChild(tlEl);
+    const cell = document.createElement('div'); cell.className='day-slot hour-block';
+    const slotEvs = evs.filter(e=>e.horaVal===h);
+    slotEvs.forEach(e => {
+      const ev = document.createElement('div');
+      ev.className = 'day-event';
+      ev.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
+      ev.innerHTML = '<div class="de-time">'+e.hora+'</div><div class="de-name">'+e.name+'</div><div class="de-plan">'+e.plan+'</div>';
+      cell.appendChild(ev);
+    });
+    tl.appendChild(cell);
+  });
+
+  // If no events show message
+  if(!evs.length) {
+    const noEvEl = document.createElement('div'); noEvEl.style.cssText='grid-column:2;padding:20px;color:var(--gray);font-size:0.88rem;';
+    noEvEl.textContent = 'Sin reservas ni cotizaciones para este día.'; tl.appendChild(noEvEl);
   }
-  html += `<div style="font-size:0.82rem;color:var(--gray-l);margin-top:8px">Estado: <strong style="color:${calStatus==='booked'?'#f9a8d4':calStatus==='available'?'#86efac':'var(--gray-l)'}">${calStatus==='booked'?'Reservado':calStatus==='available'?'Disponible':'Sin marcar'}</strong></div>`;
-  list.innerHTML = html;
-  panel.style.display = 'block';
+}
+
+// ══════════════════════════════
+//  CONTEXT MENU
+// ══════════════════════════════
+let ctxDay = null;
+function openCtxMenu(e, ds) {
+  e.stopPropagation();
+  ctxDay = ds;
+  const menu = document.getElementById('calCtxMenu');
+  menu.classList.add('open');
+  // Position near click
+  const x = Math.min(e.clientX, window.innerWidth  - 220);
+  const y = Math.min(e.clientY, window.innerHeight - 160);
+  menu.style.left = x + 'px';
+  menu.style.top  = y + 'px';
+}
+function closeCtxMenu() { document.getElementById('calCtxMenu').classList.remove('open'); }
+
+// Close ctx menu when clicking anywhere else
+document.addEventListener('click', () => closeCtxMenu());
+
+function ctxViewDay() {
+  closeCtxMenu();
+  calViewDay = ctxDay;
+  const d = new Date(ctxDay);
+  state.calYear  = d.getFullYear();
+  state.calMonth = d.getMonth();
+  setCalView('day');
+}
+
+async function ctxCloseDay() {
+  closeCtxMenu();
+  if(!ctxDay) return;
+  state.calendar[ctxDay] = 'booked';
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+  await ghPut('calendar.json', state.calendar);
+  await ghPutPublic('calendar.json', state.calendar);
+  showToast('Día cerrado — marcado como Ocupado ✓');
+}
+
+async function ctxOpenDay() {
+  closeCtxMenu();
+  if(!ctxDay) return;
+  state.calendar[ctxDay] = 'available';
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+  await ghPut('calendar.json', state.calendar);
+  await ghPutPublic('calendar.json', state.calendar);
+  showToast('Día abierto — disponible para reservas ✓');
 }
 
 async function markSelectedAvailable() {
@@ -1402,8 +1649,8 @@ async function markSelectedAvailable() {
   state.calendar[state.selectedDay] = 'available';
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
-  await ghPut('calendar.json', state.calendar);          // private repo (master data)
-  await ghPutPublic('calendar.json', state.calendar);    // public repo (visible to all)
+  await ghPut('calendar.json', state.calendar);
+  await ghPutPublic('calendar.json', state.calendar);
   showToast('Día marcado como disponible ✓');
 }
 async function markSelectedBooked() {
