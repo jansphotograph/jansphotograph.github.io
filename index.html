@@ -109,6 +109,55 @@
     </div>
   </section>
 
+  <!-- ═══ DISPONIBILIDAD ═══ -->
+  <section class="availability-section" aria-label="Calendario de disponibilidad">
+    <div class="availability-inner">
+
+      <!-- Left: Text + CTA -->
+      <div class="availability-text">
+        <span class="section-label">Agenda tu sesión</span>
+        <h2 class="section-title">Consulta nuestra<br/>disponibilidad</h2>
+        <p class="section-sub">
+          Revisa las fechas disponibles y reserva tu sesión fotográfica.
+          Los días en verde están disponibles para agendar.
+        </p>
+        <div class="avail-cta-wrap">
+          <p class="avail-question">¿Te gustaría reservar tu sesión?</p>
+          <a href="assets/pages/servicios.html" class="avail-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ¡Clic aquí!
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Mini Calendar -->
+      <div class="availability-cal">
+        <div class="avail-cal-header">
+          <button class="avail-cal-btn" id="availPrev" aria-label="Mes anterior">&#8592;</button>
+          <span id="availLabel"></span>
+          <button class="avail-cal-btn" id="availNext" aria-label="Mes siguiente">&#8594;</button>
+        </div>
+        <div class="avail-cal-grid">
+          <div class="avail-dow">Dom</div>
+          <div class="avail-dow">Lun</div>
+          <div class="avail-dow">Mar</div>
+          <div class="avail-dow">Mié</div>
+          <div class="avail-dow">Jue</div>
+          <div class="avail-dow">Vie</div>
+          <div class="avail-dow">Sáb</div>
+          <div id="availDays" style="display:contents"></div>
+        </div>
+        <div class="avail-legend">
+          <div class="avail-legend-item"><div class="avail-dot avail-dot-green"></div> Disponible</div>
+          <div class="avail-legend-item"><div class="avail-dot avail-dot-red"></div> Reservado</div>
+          <div class="avail-legend-item"><div class="avail-dot avail-dot-pink"></div> Hoy</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
   <!-- ═══ INSTAGRAM ═══ -->
   <section class="instagram-section" aria-label="Instagram">
     <div class="instagram-inner">
@@ -341,6 +390,83 @@
       } catch(e) {}
 
     });
+
+    // ═══════════════════════════════════════
+    //  AVAILABILITY CALENDAR — index.html
+    // ═══════════════════════════════════════
+    (function() {
+      const OWNER  = 'jansphotograph';
+      const REPO   = 'jansphotograph.github.io';
+      const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+      let calYear  = new Date().getFullYear();
+      let calMonth = new Date().getMonth();
+      let calData  = {};
+
+      // Load from localStorage immediately
+      try { calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+
+      function renderAvailCal() {
+        const label = document.getElementById('availLabel');
+        const days  = document.getElementById('availDays');
+        if (!label || !days) return;
+
+        label.textContent = MONTHS[calMonth] + ' ' + calYear;
+        days.innerHTML = '';
+
+        const firstDay    = new Date(calYear, calMonth, 1).getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const todayStr    = new Date().toISOString().split('T')[0];
+
+        // Empty cells before first day
+        for (let i = 0; i < firstDay; i++) {
+          const el = document.createElement('div');
+          el.className = 'avail-day';
+          days.appendChild(el);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const ds  = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+          const st  = calData[ds];
+          const el  = document.createElement('div');
+          el.className = 'avail-day';
+          el.textContent = d;
+
+          if (ds === todayStr)       el.classList.add('today');
+          else if (ds < todayStr)    el.classList.add('past');
+          else if (st === 'booked')  el.classList.add('booked');
+          else if (st === 'available') el.classList.add('available');
+
+          days.appendChild(el);
+        }
+      }
+
+      document.getElementById('availPrev')?.addEventListener('click', function() {
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        renderAvailCal();
+      });
+      document.getElementById('availNext')?.addEventListener('click', function() {
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        renderAvailCal();
+      });
+
+      // Render immediately with local data
+      renderAvailCal();
+
+      // Then fetch fresh data from GitHub
+      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/calendar.json?t=' + Date.now(), { cache: 'no-cache' })
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+          if (!data) return;
+          calData = data;
+          localStorage.setItem('jans_calendar', JSON.stringify(data));
+          renderAvailCal();
+        })
+        .catch(function() {});
+    })();
+
   </script>
 </body>
 </html>
