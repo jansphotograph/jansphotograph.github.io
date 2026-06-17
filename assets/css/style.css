@@ -764,6 +764,7 @@ footer {
 .avail-dot-green { background: #22c55e; }
 .avail-dot-red   { background: #ef4444; }
 .avail-dot-pink  { background: var(--pink-l); }
+.avail-day.unmarked { color: #c0c0c0; }
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
