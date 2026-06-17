@@ -256,29 +256,31 @@
       }
       document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
 
-      // 1. Load from localStorage immediately (instant render)
+      // Lee del localStorage (mismo dominio que el Master)
       try { calData  = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
       try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
       renderCal();
 
-      // 2. Fetch from GitHub for latest data (all visitors get it)
+      // Re-renderizar si el Master actualiza en otra pestaña
+      window.addEventListener('storage', function(ev) {
+        if (ev.key === 'jans_calendar') {
+          try { calData = JSON.parse(ev.newValue || '{}'); } catch(ex) {}
+          renderCal();
+        }
+      });
+
+      // Respaldo desde GitHub para visitantes nuevos
       try {
-        const [calRes, resRes] = await Promise.all([
-          fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' }),
-          fetch(`${BASE}/reservas.json?t=${Date.now()}`, { cache: 'no-cache' })
-        ]);
+        const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' });
         if (calRes.ok) {
-          calData = await calRes.json();
-          localStorage.setItem('jans_calendar', JSON.stringify(calData));
-          renderCal(); // re-render with fresh data
+          const ghCal = await calRes.json();
+          if (Object.keys(ghCal).length >= Object.keys(calData).length) {
+            calData = ghCal;
+            localStorage.setItem('jans_calendar', JSON.stringify(calData));
+            renderCal();
+          }
         }
-        if (resRes.ok) {
-          reservas = await resRes.json();
-          localStorage.setItem('jans_reservas', JSON.stringify(reservas));
-        }
-      } catch(e) {
-        // GitHub unavailable — use localStorage data already rendered
-      }
+      } catch(e) {}
     });
 
     // ── Calendar ──
