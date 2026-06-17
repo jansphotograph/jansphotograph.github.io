@@ -523,11 +523,15 @@
         <div class="card">
           <!-- Nav row -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-            <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
               <span style="font-weight:700;font-size:1rem;min-width:200px;text-align:center" id="calMonthLabel"></span>
               <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
               <button class="btn btn-sm btn-outline" onclick="calGoToday()" style="margin-left:6px">Hoy</button>
+              <button class="btn btn-sm btn-blue" onclick="syncCalendarPublic()" style="margin-left:4px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+                Sincronizar
+              </button>
             </div>
           </div>
 
@@ -1227,8 +1231,8 @@ async function ghPut(file, data) {
 // Owner and repo name are set in CONFIG_PUBLIC below.
 // No token needed for reading; token needed for writing (same token if you have push access).
 const CONFIG_PUBLIC = {
-  get OWNER() { return localStorage.getItem('jans_public_owner') || 'tu-usuario-github'; },
-  get REPO()  { return localStorage.getItem('jans_public_repo')  || 'tu-repo-pagina';   },
+  get OWNER() { return localStorage.getItem('jans_public_owner') || 'jansphotograph'; },
+  get REPO()  { return localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io'; },
 };
 const GH_BASE_PUBLIC = () =>
   `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data/socialmedia`;
@@ -1642,6 +1646,17 @@ async function ctxOpenDay() {
   await ghPut('calendar.json', state.calendar);
   await ghPutPublic('calendar.json', state.calendar);
   showToast('Día abierto — disponible para reservas ✓');
+}
+
+async function syncCalendarPublic() {
+  showToast('Sincronizando calendario...', 'success');
+  try {
+    const ok = await ghPutPublic('calendar.json', state.calendar);
+    if (ok) showToast('Calendario publicado ✓ — visible en index y reservas');
+    else    showToast('Error al sincronizar — verifica configuración GitHub', 'error');
+  } catch(e) {
+    showToast('Error de conexión', 'error');
+  }
 }
 
 async function markSelectedAvailable() {
