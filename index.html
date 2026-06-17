@@ -394,7 +394,7 @@
     // ═══════════════════════════════════════
     //  AVAILABILITY CALENDAR — index.html
     // ═══════════════════════════════════════
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
       const OWNER  = 'jansphotograph';
       const REPO   = 'jansphotograph.github.io';
       const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -418,7 +418,6 @@
         const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
         const todayStr    = new Date().toISOString().split('T')[0];
 
-        // Empty cells before first day
         for (let i = 0; i < firstDay; i++) {
           const el = document.createElement('div');
           el.className = 'avail-day';
@@ -436,29 +435,29 @@
           else if (ds < todayStr)      el.classList.add('past');
           else if (st === 'booked')    el.classList.add('booked');
           else if (st === 'available') el.classList.add('available');
-          else                         el.classList.add('unmarked'); // future, not yet configured
+          else                         el.classList.add('unmarked');
 
           days.appendChild(el);
         }
       }
 
-      document.getElementById('availPrev')?.addEventListener('click', function() {
+      document.getElementById('availPrev').addEventListener('click', function() {
         calMonth--;
         if (calMonth < 0) { calMonth = 11; calYear--; }
         renderAvailCal();
       });
-      document.getElementById('availNext')?.addEventListener('click', function() {
+      document.getElementById('availNext').addEventListener('click', function() {
         calMonth++;
         if (calMonth > 11) { calMonth = 0; calYear++; }
         renderAvailCal();
       });
 
-      // Render immediately with local data
+      // Render with localStorage data right away
       renderAvailCal();
 
-      // Then fetch fresh data from GitHub
+      // Fetch latest from GitHub and re-render
       fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/calendar.json?t=' + Date.now(), { cache: 'no-cache' })
-        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(r) { return r.ok ? r.json() : null; })
         .then(function(data) {
           if (!data) return;
           calData = data;
@@ -466,7 +465,7 @@
           renderAvailCal();
         })
         .catch(function() {});
-    })();
+    });
 
   </script>
 </body>
