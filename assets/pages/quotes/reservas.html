@@ -242,11 +242,13 @@
     let selectedDate = null;
     let selectedHour = null;
 
+    // ── Config — mismo repo público ──
+    const OWNER = 'jansphotograph';
+    const REPO  = 'jansphotograph.github.io';
+    const BASE  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
+
     // ── Init ──
-    document.addEventListener('DOMContentLoaded', function() {
-      // Load calendar & reservas from localStorage
-      try { calData  = JSON.parse(localStorage.getItem('jans_calendar')  || '{}'); } catch(e) {}
-      try { reservas = JSON.parse(localStorage.getItem('jans_reservas')  || '[]'); } catch(e) {}
+    document.addEventListener('DOMContentLoaded', async function() {
 
       // URL params
       const p = new URLSearchParams(window.location.search);
@@ -256,10 +258,31 @@
         badge.style.display = 'inline-flex';
         document.getElementById('rPlan').value = p.get('plan') + (p.get('precio') ? ' ($' + p.get('precio') + ')' : '');
       }
-      // Set min date on date input
       document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
 
+      // 1. Load from localStorage immediately (instant render)
+      try { calData  = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+      try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
       renderCal();
+
+      // 2. Fetch from GitHub for latest data (all visitors get it)
+      try {
+        const [calRes, resRes] = await Promise.all([
+          fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' }),
+          fetch(`${BASE}/reservas.json?t=${Date.now()}`, { cache: 'no-cache' })
+        ]);
+        if (calRes.ok) {
+          calData = await calRes.json();
+          localStorage.setItem('jans_calendar', JSON.stringify(calData));
+          renderCal(); // re-render with fresh data
+        }
+        if (resRes.ok) {
+          reservas = await resRes.json();
+          localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+        }
+      } catch(e) {
+        // GitHub unavailable — use localStorage data already rendered
+      }
     });
 
     // ── Calendar ──
@@ -284,9 +307,10 @@
         el.className = 'cal-day';
         el.textContent = d;
         if(ds===todayStr)    el.classList.add('today');
-        if(isPast)           el.classList.add('past');
-        else if(st==='booked')    el.classList.add('booked');
-        else if(st==='available') {
+        if(isPast)          { el.classList.add('past'); }
+        else if(st==='booked')   { el.classList.add('booked'); }
+        else {
+          // available (explicitly marked) or unmarked — both are selectable
           el.classList.add('available');
           if(selectedDate===ds) el.classList.add('selected');
           el.addEventListener('click', () => pickDate(ds, d));
@@ -348,11 +372,20 @@
       const ds = document.getElementById('rFecha').value;
       if(!ds) return;
       const st = calData[ds];
-      if(st !== 'available') {
-        alert('Esa fecha no está disponible. Por favor selecciona una fecha marcada en verde en el calendario.');
+      const today = new Date().toISOString().split('T')[0];
+
+      // Block past dates and explicitly booked dates
+      if(ds < today) {
+        alert('No puedes seleccionar una fecha pasada.');
         document.getElementById('rFecha').value = selectedDate || '';
         return;
       }
+      if(st === 'booked') {
+        alert('Esa fecha está reservada. Por favor elige otra fecha disponible (marcada en verde).');
+        document.getElementById('rFecha').value = selectedDate || '';
+        return;
+      }
+
       const [y,m,d] = ds.split('-');
       calYear  = parseInt(y);
       calMonth = parseInt(m)-1;
