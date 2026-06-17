@@ -432,10 +432,11 @@
           el.className = 'avail-day';
           el.textContent = d;
 
-          if (ds === todayStr)       el.classList.add('today');
-          else if (ds < todayStr)    el.classList.add('past');
-          else if (st === 'booked')  el.classList.add('booked');
+          if (ds === todayStr)         el.classList.add('today');
+          else if (ds < todayStr)      el.classList.add('past');
+          else if (st === 'booked')    el.classList.add('booked');
           else if (st === 'available') el.classList.add('available');
+          else                         el.classList.add('unmarked'); // future, not yet configured
 
           days.appendChild(el);
         }
