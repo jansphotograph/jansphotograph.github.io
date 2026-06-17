@@ -394,6 +394,11 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Cotizaciones</div>
+        <button class="sidebar-link" onclick="switchView('reservas', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Reservas
+          <span class="badge" id="reservasBadge">0</span>
+        </button>
         <button class="sidebar-link" onclick="switchView('quotes', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Cotizaciones
@@ -893,6 +898,45 @@
         </div>
       </div>
 
+      <!-- ── RESERVAS ── -->
+      <div class="view" id="view-reservas">
+        <div class="page-header">
+          <h2>Reservas</h2>
+          <p>Solicitudes de sesiones recibidas desde la página web</p>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <select id="filterResStatus" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmada</option>
+            <option value="declined">Declinada</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+          <input type="month" id="filterResMonth" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Plan</th>
+                  <th>Estado</th>
+                  <th>Recibida</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="reservasTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ── PLANES PÚBLICOS ── -->
       <div class="view" id="view-planesPublicos">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -1004,6 +1048,45 @@
         Descargar PDF
       </button>
       <button class="btn btn-outline" onclick="closeModal('pdfModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESERVA DETAIL MODAL ══ -->
+<div class="modal-overlay" id="reservaModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h3 id="reservaModalTitle">Detalle de Reserva</h3>
+      <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
+    </div>
+    <div id="reservaModalBody"></div>
+  </div>
+</div>
+
+<!-- ══ EDIT RESERVA MODAL ══ -->
+<div class="modal-overlay" id="editReservaModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3>Editar Reserva</h3>
+      <button class="modal-close" onclick="closeModal('editReservaModal')">×</button>
+    </div>
+    <div class="field"><label>Fecha</label><input type="date" id="editResDate" /></div>
+    <div class="field"><label>Hora</label>
+      <select id="editResHora">
+        <option value="8|8:00 AM">8:00 AM</option><option value="9|9:00 AM">9:00 AM</option>
+        <option value="10|10:00 AM">10:00 AM</option><option value="11|11:00 AM">11:00 AM</option>
+        <option value="12|12:00 PM">12:00 PM</option><option value="13|1:00 PM">1:00 PM</option>
+        <option value="14|2:00 PM">2:00 PM</option><option value="15|3:00 PM">3:00 PM</option>
+        <option value="16|4:00 PM">4:00 PM</option><option value="17|5:00 PM">5:00 PM</option>
+        <option value="18|6:00 PM">6:00 PM</option><option value="19|7:00 PM">7:00 PM</option>
+        <option value="20|8:00 PM">8:00 PM</option>
+      </select>
+    </div>
+    <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+    <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="saveEditReserva()">Guardar cambios</button>
+      <button class="btn btn-outline" onclick="closeModal('editReservaModal')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -1137,6 +1220,8 @@ document.addEventListener('DOMContentLoaded', function() {
   loadSocialLinksUI();
   loadPublicPlans();
   renderPublicPlans();
+  loadReservas();
+  renderReservasTable();
 });
 
 // ── Logout — clear session and go to index ──
@@ -1199,6 +1284,7 @@ function updateDashboard() {
   document.getElementById('statApproved').textContent = approved;
   document.getElementById('statRevenue').textContent  = `$${revenue.toFixed(2)}`;
   document.getElementById('pendingBadge').textContent = pending;
+  try { const rp = JSON.parse(localStorage.getItem('jans_reservas')||'[]').filter(r=>r.status==='pending').length; const rb=document.getElementById('reservasBadge'); if(rb) rb.textContent=rp; } catch(e) {}
   const rows = state.quotes.slice(-6).reverse().map(q => `
     <tr>
       <td>${q.clientName}</td>
@@ -1925,6 +2011,188 @@ async function saveYtLink() {
   } else {
     showToast('Error al publicar — verifica token y repo público', 'error');
   }
+}
+
+// ═══════════════════════════════════════
+//  RESERVAS MANAGER
+// ═══════════════════════════════════════
+const WA_NUMBER = '50768622402';
+let allReservas  = [];
+let editingResId = null;
+
+function loadReservas() {
+  try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
+}
+
+function resStatusLabel(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada' }[s] || s;
+}
+function resStatusClass(s) {
+  return { pending:'status-pending', confirmed:'status-approved', declined:'status-rejected', cancelled:'status-rejected' }[s] || '';
+}
+
+function renderReservasTable() {
+  loadReservas();
+  const filterStatus = document.getElementById('filterResStatus')?.value || '';
+  const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
+  let list = [...allReservas].reverse().filter(r => {
+    if(filterStatus && r.status !== filterStatus) return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('reservasTableBody');
+  if(!tbody) return;
+  const pending = allReservas.filter(r=>r.status==='pending').length;
+  const badge   = document.getElementById('reservasBadge');
+  if(badge) badge.textContent = pending;
+
+  if(!list.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(r => `
+    <tr>
+      <td>
+        <div style="font-weight:600">${r.nombre}</div>
+        <div style="font-size:.75rem;color:var(--gray-l)">${r.tel}</div>
+      </td>
+      <td style="font-size:.88rem">${r.fechaLabel || r.fecha}</td>
+      <td style="font-size:.88rem">${r.hora || '—'}</td>
+      <td style="font-size:.82rem;color:var(--gray-l)">${r.plan || '—'}</td>
+      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
+      <td style="font-size:.78rem;color:var(--gray-l)">${r.createdAt || '—'}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-outline" onclick="viewReserva('${r.id}')">Ver</button>
+          <button class="btn btn-sm btn-green"   onclick="changeResStatus('${r.id}','confirmed')">✓</button>
+          <button class="btn btn-sm btn-red"     onclick="changeResStatus('${r.id}','declined')">✗</button>
+          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${r.id}')">✏</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function viewReserva(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  document.getElementById('reservaModalTitle').textContent = 'Reserva — ' + r.nombre;
+  const waMsg = encodeURIComponent(
+    '¡Hola ' + r.nombre + '! 📸
+' +
+    'Tu reserva ha sido confirmada:
+' +
+    '📅 Fecha: ' + (r.fechaLabel||r.fecha) + '
+' +
+    '🕐 Hora: ' + r.hora + '
+' +
+    (r.plan ? '📋 Plan: ' + r.plan + '
+' : '') +
+    '
+¡Te esperamos! — Jans Photograph'
+  );
+  document.getElementById('reservaModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Fecha</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Hora</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Recibida</div><div>${r.createdAt||'—'}</div></div>
+    </div>
+    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
+    <hr class="section-divider" />
+    <div class="btn-row" style="flex-wrap:wrap">
+      <button class="btn btn-green"   onclick="changeResStatus('${r.id}','confirmed');closeModal('reservaModal')">✓ Confirmar</button>
+      <button class="btn btn-red"     onclick="changeResStatus('${r.id}','declined');closeModal('reservaModal')">✗ Declinar</button>
+      <button class="btn btn-outline" onclick="changeResStatus('${r.id}','cancelled');closeModal('reservaModal')">Cancelar</button>
+      <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>
+      <a class="btn btn-blue" href="https://wa.me/${WA_NUMBER}?text=${waMsg}" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <button class="btn btn-red"     onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
+    </div>`;
+  openModal('reservaModal');
+}
+
+function changeResStatus(id, status) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  allReservas[idx].status = status;
+
+  // If confirmed → block calendar slots (±2 hours around horaVal)
+  if(status === 'confirmed') {
+    const r   = allReservas[idx];
+    const ds  = r.fecha;
+    const hv  = parseInt(r.horaVal);
+    // Mark the day as booked in calData
+    const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+    calData[ds] = 'booked';
+    // Store confirmed reserva block info
+    r.blockedHours = [];
+    for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
+    localStorage.setItem('jans_calendar', JSON.stringify(calData));
+    state.calendar = calData;
+    renderCalendar?.();
+    showToast('Reserva confirmada — fecha bloqueada en el calendario ✓');
+  } else if(status === 'declined' || status === 'cancelled') {
+    // If was confirmed, unblock the calendar day if no other confirmed on same day
+    const r   = allReservas[idx];
+    const ds  = r.fecha;
+    const othersConfirmed = allReservas.some((x,i) => i!==idx && x.fecha===ds && x.status==='confirmed');
+    if(!othersConfirmed) {
+      const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+      calData[ds] = 'available'; // reopen the day
+      localStorage.setItem('jans_calendar', JSON.stringify(calData));
+      state.calendar = calData;
+      renderCalendar?.();
+    }
+    showToast('Reserva ' + resStatusLabel(status).toLowerCase() + ' — calendario actualizado');
+  } else {
+    showToast('Estado actualizado ✓');
+  }
+
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  renderReservasTable();
+  updateDashboard();
+}
+
+function openEditReserva(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  editingResId = id;
+  document.getElementById('editResDate').value  = r.fecha || '';
+  document.getElementById('editResHora').value  = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
+  document.getElementById('editResPlan').value  = r.plan || '';
+  document.getElementById('editResNotas').value = r.notas || '';
+  openModal('editReservaModal');
+}
+
+function saveEditReserva() {
+  const idx = allReservas.findIndex(x=>x.id===editingResId); if(idx<0) return;
+  const horaRaw = document.getElementById('editResHora').value.split('|');
+  const fecha   = document.getElementById('editResDate').value;
+  const [y,m,d] = fecha.split('-');
+  allReservas[idx] = {
+    ...allReservas[idx],
+    fecha,
+    fechaLabel: parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y,
+    horaVal:  parseInt(horaRaw[0]),
+    hora:     horaRaw[1] || allReservas[idx].hora,
+    plan:     document.getElementById('editResPlan').value,
+    notas:    document.getElementById('editResNotas').value,
+  };
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  closeModal('editReservaModal');
+  renderReservasTable();
+  showToast('Reserva actualizada ✓');
+}
+
+function deleteReserva(id) {
+  if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
+  allReservas = allReservas.filter(x=>x.id!==id);
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  closeModal('reservaModal');
+  renderReservasTable();
+  updateDashboard();
+  showToast('Reserva eliminada', 'error');
 }
 
 // ── Public Plans Manager ──
