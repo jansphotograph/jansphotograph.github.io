@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": "r_1781711628716",
+    "nombre": "Temu",
+    "tel": "68622402",
+    "email": "temu.com",
+    "plan": "Plan Basico ($35)",
+    "notas": "En estudio",
+    "fecha": "2026-06-19",
+    "fechaLabel": "19 de Junio 2026",
+    "hora": "2:00 PM",
+    "horaVal": 14,
+    "status": "confirmed",
+    "createdAt": "06/17/2026",
+    "blockedHours": [
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  }
+]
