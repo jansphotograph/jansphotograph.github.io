@@ -1211,17 +1211,34 @@ if (sessionStorage.getItem(SESSION_KEY) !== 'true') {
 }
 
 // Once DOM is ready, initialize the app
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('topbarUser').textContent = 'Hola, ' + CONFIG.ADMIN_USER;
-  state.loggedIn = true;
-  loadAllData();
-  renderCalendar();
-  loadGithubConfigUI();
-  loadSocialLinksUI();
-  loadPublicPlans();
-  renderPublicPlans();
-  loadReservas();
-  renderReservasTable();
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    // Close modals when clicking overlay background
+    document.querySelectorAll('.modal-overlay').forEach(el =>
+      el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); })
+    );
+
+    // Set topbar
+    const userEl = document.getElementById('topbarUser');
+    if (userEl) userEl.textContent = 'Hola, ' + CONFIG.ADMIN_USER;
+    state.loggedIn = true;
+
+    // Render local data first (instant, no network)
+    try { renderCalendar(); }     catch(e) { console.error('renderCalendar', e); }
+    try { loadPublicPlans(); renderPublicPlans(); } catch(e) { console.error('plans', e); }
+    try { loadReservas(); renderReservasTable(); }  catch(e) { console.error('reservas', e); }
+    try { updateDashboard(); }    catch(e) { console.error('dashboard', e); }
+    try { loadGithubConfigUI(); } catch(e) { console.error('ghConfig', e); }
+
+    // Load from GitHub in background (non-blocking)
+    loadAllData().catch(e => console.warn('GitHub sync failed:', e));
+
+    // Load social links (async, non-blocking)
+    loadSocialLinksUI().catch(e => console.warn('social links failed:', e));
+
+  } catch(e) {
+    console.error('Master init error:', e);
+  }
 });
 
 // ── Logout — clear session and go to index ──
@@ -1232,19 +1249,33 @@ function handleLogout() {
 
 // ── Load All Data ──
 async function loadAllData() {
-  showToast('Cargando datos de GitHub…', 'success');
-  const [q, s, pl, cal] = await Promise.all([
-    ghGet('quotes.json'), ghGet('services.json'),
-    ghGet('plans.json'),  ghGet('calendar.json')
-  ]);
-  if (q)   state.quotes   = q;
-  if (s)   state.services = s;
-  if (pl)  state.plans    = pl;
-  if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); await ghPutPublic('calendar.json', cal); }
-  updateDashboard(); renderQuotesTable(); renderCalendar();
-  renderServices(); renderPlans(); updateQPlanSelect();
-  document.getElementById('ghRepoDisplay').textContent = `${CONFIG.GH_OWNER}/${CONFIG.GH_REPO}`;
-  showToast('Datos sincronizados ✓', 'success');
+  try {
+    const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+    if (!token || token.startsWith('ghp_XXXX')) {
+      showToast('GitHub no configurado — modo local', 'error');
+      updateDashboard(); renderQuotesTable(); renderCalendar();
+      renderServices(); renderPlans(); updateQPlanSelect();
+      return;
+    }
+    showToast('Sincronizando con GitHub…', 'success');
+    const [q, s, pl, cal] = await Promise.all([
+      ghGet('quotes.json'), ghGet('services.json'),
+      ghGet('plans.json'),  ghGet('calendar.json')
+    ]);
+    if (q)   state.quotes   = q;
+    if (s)   state.services = s;
+    if (pl)  state.plans    = pl;
+    if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); ghPutPublic('calendar.json', cal).catch(()=>{}); }
+    updateDashboard(); renderQuotesTable(); renderCalendar();
+    renderServices(); renderPlans(); updateQPlanSelect();
+    const el = document.getElementById('ghRepoDisplay');
+    if(el) el.textContent = CONFIG.GH_OWNER + '/' + CONFIG.GH_REPO;
+    showToast('Datos sincronizados ✓', 'success');
+  } catch(e) {
+    console.warn('loadAllData error:', e);
+    showToast('Error al cargar datos', 'error');
+    updateDashboard(); renderQuotesTable();
+  }
 }
 
 // ── Toast ──
@@ -1260,7 +1291,7 @@ function showToast(msg, type='success') {
 // ── Modal ──
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); }));
+// modal-overlay click-outside (moved to DOMContentLoaded)
 
 // ── Sidebar Navigation ──
 function switchView(name, btn) {
