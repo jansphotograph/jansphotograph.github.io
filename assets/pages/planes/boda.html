@@ -218,25 +218,23 @@
 
   <script src="../../js/main.js"></script>
   <script>
-    // ── Load plan cards from localStorage (saved by Master) ──
-    document.addEventListener('DOMContentLoaded', function() {
-      const PLAN_KEY = 'jans_planes';
+    // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
+    document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = 'boda';
-      const container = document.getElementById('planCardsContainer');
+      const container   = document.getElementById('planCardsContainer');
+      const OWNER = 'jansphotograph'; // ← reemplaza con tu usuario de GitHub
+      const REPO  = 'jansphotograph.github.io';   // ← reemplaza con el nombre de tu repo
 
-      try {
-        const allPlans = JSON.parse(localStorage.getItem(PLAN_KEY) || '[]');
+      function renderPlans(allPlans) {
         const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
-
         if (!plans.length) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
           return;
         }
-
         container.innerHTML = plans.map(p => `
           <div class="plan-card-pub">
             <div class="pc-name">${p.nombre}</div>
-            <div class="pc-price">${p.precio}<span> USD</span></div>
+            <div class="pc-price">$${p.precio}<span> USD</span></div>
             <ul class="pc-includes">
               ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
             </ul>
@@ -244,8 +242,36 @@
               class="btn-agendar">Agendar</a>
           </div>
         `).join('');
+      }
+
+      // 1. Show from localStorage immediately (instant)
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+        if (local.length) { renderPlans(local); }
+      } catch(e) {}
+
+      // 2. Fetch from GitHub for latest version (visible to all visitors)
+      if (OWNER === 'tu-usuario-github') {
+        if (!document.querySelector('.plan-card-pub')) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+        }
+        return;
+      }
+      try {
+        const res = await fetch(
+          `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`,
+          { cache: 'no-cache' }
+        );
+        if (res.ok) {
+          const plans = await res.json();
+          localStorage.setItem('jans_planes', JSON.stringify(plans)); // update local cache
+          renderPlans(plans);
+        }
       } catch(e) {
-        container.innerHTML = '<div class="plans-empty">Error al cargar los planes.</div>';
+        // GitHub failed — keep whatever localStorage showed
+        if (!document.querySelector('.plan-card-pub')) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+        }
       }
     });
   </script>
