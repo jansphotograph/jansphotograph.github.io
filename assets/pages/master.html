@@ -2117,18 +2117,12 @@ function viewReserva(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
   document.getElementById('reservaModalTitle').textContent = 'Reserva — ' + r.nombre;
   const waMsg = encodeURIComponent(
-    '¡Hola ' + r.nombre + '! 📸
-' +
-    'Tu reserva ha sido confirmada:
-' +
-    '📅 Fecha: ' + (r.fechaLabel||r.fecha) + '
-' +
-    '🕐 Hora: ' + r.hora + '
-' +
-    (r.plan ? '📋 Plan: ' + r.plan + '
-' : '') +
-    '
-¡Te esperamos! — Jans Photograph'
+    '¡Hola ' + r.nombre + '! 📸\n' +
+    'Tu reserva ha sido confirmada:\n' +
+    'Fecha: ' + (r.fechaLabel||r.fecha) + '\n' +
+    'Hora: ' + r.hora + '\n' +
+    (r.plan ? 'Plan: ' + r.plan + '\n' : '') +
+    '\n¡Te esperamos! — Jans Photograph'
   );
   document.getElementById('reservaModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
