@@ -393,45 +393,51 @@
 
     // ═══════════════════════════════════════
     //  AVAILABILITY CALENDAR — index.html
+    //  Lee directamente del mismo localStorage
+    //  que usa el Master (mismo dominio)
     // ═══════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
-      const OWNER  = 'jansphotograph';
-      const REPO   = 'jansphotograph.github.io';
       const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
       let calYear  = new Date().getFullYear();
       let calMonth = new Date().getMonth();
-      let calData  = {};
 
-      // Load from localStorage immediately
-      try { calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+      function getCalData() {
+        try { return JSON.parse(localStorage.getItem('jans_calendar') || '{}'); }
+        catch(e) { return {}; }
+      }
 
       function renderAvailCal() {
         const label = document.getElementById('availLabel');
         const days  = document.getElementById('availDays');
         if (!label || !days) return;
 
+        const calData   = getCalData();
+        const todayStr  = new Date().toISOString().split('T')[0];
+        const firstDay  = new Date(calYear, calMonth, 1).getDay();
+        const daysInMon = new Date(calYear, calMonth + 1, 0).getDate();
+
         label.textContent = MONTHS[calMonth] + ' ' + calYear;
-        days.innerHTML = '';
+        days.innerHTML    = '';
 
-        const firstDay    = new Date(calYear, calMonth, 1).getDay();
-        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-        const todayStr    = new Date().toISOString().split('T')[0];
-
+        // Empty cells
         for (let i = 0; i < firstDay; i++) {
           const el = document.createElement('div');
           el.className = 'avail-day';
           days.appendChild(el);
         }
 
-        for (let d = 1; d <= daysInMonth; d++) {
-          const ds  = calYear + '-' + String(calMonth + 1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-          const st  = calData[ds];
-          const el  = document.createElement('div');
-          el.className = 'avail-day';
-          el.textContent = d;
+        // Day cells
+        for (let d = 1; d <= daysInMon; d++) {
+          const ds = calYear + '-' +
+                     String(calMonth + 1).padStart(2, '0') + '-' +
+                     String(d).padStart(2, '0');
+          const st = calData[ds];
+          const el = document.createElement('div');
+          el.className    = 'avail-day';
+          el.textContent  = d;
 
-          if (ds === todayStr)         el.classList.add('today');
+          if      (ds === todayStr)    el.classList.add('today');
           else if (ds < todayStr)      el.classList.add('past');
           else if (st === 'booked')    el.classList.add('booked');
           else if (st === 'available') el.classList.add('available');
@@ -442,29 +448,24 @@
       }
 
       document.getElementById('availPrev').addEventListener('click', function() {
-        calMonth--;
-        if (calMonth < 0) { calMonth = 11; calYear--; }
+        if (--calMonth < 0) { calMonth = 11; calYear--; }
         renderAvailCal();
       });
       document.getElementById('availNext').addEventListener('click', function() {
-        calMonth++;
-        if (calMonth > 11) { calMonth = 0; calYear++; }
+        if (++calMonth > 11) { calMonth = 0; calYear++; }
         renderAvailCal();
       });
 
-      // Render with localStorage data right away
+      // Render on load
       renderAvailCal();
 
-      // Fetch latest from GitHub and re-render
-      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/calendar.json?t=' + Date.now(), { cache: 'no-cache' })
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .then(function(data) {
-          if (!data) return;
-          calData = data;
-          localStorage.setItem('jans_calendar', JSON.stringify(data));
-          renderAvailCal();
-        })
-        .catch(function() {});
+      // Re-render whenever localStorage changes (Master updated the calendar)
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'jans_calendar') renderAvailCal();
+      });
+
+      // Also poll every 30 seconds in case Master is open in another tab
+      setInterval(renderAvailCal, 30000);
     });
 
   </script>
