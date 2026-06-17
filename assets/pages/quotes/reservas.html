@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservas — Jans Photograph</title>
+  <meta name="description" content="Agenda tu sesión fotográfica con Jans Photograph." />
+  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/pages.css" />
+  <style>
+    .reservas-wrap { max-width: 900px; margin: 0 auto; padding: 60px 24px 80px; }
+    .reservas-wrap h1 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(1.8rem,4vw,2.8rem); color:#fff; margin-bottom:8px; }
+    .reservas-wrap .sub { color:rgba(255,255,255,0.5); font-size:0.95rem; margin-bottom:40px; }
+    .plan-selected-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(233,30,140,0.12); border:1px solid rgba(233,30,140,0.3);
+      border-radius:50px; padding:8px 18px; font-size:0.85rem; color:#e91e8c;
+      font-weight:600; margin-bottom:36px;
+    }
+
+    /* Calendar */
+    .res-cal-card { background:#1c1c1c; border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:32px; margin-bottom:28px; }
+    .res-cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .res-cal-title { font-family:'Playfair Display',Georgia,serif; font-size:1.2rem; color:#fff; }
+    .res-cal-nav { display:flex; align-items:center; gap:10px; }
+    .res-cal-nav button {
+      background:#111; border:1px solid rgba(255,255,255,0.1); color:#fff;
+      width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:1rem;
+      display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+    }
+    .res-cal-nav button:hover { border-color:#e91e8c; color:#e91e8c; }
+    .res-cal-nav span { font-weight:600; min-width:150px; text-align:center; font-size:0.95rem; }
+
+    .res-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+    .res-dow { text-align:center; font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#555; padding:8px 0; }
+    .res-day {
+      aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      border-radius:8px; font-size:0.88rem; font-weight:500; cursor:default;
+      border:1px solid transparent; transition:all 0.15s; position:relative;
+    }
+    .res-day.empty { cursor:default; }
+    .res-day.today { border-color:#e91e8c; color:#e91e8c; }
+    .res-day.available {
+      background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3);
+      color:#86efac; cursor:pointer;
+    }
+    .res-day.available:hover { background:rgba(34,197,94,0.22); transform:scale(1.06); }
+    .res-day.available.selected { background:#16a34a; border-color:#16a34a; color:#fff; }
+    .res-day.booked { background:rgba(239,68,68,0.08); color:rgba(255,255,255,0.2); text-decoration:line-through; cursor:not-allowed; }
+    .res-day.past { color:rgba(255,255,255,0.18); cursor:not-allowed; }
+
+    .res-legend { display:flex; gap:20px; margin-top:16px; flex-wrap:wrap; }
+    .res-legend-item { display:flex; align-items:center; gap:6px; font-size:0.75rem; color:#666; }
+    .res-dot { width:9px; height:9px; border-radius:50%; }
+
+    /* Form */
+    .res-form-card { background:#1c1c1c; border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:32px; }
+    .res-form-card h2 { font-family:'Playfair Display',Georgia,serif; font-size:1.15rem; color:#fff; margin-bottom:24px; }
+    .res-field { margin-bottom:18px; }
+    .res-field label { display:block; font-size:0.74rem; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:#888; margin-bottom:7px; }
+    .res-field input, .res-field select, .res-field textarea {
+      width:100%; padding:11px 14px; background:#111; border:1px solid rgba(255,255,255,0.1);
+      border-radius:9px; color:#fff; font-size:0.92rem; font-family:'Inter',system-ui,sans-serif; outline:none; transition:border-color 0.2s;
+    }
+    .res-field input:focus, .res-field select:focus, .res-field textarea:focus { border-color:#e91e8c; }
+    .res-field textarea { min-height:80px; resize:vertical; }
+    .res-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+    .btn-reservar {
+      width:100%; padding:14px; background:#16a34a; color:#fff; border:none;
+      border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer;
+      font-family:'Inter',system-ui,sans-serif; transition:background 0.2s, transform 0.15s;
+      margin-top:8px;
+    }
+    .btn-reservar:hover { background:#15803d; transform:translateY(-1px); }
+    .btn-reservar:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .selected-date-info {
+      background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.2);
+      border-radius:9px; padding:12px 16px; margin-bottom:20px;
+      font-size:0.88rem; color:#86efac; display:none;
+    }
+    .success-msg {
+      background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);
+      border-radius:12px; padding:28px; text-align:center; display:none;
+    }
+    .success-msg h3 { color:#86efac; font-size:1.2rem; margin-bottom:8px; }
+    .success-msg p { color:rgba(255,255,255,0.6); font-size:0.9rem; }
+
+    @media(max-width:580px) { .res-row { grid-template-columns:1fr; } .res-cal-card,.res-form-card { padding:20px; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-logo">
+      <a href="../../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" height="48" style="width:auto;max-height:48px;" /></a>
+    </div>
+    <a href="../../../../index.html" class="header-title">Jans <span>Photograph</span></a>
+    <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <div class="nav-overlay" id="navOverlay"></div>
+  <nav class="nav-drawer" id="navDrawer">
+    <ul>
+      <li><a href="../../../../index.html">Home</a></li>
+      <li><a href="../servicios.html">Servicios</a></li>
+      <li><a href="../nosotros.html">Sobre Nosotros</a></li>
+      <li><a href="../blogs.html">Blogs</a></li>
+    </ul>
+    <hr class="nav-lock-divider" />
+    <a href="../auth/auth.html" class="nav-lock-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Master
+    </a>
+  </nav>
+
+  <div style="margin-top:72px; background:linear-gradient(135deg,#0d0d0d,#1a0a10,#0d0d0d); padding:48px 24px 32px; border-bottom:1px solid rgba(233,30,140,0.15)">
+    <div style="max-width:900px;margin:0 auto">
+      <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:10px">Reservas</span>
+      <h1 style="font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;margin-bottom:10px">Agenda tu sesión</h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:0.95rem">Selecciona una fecha disponible y completa tus datos.</p>
+      <div id="planBadge" style="display:none;margin-top:16px" class="plan-selected-badge"></div>
+    </div>
+  </div>
+
+  <div class="reservas-wrap">
+
+    <!-- Calendar -->
+    <div class="res-cal-card">
+      <div class="res-cal-header">
+        <span class="res-cal-title">Disponibilidad</span>
+        <div class="res-cal-nav">
+          <button onclick="calPrev()">&#8592;</button>
+          <span id="calLabel"></span>
+          <button onclick="calNext()">&#8594;</button>
+        </div>
+      </div>
+      <div class="res-cal-grid" id="calGrid"></div>
+      <div class="res-legend">
+        <div class="res-legend-item"><div class="res-dot" style="background:#16a34a"></div> Disponible</div>
+        <div class="res-legend-item"><div class="res-dot" style="background:#ef4444"></div> Reservado</div>
+        <div class="res-legend-item"><div class="res-dot" style="background:#e91e8c"></div> Hoy</div>
+      </div>
+    </div>
+
+    <!-- Request Form -->
+    <div class="res-form-card">
+      <h2>Solicitud de reserva</h2>
+      <div class="selected-date-info" id="selectedDateInfo"></div>
+      <div id="successMsg" class="success-msg">
+        <h3>✓ Solicitud enviada</h3>
+        <p>Nos pondremos en contacto contigo a la brevedad para confirmar tu reserva.<br/>¡Gracias por elegir Jans Photograph!</p>
+      </div>
+      <div id="formBody">
+        <div class="res-row">
+          <div class="res-field"><label>Nombre completo *</label><input type="text" id="rNombre" placeholder="Tu nombre" /></div>
+          <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" placeholder="+507 6000-0000" /></div>
+        </div>
+        <div class="res-field"><label>Correo electrónico</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
+        <div class="res-row">
+          <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Plan" readonly /></div>
+          <div class="res-field"><label>Hora preferida</label>
+            <select id="rHora">
+              <option value="">— Seleccionar —</option>
+              <option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option>
+              <option>11:00 AM</option><option>12:00 PM</option><option>1:00 PM</option>
+              <option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
+              <option>5:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="res-field"><label>Notas adicionales</label><textarea id="rNotas" placeholder="Locación deseada, requerimientos especiales..."></textarea></div>
+        <button class="btn-reservar" id="btnReservar" onclick="submitReserva()" disabled>
+          Selecciona una fecha disponible
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-columns">
+        <div class="footer-col">
+          <h3 class="footer-col-title">Síguenos</h3>
+          <div class="social-icons">
+            <a class="social-icon" href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-col-title">Contáctanos</h3>
+          <div class="contact-items">
+            <a class="contact-item" href="https://wa.me/50768622402" target="_blank" rel="noopener"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span>+507 6862-2402</span></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-col-title">Conócenos</h3>
+          <p class="knowus-text">Somos apasionados de la fotografía.</p>
+          <a class="knowus-link" href="../nosotros.html">¡Conócenos! →</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../../js/main.js"></script>
+  <script>
+    const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+    let calYear  = new Date().getFullYear();
+    let calMonth = new Date().getMonth();
+    let calData  = {};
+    let selectedDate = null;
+
+    // Read calendar from localStorage (shared with Master)
+    try { calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+
+    // Read URL params
+    const params = new URLSearchParams(window.location.search);
+    const planParam   = params.get('plan')   || '';
+    const precioParam = params.get('precio') || '';
+    if (planParam) {
+      const badge = document.getElementById('planBadge');
+      badge.textContent = `Plan: ${planParam}${precioParam ? ' — $' + precioParam : ''}`;
+      badge.style.display = 'inline-flex';
+      document.getElementById('rPlan').value = planParam + (precioParam ? ` ($${precioParam})` : '');
+    }
+
+    function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
+    function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+
+    function renderCal() {
+      document.getElementById('calLabel').textContent = `${MONTHS[calMonth]} ${calYear}`;
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      DAYS.forEach(d => { const el=document.createElement('div'); el.className='res-dow'; el.textContent=d; grid.appendChild(el); });
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='res-day empty';grid.appendChild(el);}
+      for(let d=1;d<=daysInMonth;d++){
+        const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const status = calData[ds];
+        const isPast = ds < todayStr;
+        const el = document.createElement('div');
+        el.className = 'res-day';
+        el.textContent = d;
+        if(ds === todayStr) el.classList.add('today');
+        if(isPast) { el.classList.add('past'); }
+        else if(status === 'booked') { el.classList.add('booked'); el.title='No disponible'; }
+        else if(status === 'available') {
+          el.classList.add('available');
+          if(selectedDate === ds) el.classList.add('selected');
+          el.addEventListener('click', () => selectDate(ds, d));
+        }
+        grid.appendChild(el);
+      }
+    }
+
+    function selectDate(ds, d) {
+      selectedDate = ds;
+      renderCal();
+      const info = document.getElementById('selectedDateInfo');
+      info.textContent = `✓ Fecha seleccionada: ${d} de ${MONTHS[calMonth]} ${calYear}`;
+      info.style.display = 'block';
+      const btn = document.getElementById('btnReservar');
+      btn.disabled = false;
+      btn.textContent = 'Solicitar reserva';
+    }
+
+    function submitReserva() {
+      const nombre = document.getElementById('rNombre').value.trim();
+      const tel    = document.getElementById('rTel').value.trim();
+      if (!nombre || !tel) { alert('Por favor completa nombre y teléfono.'); return; }
+      if (!selectedDate) { alert('Selecciona una fecha disponible.'); return; }
+
+      // Save reservation request to localStorage for Master to see
+      const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
+      reservas.push({
+        id: `r_${Date.now()}`,
+        nombre, tel,
+        email:  document.getElementById('rEmail').value,
+        plan:   document.getElementById('rPlan').value,
+        hora:   document.getElementById('rHora').value,
+        notas:  document.getElementById('rNotas').value,
+        fecha:  selectedDate,
+        status: 'pending',
+        createdAt: new Date().toLocaleDateString('es-PA')
+      });
+      localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+
+      document.getElementById('formBody').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sync calendar from master's key
+      try { calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+      renderCal();
+    });
+  </script>
+</body>
+</html>
