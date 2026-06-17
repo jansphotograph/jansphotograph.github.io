@@ -1240,7 +1240,7 @@ async function loadAllData() {
   if (q)   state.quotes   = q;
   if (s)   state.services = s;
   if (pl)  state.plans    = pl;
-  if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); }
+  if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); await ghPutPublic('calendar.json', cal); }
   updateDashboard(); renderQuotesTable(); renderCalendar();
   renderServices(); renderPlans(); updateQPlanSelect();
   document.getElementById('ghRepoDisplay').textContent = `${CONFIG.GH_OWNER}/${CONFIG.GH_REPO}`;
@@ -1364,7 +1364,8 @@ async function markSelectedAvailable() {
   state.calendar[state.selectedDay] = 'available';
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
-  await ghPut('calendar.json', state.calendar);
+  await ghPut('calendar.json', state.calendar);          // private repo (master data)
+  await ghPutPublic('calendar.json', state.calendar);    // public repo (visible to all)
   showToast('Día marcado como disponible ✓');
 }
 async function markSelectedBooked() {
@@ -1373,6 +1374,7 @@ async function markSelectedBooked() {
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
   await ghPut('calendar.json', state.calendar);
+  await ghPutPublic('calendar.json', state.calendar);
   showToast('Día marcado como reservado ✓');
 }
 
@@ -2132,6 +2134,7 @@ function changeResStatus(id, status) {
     localStorage.setItem('jans_calendar', JSON.stringify(calData));
     state.calendar = calData;
     renderCalendar?.();
+    ghPutPublic('calendar.json', calData);
     showToast('Reserva confirmada — fecha bloqueada en el calendario ✓');
   } else if(status === 'declined' || status === 'cancelled') {
     // If was confirmed, unblock the calendar day if no other confirmed on same day
@@ -2151,6 +2154,7 @@ function changeResStatus(id, status) {
   }
 
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  ghPutPublic('reservas.json', allReservas.filter(r=>r.status==='confirmed'));
   renderReservasTable();
   updateDashboard();
 }
