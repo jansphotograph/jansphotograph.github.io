@@ -1,0 +1,13 @@
+[
+  {
+    "nombre": "Plan Basico",
+    "precio": 35,
+    "categoria": "retratos",
+    "incluye": [
+      "5 fotos editadas",
+      "1 Vestuario",
+      "En estudio",
+      "Sesión de 30 minutos"
+    ]
+  }
+]
