@@ -1266,11 +1266,18 @@ document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('c
 function switchView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-  document.getElementById(`view-${name}`).classList.add('active');
+  const target = document.getElementById('view-' + name);
+  if (!target) { console.warn('View not found:', name); return; }
+  target.classList.add('active');
   if (btn) btn.classList.add('active');
-  if (name === 'calendar') renderCalendar();
-  if (name === 'services') renderServices();
-  if (name === 'plans')    renderPlans();
+  if (name === 'calendar')      renderCalendar();
+  if (name === 'services')      renderServices();
+  if (name === 'plans')         renderPlans();
+  if (name === 'reservas')      renderReservasTable();
+  if (name === 'planesPublicos'){ loadPublicPlans(); renderPublicPlans(); }
+  if (name === 'dashboard')     updateDashboard();
+  if (name === 'quotes')        renderQuotesTable();
+  if (name === 'social')        loadSocialLinksUI();
 }
 
 // ── Dashboard ──
