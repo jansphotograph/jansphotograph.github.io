@@ -171,6 +171,29 @@
   background: linear-gradient(90deg, #c71e5f, #e91e8c);
 }
 .plan-card-pub:hover { border-color: rgba(233,30,140,0.3); transform: translateY(-4px); }
+
+/* ── Popular badge ── */
+.plan-card-pub.plan-popular {
+  border-color: rgba(233,30,140,0.45);
+  box-shadow: 0 0 0 1px rgba(233,30,140,0.2);
+}
+.popular-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #c71e5f, #e91e8c);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 16px;
+  border-radius: 0 0 10px 10px;
+  white-space: nowrap;
+  z-index: 1;
+}
+.pc-name-popular { margin-top: 18px; }
 .plan-card-pub .pc-name {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 1.25rem;
