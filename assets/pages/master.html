@@ -2597,14 +2597,20 @@ async function togglePopular(idx) {
   localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
   renderPublicPlans();
 
-  // Build popular map: { "plan_nombre": true/false } and push to public repo
+  // Build popular map
   const popularMap = {};
   publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
   localStorage.setItem('jans_popular', JSON.stringify(popularMap));
 
-  const ok = await ghPutPublic('popular.json', popularMap);
-  if (ok) showToast(publicPlans[idx].popular ? '⭐ Más Popular publicado ✓' : 'Insignia removida ✓');
-  else    showToast(publicPlans[idx].popular ? '⭐ Marcado — configura GitHub para publicar' : 'Insignia removida');
+  // Push BOTH: planes.json (with popular flag embedded) + popular.json
+  const [ok1, ok2] = await Promise.all([
+    ghPutPublic('planes.json', publicPlans),
+    ghPutPublic('popular.json', popularMap)
+  ]);
+  const published = ok1 && ok2;
+  showToast(publicPlans[idx].popular
+    ? (published ? '⭐ Más Popular publicado ✓' : '⭐ Marcado localmente — guarda en GitHub para publicar')
+    : (published ? 'Insignia removida ✓' : 'Insignia removida localmente'));
 }
 
 function openNewPlanModal() {
