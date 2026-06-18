@@ -2525,6 +2525,17 @@ let editingPlanIdx = null;
 
 function loadPublicPlans() {
   try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
+  // Always re-apply popular flags from the separate popular store
+  // so they survive logout/login cycles
+  try {
+    const popularMap = JSON.parse(localStorage.getItem('jans_popular') || '{}');
+    if (Object.keys(popularMap).length) {
+      publicPlans = publicPlans.map(p => ({
+        ...p,
+        popular: !!popularMap[p.nombre]
+      }));
+    }
+  } catch(e) {}
 }
 
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',todos:'Todas las categorías'};
