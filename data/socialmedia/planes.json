@@ -9,7 +9,8 @@
       "En estudio",
       "Sesión de 30 minutos",
       "Asesoramiento completo"
-    ]
+    ],
+    "popular": false
   },
   {
     "nombre": "Plan Zafiro",
@@ -53,6 +54,7 @@
       "Sesión de 90 minutos",
       "2 ubicaciones",
       "Asesoramiento Completo"
-    ]
+    ],
+    "popular": false
   }
 ]
