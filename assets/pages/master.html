@@ -2597,17 +2597,8 @@ let editingPlanIdx = null;
 
 function loadPublicPlans() {
   try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
-  // Always re-apply popular flags from the separate popular store
-  // so they survive logout/login cycles
-  try {
-    const popularMap = JSON.parse(localStorage.getItem('jans_popular') || '{}');
-    if (Object.keys(popularMap).length) {
-      publicPlans = publicPlans.map(p => ({
-        ...p,
-        popular: !!popularMap[p.nombre]
-      }));
-    }
-  } catch(e) {}
+  // jans_planes already has the popular flag embedded — no need to re-apply from jans_popular
+  // jans_popular is only used as a source of truth for the PUBLIC pages
 }
 
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',todos:'Todas las categorías'};
@@ -2676,23 +2667,29 @@ function renderPublicPlans() {
 }
 
 async function togglePopular(idx) {
+  // Toggle the flag
   publicPlans[idx].popular = !publicPlans[idx].popular;
-  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
-  renderPublicPlans();
+  const isNowPopular = publicPlans[idx].popular;
 
-  // Build popular map
+  // Save updated plans to localStorage FIRST so renderPublicPlans reads the new value
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+
+  // Update popular map
   const popularMap = {};
   publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
   localStorage.setItem('jans_popular', JSON.stringify(popularMap));
 
-  // Push BOTH: planes.json (with popular flag embedded) + popular.json
+  // Re-render with the new state
+  renderPublicPlans();
+
+  // Push to GitHub
   const [ok1, ok2] = await Promise.all([
     ghPutPublic('planes.json', publicPlans),
     ghPutPublic('popular.json', popularMap)
   ]);
   const published = ok1 && ok2;
-  showToast(publicPlans[idx].popular
-    ? (published ? '⭐ Más Popular publicado ✓' : '⭐ Marcado localmente — guarda en GitHub para publicar')
+  showToast(isNowPopular
+    ? (published ? '⭐ Más Popular publicado ✓' : '⭐ Marcado — sin GitHub configurado')
     : (published ? 'Insignia removida ✓' : 'Insignia removida localmente'));
 }
 
