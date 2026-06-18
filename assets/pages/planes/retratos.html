@@ -225,51 +225,53 @@
       const OWNER = 'jansphotograph'; // ← reemplaza con tu usuario de GitHub
       const REPO  = 'jansphotograph.github.io';   // ← reemplaza con el nombre de tu repo
 
-      function renderPlans(allPlans) {
+      function renderPlans(allPlans, popularMap) {
+        popularMap = popularMap || {};
         const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
         if (!plans.length) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
           return;
         }
-        container.innerHTML = plans.map(p => `
-          <div class="plan-card-pub${p.popular ? ' plan-popular' : ''}">
-            ${p.popular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
-            <div class="pc-name${p.popular ? ' pc-name-popular' : ''}">${p.nombre}</div>
+        container.innerHTML = plans.map(p => {
+          const isPopular = !!popularMap[p.nombre];
+          return `
+          <div class="plan-card-pub${isPopular ? ' plan-popular' : ''}">
+            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
+            <div class="pc-name${isPopular ? ' pc-name-popular' : ''}">${p.nombre}</div>
             <div class="pc-price">$${p.precio}<span> USD</span></div>
             <ul class="pc-includes">
               ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
             </ul>
             <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"
               class="btn-agendar">Agendar</a>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
       }
 
       // 1. Show from localStorage immediately (instant)
       try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) { renderPlans(local); }
+        const local    = JSON.parse(localStorage.getItem('jans_planes')   || '[]');
+        const localPop = JSON.parse(localStorage.getItem('jans_popular')  || '{}');
+        if (local.length) { renderPlans(local, localPop); }
       } catch(e) {}
 
-      // 2. Fetch from GitHub for latest version (visible to all visitors)
-      if (OWNER === 'tu-usuario-github') {
-        if (!document.querySelector('.plan-card-pub')) {
+      // 2. Fetch planes + popular from GitHub
+      try {
+        const BASE_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
+        const [planesRes, popularRes] = await Promise.all([
+          fetch(`${BASE_URL}/planes.json?t=${Date.now()}`,  { cache: 'no-cache' }),
+          fetch(`${BASE_URL}/popular.json?t=${Date.now()}`, { cache: 'no-cache' })
+        ]);
+        const plans     = planesRes.ok  ? await planesRes.json()  : JSON.parse(localStorage.getItem('jans_planes')  || '[]');
+        const popularMap= popularRes.ok ? await popularRes.json() : JSON.parse(localStorage.getItem('jans_popular') || '{}');
+        if (plans.length) {
+          localStorage.setItem('jans_planes',  JSON.stringify(plans));
+          localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+          renderPlans(plans, popularMap);
+        } else if (!document.querySelector('.plan-card-pub')) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
         }
-        return;
-      }
-      try {
-        const res = await fetch(
-          `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`,
-          { cache: 'no-cache' }
-        );
-        if (res.ok) {
-          const plans = await res.json();
-          localStorage.setItem('jans_planes', JSON.stringify(plans)); // update local cache
-          renderPlans(plans);
-        }
       } catch(e) {
-        // GitHub failed — keep whatever localStorage showed
         if (!document.querySelector('.plan-card-pub')) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
         }
