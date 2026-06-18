@@ -200,9 +200,10 @@
   </div>
 
   <script>
-    // ── Credenciales — deben coincidir con CONFIG en master.html ──
-    const AUTH_USER = 'admin';
-    const AUTH_PASS = 'jans2025';
+    // ── Credenciales — se pueden cambiar desde Master → Configuración ──
+    const _override = JSON.parse(localStorage.getItem('jans_auth_override') || 'null');
+    const AUTH_USER = _override?.user || 'admin';
+    const AUTH_PASS = _override?.pass || 'jans2025';
     const SESSION_KEY = 'jans_master_auth';
 
     // Si ya está autenticado, redirigir directo al master
