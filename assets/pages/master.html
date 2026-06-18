@@ -458,6 +458,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
           Redes Sociales
         </button>
+        <button class="sidebar-link" onclick="switchView('recargar', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+          Recargar Sitio
+        </button>
       </div>
     </aside>
 
@@ -1045,6 +1049,73 @@
         </div>
       </div>
 
+      <!-- ── RECARGAR SITIO ── -->
+      <div class="view" id="view-recargar">
+        <div class="page-header">
+          <h2>Recargar Sitio</h2>
+          <p>Fuerza a todas las páginas públicas a cargar los últimos cambios</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Publicar actualización
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:24px">
+            Al presionar <strong style="color:var(--white)">Recargar Sitio</strong>, se sube un nuevo <code>version.json</code> al repositorio público.
+            Todas las páginas del sitio detectan el cambio automáticamente y se recargan para mostrar
+            los últimos planes, precios, disponibilidad e imágenes.
+          </p>
+
+          <div class="field">
+            <label>Nota de actualización <span style="color:var(--gray);font-weight:400">(opcional)</span></label>
+            <input type="text" id="reloadNote" placeholder="Ej: Nuevos planes de boda, precios actualizados..." />
+          </div>
+
+          <!-- What gets updated -->
+          <div style="background:var(--dark);border-radius:12px;padding:20px;margin-bottom:24px">
+            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:14px">Al recargar se actualizará:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkPlanes" checked style="accent-color:var(--pink)"> Planes fotográficos
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkPopular" checked style="accent-color:var(--pink)"> Populares marcados
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkCalendar" checked style="accent-color:var(--pink)"> Calendario disponibilidad
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkInstagram" checked style="accent-color:var(--pink)"> Post de Instagram
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkYoutube" checked style="accent-color:var(--pink)"> Video de YouTube
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-pink" id="btnReload" onclick="publishReload()" style="font-size:1rem;padding:14px 32px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Recargar Sitio
+          </button>
+
+          <!-- Status log -->
+          <div id="reloadLog" style="margin-top:24px;display:none">
+            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:10px">Progreso</div>
+            <div id="reloadLogItems" style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem"></div>
+          </div>
+        </div>
+
+        <!-- Last reload info -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Última actualización publicada
+          </div>
+          <div id="lastReloadInfo" style="font-size:0.88rem;color:var(--gray-l)">Cargando...</div>
+        </div>
+      </div>
+
     </main>
   </div><!-- /app-layout -->
 </div><!-- /appScreen -->
@@ -1395,6 +1466,7 @@ function switchView(name, btn) {
   if (name === 'dashboard')     updateDashboard();
   if (name === 'quotes')        renderQuotesTable();
   if (name === 'social')        loadSocialLinksUI();
+  if (name === 'recargar')      loadLastReloadInfo();
 }
 
 // ── Dashboard ──
@@ -2739,6 +2811,101 @@ function changeCredentials() {
   });
   showCredMsg('✓ Credenciales actualizadas correctamente. Usa las nuevas la próxima vez que inicies sesión.', true);
   showToast('Credenciales actualizadas ✓');
+}
+
+// ═══════════════════════════════════════
+//  RECARGAR SITIO
+// ═══════════════════════════════════════
+async function publishReload() {
+  const btn     = document.getElementById('btnReload');
+  const log     = document.getElementById('reloadLog');
+  const logItems= document.getElementById('reloadLogItems');
+  const note    = document.getElementById('reloadNote').value.trim() || 'Actualización general';
+
+  btn.disabled = true;
+  btn.textContent = 'Publicando...';
+  log.style.display = 'block';
+  logItems.innerHTML = '';
+
+  function addLog(msg, ok) {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:' +
+      (ok === true ? 'rgba(34,197,94,0.1)' : ok === false ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)');
+    el.style.color = ok === true ? '#86efac' : ok === false ? '#fca5a5' : 'var(--gray-l)';
+    el.innerHTML = (ok === true ? '✓' : ok === false ? '✗' : '·') + ' ' + msg;
+    logItems.appendChild(el);
+    return el;
+  }
+
+  const tasks = [];
+
+  // 1. version.json — always
+  const versionPayload = {
+    v:    Date.now(),
+    ts:   new Date().toISOString(),
+    note
+  };
+  const vLog = addLog('Subiendo version.json...', null);
+  const vOk  = await ghPutPublic('version.json', versionPayload);
+  vLog.style.background = vOk ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+  vLog.style.color      = vOk ? '#86efac' : '#fca5a5';
+  vLog.innerHTML        = (vOk?'✓':'✗') + ' version.json — ' + (vOk ? 'OK' : 'Error');
+
+  // 2. Conditional publishes
+  const checks = {
+    chkPlanes:    { label:'planes.json',   data: publicPlans },
+    chkPopular:   { label:'popular.json',  data: (() => { const m={}; publicPlans.forEach(p=>{ if(p.popular) m[p.nombre]=true; }); return m; })() },
+    chkCalendar:  { label:'calendar.json', data: state.calendar },
+    chkInstagram: { label:'instagram.json',data: null }, // read from localStorage
+    chkYoutube:   { label:'youtube.json',  data: null },
+  };
+
+  // Fill instagram / youtube from localStorage
+  try { checks.chkInstagram.data = JSON.parse(localStorage.getItem('jans_ig_preview') || 'null'); } catch(e) {}
+  try { checks.chkYoutube.data   = JSON.parse(localStorage.getItem('jans_yt_preview')  || 'null'); } catch(e) {}
+
+  for (const [chkId, task] of Object.entries(checks)) {
+    const chk = document.getElementById(chkId);
+    if (!chk || !chk.checked) continue;
+    if (!task.data) { addLog(task.label + ' — sin datos locales, omitido', null); continue; }
+    const tLog = addLog('Subiendo ' + task.label + '...', null);
+    const ok   = await ghPutPublic(task.label, task.data);
+    tLog.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+    tLog.style.color      = ok ? '#86efac' : '#fca5a5';
+    tLog.innerHTML        = (ok?'✓':'✗') + ' ' + task.label + ' — ' + (ok ? 'OK' : 'Error');
+  }
+
+  addLog('¡Listo! El sitio se actualizará automáticamente.', true);
+  btn.disabled    = false;
+  btn.innerHTML   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg> Recargar Sitio';
+  document.getElementById('reloadNote').value = '';
+
+  // Update last reload info
+  loadLastReloadInfo();
+  showToast('Sitio actualizado y publicado ✓');
+}
+
+async function loadLastReloadInfo() {
+  const el = document.getElementById('lastReloadInfo');
+  if (!el) return;
+  try {
+    const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+    const headers = token ? { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' } : {};
+    const res = await fetch(
+      'https://api.github.com/repos/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/contents/data/socialmedia/version.json',
+      { headers }
+    );
+    if (res.ok) {
+      const j = await res.json();
+      const d = JSON.parse(atob(j.content.replace(/\n/g,'')));
+      const ts = new Date(d.ts).toLocaleString('es-PA', { dateStyle:'medium', timeStyle:'short' });
+      el.innerHTML = '<strong style="color:var(--white)">' + ts + '</strong><br><span style="color:var(--gray)">' + (d.note||'Sin nota') + '</span>';
+    } else {
+      el.textContent = 'Sin actualizaciones publicadas aún.';
+    }
+  } catch(e) {
+    el.textContent = 'No se pudo obtener la información.';
+  }
 }
 
 // ── Export JSON ──
