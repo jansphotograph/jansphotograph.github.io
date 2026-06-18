@@ -446,6 +446,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Planes (Cotización)
         </button>
+        <button class="sidebar-link" onclick="switchView('blog', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Blog
+        </button>
         <button class="sidebar-link" onclick="switchView('planesPublicos', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
           Planes Públicos
@@ -1010,6 +1014,24 @@
         </div>
       </div>
 
+      <!-- ── BLOG ── -->
+      <div class="view" id="view-blog">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div><h2>Blog</h2><p>Publicaciones que aparecen en la página de blogs</p></div>
+          <button class="btn btn-pink" onclick="openBlogModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva publicación
+          </button>
+        </div>
+        <div id="blogPostsList" style="display:flex;flex-direction:column;gap:16px"></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-pink" onclick="saveBlogPosts()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Guardar y publicar
+          </button>
+        </div>
+      </div>
+
       <!-- ── PLANES PÚBLICOS ── -->
       <div class="view" id="view-planesPublicos">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -1119,6 +1141,52 @@
     </main>
   </div><!-- /app-layout -->
 </div><!-- /appScreen -->
+
+<!-- ── BLOG POST MODAL ── -->
+<div class="modal-overlay" id="blogModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h3 id="blogModalTitle">Nueva publicación</h3>
+      <button class="modal-close" onclick="closeModal('blogModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Título *</label>
+      <input type="text" id="bpTitulo" placeholder="Título de la publicación" />
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Categoría</label>
+        <input type="text" id="bpCategoria" placeholder="Ej: Consejos, Parejas, Bodas..." />
+      </div>
+      <div class="field">
+        <label>Diseño de las otras tarjetas</label>
+        <select id="bpLayout">
+          <option value="grid">Cuadrícula (periódico)</option>
+          <option value="cards">Tarjetas (revista)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>URL de imagen principal</label>
+      <input type="url" id="bpImagen" placeholder="https://..." oninput="previewBlogImg()" />
+      <div style="margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark);display:none" id="bpImgPreview">
+        <img id="bpImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Descripción *</label>
+      <textarea id="bpDescripcion" placeholder="Texto de la publicación..." style="min-height:100px"></textarea>
+    </div>
+    <div class="field">
+      <label>Enlace externo <span style="color:var(--gray);font-weight:400">(opcional — "Leer más")</span></label>
+      <input type="url" id="bpEnlace" placeholder="https://..." />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="saveBlogModal()">Guardar publicación</button>
+      <button class="btn btn-outline" onclick="closeModal('blogModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ── NEW/EDIT PUBLIC PLAN MODAL ── -->
 <div class="modal-overlay" id="pubPlanModal">
@@ -1466,6 +1534,7 @@ function switchView(name, btn) {
   if (name === 'dashboard')     updateDashboard();
   if (name === 'quotes')        renderQuotesTable();
   if (name === 'social')        loadSocialLinksUI();
+  if (name === 'blog')          { loadBlogPosts(); renderBlogPosts(); }
   if (name === 'recargar')      loadLastReloadInfo();
 }
 
@@ -2903,6 +2972,126 @@ async function loadLastReloadInfo() {
   } catch(e) {
     el.textContent = 'No se pudo obtener la información.';
   }
+}
+
+// ═══════════════════════════════════════
+//  BLOG MANAGER
+// ═══════════════════════════════════════
+const BLOG_KEY = 'jans_blogs';
+let blogPosts    = [];
+let editingBlogIdx = null;
+
+function loadBlogPosts() {
+  try { blogPosts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(e) { blogPosts = []; }
+}
+
+function renderBlogPosts() {
+  loadBlogPosts();
+  const container = document.getElementById('blogPostsList');
+  if (!container) return;
+  if (!blogPosts.length) {
+    container.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin publicaciones. Crea la primera haciendo clic en "Nueva publicación".</div>';
+    return;
+  }
+  container.innerHTML = blogPosts.map((p, i) => `
+    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start">
+      ${p.imagen ? `<img src="${p.imagen}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}
+      <div style="flex:1;min-width:0">
+        ${p.categoria ? `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink-l);margin-bottom:4px">${p.categoria}</div>` : ''}
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>
+        <div style="font-size:0.8rem;color:var(--gray-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.descripcion||''}</div>
+        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">${p.fecha||''} · ${p.layout==='cards'?'Tarjetas':'Cuadrícula'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},-1)" title="Subir" ${i===0?'disabled':''}>↑</button>
+        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},1)"  title="Bajar" ${i===blogPosts.length-1?'disabled':''}>↓</button>
+        <button class="btn btn-sm btn-outline" onclick="editBlogPost(${i})">✏</button>
+        <button class="btn btn-sm btn-red"     onclick="deleteBlogPost(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function moveBlogPost(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= blogPosts.length) return;
+  [blogPosts[idx], blogPosts[newIdx]] = [blogPosts[newIdx], blogPosts[idx]];
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  renderBlogPosts();
+}
+
+function openBlogModal() {
+  editingBlogIdx = null;
+  document.getElementById('blogModalTitle').textContent = 'Nueva publicación';
+  document.getElementById('bpTitulo').value     = '';
+  document.getElementById('bpCategoria').value  = '';
+  document.getElementById('bpLayout').value     = 'grid';
+  document.getElementById('bpImagen').value     = '';
+  document.getElementById('bpDescripcion').value= '';
+  document.getElementById('bpEnlace').value     = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  openModal('blogModal');
+}
+
+function editBlogPost(idx) {
+  editingBlogIdx = idx;
+  const p = blogPosts[idx];
+  document.getElementById('blogModalTitle').textContent = 'Editar publicación';
+  document.getElementById('bpTitulo').value      = p.titulo      || '';
+  document.getElementById('bpCategoria').value   = p.categoria   || '';
+  document.getElementById('bpLayout').value      = p.layout      || 'grid';
+  document.getElementById('bpImagen').value      = p.imagen      || '';
+  document.getElementById('bpDescripcion').value = p.descripcion || '';
+  document.getElementById('bpEnlace').value      = p.enlace      || '';
+  previewBlogImg();
+  openModal('blogModal');
+}
+
+function previewBlogImg() {
+  const url = document.getElementById('bpImagen').value.trim();
+  const wrap = document.getElementById('bpImgPreview');
+  const img  = document.getElementById('bpImgPreviewEl');
+  if (url) { img.src = url; wrap.style.display = 'block'; }
+  else      { wrap.style.display = 'none'; }
+}
+
+function saveBlogModal() {
+  const titulo = document.getElementById('bpTitulo').value.trim();
+  const desc   = document.getElementById('bpDescripcion').value.trim();
+  if (!titulo || !desc) { showToast('Completa título y descripción', 'error'); return; }
+
+  const post = {
+    id:          editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now(),
+    titulo,
+    categoria:   document.getElementById('bpCategoria').value.trim(),
+    layout:      document.getElementById('bpLayout').value,
+    imagen:      document.getElementById('bpImagen').value.trim(),
+    descripcion: desc,
+    enlace:      document.getElementById('bpEnlace').value.trim(),
+    fecha:       editingBlogIdx !== null ? blogPosts[editingBlogIdx].fecha : new Date().toLocaleDateString('es-PA', {day:'numeric',month:'long',year:'numeric'})
+  };
+
+  if (editingBlogIdx !== null) blogPosts[editingBlogIdx] = post;
+  else                          blogPosts.unshift(post); // newest first
+
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  closeModal('blogModal');
+  renderBlogPosts();
+  showToast(editingBlogIdx !== null ? 'Publicación actualizada ✓' : 'Publicación creada ✓');
+}
+
+function deleteBlogPost(idx) {
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  blogPosts.splice(idx, 1);
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  renderBlogPosts();
+  showToast('Publicación eliminada', 'error');
+}
+
+async function saveBlogPosts() {
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  const ok = await ghPutPublic('blogs.json', blogPosts);
+  if (ok) showToast('Blog publicado en GitHub ✓');
+  else    showToast('Guardado localmente ✓ (configura GitHub para publicar)', 'error');
 }
 
 // ── Export JSON ──
