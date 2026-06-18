@@ -2574,14 +2574,14 @@ function renderPublicPlans() {
     catGrid.innerHTML = plans.map(p => {
       const realIdx = publicPlans.indexOf(p);
       const isPopular = !!p.popular;
-      return `<div style="background:var(--dark-mid,#232323);border:1px solid ${isPopular?'rgba(233,30,140,0.4)':' var(--border)'};border-radius:14px;padding:24px;position:relative">
-        ${isPopular ? '<div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--pink);color:#fff;font-size:0.62rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:3px 12px;border-radius:0 0 8px 8px">⭐ Más Popular</div>' : ''}
-        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px">
-          <button class="btn btn-sm" style="padding:5px 7px;background:${isPopular?'rgba(233,30,140,0.2)':'transparent'};border:1px solid ${isPopular?'var(--pink-l)':'var(--border)'};border-radius:7px;color:${isPopular?'var(--pink-l)':'var(--gray-l)'};cursor:pointer;font-size:0.8rem;transition:all 0.2s" onclick="togglePopular(${realIdx})" title="Marcar como Más Popular">★</button>
+      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">
+        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">
+          <button onclick="togglePopular(${realIdx})" title="${isPopular ? 'Quitar Más Popular' : 'Marcar como Más Popular'}"
+            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular?'1':'0.3'};filter:${isPopular?'none':'grayscale(1)'};transition:all 0.2s">⭐</button>
           <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>
           <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>
         </div>
-        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px;margin-top:${isPopular?'12px':'0'}">${p.nombre}</div>
+        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${p.nombre}</div>
         <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${p.precio}</div>
         <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">
           ${(p.incluye||[]).map(x=>`<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${x}</li>`).join('')}
