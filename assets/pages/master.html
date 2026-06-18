@@ -1167,11 +1167,20 @@
       </div>
     </div>
     <div class="field">
-      <label>URL de imagen principal</label>
-      <input type="url" id="bpImagen" placeholder="https://..." oninput="previewBlogImg()" />
-      <div style="margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark);display:none" id="bpImgPreview">
+      <label>Imagen de la publicación</label>
+      <div id="bpDropZone" onclick="document.getElementById('bpFileInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+        <input type="file" id="bpFileInput" accept="image/*" style="display:none" onchange="handleBlogImg(this.files[0])" />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+        <div style="font-size:0.82rem;color:var(--gray-l)" id="bpDropLabel">Haz clic o arrastra la imagen aquí</div>
+      </div>
+      <!-- Preview -->
+      <div id="bpImgPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
         <img id="bpImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
       </div>
+      <!-- Hidden field to store the path after upload -->
+      <input type="hidden" id="bpImagen" />
+      <div id="bpImgStatus" style="display:none;margin-top:6px;font-size:0.78rem"></div>
     </div>
     <div class="field">
       <label>Descripción *</label>
@@ -2995,7 +3004,7 @@ function renderBlogPosts() {
   }
   container.innerHTML = blogPosts.map((p, i) => `
     <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start">
-      ${p.imagen ? `<img src="${p.imagen}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}
+      ${(p.imagePath||p.imagen) ? `<img src="${(p.imagePath||'').startsWith('http') ? (p.imagePath||p.imagen) : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/' + (p.imagePath||p.imagen)}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}
       <div style="flex:1;min-width:0">
         ${p.categoria ? `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink-l);margin-bottom:4px">${p.categoria}</div>` : ''}
         <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>
@@ -3022,13 +3031,12 @@ function moveBlogPost(idx, dir) {
 function openBlogModal() {
   editingBlogIdx = null;
   document.getElementById('blogModalTitle').textContent = 'Nueva publicación';
-  document.getElementById('bpTitulo').value     = '';
-  document.getElementById('bpCategoria').value  = '';
-  document.getElementById('bpLayout').value     = 'grid';
-  document.getElementById('bpImagen').value     = '';
-  document.getElementById('bpDescripcion').value= '';
-  document.getElementById('bpEnlace').value     = '';
-  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpTitulo').value      = '';
+  document.getElementById('bpCategoria').value   = '';
+  document.getElementById('bpLayout').value      = 'grid';
+  document.getElementById('bpDescripcion').value = '';
+  document.getElementById('bpEnlace').value      = '';
+  resetBlogImgField();
   openModal('blogModal');
 }
 
@@ -3039,39 +3047,125 @@ function editBlogPost(idx) {
   document.getElementById('bpTitulo').value      = p.titulo      || '';
   document.getElementById('bpCategoria').value   = p.categoria   || '';
   document.getElementById('bpLayout').value      = p.layout      || 'grid';
-  document.getElementById('bpImagen').value      = p.imagen      || '';
   document.getElementById('bpDescripcion').value = p.descripcion || '';
   document.getElementById('bpEnlace').value      = p.enlace      || '';
-  previewBlogImg();
+  resetBlogImgField();
+  // Show current image if exists
+  if (p.imagePath) {
+    document.getElementById('bpImagen').value = p.imagePath;
+    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${p.imagePath}`;
+    document.getElementById('bpImgPreviewEl').src = rawUrl;
+    document.getElementById('bpImgPreview').style.display = 'block';
+    document.getElementById('bpDropLabel').textContent = '✓ Imagen actual: ' + p.imagePath.split('/').pop();
+    document.getElementById('bpDropZone').style.borderColor = 'rgba(34,197,94,0.4)';
+    setBpImgStatus('success', 'Imagen guardada en el repo. Sube una nueva para reemplazarla.');
+  }
   openModal('blogModal');
 }
 
-function previewBlogImg() {
-  const url = document.getElementById('bpImagen').value.trim();
-  const wrap = document.getElementById('bpImgPreview');
-  const img  = document.getElementById('bpImgPreviewEl');
-  if (url) { img.src = url; wrap.style.display = 'block'; }
-  else      { wrap.style.display = 'none'; }
+// ── Blog image upload ──
+let bpFileData = null; // { base64, extension, mimeType, fileName }
+
+function handleBlogImg(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    bpFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type, fileName: file.name };
+    document.getElementById('bpImgPreviewEl').src = e.target.result;
+    document.getElementById('bpImgPreview').style.display = 'block';
+    document.getElementById('bpDropLabel').textContent = '✓ ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+    document.getElementById('bpDropZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    setBpImgStatus('info', 'Imagen lista — se subirá al guardar');
+  };
+  reader.readAsDataURL(file);
 }
 
-function saveBlogModal() {
+// Drag & drop for blog images
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('bpDropZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='var(--pink-l)'; zone.style.background='rgba(233,30,140,0.05)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor='rgba(233,30,140,0.35)'; zone.style.background='var(--dark)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.borderColor='rgba(233,30,140,0.35)'; zone.style.background='var(--dark)';
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleBlogImg(file);
+    else showToast('Solo se aceptan imágenes', 'error');
+  });
+});
+
+function setBpImgStatus(type, msg) {
+  const el = document.getElementById('bpImgStatus');
+  const colors = { info:'#93c5fd', success:'#86efac', error:'#fca5a5' };
+  el.style.display = 'block';
+  el.style.color   = colors[type] || '#aaa';
+  el.textContent   = msg;
+}
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+async function saveBlogModal() {
   const titulo = document.getElementById('bpTitulo').value.trim();
   const desc   = document.getElementById('bpDescripcion').value.trim();
   if (!titulo || !desc) { showToast('Completa título y descripción', 'error'); return; }
 
+  // Keep existing imagePath by default
+  let imagePath = editingBlogIdx !== null ? (blogPosts[editingBlogIdx].imagePath || '') : '';
+
+  // Upload new image if selected
+  if (bpFileData) {
+    setBpImgStatus('info', 'Subiendo imagen...');
+    const postId  = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now();
+    const imgName = `blog_${postId}.${bpFileData.extension}`;
+    imagePath     = `assets/images/blogs/${imgName}`;
+
+    try {
+      let sha = null;
+      const getRes = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+        { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+      const body = { message: `add blog image ${imgName}`, content: bpFileData.base64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+        { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+      );
+      if (res.ok) { setBpImgStatus('success', '✓ Imagen subida: ' + imagePath); }
+      else        { setBpImgStatus('error', 'Error al subir imagen'); imagePath = ''; }
+    } catch(e) {
+      setBpImgStatus('error', 'Sin conexión — imagen no subida');
+      imagePath = '';
+    }
+  }
+
+  const postId = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now();
   const post = {
-    id:          editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now(),
+    id:          postId,
     titulo,
     categoria:   document.getElementById('bpCategoria').value.trim(),
     layout:      document.getElementById('bpLayout').value,
-    imagen:      document.getElementById('bpImagen').value.trim(),
+    imagePath,   // path in repo e.g. assets/images/blogs/blog_xxx.jpg
     descripcion: desc,
     enlace:      document.getElementById('bpEnlace').value.trim(),
     fecha:       editingBlogIdx !== null ? blogPosts[editingBlogIdx].fecha : new Date().toLocaleDateString('es-PA', {day:'numeric',month:'long',year:'numeric'})
   };
 
   if (editingBlogIdx !== null) blogPosts[editingBlogIdx] = post;
-  else                          blogPosts.unshift(post); // newest first
+  else                          blogPosts.unshift(post);
 
   localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
   closeModal('blogModal');

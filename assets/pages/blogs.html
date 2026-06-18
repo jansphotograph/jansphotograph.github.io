@@ -122,8 +122,13 @@
       });
     }
 
-    function imgOrPlaceholder(url, cls) {
-      if (url) return `<img src="${url}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
+    const RAW_BASE = 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main';
+
+    function imgOrPlaceholder(imagePath) {
+      if (imagePath) {
+        const src = imagePath.startsWith('http') ? imagePath : RAW_BASE + '/' + imagePath;
+        return `<img src="${src}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
+      }
       return `<div class="img-placeholder">📷</div>`;
     }
 
@@ -150,7 +155,7 @@
 
       html += `
       <div class="blog-featured">
-        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagen, 'blog-featured-img')}</div>
+        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagePath || featured.imagen, 'blog-featured-img')}</div>
         <div class="blog-featured-content">
           ${featured.categoria ? `<span class="blog-category-tag">${featured.categoria}</span>` : ''}
           <h2>${titleTag}</h2>
@@ -172,7 +177,7 @@
           rest.forEach(b => {
             const lk = b.enlace || null;
             html += `<div class="blog-magazine-card">
-              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagen)}</div>
+              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>
               <div class="blog-magazine-card-body">
                 ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ''}
                 <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>
@@ -189,7 +194,7 @@
           rest.forEach(b => {
             const lk = b.enlace || null;
             html += `<div class="blog-card">
-              <div class="blog-card-img">${imgOrPlaceholder(b.imagen)}</div>
+              <div class="blog-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>
               ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ''}
               <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>
               <p>${b.descripcion || ''}</p>
