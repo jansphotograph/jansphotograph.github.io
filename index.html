@@ -345,5 +345,36 @@
 
 
     </script>
+  <script>
+    // ── Auto-reload when master publishes an update ──
+    (function() {
+      const OWNER   = 'jansphotograph';
+      const REPO    = 'jansphotograph.github.io';
+      const VER_KEY = 'jans_site_version';
+
+      async function checkVersion() {
+        try {
+          const res = await fetch(
+            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
+            { cache: 'no-cache' }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const current = localStorage.getItem(VER_KEY);
+          if (current && current !== String(data.v)) {
+            // New version detected — reload the page
+            localStorage.setItem(VER_KEY, String(data.v));
+            window.location.reload(true);
+          } else {
+            localStorage.setItem(VER_KEY, String(data.v));
+          }
+        } catch(e) {}
+      }
+
+      // Check on load and every 60 seconds
+      checkVersion();
+      setInterval(checkVersion, 60000);
+    })();
+  </script>
 </body>
 </html>
