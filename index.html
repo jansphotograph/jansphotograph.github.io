@@ -176,14 +176,15 @@
           Puedes obtenerlo en YouTube > Compartir > Insertar > copiar solo el src.
         -->
         <div class="yt-placeholder">
-          <svg width="72" height="72" viewBox="0 0 24 24" fill="rgba(255,0,0,0.6)"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
-          <p>
-            Aquí aparecerá tu último video de YouTube.<br/>
-            Para activarlo, reemplaza esta sección con el código embed de tu video.<br/>
-            <a href="https://www.youtube.com/@jans_photograph" target="_blank" rel="noopener" style="color:#e91e8c;">
-              Visita nuestro canal →
-            </a>
-          </p>
+          <div class="yt-placeholder-inner">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="rgba(255,0,0,0.6)"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+            <p>
+              Aquí aparecerá tu último video de YouTube.<br/>
+              <a href="https://www.youtube.com/@jans_photograph" target="_blank" rel="noopener" style="color:#e91e8c;">
+                Visita nuestro canal →
+              </a>
+            </p>
+          </div>
         </div>
         <!-- 
           Cuando tengas el video, elimina el bloque .yt-placeholder de arriba y descomenta esto:
@@ -332,12 +333,11 @@
         const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
         if (yt && yt.ytId) {
           const wrap = document.querySelector('.yt-embed-wrap');
-          if (wrap) wrap.innerHTML = `<iframe
+          if (wrap) wrap.innerHTML = `<div class="yt-video-container"><iframe
             src="https://www.youtube.com/embed/${yt.ytId}?rel=0&modestbranding=1"
             title="Último video Jans Photograph"
-            allowfullscreen loading="lazy"
-            style="width:100%;aspect-ratio:16/9;border:none;display:block">
-          </iframe>`;
+            allowfullscreen loading="lazy">
+          </iframe></div>`;
         }
       } catch(e) {}
 
