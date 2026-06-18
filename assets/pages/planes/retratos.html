@@ -233,7 +233,7 @@
           return;
         }
         container.innerHTML = plans.map(p => {
-          const isPopular = !!popularMap[p.nombre];
+          const isPopular = !!popularMap[p.nombre] || !!p.popular;
           return `
           <div class="plan-card-pub${isPopular ? ' plan-popular' : ''}">
             ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
