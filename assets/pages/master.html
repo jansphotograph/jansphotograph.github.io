@@ -2592,11 +2592,19 @@ function renderPublicPlans() {
   });
 }
 
-function togglePopular(idx) {
+async function togglePopular(idx) {
   publicPlans[idx].popular = !publicPlans[idx].popular;
   localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
   renderPublicPlans();
-  showToast(publicPlans[idx].popular ? '⭐ Marcado como Más Popular ✓' : 'Insignia removida');
+
+  // Build popular map: { "plan_nombre": true/false } and push to public repo
+  const popularMap = {};
+  publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
+  localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+
+  const ok = await ghPutPublic('popular.json', popularMap);
+  if (ok) showToast(publicPlans[idx].popular ? '⭐ Más Popular publicado ✓' : 'Insignia removida ✓');
+  else    showToast(publicPlans[idx].popular ? '⭐ Marcado — configura GitHub para publicar' : 'Insignia removida');
 }
 
 function openNewPlanModal() {
@@ -2648,9 +2656,17 @@ function savePubPlanModal() {
 
 async function savePublicPlans() {
   localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
-  const ok = await ghPutPublic('planes.json', publicPlans);
-  if (ok) showToast('Planes guardados en GitHub ✓');
-  else    showToast('Guardados localmente ✓ (GitHub pendiente)', 'error');
+  // Also sync popular map
+  const popularMap = {};
+  publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
+  localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+
+  const [ok1, ok2] = await Promise.all([
+    ghPutPublic('planes.json', publicPlans),
+    ghPutPublic('popular.json', popularMap)
+  ]);
+  if (ok1 && ok2) showToast('Planes y populares guardados en GitHub ✓');
+  else            showToast('Guardados localmente ✓ (GitHub pendiente)', 'error');
 }
 
 // ── Change Credentials ──
