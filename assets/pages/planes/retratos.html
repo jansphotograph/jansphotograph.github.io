@@ -232,8 +232,9 @@
           return;
         }
         container.innerHTML = plans.map(p => `
-          <div class="plan-card-pub">
-            <div class="pc-name">${p.nombre}</div>
+          <div class="plan-card-pub" style="${p.popular ? 'border-color:rgba(233,30,140,0.45)' : ''}">
+            ${p.popular ? '<div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:#c71e5f;color:#fff;font-size:0.62rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:3px 14px;border-radius:0 0 8px 8px;white-space:nowrap">⭐ Más Popular</div>' : ''}
+            <div class="pc-name" style="${p.popular ? 'margin-top:14px' : ''}">${p.nombre}</div>
             <div class="pc-price">$${p.precio}<span> USD</span></div>
             <ul class="pc-includes">
               ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
