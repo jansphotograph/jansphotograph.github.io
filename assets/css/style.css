@@ -362,15 +362,40 @@ header {
   background: var(--dark);
 }
 
+/* Responsive 16:9 container — funciona en todos los móviles */
+.yt-video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  background: var(--dark);
+}
+.yt-video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 .yt-placeholder {
-  aspect-ratio: 16/9;
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  background: var(--dark-mid);
+}
+.yt-placeholder-inner {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: var(--dark-mid);
-  padding: 40px;
+  padding: 24px;
   text-align: center;
 }
 .yt-placeholder svg { opacity: 0.3; }
