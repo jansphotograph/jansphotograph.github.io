@@ -22,7 +22,8 @@
       "En estudio",
       "Sesión de 45 minutos",
       "Asesoramiento completo"
-    ]
+    ],
+    "popular": true
   },
   {
     "nombre": "Plan Ruby",
@@ -36,7 +37,8 @@
       "Sesión de 60 minutos",
       "En estudio o exterior",
       "Asesoramiento completo"
-    ]
+    ],
+    "popular": true
   },
   {
     "nombre": "Plan Diamante",
