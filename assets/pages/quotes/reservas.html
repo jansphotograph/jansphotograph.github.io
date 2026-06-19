@@ -3,8 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reservas — Jans Photograph</title>
-  <meta name="description" content="Agenda tu sesión fotográfica con Jans Photograph." />
+  <!-- ══ SEO ══ -->
+  <title>Reserva tu Sesión Fotográfica | Jans Photograph Panamá</title>
+  <meta name="description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
+  <meta name="keywords"    content="reservar sesión fotográfica Panamá, agendar fotógrafo Panamá, reservas fotografía" />
+  <meta name="author"      content="Jans Photograph" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="https://jansphotograph.github.io/assets/pages/quotes/reservas.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
+  <meta property="og:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
+  <meta property="og:url"         content="https://jansphotograph.github.io/assets/pages/quotes/reservas.html" />
+  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta property="og:site_name"   content="Jans Photograph" />
+  <meta property="og:locale"      content="es_PA" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
+  <meta name="twitter:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
+  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+
+  <!-- Geo -->
+  <meta name="geo.region"      content="PA" />
+  <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
   <link rel="stylesheet" href="../../css/style.css" />
   <link rel="stylesheet" href="../../css/pages.css" />
@@ -479,6 +503,37 @@
         }
       }, 600);
     }
+  </script>
+  <script>
+    // ── Auto-reload when master publishes an update ──
+    (function() {
+      const OWNER   = 'jansphotograph';
+      const REPO    = 'jansphotograph.github.io';
+      const VER_KEY = 'jans_site_version';
+
+      async function checkVersion() {
+        try {
+          const res = await fetch(
+            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
+            { cache: 'no-cache' }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const current = localStorage.getItem(VER_KEY);
+          if (current && current !== String(data.v)) {
+            // New version detected — reload the page
+            localStorage.setItem(VER_KEY, String(data.v));
+            window.location.reload(true);
+          } else {
+            localStorage.setItem(VER_KEY, String(data.v));
+          }
+        } catch(e) {}
+      }
+
+      // Check on load and every 60 seconds
+      checkVersion();
+      setInterval(checkVersion, 60000);
+    })();
   </script>
 </body>
 </html>
