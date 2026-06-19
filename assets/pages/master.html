@@ -947,19 +947,39 @@
           </div>
 
           <div class="field">
-            <label>URL o ID del video de YouTube</label>
+            <label>URL o ID del video</label>
             <input type="text" id="ytVideoUrl" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX  ó  XXXXXXXXXXX" oninput="previewYT()" />
             <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
-              Pega la URL completa del video o solo el ID (los 11 caracteres después de <code>v=</code>).
+              Pega la URL completa o el ID del video (11 caracteres después de <code>v=</code>).
             </div>
           </div>
 
-          <!-- Preview -->
+          <div class="field">
+            <label>URL de tu canal</label>
+            <input type="text" id="ytChannelUrl" placeholder="https://www.youtube.com/@jansphotograph" />
+          </div>
+
+          <!-- Custom Thumbnail Upload -->
+          <div class="field">
+            <label>Thumbnail personalizado <span style="color:var(--gray);font-weight:400">(opcional — se guarda en /assets/images/social/youtube/)</span></label>
+            <div id="ytThumbZone" onclick="document.getElementById('ytThumbInput').click()"
+              style="border:2px dashed rgba(255,0,0,0.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="ytThumbInput" accept="image/*" style="display:none" onchange="handleYtThumb(this.files[0])" />
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff0000" opacity="0.5" style="margin:0 auto 8px;display:block"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="ytThumbLabel">Haz clic o arrastra el thumbnail aquí</div>
+            </div>
+            <div id="ytThumbPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-width:360px">
+              <img id="ytThumbImg" src="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" />
+            </div>
+            <div id="ytThumbStatus" style="display:none;margin-top:6px;font-size:0.78rem"></div>
+          </div>
+
+          <!-- Video Preview (desktop) -->
           <div id="ytPreviewWrap" style="margin:18px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:560px;display:none">
             <iframe id="ytPreviewFrame" width="100%" style="aspect-ratio:16/9;border:none;display:block" allowfullscreen loading="lazy"></iframe>
           </div>
           <div id="ytNoPreview" style="margin:18px 0;background:var(--dark);border-radius:12px;padding:24px;text-align:center;color:var(--gray);font-size:0.85rem;max-width:560px">
-            La previsualización del video aparecerá aquí cuando ingreses la URL.
+            La previsualización aparecerá aquí cuando ingreses la URL.
           </div>
 
           <div class="btn-row">
@@ -2326,7 +2346,17 @@ async function loadSocialLinksUI() {
   // Pre-fill YouTube
   try {
     const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
-    if (yt && yt.ytUrl) { document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT(); if (yt.channelUrl && document.getElementById('ytChannelUrl')) document.getElementById('ytChannelUrl').value = yt.channelUrl; }
+    if (yt && yt.ytUrl) {
+      document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT();
+      if (yt.channelUrl && document.getElementById('ytChannelUrl')) document.getElementById('ytChannelUrl').value = yt.channelUrl;
+      if (yt.thumbPath) {
+        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${yt.thumbPath}`;
+        document.getElementById('ytThumbImg').src = rawUrl;
+        document.getElementById('ytThumbPreview').style.display = 'block';
+        document.getElementById('ytThumbLabel').textContent = '✓ Thumbnail actual: ' + yt.thumbPath.split('/').pop();
+        document.getElementById('ytThumbZone').style.borderColor = 'rgba(34,197,94,0.4)';
+      }
+    }
   } catch(e) {}
 }
 
@@ -2454,6 +2484,32 @@ function extractYtId(input) {
   return '';
 }
 
+let ytThumbFileData = null; // { base64, extension, mimeType }
+
+function handleYtThumb(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    ytThumbFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type };
+    document.getElementById('ytThumbImg').src = e.target.result;
+    document.getElementById('ytThumbPreview').style.display = 'block';
+    document.getElementById('ytThumbLabel').textContent = '✓ ' + file.name;
+    document.getElementById('ytThumbZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    setYtThumbStatus('info', 'Thumbnail listo — se subirá al guardar');
+  };
+  reader.readAsDataURL(file);
+}
+
+function setYtThumbStatus(type, msg) {
+  const el = document.getElementById('ytThumbStatus');
+  const c  = { info:'#93c5fd', success:'#86efac', error:'#fca5a5' };
+  el.style.display = 'block';
+  el.style.color   = c[type] || '#aaa';
+  el.textContent   = msg;
+}
+
 function previewYT() {
   const input = document.getElementById('ytVideoUrl').value;
   const id    = extractYtId(input);
@@ -2481,15 +2537,51 @@ async function saveYtLink() {
   const id         = extractYtId(input);
   if (!input) { showToast('Ingresa una URL o ID de YouTube', 'error'); return; }
   if (!id)    { showToast('No se pudo detectar el ID del video — verifica la URL', 'error'); return; }
-  const payload = { ytUrl: input, ytId: id, channelUrl, updatedAt: new Date().toISOString() };
-  const ok = await ghPutPublic('youtube.json', payload);
-  if (ok) {
-    showToast('YouTube actualizado y publicado ✓');
-    localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
+
+  let thumbPath = null;
+
+  // Upload custom thumbnail if selected
+  if (ytThumbFileData) {
+    setYtThumbStatus('info', 'Subiendo thumbnail...');
+    const imgName  = `thumbnail.${ytThumbFileData.extension}`;
+    const imgPath  = `assets/images/social/youtube/${imgName}`;
+    try {
+      // Check if file exists to get SHA
+      let sha = null;
+      const getRes = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+        { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+      const body = { message: 'update youtube thumbnail', content: ytThumbFileData.base64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+        { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+      );
+      if (res.ok) {
+        thumbPath = imgPath;
+        setYtThumbStatus('success', '✓ Thumbnail subido');
+        ytThumbFileData = null;
+      } else {
+        setYtThumbStatus('error', 'Error al subir thumbnail');
+      }
+    } catch(e) { setYtThumbStatus('error', 'Sin conexión'); }
   } else {
-    showToast('Guardado localmente — verifica token para publicar', 'error');
-    localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
+    // Keep existing thumbPath from localStorage
+    try {
+      const existing = JSON.parse(localStorage.getItem('jans_yt_preview') || '{}');
+      thumbPath = existing.thumbPath || null;
+    } catch(e) {}
   }
+
+  const payload = { ytUrl: input, ytId: id, channelUrl, thumbPath, updatedAt: new Date().toISOString() };
+  const ok = await ghPutPublic('youtube.json', payload);
+  localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
+  if (ok) showToast('YouTube actualizado y publicado ✓');
+  else    showToast('Guardado localmente — verifica token para publicar', 'error');
 }
 
 // ═══════════════════════════════════════
