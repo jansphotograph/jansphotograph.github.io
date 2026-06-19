@@ -117,5 +117,50 @@
       "Asesoramiento Completo"
     ],
     "popular": false
+  },
+  {
+    "nombre": "Plan Mini",
+    "precio": 30,
+    "categoria": "infantiles",
+    "incluye": [
+      "4 Fotos Editadas",
+      "1 Vestuario",
+      "Individual",
+      "Sesión de 30 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Kids",
+    "precio": 45,
+    "categoria": "infantiles",
+    "incluye": [
+      "8 Fotos Editadas",
+      "1 Foto Impresa (8x10)",
+      "2 Vestuario",
+      "2 Acompañantes Máximo",
+      "Sesión de 1 hora",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Super Junior",
+    "precio": 90,
+    "categoria": "infantiles",
+    "incluye": [
+      "14 Fotos Editadas",
+      "3 Fotos Impresas (8x10)",
+      "1 Cuadro",
+      "2 Vestuario",
+      "hasta 6 acompañantes",
+      "Sesión de 2 horas",
+      "2 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
   }
 ]
