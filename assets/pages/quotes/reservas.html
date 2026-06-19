@@ -616,5 +616,44 @@
       setInterval(checkVersion, 60000);
     })();
   </script>
+  <!-- ── Importante FAB ── -->
+  <button class="fab-importante" id="fabImportante" onclick="scrollToNotas()" aria-label="Ver notas importantes" style="display:none">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+    </svg>
+    Importante
+  </button>
+
+  <script>
+    // ── Scroll to notas section ──
+    function scrollToNotas() {
+      const el = document.getElementById('notasSection');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── Show FAB only when notasSection has content ──
+    document.addEventListener('DOMContentLoaded', function() {
+      const fab    = document.getElementById('fabImportante');
+      const notas  = document.getElementById('notasSection');
+      const footer = document.querySelector('footer');
+
+      // Observer: show FAB when notas section becomes visible
+      const observer = new MutationObserver(function() {
+        if (notas.style.display !== 'none') {
+          fab.style.display = 'flex';
+        }
+      });
+      observer.observe(notas, { attributes: true, attributeFilter: ['style'] });
+
+      // Hide near footer
+      function checkFab() {
+        if (!footer || fab.style.display === 'none') return;
+        const footerTop = footer.getBoundingClientRect().top;
+        const fabZone   = window.innerHeight - 28 - fab.offsetHeight - 16;
+        fab.classList.toggle('fab-hidden', footerTop < fabZone);
+      }
+      window.addEventListener('scroll', checkFab, { passive: true });
+    });
+  </script>
 </body>
 </html>
