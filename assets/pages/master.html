@@ -7,6 +7,15 @@
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    /* Remove number input spinner arrows */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
     /* ══════════════════════════════════════════
        MASTER — JANS PHOTOGRAPH ADMIN SYSTEM
        ══════════════════════════════════════════ */
@@ -107,6 +116,36 @@
     .sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--white); }
     .sidebar-link.active { background: rgba(199,30,95,0.15); color: var(--pink-l); }
     .sidebar-link .badge { margin-left: auto; background: var(--pink); color: white; font-size: 0.65rem; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+
+    /* ── Collapsible sidebar groups ── */
+    .sidebar-group { padding: 0 16px; margin-bottom: 4px; }
+    .sidebar-group-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: none;
+      border: none;
+      color: var(--gray-l);
+      font-family: var(--font);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-group-toggle:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+    .sidebar-group-toggle .chev { width: 14px; height: 14px; transition: transform 0.25s ease; flex-shrink: 0; }
+    .sidebar-group.open .sidebar-group-toggle .chev { transform: rotate(180deg); }
+    .sidebar-group-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .sidebar-group.open .sidebar-group-body { max-height: 500px; }
 
     /* ── Main Content ── */
     .main-content { margin-left: 220px; flex: 1; padding: 32px; }
@@ -408,8 +447,8 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
+      <!-- General — always visible, not collapsible -->
       <div class="sidebar-section">
-        <div class="sidebar-label">General</div>
         <button class="sidebar-link active" onclick="switchView('dashboard', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Dashboard
@@ -419,61 +458,95 @@
           Calendario
         </button>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Cotizaciones</div>
-        <button class="sidebar-link" onclick="switchView('reservas', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Reservas
-          <span class="badge" id="reservasBadge">0</span>
+
+      <!-- Cotizaciones — collapsible group -->
+      <div class="sidebar-group open" id="grp-cotizaciones">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('cotizaciones')">
+          <span>Cotizaciones</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="sidebar-link" onclick="switchView('quotes', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Cotizaciones
-          <span class="badge" id="pendingBadge">0</span>
-        </button>
-        <button class="sidebar-link" onclick="switchView('newquote', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Nueva Cotización
-        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('reservas', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Reservas
+            <span class="badge" id="reservasBadge">0</span>
+          </button>
+          <button class="sidebar-link" onclick="switchView('quotes', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Cotizaciones
+            <span class="badge" id="pendingBadge">0</span>
+          </button>
+          <button class="sidebar-link" onclick="switchView('newquote', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Nueva Cotización
+          </button>
+        </div>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Configuración</div>
-        <button class="sidebar-link" onclick="switchView('services', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          Servicios
+
+      <!-- Catálogo — planes, servicios, blog -->
+      <div class="sidebar-group open" id="grp-catalogo">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('catalogo')">
+          <span>Catálogo</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="sidebar-link" onclick="switchView('plans', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Planes (Cotización)
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('planesPublicos', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Planes Públicos
+          </button>
+          <button class="sidebar-link" onclick="switchView('servAdicionales', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Servicios Adicionales
+          </button>
+          <button class="sidebar-link" onclick="switchView('blog', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Blog
+          </button>
+          <button class="sidebar-link" onclick="switchView('services', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Servicios (Cotización)
+          </button>
+          <button class="sidebar-link" onclick="switchView('plans', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Planes (Cotización)
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido del sitio — notas, redes, recargar -->
+      <div class="sidebar-group" id="grp-contenido">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('contenido')">
+          <span>Contenido del Sitio</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="sidebar-link" onclick="switchView('blog', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Blog
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('social', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Redes Sociales
+          </button>
+          <button class="sidebar-link" onclick="switchView('notas', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Notas Reservas
+          </button>
+          <button class="sidebar-link" onclick="switchView('recargar', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Recargar Sitio
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuenta — config -->
+      <div class="sidebar-group" id="grp-cuenta">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('cuenta')">
+          <span>Cuenta</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <button class="sidebar-link" onclick="switchView('planesPublicos', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          Planes Públicos
-        </button>
-        <button class="sidebar-link" onclick="switchView('config', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41-1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M20 12h2M2 12h2M12 2v2M12 20v2"/></svg>
-          Configuración
-        </button>
-        <button class="sidebar-link" onclick="switchView('social', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          Redes Sociales
-        </button>
-        <button class="sidebar-link" onclick="switchView('servAdicionales', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          Servicios Adicionales
-        </button>
-        <button class="sidebar-link" onclick="switchView('notas', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Notas Reservas
-        </button>
-        <button class="sidebar-link" onclick="switchView('recargar', this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
-          Recargar Sitio
-        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('config', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41-1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M20 12h2M2 12h2M12 2v2M12 20v2"/></svg>
+            Configuración
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -1665,6 +1738,20 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // modal-overlay click-outside (moved to DOMContentLoaded)
 
 // ── Sidebar Navigation ──
+// ── Sidebar collapsible groups ──
+function toggleSidebarGroup(id) {
+  const group = document.getElementById('grp-' + id);
+  if (group) group.classList.toggle('open');
+}
+
+// Map view name → group id, so the right group auto-opens when navigating
+const VIEW_GROUP_MAP = {
+  reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
+  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', services:'catalogo', plans:'catalogo',
+  social:'contenido', notas:'contenido', recargar:'contenido',
+  config:'cuenta'
+};
+
 function switchView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
@@ -1672,6 +1759,13 @@ function switchView(name, btn) {
   if (!target) { console.warn('View not found:', name); return; }
   target.classList.add('active');
   if (btn) btn.classList.add('active');
+
+  // Auto-expand the group containing this view
+  const groupId = VIEW_GROUP_MAP[name];
+  if (groupId) {
+    const group = document.getElementById('grp-' + groupId);
+    if (group) group.classList.add('open');
+  }
   if (name === 'calendar')      renderCalendar();
   if (name === 'services')      renderServices();
   if (name === 'plans')         renderPlans();
