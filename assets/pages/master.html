@@ -1100,6 +1100,7 @@
               <option value="eventos">Eventos</option>
               <option value="graduacion">Graduación</option>
               <option value="gastronomia">Gastronomía</option>
+            <option value="infantiles">Infantiles</option>
             <option value="todos">Todos (aparece en todas)</option>
           </select>
         </div>
@@ -2862,8 +2863,8 @@ function loadPublicPlans() {
   // jans_popular is only used as a source of truth for the PUBLIC pages
 }
 
-const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',todos:'Todas las categorías'};
-const CAT_ORDER   = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia','todos'];
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+const CAT_ORDER   = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia','infantiles','todos'];
 
 function renderPublicPlans() {
   loadPublicPlans();
