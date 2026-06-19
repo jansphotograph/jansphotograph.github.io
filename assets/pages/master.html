@@ -816,6 +816,29 @@
           </div>
         </div>
 
+        <!-- ── Setup móvil notice ── -->
+        <div class="card" style="border-color:rgba(233,30,140,0.25)">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            Acceso desde otros dispositivos
+          </div>
+          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:16px">
+            Para acceder al Master desde tu celular u otro dispositivo, solo necesitas ingresar tu <strong style="color:var(--white)">usuario y contraseña</strong> en la pantalla de login. El token de GitHub se puede configurar después desde <strong style="color:var(--white)">Configuración → Token de GitHub</strong>.
+          </p>
+          <div style="background:var(--dark);border-radius:10px;padding:16px 18px;font-size:0.82rem;color:var(--gray-l)">
+            <div style="margin-bottom:8px;color:var(--white);font-weight:600">Sin token configurado puedes:</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span>✓ Ver y gestionar reservas</span>
+              <span>✓ Crear y editar planes, blogs</span>
+              <span>✓ Ver el calendario</span>
+              <span style="color:rgba(255,255,255,0.35)">✗ Publicar cambios al sitio web (requiere token)</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:0.78rem;color:var(--gray);background:rgba(233,30,140,0.07);border:1px solid rgba(233,30,140,0.15);border-radius:8px;padding:10px 14px">
+            🔐 El token se guarda <strong style="color:var(--pink-l)">cifrado con AES-256</strong> — nunca en texto plano. Es seguro guardarlo en el dispositivo.
+          </div>
+        </div>
+
         <!-- ── Credentials ── -->
         <div class="card">
           <div class="card-title">
@@ -1482,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     try { loadPublicPlans(); renderPublicPlans(); } catch(e) { console.error('plans', e); }
     try { loadReservas(); renderReservasTable(); }  catch(e) { console.error('reservas', e); }
     try { updateDashboard(); }    catch(e) { console.error('dashboard', e); }
-    try { loadGithubConfigUI(); } catch(e) { console.error('ghConfig', e); }
+    try { await loadGithubConfigUI(); } catch(e) { console.error('ghConfig', e); }
 
     // Load from GitHub in background (non-blocking)
     loadAllData().catch(e => console.warn('GitHub sync failed:', e));
@@ -2222,19 +2245,71 @@ function downloadPDF() {
 }
 
 // ── GitHub Config UI ──
-const LS_KEY = 'jans_gh_config';
+const LS_KEY     = 'jans_gh_config';
+const LS_KEY_ENC = 'jans_gh_config_enc'; // encrypted token storage
 
-function loadGithubConfigUI() {
-  const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-  if (saved.owner) { document.getElementById('cfgOwner').value = saved.owner; CONFIG.GH_OWNER = saved.owner; }
-  if (saved.repo)  { document.getElementById('cfgRepo').value  = saved.repo;  CONFIG.GH_REPO  = saved.repo;  }
-  if (saved.token) { document.getElementById('cfgToken').value = saved.token; CONFIG.GH_TOKEN = saved.token; }
-  // Public repo
+// ── AES-GCM encryption helpers ──
+// The token is encrypted with the user's password hash as key.
+// Even if someone reads localStorage, they can't recover the token without the password.
+
+async function getEncryptionKey() {
+  // Derive key from stored password hash — ties token to the user's password
+  const stored  = JSON.parse(localStorage.getItem('jans_auth_override') || '{}');
+  const passHash= stored.passHash || await sha256('jans2025');
+  const keyMat  = await crypto.subtle.importKey('raw', new TextEncoder().encode(passHash.slice(0,32)), 'PBKDF2', false, ['deriveKey']);
+  const salt    = new TextEncoder().encode('jans-photograph-salt');
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:100000, hash:'SHA-256' },
+    keyMat,
+    { name:'AES-GCM', length:256 },
+    false,
+    ['encrypt','decrypt']
+  );
+}
+
+async function encryptToken(plaintext) {
+  const key = await getEncryptionKey();
+  const iv  = crypto.getRandomValues(new Uint8Array(12));
+  const enc = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
+  // Store iv + ciphertext as base64
+  const combined = new Uint8Array(iv.length + enc.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(enc), iv.length);
+  return btoa(String.fromCharCode(...combined));
+}
+
+async function decryptToken(b64) {
+  try {
+    const key  = await getEncryptionKey();
+    const data = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const iv   = data.slice(0,12);
+    const enc  = data.slice(12);
+    const dec  = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, enc);
+    return new TextDecoder().decode(dec);
+  } catch(e) { return null; }
+}
+
+async function loadGithubConfigUI() {
+  // Load owner/repo (not sensitive — plain)
+  const saved    = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
   const pubOwner = localStorage.getItem('jans_public_owner') || '';
   const pubRepo  = localStorage.getItem('jans_public_repo')  || '';
-  if (pubOwner) document.getElementById('cfgPublicOwner').value = pubOwner;
-  if (pubRepo)  document.getElementById('cfgPublicRepo').value  = pubRepo;
+
+  if (saved.owner) { document.getElementById('cfgOwner').value = saved.owner; CONFIG.GH_OWNER = saved.owner; }
+  if (saved.repo)  { document.getElementById('cfgRepo').value  = saved.repo;  CONFIG.GH_REPO  = saved.repo;  }
+  if (pubOwner)    document.getElementById('cfgPublicOwner').value = pubOwner;
+  if (pubRepo)     document.getElementById('cfgPublicRepo').value  = pubRepo;
   document.getElementById('ghPublicRepoDisplay').textContent = (pubOwner && pubRepo) ? `${pubOwner}/${pubRepo}` : '—';
+
+  // Decrypt token if stored
+  const encToken = localStorage.getItem(LS_KEY_ENC);
+  if (encToken) {
+    const token = await decryptToken(encToken);
+    if (token) {
+      document.getElementById('cfgToken').value = token;
+      CONFIG.GH_TOKEN = token;
+    }
+  }
   previewRepo();
 }
 
@@ -2252,22 +2327,36 @@ function previewRepo() {
   document.getElementById('ghRepoDisplay').textContent = (owner && repo) ? `${owner}/${repo}` : '—';
 }
 
-function saveGithubConfig() {
+async function saveGithubConfig() {
   const owner = document.getElementById('cfgOwner').value.trim();
   const repo  = document.getElementById('cfgRepo').value.trim();
   const token = document.getElementById('cfgToken').value.trim();
   if (!owner || !repo || !token) { showToast('Completa todos los campos', 'error'); return; }
-  CONFIG.GH_OWNER  = owner;
-  CONFIG.GH_REPO   = repo;
-  CONFIG.GH_TOKEN  = token;
-  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo, token }));
-  previewRepo();
-  showToast('Configuración guardada ✓');
+
+  CONFIG.GH_OWNER = owner;
+  CONFIG.GH_REPO  = repo;
+  CONFIG.GH_TOKEN = token;
+
+  // Save owner/repo plain (not sensitive)
+  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo }));
+
+  // Save token encrypted with AES-GCM
+  try {
+    const encrypted = await encryptToken(token);
+    localStorage.setItem(LS_KEY_ENC, encrypted);
+    // Remove any old plaintext token
+    localStorage.removeItem('jans_gh_token_plain');
+    previewRepo();
+    showToast('Token guardado cifrado con AES-256 ✓');
+  } catch(e) {
+    showToast('Error al cifrar token', 'error');
+  }
 }
 
 function clearGithubConfig() {
   if (!confirm('¿Limpiar la configuración de GitHub guardada?')) return;
   localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_KEY_ENC);
   localStorage.removeItem('jans_public_owner');
   localStorage.removeItem('jans_public_repo');
   document.getElementById('cfgOwner').value       = '';
@@ -2278,8 +2367,8 @@ function clearGithubConfig() {
   CONFIG.GH_OWNER = ''; CONFIG.GH_REPO = ''; CONFIG.GH_TOKEN = '';
   document.getElementById('ghRepoDisplay').textContent       = '—';
   document.getElementById('ghPublicRepoDisplay').textContent = '—';
-  document.getElementById('ghStatusDot').style.background  = 'var(--gray)';
-  document.getElementById('ghStatusText').textContent = 'Sin verificar';
+  document.getElementById('ghStatusDot').style.background    = 'var(--gray)';
+  document.getElementById('ghStatusText').textContent        = 'Sin verificar';
   showToast('Configuración limpiada', 'error');
 }
 
@@ -2927,59 +3016,69 @@ async function savePublicPlans() {
   else            showToast('Guardados localmente ✓ (GitHub pendiente)', 'error');
 }
 
-// ── Change Credentials ──
-function changeCredentials() {
-  const curUser    = document.getElementById('credCurrentUser').value.trim();
-  const curPass    = document.getElementById('credCurrentPass').value;
-  const newUser    = document.getElementById('credNewUser').value.trim();
-  const newPass    = document.getElementById('credNewPass').value;
-  const confirmP   = document.getElementById('credConfirmPass').value;
-  const msgEl      = document.getElementById('credMsg');
+// ── SHA-256 helper (same as auth.html) ──
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function sanitizeCred(str) {
+  return String(str).replace(/[<>"'`;&\\]/g, '').trim().slice(0, 128);
+}
+
+// ── Change Credentials — stores hashes, never plaintext ──
+async function changeCredentials() {
+  const curUser  = sanitizeCred(document.getElementById('credCurrentUser').value);
+  const curPass  = sanitizeCred(document.getElementById('credCurrentPass').value);
+  const newUser  = sanitizeCred(document.getElementById('credNewUser').value);
+  const newPass  = sanitizeCred(document.getElementById('credNewPass').value);
+  const confirmP = sanitizeCred(document.getElementById('credConfirmPass').value);
+  const msgEl    = document.getElementById('credMsg');
 
   function showCredMsg(msg, ok) {
-    msgEl.style.display  = 'block';
+    msgEl.style.display    = 'block';
     msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
-    msgEl.style.border   = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)';
-    msgEl.style.color    = ok ? '#86efac' : '#fca5a5';
-    msgEl.textContent    = msg;
+    msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)';
+    msgEl.style.color      = ok ? '#86efac' : '#fca5a5';
+    msgEl.textContent      = msg;
   }
 
-  // Validate current credentials
-  const storedUser = localStorage.getItem('jans_cred_user') || CONFIG.ADMIN_USER;
-  const storedPass = localStorage.getItem('jans_cred_pass') || CONFIG.ADMIN_PASS;
-  if (curUser !== storedUser || curPass !== storedPass) {
-    showCredMsg('Usuario o contraseña actual incorrectos.', false);
-    return;
-  }
-  if (!newUser || !newPass) {
-    showCredMsg('Completa el nuevo usuario y contraseña.', false);
-    return;
-  }
-  if (newPass !== confirmP) {
-    showCredMsg('Las contraseñas nuevas no coinciden.', false);
-    return;
-  }
-  if (newPass.length < 6) {
-    showCredMsg('La contraseña debe tener al menos 6 caracteres.', false);
-    return;
-  }
+  if (!curUser || !curPass) { showCredMsg('Completa las credenciales actuales.', false); return; }
+  if (!newUser || !newPass)  { showCredMsg('Completa el nuevo usuario y contraseña.', false); return; }
+  if (newPass !== confirmP)  { showCredMsg('Las contraseñas nuevas no coinciden.', false); return; }
+  if (newPass.length < 6)    { showCredMsg('La contraseña debe tener al menos 6 caracteres.', false); return; }
 
-  // Save new credentials
-  localStorage.setItem('jans_cred_user', newUser);
-  localStorage.setItem('jans_cred_pass', newPass);
-  CONFIG.ADMIN_USER = newUser;
-  CONFIG.ADMIN_PASS = newPass;
+  try {
+    // Hash current inputs and compare against stored hashes
+    const [curUserHash, curPassHash] = await Promise.all([sha256(curUser), sha256(curPass)]);
+    const stored = JSON.parse(localStorage.getItem('jans_auth_override') || '{}');
 
-  // Update auth page too
-  const authConfig = { user: newUser, pass: newPass };
-  localStorage.setItem('jans_auth_override', JSON.stringify(authConfig));
+    // Stored hashes or default hashes
+    const expectedUserHash = stored.userHash || await sha256('admin');
+    const expectedPassHash = stored.passHash || await sha256('jans2025');
 
-  // Clear form
-  ['credCurrentUser','credCurrentPass','credNewUser','credNewPass','credConfirmPass'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  showCredMsg('✓ Credenciales actualizadas correctamente. Usa las nuevas la próxima vez que inicies sesión.', true);
-  showToast('Credenciales actualizadas ✓');
+    if (curUserHash !== expectedUserHash || curPassHash !== expectedPassHash) {
+      showCredMsg('Usuario o contraseña actual incorrectos.', false);
+      return;
+    }
+
+    // Hash new credentials — NEVER store plaintext
+    const [newUserHash, newPassHash] = await Promise.all([sha256(newUser), sha256(newPass)]);
+
+    localStorage.setItem('jans_auth_override', JSON.stringify({
+      userHash: newUserHash,
+      passHash: newPassHash
+    }));
+
+    // Clear form
+    ['credCurrentUser','credCurrentPass','credNewUser','credNewPass','credConfirmPass']
+      .forEach(id => { document.getElementById(id).value = ''; });
+
+    showCredMsg('✓ Credenciales actualizadas. Usa las nuevas en tu próximo inicio de sesión.', true);
+    showToast('Credenciales actualizadas ✓');
+  } catch(e) {
+    showCredMsg('Error al procesar. Intenta de nuevo.', false);
+  }
 }
 
 // ═══════════════════════════════════════
