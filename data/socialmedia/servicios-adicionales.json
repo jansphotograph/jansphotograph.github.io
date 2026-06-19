@@ -1,1 +1,22 @@
-{"maquillaje":[],"impresiones":[]}
+{
+  "maquillaje": [
+    {
+      "nombre": "Maquillaje",
+      "precio": 10
+    },
+    {
+      "nombre": "Nuevo servicio",
+      "precio": 0
+    }
+  ],
+  "impresiones": [
+    {
+      "nombre": "Foto 8x10",
+      "precio": 2
+    },
+    {
+      "nombre": "Nuevo servicio",
+      "precio": 0
+    }
+  ]
+}
