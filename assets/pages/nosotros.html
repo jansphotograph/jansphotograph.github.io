@@ -3,8 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sobre Nosotros — Jans Photograph</title>
-  <meta name="description" content="Conoce el equipo detrás de Jans Photograph." />
+  <!-- ══ SEO ══ -->
+  <title>Sobre Nosotros | Jans Photograph Panamá</title>
+  <meta name="description" content="Conoce a Jans Photograph, fotógrafos apasionados en Panamá. Capturamos tus momentos más especiales con estilo, emoción y profesionalismo." />
+  <meta name="keywords"    content="fotógrafo profesional Panamá, Jans Photograph, quiénes somos" />
+  <meta name="author"      content="Jans Photograph" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="https://jansphotograph.github.io/assets/pages/nosotros.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Sobre Nosotros | Jans Photograph Panamá" />
+  <meta property="og:description" content="Conoce a Jans Photograph, fotógrafos apasionados en Panamá. Capturamos tus momentos más especiales con estilo, emoción y profesionalismo." />
+  <meta property="og:url"         content="https://jansphotograph.github.io/assets/pages/nosotros.html" />
+  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta property="og:site_name"   content="Jans Photograph" />
+  <meta property="og:locale"      content="es_PA" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Sobre Nosotros | Jans Photograph Panamá" />
+  <meta name="twitter:description" content="Conoce a Jans Photograph, fotógrafos apasionados en Panamá. Capturamos tus momentos más especiales con estilo, emoción y profesionalismo." />
+  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+
+  <!-- Geo -->
+  <meta name="geo.region"      content="PA" />
+  <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/pages.css" />
@@ -44,17 +68,11 @@
       <li><a href="blogs.html">Blogs</a></li>
     </ul>
       <hr class="nav-lock-divider" />
-      <a href="master.html" class="nav-lock-link">
+      <a href="auth/auth.html" class="nav-lock-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Master
       </a>
   </nav>
-
-  <section class="page-hero">
-    <span class="section-label">Quiénes somos</span>
-    <h1>Sobre Nosotros</h1>
-    <p>Fotógrafos apasionados dedicados a capturar los momentos más especiales de tu vida.</p>
-  </section>
 
   <div class="page-content">
     <div class="about-grid">
@@ -137,5 +155,36 @@
   </footer>
 
   <script src="../js/main.js"></script>
+  <script>
+    // ── Auto-reload when master publishes an update ──
+    (function() {
+      const OWNER   = 'jansphotograph';
+      const REPO    = 'jansphotograph.github.io';
+      const VER_KEY = 'jans_site_version';
+
+      async function checkVersion() {
+        try {
+          const res = await fetch(
+            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
+            { cache: 'no-cache' }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const current = localStorage.getItem(VER_KEY);
+          if (current && current !== String(data.v)) {
+            // New version detected — reload the page
+            localStorage.setItem(VER_KEY, String(data.v));
+            window.location.reload(true);
+          } else {
+            localStorage.setItem(VER_KEY, String(data.v));
+          }
+        } catch(e) {}
+      }
+
+      // Check on load and every 60 seconds
+      checkVersion();
+      setInterval(checkVersion, 60000);
+    })();
+  </script>
 </body>
 </html>
