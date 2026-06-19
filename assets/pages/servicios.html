@@ -79,19 +79,22 @@
     <section class="services-section" style="margin-top:60px;border-radius:16px;overflow:hidden;" aria-label="Servicios adicionales">
       <div class="services-inner">
         <h2 class="services-title">Servicios Adicionales</h2>
-        <div class="services-block">
-          <div class="service-group-title">Servicio de Maquillaje</div>
-          <div class="service-row"><span class="service-name">Maquillaje</span><span class="service-price">$8.00</span></div>
-          <div class="service-row"><span class="service-name">Peinado</span><span class="service-price">$8.00</span></div>
-          <div class="service-row"><span class="service-name">Asistencia en la sesión</span><span class="service-price">$10.00</span></div>
-        </div>
-        <div class="services-block">
-          <div class="service-group-title">Servicio de Impresiones</div>
-          <div class="service-row"><span class="service-name">6 Fotos tamaño Carnet</span><span class="service-price">$1.50</span></div>
-          <div class="service-row"><span class="service-name">1 Foto tamaño 4x6</span><span class="service-price">$1.00</span></div>
-          <div class="service-row"><span class="service-name">Combo (2 fotos 4x6)</span><span class="service-price">$1.50</span></div>
-          <div class="service-row"><span class="service-name">1 Foto tamaño 8x10</span><span class="service-price">$2.00</span></div>
-          <div class="service-row"><span class="service-name">Combo (3 fotos 8x10)</span><span class="service-price">$5.00</span></div>
+        <div id="servAdicPage">
+          <!-- Defaults — replaced by JS when JSON loads -->
+          <div class="services-block">
+            <div class="service-group-title">Servicio de Maquillaje y Peinado</div>
+            <div class="service-row"><span class="service-name">Maquillaje</span><span class="service-price">$8.00</span></div>
+            <div class="service-row"><span class="service-name">Peinado</span><span class="service-price">$8.00</span></div>
+            <div class="service-row"><span class="service-name">Asistencia en la sesión</span><span class="service-price">$10.00</span></div>
+          </div>
+          <div class="services-block">
+            <div class="service-group-title">Servicio de Impresiones</div>
+            <div class="service-row"><span class="service-name">6 Fotos tamaño Carnet</span><span class="service-price">$1.50</span></div>
+            <div class="service-row"><span class="service-name">1 Foto tamaño 4x6</span><span class="service-price">$1.00</span></div>
+            <div class="service-row"><span class="service-name">Combo (2 fotos 4x6)</span><span class="service-price">$1.50</span></div>
+            <div class="service-row"><span class="service-name">1 Foto tamaño 8x10</span><span class="service-price">$2.00</span></div>
+            <div class="service-row"><span class="service-name">Combo (3 fotos 8x10)</span><span class="service-price">$5.00</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -238,6 +241,34 @@
       // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
+    })();
+  </script>
+  <script>
+    // ── Servicios Adicionales ──
+    (function() {
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+
+      function renderServAdic(data, cid) {
+        const c = document.getElementById(cid); if (!c) return;
+        const maq = data.maquillaje || [], imp = data.impresiones || [];
+        if (!maq.length && !imp.length) return;
+        let out = '';
+        if (maq.length) {
+          out += '<div class="services-block"><div class="service-group-title">Servicio de Maquillaje y Peinado</div>';
+          maq.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
+          out += '</div>';
+        }
+        if (imp.length) {
+          out += '<div class="services-block"><div class="service-group-title">Servicio de Impresiones</div>';
+          imp.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
+          out += '</div>';
+        }
+        c.innerHTML = out;
+      }
+      try { const l = JSON.parse(localStorage.getItem('jans_serv_adicionales')||'null'); if(l) renderServAdic(l,'servAdicPage'); } catch(e){}
+      fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/data/socialmedia/servicios-adicionales.json?t='+Date.now(),{cache:'no-cache'})
+        .then(r=>r.ok?r.json():null).then(d=>{if(!d)return;localStorage.setItem('jans_serv_adicionales',JSON.stringify(d));renderServAdic(d,'servAdicPage');}).catch(()=>{});
     })();
   </script>
 </body>
