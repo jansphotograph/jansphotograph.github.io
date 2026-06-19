@@ -56,5 +56,66 @@
       "Asesoramiento Completo"
     ],
     "popular": false
+  },
+  {
+    "nombre": "Plan Condesa",
+    "precio": 35,
+    "categoria": "xv-anos",
+    "incluye": [
+      "6 Fotos Editadas",
+      "1 Vestuario",
+      "Individual",
+      "Sesión de 30 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Marquesa",
+    "precio": 68,
+    "categoria": "xv-anos",
+    "incluye": [
+      "10 Fotos Editadas",
+      "1 Foto Impresa (8x10)",
+      "1 Vestuario",
+      "2 Acompañantes Máximo",
+      "Sesión de 45 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Princess",
+    "precio": 96,
+    "categoria": "xv-anos",
+    "incluye": [
+      "14 Fotos Editadas",
+      "3 Fotos Impresas (8x10)",
+      "1 Cuadro",
+      "2 Vestuario",
+      "5 Acompañantes máximo",
+      "Sesión de 1 hora",
+      "2 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Queen",
+    "precio": 140,
+    "categoria": "xv-anos",
+    "incluye": [
+      "18 Fotos Editadas",
+      "5 Foto Impresa (8x10)",
+      "1 Cuadro",
+      "3 Vestuario",
+      "Sin límite de acompañantes",
+      "Sesión de 2 horas",
+      "2 a 3 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
   }
 ]
