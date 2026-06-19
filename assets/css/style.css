@@ -663,76 +663,38 @@ footer {
 /* ── Legend ── */
 @media (max-width: 480px) {
 
-/* ── WhatsApp FAB (index) ── */
-.fab-whatsapp {
+
+  
+  
+}
+
+
+/* ── WhatsApp FAB ── */
+.wa-fab {
   position: fixed;
-  bottom: 28px;
+  bottom: 24px;
   right: 24px;
-  z-index: 400;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  text-decoration: none;
-  opacity: 1;
-  transition: opacity 0.3s, transform 0.3s;
-}
-.fab-whatsapp.fab-hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-}
-.fab-whatsapp-label {
-  background: rgba(0,0,0,0.72);
-  color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
-  backdrop-filter: blur(6px);
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.2s, transform 0.2s;
-  pointer-events: none;
-}
-.fab-whatsapp:hover .fab-whatsapp-label {
-  opacity: 1;
-  transform: translateY(0);
-}
-.fab-whatsapp-btn {
-  position: relative;
-  width: 46px; height: 46px;
+  z-index: 999;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: #25d366;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(37,211,102,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.5);
+  text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.fab-whatsapp:hover .fab-whatsapp-btn {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(37,211,102,0.55);
+.wa-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(37,211,102,0.65);
 }
-.fab-whatsapp-btn svg { width: 24px; height: 24px; }
-
-/* Pulse ring */
-.fab-whatsapp-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: rgba(37,211,102,0.4);
-  animation: waPulse 2.8s ease-out infinite;
+.wa-fab svg {
+  width: 28px;
+  height: 28px;
 }
-@keyframes waPulse {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  70%  { transform: scale(1.7); opacity: 0; }
-  100% { transform: scale(1.7); opacity: 0; }
-}
-
 @media (max-width: 640px) {
-  .fab-whatsapp         { bottom: 18px; right: 14px; }
-  .fab-whatsapp-btn     { width: 42px; height: 42px; }
-  .fab-whatsapp-btn svg { width: 22px; height: 22px; }
+  .wa-fab { width: 46px; height: 46px; bottom: 18px; right: 18px; }
+  .wa-fab svg { width: 24px; height: 24px; }
 }
