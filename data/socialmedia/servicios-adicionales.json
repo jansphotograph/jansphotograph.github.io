@@ -1,22 +1,37 @@
 {
-  "maquillaje": [
-    {
-      "nombre": "Maquillaje",
-      "precio": 10
-    },
-    {
-      "nombre": "Nuevo servicio",
-      "precio": 0
-    }
-  ],
+  "maquillaje": [],
   "impresiones": [
     {
-      "nombre": "Foto 8x10",
+      "nombre": "6 FOTOS TAMAÑO CARNET",
+      "precio": 1.5
+    },
+    {
+      "nombre": "10 FOTOS TAMAÑO CARTERA",
+      "precio": 2.5
+    },
+    {
+      "nombre": "1 FOTO 4X6 PULGADAS",
+      "precio": 1
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 4X6 PULGADAS",
       "precio": 2
     },
     {
-      "nombre": "Nuevo servicio",
-      "precio": 0
+      "nombre": "1 FOTO 5X7 PULGADAS",
+      "precio": 1.5
+    },
+    {
+      "nombre": "COMBO 2 FOTOS 5X7 PULGADAS",
+      "precio": 2
+    },
+    {
+      "nombre": "1 FOTO 8X10 PULGADAS",
+      "precio": 2
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 8X10",
+      "precio": 5
     }
   ]
 }
