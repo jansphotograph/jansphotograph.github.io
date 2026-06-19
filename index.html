@@ -399,27 +399,39 @@
       try {
         const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
         if (yt && yt.ytId) {
-          const wrap = document.querySelector('.yt-embed-wrap');
+          const wrap       = document.querySelector('.yt-embed-wrap');
           if (!wrap) return;
-          const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
-          const videoUrl = `https://www.youtube.com/watch?v=${yt.ytId}`;
-          const embedUrl = `https://www.youtube.com/embed/${yt.ytId}?rel=0&modestbranding=1&playsinline=1`;
-          const thumbUrl = `https://img.youtube.com/vi/${yt.ytId}/hqdefault.jpg`;
+          const isMobile   = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+          const videoUrl   = 'https://www.youtube.com/watch?v=' + yt.ytId;
+          const embedUrl   = 'https://www.youtube.com/embed/' + yt.ytId + '?rel=0&modestbranding=1&playsinline=1';
+          // Use custom thumbnail if set, otherwise fall back to YouTube auto-thumb
+          const thumbUrl   = yt.thumbPath
+            ? 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/' + yt.thumbPath + '?t=' + Date.now()
+            : 'https://img.youtube.com/vi/' + yt.ytId + '/hqdefault.jpg';
+          const channelUrl = yt.channelUrl || 'https://www.youtube.com/@jansphotograph';
+          // Deep link: opens YouTube app on Android/iOS, browser otherwise
+          const deepLink   = isMobile
+            ? 'vnd.youtube://' + yt.ytId  // YouTube app deep link
+            : videoUrl;
 
           if (isMobile) {
-            // Mobile: show thumbnail that links directly to YouTube app/site
+            // Mobile: thumbnail with play button — opens YouTube app
             wrap.innerHTML = `
-              <a href="${videoUrl}" target="_blank" rel="noopener" style="display:block;position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:inherit;overflow:hidden;text-decoration:none">
-                <img src="${thumbUrl}" alt="Ver video en YouTube" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.85" />
+              <a href="${videoUrl}" target="_blank" rel="noopener"
+                onclick="try{window.location='vnd.youtube://${yt.ytId}';setTimeout(()=>window.open('${videoUrl}','_blank'),300);return false;}catch(e){}"
+                style="display:block;position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:inherit;overflow:hidden;text-decoration:none">
+                <img src="${thumbUrl}" alt="Ver video en YouTube"
+                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.88"
+                  onerror="this.src='https://img.youtube.com/vi/${yt.ytId}/hqdefault.jpg'" />
                 <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-                  <div style="width:64px;height:64px;background:rgba(255,0,0,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                  <div style="width:68px;height:68px;background:rgba(255,0,0,0.92);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.55)">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
                   </div>
                 </div>
-                <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.8);font-size:0.75rem;font-family:Inter,sans-serif">Toca para ver en YouTube</div>
+                <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.75);font-size:0.72rem;font-family:Inter,sans-serif;letter-spacing:0.03em">▶ Toca para ver en YouTube</div>
               </a>`;
           } else {
-            // Desktop: load iframe normally
+            // Desktop: iframe embed
             wrap.innerHTML = `<div class="yt-video-container"><iframe
               src="${embedUrl}"
               title="Último video Jans Photograph"
@@ -428,12 +440,8 @@
             </iframe></div>`;
           }
 
-          // Update channel links with correct URL
-          if (yt.channelUrl) {
-            document.querySelectorAll('a[href*="youtube.com/@"]').forEach(a => {
-              a.href = yt.channelUrl;
-            });
-          }
+          // Update all channel links
+          document.querySelectorAll('a[href*="youtube.com/@"]').forEach(a => { a.href = channelUrl; });
         }
       } catch(e) {}
 
