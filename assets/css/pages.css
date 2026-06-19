@@ -320,3 +320,41 @@
 @media (max-width: 360px) {
   .plan-cards-grid { grid-template-columns: 1fr; }
 }
+
+/* ══════════════════════════════════
+   FLOATING BUTTONS
+══════════════════════════════════ */
+
+/* ── Ver Planes FAB (plane pages) ── */
+.fab-ver-planes {
+  position: fixed;
+  bottom: 32px;
+  right: 28px;
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 20px;
+  background: var(--pink, #c71e5f);
+  color: #fff;
+  border-radius: 50px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  box-shadow: 0 6px 24px rgba(199,30,95,0.45);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+  cursor: pointer;
+  border: none;
+}
+.fab-ver-planes:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(199,30,95,0.55);
+}
+.fab-ver-planes svg { width: 16px; height: 16px; flex-shrink: 0; }
+.fab-ver-planes.hidden { opacity: 0; pointer-events: none; }
+
+@media (max-width: 640px) {
+  .fab-ver-planes { bottom: 20px; right: 16px; padding: 11px 16px; font-size: 0.8rem; }
+}
