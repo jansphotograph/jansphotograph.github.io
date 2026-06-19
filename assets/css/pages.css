@@ -63,6 +63,12 @@
   position: sticky;
   top: 72px;
   z-index: 90;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.planes-nav-wrap.nav-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 .planes-nav {
   max-width: 1200px;
