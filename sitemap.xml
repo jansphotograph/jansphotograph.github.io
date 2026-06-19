@@ -80,4 +80,11 @@
     <priority>0.6</priority>
   </url>
 
+
+  <url>
+    <loc>https://jansphotograph.github.io/assets/pages/planes/infantiles.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
 </urlset>
