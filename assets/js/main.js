@@ -3,8 +3,8 @@
    =========================== */
 
 // ── Hamburger / Nav Drawer ──
-const hamburger = document.getElementById('hamburger');
-const navDrawer = document.getElementById('navDrawer');
+const hamburger  = document.getElementById('hamburger');
+const navDrawer  = document.getElementById('navDrawer');
 const navOverlay = document.getElementById('navOverlay');
 
 function openNav() {
@@ -27,33 +27,45 @@ hamburger?.addEventListener('click', () => {
 navOverlay?.addEventListener('click', closeNav);
 document.querySelectorAll('.nav-drawer a').forEach(a => a.addEventListener('click', closeNav));
 
-// ── Slider ──
+// ── Slider — Ping-pong (1→2→3→4→5→4→3→2→1→2…) ──
 const slider = document.getElementById('sliderTrack');
 if (slider) {
   const slides = slider.querySelectorAll('.slide');
-  const dots = document.querySelectorAll('.slider-dots button');
-  let current = 0;
+  const dots   = document.querySelectorAll('.slider-dots button');
+  const total  = slides.length;
+  let current   = 0;
+  let direction = 1;   // +1 forward, -1 backward
   let autoTimer;
 
   function goTo(idx) {
-    current = (idx + slides.length) % slides.length;
+    current = Math.max(0, Math.min(idx, total - 1));
     slider.style.transform = `translateX(-${current * 20}%)`;
     dots.forEach((d, i) => d.classList.toggle('active', i === current));
   }
 
-  document.getElementById('sliderPrev')?.addEventListener('click', () => { goTo(current - 1); resetAuto(); });
-  document.getElementById('sliderNext')?.addEventListener('click', () => { goTo(current + 1); resetAuto(); });
-  dots.forEach((d, i) => d.addEventListener('click', () => { goTo(i); resetAuto(); }));
+  function pingPongNext() {
+    // Flip direction at the ends
+    if (current >= total - 1) direction = -1;
+    if (current <= 0)         direction =  1;
+    goTo(current + direction);
+  }
 
-  function resetAuto() { clearInterval(autoTimer); autoTimer = setInterval(() => goTo(current + 1), 5200); }
+  function resetAuto() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(pingPongNext, 5200);
+  }
+
   resetAuto();
   goTo(0);
 
   // Touch / swipe
   let touchStartX = 0;
   slider.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-  slider.addEventListener('touchend', e => {
+  slider.addEventListener('touchend',   e => {
     const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) { goTo(current + (diff > 0 ? 1 : -1)); resetAuto(); }
+    if (Math.abs(diff) > 50) {
+      goTo(current + (diff > 0 ? 1 : -1));
+      resetAuto();
+    }
   });
 }
