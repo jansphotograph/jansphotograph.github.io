@@ -267,6 +267,18 @@
     const REPO  = 'jansphotograph.github.io';
     const BASE  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
 
+    // ── Show notas importantes ── (defined early so it's available on load)
+    function showNotas(texto) {
+      if (!texto || !texto.trim()) return;
+      const section = document.getElementById('notasSection');
+      const content = document.getElementById('notasContent');
+      if (!section || !content) return;
+      content.innerHTML = texto.trim().split('\n').map(line =>
+        line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b;flex-shrink:0">•</span>${line.trim()}</div>` : ''
+      ).join('');
+      section.style.display = 'block';
+    }
+
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async function() {
 
@@ -466,19 +478,6 @@
         btn.disabled = true;
         btn.textContent = selectedDate ? 'Selecciona una hora' : 'Selecciona fecha y hora primero';
       }
-    }
-
-    // ── Show notas importantes ──
-    function showNotas(texto) {
-      if (!texto || !texto.trim()) return;
-      const section = document.getElementById('notasSection');
-      const content = document.getElementById('notasContent');
-      if (!section || !content) return;
-      // Convert line breaks to HTML
-      content.innerHTML = texto.trim().split('\n').map(line =>
-        line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b;flex-shrink:0">•</span>${line.trim()}</div>` : ''
-      ).join('');
-      section.style.display = 'block';
     }
 
     // ── Submit ──
