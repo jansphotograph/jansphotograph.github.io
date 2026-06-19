@@ -318,9 +318,12 @@
   .catalog-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 640px) {
-  .catalog-grid   { grid-template-columns: repeat(2, 1fr); }
-  .planes-nav a   { padding: 14px 12px; font-size: 0.75rem; }
+  .catalog-grid    { grid-template-columns: repeat(2, 1fr); }
+  .planes-nav a    { padding: 14px 12px; font-size: 0.75rem; }
   .plan-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .page-hero       { padding: 24px 20px; }
+  .page-hero h1    { font-size: 1.6rem; margin-bottom: 8px; }
+  .page-hero p     { font-size: 0.88rem; }
 }
 
 @media (max-width: 360px) {
