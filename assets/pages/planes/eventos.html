@@ -3,8 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eventos — Jans Photograph</title>
-  <meta name="description" content="Cobertura profesional para tus eventos corporativos y sociales." />
+  <!-- ══ SEO ══ -->
+  <title>Fotografía de Eventos en Panamá | Jans Photograph</title>
+  <meta name="description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
+  <meta name="keywords"    content="fotografía eventos Panamá, cobertura fotográfica eventos, fotógrafo eventos corporativos" />
+  <meta name="author"      content="Jans Photograph" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="https://jansphotograph.github.io/assets/pages/planes/eventos.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Fotografía de Eventos en Panamá | Jans Photograph" />
+  <meta property="og:description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
+  <meta property="og:url"         content="https://jansphotograph.github.io/assets/pages/planes/eventos.html" />
+  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta property="og:site_name"   content="Jans Photograph" />
+  <meta property="og:locale"      content="es_PA" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Fotografía de Eventos en Panamá | Jans Photograph" />
+  <meta name="twitter:description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
+  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+
+  <!-- Geo -->
+  <meta name="geo.region"      content="PA" />
+  <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
   <link rel="stylesheet" href="../../css/style.css" />
   <link rel="stylesheet" href="../../css/pages.css" />
@@ -353,6 +377,32 @@
       // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
+    })();
+  </script>
+  <script>
+    // ── Hide planes nav on scroll down, show on scroll up ──
+    (function() {
+      var nav      = document.querySelector('.planes-nav-wrap');
+      var lastY    = 0;
+      var ticking  = false;
+
+      function update() {
+        var y = window.scrollY || window.pageYOffset;
+        if (y > lastY && y > 150) {
+          nav.classList.add('nav-hidden');    // scrolling down
+        } else {
+          nav.classList.remove('nav-hidden'); // scrolling up or near top
+        }
+        lastY   = y;
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
     })();
   </script>
 </body>

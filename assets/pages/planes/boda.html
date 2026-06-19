@@ -379,5 +379,31 @@
       setInterval(checkVersion, 60000);
     })();
   </script>
+  <script>
+    // ── Hide planes nav on scroll down, show on scroll up ──
+    (function() {
+      var nav      = document.querySelector('.planes-nav-wrap');
+      var lastY    = 0;
+      var ticking  = false;
+
+      function update() {
+        var y = window.scrollY || window.pageYOffset;
+        if (y > lastY && y > 150) {
+          nav.classList.add('nav-hidden');    // scrolling down
+        } else {
+          nav.classList.remove('nav-hidden'); // scrolling up or near top
+        }
+        lastY   = y;
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+    })();
+  </script>
 </body>
 </html>
