@@ -38,19 +38,19 @@
 
   <!-- ── Plans Nav ── -->
   <div class="planes-nav-wrap">
-    <nav class="planes-nav" aria-label="Planes fotográficos">
-        <a href="retratos.html">Retratos</a>
-        <a href="xv-anos.html">XV Años</a>
-        <a href="familiares.html" class="active">Familiares</a>
-        <a href="pre-boda.html">Pre Boda</a>
-        <a href="boda.html">Boda</a>
-        <a href="eventos.html">Eventos</a>
-        <a href="graduacion.html">Graduación</a>
-        <a href="gastronomia.html">Gastronomía</a>
+    <nav class="planes-nav" id="planesNav" aria-label="Planes fotográficos">
+        <a href="retratos.html" data-slug="retratos">Retratos</a>
+        <a href="xv-anos.html" data-slug="xv-anos">XV Años</a>
+        <a href="familiares.html" class="active" data-slug="familiares">Familiares</a>
+        <a href="pre-boda.html" data-slug="pre-boda">Pre Boda</a>
+        <a href="boda.html" data-slug="boda">Boda</a>
+        <a href="eventos.html" data-slug="eventos">Eventos</a>
+        <a href="graduacion.html" data-slug="graduacion">Graduación</a>
+        <a href="gastronomia.html" data-slug="gastronomia">Gastronomía</a>
     </nav>
   </div>
 
-  <!-- ── Page Hero ── -->
+    <!-- ── Page Hero ── -->
   <section class="page-hero" style="margin-top:0">
     <span class="section-label">Sesiones fotográficas</span>
     <h1>Familiares</h1>
@@ -218,6 +218,45 @@
 
   <script src="../../js/main.js"></script>
   <script>
+    // ── Filter nav — only show categories with plans ──
+    (function() {
+      const OWNER    = 'jansphotograph';
+      const REPO     = 'jansphotograph.github.io';
+      const CURRENT  = 'familiares';
+      const ALL_CATS = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia'];
+
+      function filterNav(plans) {
+        const active = new Set(plans.map(p => p.categoria));
+        const todos  = plans.some(p => p.categoria === 'todos');
+        const nav    = document.getElementById('planesNav');
+        if (!nav) return;
+        nav.querySelectorAll('a[data-slug]').forEach(a => {
+          const slug = a.getAttribute('data-slug');
+          const show = active.has(slug) || todos;
+          a.style.display = show ? '' : 'none';
+        });
+        // If current page has no plans, show a notice
+        const currentHasPlans = active.has(CURRENT) || todos;
+        if (!currentHasPlans) {
+          const container = document.getElementById('planCardsContainer');
+          if (container) container.innerHTML = '<div class="plans-empty">Esta categoría no tiene planes disponibles aún.</div>';
+        }
+      }
+
+      // From localStorage immediately
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+        if (local.length) filterNav(local);
+      } catch(e) {}
+
+      // From GitHub
+      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/planes.json?t=' + Date.now(), { cache:'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(plans => { if (plans && plans.length) { localStorage.setItem('jans_planes', JSON.stringify(plans)); filterNav(plans); } })
+        .catch(() => {});
+    })();
+  </script>
+  <script>
     // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = 'familiares';
@@ -225,55 +264,89 @@
       const OWNER = 'jansphotograph'; // ← reemplaza con tu usuario de GitHub
       const REPO  = 'jansphotograph.github.io';   // ← reemplaza con el nombre de tu repo
 
-      function renderPlans(allPlans) {
+      function renderPlans(allPlans, popularMap) {
+        popularMap = popularMap || {};
         const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
         if (!plans.length) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
           return;
         }
-        container.innerHTML = plans.map(p => `
-          <div class="plan-card-pub">
-            <div class="pc-name">${p.nombre}</div>
+        container.innerHTML = plans.map(p => {
+          const isPopular = !!popularMap[p.nombre] || !!p.popular;
+          return `
+          <div class="plan-card-pub${isPopular ? ' plan-popular' : ''}">
+            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
+            <div class="pc-name${isPopular ? ' pc-name-popular' : ''}">${p.nombre}</div>
             <div class="pc-price">$${p.precio}<span> USD</span></div>
             <ul class="pc-includes">
               ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
             </ul>
             <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"
               class="btn-agendar">Agendar</a>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
       }
 
       // 1. Show from localStorage immediately (instant)
       try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) { renderPlans(local); }
+        const local    = JSON.parse(localStorage.getItem('jans_planes')   || '[]');
+        const localPop = JSON.parse(localStorage.getItem('jans_popular')  || '{}');
+        if (local.length) { renderPlans(local, localPop); }
       } catch(e) {}
 
-      // 2. Fetch from GitHub for latest version (visible to all visitors)
-      if (OWNER === 'tu-usuario-github') {
-        if (!document.querySelector('.plan-card-pub')) {
+      // 2. Fetch planes + popular from GitHub
+      try {
+        const BASE_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
+        const [planesRes, popularRes] = await Promise.all([
+          fetch(`${BASE_URL}/planes.json?t=${Date.now()}`,  { cache: 'no-cache' }),
+          fetch(`${BASE_URL}/popular.json?t=${Date.now()}`, { cache: 'no-cache' })
+        ]);
+        const plans     = planesRes.ok  ? await planesRes.json()  : JSON.parse(localStorage.getItem('jans_planes')  || '[]');
+        const popularMap= popularRes.ok ? await popularRes.json() : JSON.parse(localStorage.getItem('jans_popular') || '{}');
+        if (plans.length) {
+          localStorage.setItem('jans_planes',  JSON.stringify(plans));
+          localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+          renderPlans(plans, popularMap);
+        } else if (!document.querySelector('.plan-card-pub')) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
         }
-        return;
-      }
-      try {
-        const res = await fetch(
-          `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`,
-          { cache: 'no-cache' }
-        );
-        if (res.ok) {
-          const plans = await res.json();
-          localStorage.setItem('jans_planes', JSON.stringify(plans)); // update local cache
-          renderPlans(plans);
-        }
       } catch(e) {
-        // GitHub failed — keep whatever localStorage showed
         if (!document.querySelector('.plan-card-pub')) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
         }
       }
     });
+  </script>
+  <script>
+    // ── Auto-reload when master publishes an update ──
+    (function() {
+      const OWNER   = 'jansphotograph';
+      const REPO    = 'jansphotograph.github.io';
+      const VER_KEY = 'jans_site_version';
+
+      async function checkVersion() {
+        try {
+          const res = await fetch(
+            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
+            { cache: 'no-cache' }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const current = localStorage.getItem(VER_KEY);
+          if (current && current !== String(data.v)) {
+            // New version detected — reload the page
+            localStorage.setItem(VER_KEY, String(data.v));
+            window.location.reload(true);
+          } else {
+            localStorage.setItem(VER_KEY, String(data.v));
+          }
+        } catch(e) {}
+      }
+
+      // Check on load and every 60 seconds
+      checkVersion();
+      setInterval(checkVersion, 60000);
+    })();
   </script>
 </body>
 </html>
