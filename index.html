@@ -247,7 +247,7 @@
             <svg width="72" height="72" viewBox="0 0 24 24" fill="rgba(255,0,0,0.6)"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
             <p>
               Aquí aparecerá tu último video de YouTube.<br/>
-              <a href="https://www.youtube.com/@jans_photograph" target="_blank" rel="noopener" style="color:#e91e8c;">
+              <a href="https://www.youtube.com/@jansphotograph" target="_blank" rel="noopener" style="color:#e91e8c;">
                 Visita nuestro canal →
               </a>
             </p>
@@ -265,7 +265,7 @@
       </div>
 
       <div class="yt-channel-link-wrap">
-        <a class="yt-channel-link" href="https://www.youtube.com/@jans_photograph" target="_blank" rel="noopener">
+        <a class="yt-channel-link" href="https://www.youtube.com/@jansphotograph" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
           Ver más en YouTube
         </a>
@@ -400,11 +400,40 @@
         const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
         if (yt && yt.ytId) {
           const wrap = document.querySelector('.yt-embed-wrap');
-          if (wrap) wrap.innerHTML = `<div class="yt-video-container"><iframe
-            src="https://www.youtube.com/embed/${yt.ytId}?rel=0&modestbranding=1"
-            title="Último video Jans Photograph"
-            allowfullscreen loading="lazy">
-          </iframe></div>`;
+          if (!wrap) return;
+          const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+          const videoUrl = `https://www.youtube.com/watch?v=${yt.ytId}`;
+          const embedUrl = `https://www.youtube.com/embed/${yt.ytId}?rel=0&modestbranding=1&playsinline=1`;
+          const thumbUrl = `https://img.youtube.com/vi/${yt.ytId}/hqdefault.jpg`;
+
+          if (isMobile) {
+            // Mobile: show thumbnail that links directly to YouTube app/site
+            wrap.innerHTML = `
+              <a href="${videoUrl}" target="_blank" rel="noopener" style="display:block;position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:inherit;overflow:hidden;text-decoration:none">
+                <img src="${thumbUrl}" alt="Ver video en YouTube" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.85" />
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                  <div style="width:64px;height:64px;background:rgba(255,0,0,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.8);font-size:0.75rem;font-family:Inter,sans-serif">Toca para ver en YouTube</div>
+              </a>`;
+          } else {
+            // Desktop: load iframe normally
+            wrap.innerHTML = `<div class="yt-video-container"><iframe
+              src="${embedUrl}"
+              title="Último video Jans Photograph"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy">
+            </iframe></div>`;
+          }
+
+          // Update channel links with correct URL
+          if (yt.channelUrl) {
+            document.querySelectorAll('a[href*="youtube.com/@"]').forEach(a => {
+              a.href = yt.channelUrl;
+            });
+          }
         }
       } catch(e) {}
 
