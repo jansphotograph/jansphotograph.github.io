@@ -462,6 +462,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
           Redes Sociales
         </button>
+        <button class="sidebar-link" onclick="switchView('notas', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Notas Reservas
+        </button>
         <button class="sidebar-link" onclick="switchView('recargar', this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
           Recargar Sitio
@@ -1115,6 +1119,45 @@
         </div>
       </div>
 
+      <!-- ── NOTAS IMPORTANTES ── -->
+      <div class="view" id="view-notas">
+        <div class="page-header">
+          <h2>Notas Importantes</h2>
+          <p>Información que verán los clientes al momento de hacer su reserva</p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Notas para el cliente
+          </div>
+          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:20px">
+            Estas notas aparecerán en la página de reservas con fondo amarillo antes del formulario.
+            Úsalas para comunicar requisitos, políticas de cancelación, indicaciones de pago, etc.<br/>
+            <span style="color:var(--gray)">Una nota por línea.</span>
+          </p>
+          <div class="field">
+            <label>Notas <span style="color:var(--gray);font-weight:400">(una por línea)</span></label>
+            <textarea id="notasTexto" oninput="updateNotasPreview()" style="min-height:180px;font-size:0.9rem;line-height:1.7"
+              placeholder="Ej: El pago del 50% del plan debe realizarse al confirmar la reserva.&#10;Las sesiones canceladas con menos de 24hrs no tienen reembolso.&#10;Por favor llega 10 minutos antes de tu sesión."></textarea>
+          </div>
+
+          <!-- Preview -->
+          <div id="notasPreview" style="display:none;margin:16px 0;background:#fff9f0;border-top:3px solid #f59e0b;border-radius:8px;padding:18px">
+            <div style="font-weight:700;font-size:0.8rem;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">⚠ Previsualización</div>
+            <div id="notasPreviewContent" style="font-size:0.88rem;color:#78350f;line-height:1.75"></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveNotas()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+            <button class="btn btn-outline" onclick="clearNotas()">Eliminar notas</button>
+          </div>
+          <div id="notasMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+      </div>
+
       <!-- ── RECARGAR SITIO ── -->
       <div class="view" id="view-recargar">
         <div class="page-header">
@@ -1590,6 +1633,7 @@ function switchView(name, btn) {
   if (name === 'social')        loadSocialLinksUI();
   if (name === 'blog')          { loadBlogPosts(); renderBlogPosts(); }
   if (name === 'recargar')      loadLastReloadInfo();
+  if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
 }
 
 // ── Dashboard ──
@@ -3128,11 +3172,13 @@ async function publishReload() {
     chkCalendar:  { label:'calendar.json', data: state.calendar },
     chkInstagram: { label:'instagram.json',data: null }, // read from localStorage
     chkYoutube:   { label:'youtube.json',  data: null },
+    chkNotas:     { label:'notas.json',    data: null },
   };
 
   // Fill instagram / youtube from localStorage
   try { checks.chkInstagram.data = JSON.parse(localStorage.getItem('jans_ig_preview') || 'null'); } catch(e) {}
   try { checks.chkYoutube.data   = JSON.parse(localStorage.getItem('jans_yt_preview')  || 'null'); } catch(e) {}
+  try { checks.chkNotas.data     = JSON.parse(localStorage.getItem('jans_notas_reservas') || 'null'); } catch(e) {}
 
   for (const [chkId, task] of Object.entries(checks)) {
     const chk = document.getElementById(chkId);
@@ -3381,6 +3427,54 @@ async function saveBlogPosts() {
   const ok = await ghPutPublic('blogs.json', blogPosts);
   if (ok) showToast('Blog publicado en GitHub ✓');
   else    showToast('Guardado localmente ✓ (configura GitHub para publicar)', 'error');
+}
+
+// ═══════════════════════════════════════
+//  NOTAS IMPORTANTES (reservas page)
+// ═══════════════════════════════════════
+function loadNotasUI() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('jans_notas_reservas') || '{}');
+    if (saved.texto) {
+      document.getElementById('notasTexto').value = saved.texto;
+      updateNotasPreview();
+    }
+  } catch(e) {}
+}
+
+function updateNotasPreview() {
+  const texto   = document.getElementById('notasTexto').value.trim();
+  const preview = document.getElementById('notasPreview');
+  const content = document.getElementById('notasPreviewContent');
+  if (!texto) { preview.style.display = 'none'; return; }
+  content.innerHTML = texto.split('\n').map(line =>
+    line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b">•</span>${line.trim()}</div>` : ''
+  ).join('');
+  preview.style.display = 'block';
+}
+
+async function saveNotas() {
+  const texto = document.getElementById('notasTexto').value.trim();
+  const msgEl = document.getElementById('notasMsg');
+  const payload = { texto, updatedAt: new Date().toISOString() };
+  localStorage.setItem('jans_notas_reservas', JSON.stringify(payload));
+  const ok = await ghPutPublic('notas.json', payload);
+  msgEl.style.display    = 'block';
+  msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
+  msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)';
+  msgEl.style.color      = ok ? '#86efac' : '#fcd34d';
+  msgEl.textContent      = ok ? '✓ Notas publicadas en el sitio' : '✓ Guardadas localmente (configura GitHub para publicar)';
+  showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
+}
+
+async function clearNotas() {
+  if (!confirm('¿Eliminar todas las notas?')) return;
+  document.getElementById('notasTexto').value = '';
+  document.getElementById('notasPreview').style.display = 'none';
+  document.getElementById('notasMsg').style.display = 'none';
+  localStorage.removeItem('jans_notas_reservas');
+  await ghPutPublic('notas.json', { texto: '', updatedAt: new Date().toISOString() });
+  showToast('Notas eliminadas ✓');
 }
 
 // ── Export JSON ──
