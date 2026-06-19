@@ -2326,7 +2326,7 @@ async function loadSocialLinksUI() {
   // Pre-fill YouTube
   try {
     const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
-    if (yt && yt.ytUrl) { document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT(); }
+    if (yt && yt.ytUrl) { document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT(); if (yt.channelUrl && document.getElementById('ytChannelUrl')) document.getElementById('ytChannelUrl').value = yt.channelUrl; }
   } catch(e) {}
 }
 
@@ -2476,17 +2476,19 @@ function previewYT() {
 }
 
 async function saveYtLink() {
-  const input = document.getElementById('ytVideoUrl').value.trim();
-  const id    = extractYtId(input);
+  const input      = document.getElementById('ytVideoUrl').value.trim();
+  const channelUrl = (document.getElementById('ytChannelUrl')?.value.trim()) || 'https://www.youtube.com/@jansphotograph';
+  const id         = extractYtId(input);
   if (!input) { showToast('Ingresa una URL o ID de YouTube', 'error'); return; }
   if (!id)    { showToast('No se pudo detectar el ID del video — verifica la URL', 'error'); return; }
-  const payload = { ytUrl: input, ytId: id, updatedAt: new Date().toISOString() };
+  const payload = { ytUrl: input, ytId: id, channelUrl, updatedAt: new Date().toISOString() };
   const ok = await ghPutPublic('youtube.json', payload);
   if (ok) {
     showToast('YouTube actualizado y publicado ✓');
-    localStorage.setItem('jans_yt_preview', JSON.stringify({ ytId: id, ytUrl: input }));
+    localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
   } else {
-    showToast('Error al publicar — verifica token y repo público', 'error');
+    showToast('Guardado localmente — verifica token para publicar', 'error');
+    localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
   }
 }
 
