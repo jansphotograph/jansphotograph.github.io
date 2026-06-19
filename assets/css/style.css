@@ -168,9 +168,14 @@ header {
 
 .slide-content {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 140px 80px 40px;        /* lifts text higher in slider */
-  background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.15) 80%, transparent 100%);
+  inset: 0;                       /* cover full slide */
+  padding: 0 80px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.72) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;        /* true vertical center */
+  align-items: flex-start;
+  padding-top: 72px;              /* offset for fixed header */
 }
 .slide-content h2 {
   font-family: var(--font-display);
@@ -188,6 +193,7 @@ header {
 
 /* Slider controls */
 .slider-btn {
+  display: none;                  /* removed for cleaner look */
   position: absolute;
   top: 50%; transform: translateY(-50%);
   z-index: 10;
@@ -591,7 +597,7 @@ footer {
   .instagram-inner { grid-template-columns: 1fr; gap: 40px; }
   .ig-preview { max-width: 480px; margin: 0 auto; }
   .footer-columns { grid-template-columns: 1fr 1fr; }
-  .slide-content { padding: 120px 40px 36px; }
+  .slide-content { padding: 72px 40px 0; }
 }
 
 @media (max-width: 640px) {
@@ -603,7 +609,7 @@ footer {
   .slider-btn.next { right: 14px; }
   .section-inner, .services-inner, .yt-inner { padding: 0 20px; }
   .footer-inner { padding: 0 20px; }
-  .slide-content { padding: 100px 24px 28px; }
+  .slide-content { padding: 72px 24px 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
