@@ -148,7 +148,7 @@
 }
 .plan-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 24px;
 }
 .plan-card-pub {
@@ -312,6 +312,11 @@
   .catalog-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 640px) {
-  .catalog-grid { grid-template-columns: repeat(2, 1fr); }
-  .planes-nav a { padding: 14px 12px; font-size: 0.75rem; }
+  .catalog-grid   { grid-template-columns: repeat(2, 1fr); }
+  .planes-nav a   { padding: 14px 12px; font-size: 0.75rem; }
+  .plan-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+
+@media (max-width: 360px) {
+  .plan-cards-grid { grid-template-columns: 1fr; }
 }
