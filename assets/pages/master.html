@@ -2633,78 +2633,137 @@ async function generateConfirmationPDF(id) {
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
   const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
-  const margin = 18; let y = 26;
+  const margin = 18;
+  const pageW  = 210;
+  const colW   = (pageW - margin*2 - 8) / 2; // two columns with 8mm gutter
+  const col1X  = margin;
+  const col2X  = margin + colW + 8;
 
-  pdfHeaderWithLogo(doc, logoDataUrl, company, `CONFIRMACIÓN #${r.numero||'—'}`, margin);
+  // ── Black header with logo + company data ──
+  const headerH = 38;
+  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
 
-  // Green "CONFIRMADA" banner
-  doc.setFillColor(22,163,74); doc.roundedRect(margin, y, 210-(margin*2), 14, 2, 2, 'F');
+  let logoTextX = margin;
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      logoTextX = margin + 28;
+    } catch(e) {}
+  }
+
+  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, logoTextX, 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  let companyLineY = 22;
+  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
+  if (company.ruc) {
+    doc.setFontSize(7.5); doc.setTextColor(180,180,180);
+    doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'});
+  }
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text(`# ${r.numero||'—'}`, pageW-margin, 22, {align:'right'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Emitido: ${new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
+
+  let y = headerH + 12;
+
+  // ── Green "CONFIRMADA" banner ──
+  doc.setFillColor(22,163,74); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
   doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text('✓  RESERVA CONFIRMADA', 105, y+9, {align:'center'});
-  y += 22;
+  doc.text('✓  RESERVA CONFIRMADA', pageW/2, y+9, {align:'center'});
+  y += 24;
 
-  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.text(pdfCompanyFooterLine(company), margin, y); y += 5;
-  if (company.ruc) { doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, margin, y); y += 5; }
-  y += 3;
-
-  // Client + session info
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  // ── Two-column client + session data ──
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
   doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DE LA RESERVA', margin, y); y += 7;
+  doc.text('DATOS DE LA RESERVA', margin, y); y += 9;
 
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-  const rows = [
-    ['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'],
-    ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—'],
-    ['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'],
-    ['Plan:', r.plan||'—'],
-  ];
-  rows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, margin, y);
-    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
-    y += 6;
+  const leftRows  = [['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—']];
+  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Plan:', r.plan||'—'], ['Estado:', resStatusLabel(r.status)]];
+
+  const startY = y;
+  let yL = startY, yR = startY;
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  leftRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-30);
+    doc.text(lines, col1X+30, yL);
+    doc.setFont('helvetica','normal');
+    yL += Math.max(6, lines.length*5);
   });
+  rightRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-30);
+    doc.text(lines, col2X+30, yR);
+    doc.setFont('helvetica','normal');
+    yR += Math.max(6, lines.length*5);
+  });
+  y = Math.max(yL, yR) + 6;
 
-  y += 4;
+  // ── Boxed payment summary ──
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
   if (total > 0) {
-    doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-    doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('RESUMEN DE PAGO', margin, y); y += 7;
-    doc.setFontSize(9.5); doc.setFont('helvetica','normal');
+    const boxItems = [];
+    if (r.plan) boxItems.push(['Plan', r.plan, resPlanPrice(r)]);
+    (r.extras || []).forEach(e => boxItems.push(['Adicional', e.nombre, parseFloat(e.precio)||0]));
 
-    if (r.plan) {
-      doc.setTextColor(120,120,120); doc.text('Plan:', margin, y);
-      doc.setTextColor(30,30,30); doc.text(`${r.plan} — $${resPlanPrice(r).toFixed(2)}`, margin+38, y);
-      y += 6;
-    }
-    (r.extras || []).forEach(e => {
-      doc.setTextColor(120,120,120); doc.text('Adicional:', margin, y);
-      doc.setTextColor(30,30,30); doc.text(`${e.nombre} — $${(parseFloat(e.precio)||0).toFixed(2)}`, margin+38, y);
-      y += 6;
+    const lineH   = 6;
+    const boxPadY = 8;
+    const boxH    = boxPadY*2 + 7 /*title*/ + (boxItems.length * lineH) + 4 /*divider gap*/ + lineH*2 /*total+abono*/ + 9 /*saldo*/;
+
+    doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
+    doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
+
+    let by = y + boxPadY;
+    doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('RESUMEN DE PAGO', margin+6, by); by += 8;
+
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    boxItems.forEach(([tag, name, price]) => {
+      doc.setTextColor(140,140,140); doc.text(tag+':', margin+6, by);
+      doc.setTextColor(30,30,30); doc.text(name, margin+28, by);
+      doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+      by += lineH;
     });
 
-    [['Total:', `$${total.toFixed(2)}`], ['Abonado:', `$${abono.toFixed(2)}`]].forEach(([l,v]) => {
-      doc.setTextColor(120,120,120); doc.text(l, margin, y);
-      doc.setTextColor(30,30,30); doc.text(v, margin+38, y);
-      y += 6;
-    });
+    by += 2;
+    doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+    doc.line(margin+6, by, pageW-margin-6, by); by += 6;
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(80,80,80); doc.text('Total:', margin+6, by);
+    doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+    doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH;
+
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); doc.text('Abonado:', margin+6, by);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH + 2;
+
     doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
-    doc.text('Saldo pendiente:', margin, y); doc.text(`$${pend.toFixed(2)}`, margin+38, y);
-    y += 10;
+    doc.text('Saldo pendiente:', margin+6, by);
+    doc.text(`$${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+
+    y += boxH + 10;
   }
 
   if (r.notas) {
     doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
     doc.text('NOTAS:', margin, y); y += 4;
     doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    const lines = doc.splitTextToSize(r.notas, 170); doc.text(lines, margin, y); y += lines.length*4+4;
+    const lines = doc.splitTextToSize(r.notas, pageW-(margin*2)); doc.text(lines, margin, y); y += lines.length*4+4;
   }
 
-  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text(pdfCompanyFooterLine(company), 105, 293, {align:'center'});
+  // ── Footer ──
+  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
+  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
 
   doc.save(`Confirmacion_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
   showToast('PDF de confirmación descargado ✓');
