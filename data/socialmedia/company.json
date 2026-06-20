@@ -1,12 +1,12 @@
 {
   "nombre": "Jans Photograph",
-  "ruc": "",
-  "dv": "",
-  "corregimiento": "",
-  "distrito": "",
-  "calle": "",
-  "logoPath": "",
   "telefono": "+507 6862-2402",
+  "ruc": "7-712-2492",
+  "dv": "",
   "email": "jansphotograph.contact@gmail.com",
-  "updatedAt": ""
+  "corregimiento": "El Harino",
+  "distrito": "La Pintada",
+  "calle": "El Copé, Calle Central",
+  "logoPath": "assets/images/company/logo.png",
+  "updatedAt": "2026-06-20T19:39:22.923Z"
 }
