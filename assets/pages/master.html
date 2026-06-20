@@ -2673,7 +2673,7 @@ async function generateConfirmationPDF(id) {
   // ── Green "CONFIRMADA" banner ──
   doc.setFillColor(22,163,74); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
   doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text('✓  RESERVA CONFIRMADA', pageW/2, y+9, {align:'center'});
+  doc.text('RESERVA CONFIRMADA', pageW/2, y+9, {align:'center'});
   y += 24;
 
   // ── Two-column client + session data ──
@@ -2776,105 +2776,150 @@ async function generateInvoicePDF(id) {
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
   const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
-  const margin = 18; let y = 26;
-
-  pdfHeaderWithLogo(doc, logoDataUrl, company, `FACTURA #${r.numero||'—'}`, margin);
+  const margin = 18;
+  const pageW  = 210;
+  const colW   = (pageW - margin*2 - 8) / 2;
+  const col1X  = margin;
+  const col2X  = margin + colW + 8;
 
   const now = new Date();
   const fechaHora = now.toLocaleDateString('es-PA') + '  ' + now.toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
 
-  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.text(pdfCompanyFooterLine(company), margin, y); y += 5;
-  if (company.ruc) { doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, margin, y); y += 5; }
-  doc.text(`Fecha y hora de emisión: ${fechaHora}`, margin, y); y += 7;
+  // ── Black header with logo + company data ──
+  const headerH = 38;
+  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
 
-  // Client info
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE', margin, y); y += 7;
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-  const clientRows = [
-    ['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'],
-    ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'],
-  ];
-  if (r.razonSocial) clientRows.push(['Razón Social:', r.razonSocial]);
-  if (r.address)     clientRows.push(['Dirección:', r.address]);
-  clientRows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, margin, y);
-    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
-    y += 6;
-  });
-  y += 3;
-
-  // Session info
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DETALLE DE SESIÓN', margin, y); y += 7;
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-  [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)]].forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, margin, y);
-    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
-    y += 6;
-  });
-  y += 3;
-
-  // Plan + addons table
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('PLANES Y SERVICIOS', margin, y); y += 7;
-  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y += 4;
-  doc.line(margin, y, 210-margin, y); y += 4;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
-
-  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
-  if (r.plan) {
-    doc.setFont('helvetica','bold');
-    doc.text(r.plan, margin, y);
-    doc.text(`$${resPlanPrice(r).toFixed(2)}`, 210-margin, y, {align:'right'});
-    doc.setFont('helvetica','normal');
-    y += 6;
+  let logoTextX = margin;
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      logoTextX = margin + 28;
+    } catch(e) {}
   }
-  (r.extras || r.addons || []).forEach(a => {
-    doc.text(a.nombre || a.name, margin+4, y);
-    doc.text(`$${(parseFloat(a.precio !== undefined ? a.precio : a.price)||0).toFixed(2)}`, 210-margin, y, {align:'right'});
-    y += 6;
+
+  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, logoTextX, 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  let companyLineY = 22;
+  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
+
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text(`FACTURA #${r.numero||'—'}`, pageW-margin, 16, {align:'right'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Emitida: ${fechaHora}`, pageW-margin, 22, {align:'right'});
+  if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 26.5, {align:'right'});
+
+  let y = headerH + 12;
+
+  // ── Two-column client + session data ──
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 9;
+
+  const leftRows = [['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—']];
+  if (r.razonSocial) leftRows.push(['Razón Social:', r.razonSocial]);
+  if (r.address)     leftRows.push(['Dirección:', r.address]);
+
+  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['# Cotización:', r.numero||'—']];
+
+  const startY = y;
+  let yL = startY, yR = startY;
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  leftRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-32);
+    doc.text(lines, col1X+32, yL);
+    doc.setFont('helvetica','normal');
+    yL += Math.max(6, lines.length*5);
   });
-  y += 1; doc.line(margin, y, 210-margin, y); y += 7;
+  rightRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-32);
+    doc.text(lines, col2X+32, yR);
+    doc.setFont('helvetica','normal');
+    yR += Math.max(6, lines.length*5);
+  });
+  y = Math.max(yL, yR) + 8;
 
-  // Totals breakdown
-  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Total de plan(es):', margin, y); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-  doc.text(`$${total.toFixed(2)}`, 210-margin, y, {align:'right'}); y += 6;
+  // ── Boxed items table ──
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
+  const items = [];
+  if (r.plan) items.push([r.plan, resPlanPrice(r)]);
+  (r.extras || r.addons || []).forEach(a => {
+    items.push([a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0]);
+  });
+
+  const rowH    = 6.5;
+  const boxPadY = 8;
+  const tableH  = 8 /*header row*/ + (items.length * rowH) + 4;
+  const totalsH = rowH*3 + 6 /*spacing*/ + 12 /*grand total box*/;
+  const boxH    = boxPadY*2 + 7 /*title*/ + tableH + totalsH;
+
+  doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
+  doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
+
+  let by = y + boxPadY;
+  doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('PLANES Y SERVICIOS', margin+6, by); by += 8;
+
+  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by += 3;
+  doc.line(margin+6, by, pageW-margin-6, by); by += 5;
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+  items.forEach(([name, price], i) => {
+    if (i === 0 && r.plan) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
+    doc.text(name, margin+6, by);
+    doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+    by += rowH;
+  });
+
+  by += 1;
+  doc.setDrawColor(230,230,230);
+  doc.line(margin+6, by, pageW-margin-6, by); by += 7;
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total de plan(es):', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
 
   doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Abono realizado:', margin, y); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-  doc.text(`$${abono.toFixed(2)}`, 210-margin, y, {align:'right'}); y += 6;
+  doc.text('Abono realizado:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+  doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
 
   doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Cancelación completa:', margin, y); doc.setFont('helvetica','bold');
+  doc.text('Cancelación completa:', margin+6, by); doc.setFont('helvetica','bold');
   doc.setTextColor(pend <= 0 ? 22 : 220, pend <= 0 ? 163 : 38, pend <= 0 ? 74 : 38);
-  doc.text(pend <= 0 ? 'PAGADO EN TOTALIDAD' : `Pendiente: $${pend.toFixed(2)}`, 210-margin, y, {align:'right'});
-  y += 10;
+  doc.text(pend <= 0 ? 'PAGADO EN TOTALIDAD' : `Pendiente: $${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+  by += 9;
 
-  // Grand total box
-  doc.setFillColor(199,30,95); doc.roundedRect(margin, y-6, 210-(margin*2), 12, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
-  doc.text('TOTAL FACTURADO', margin+4, y+1.5);
-  doc.text(`$${total.toFixed(2)}`, 210-margin-4, y+1.5, {align:'right'});
-  y += 16;
+  // Grand total bar inside the box
+  doc.setFillColor(199,30,95); doc.roundedRect(margin+4, by-5.5, pageW-(margin*2)-8, 11, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('TOTAL FACTURADO', margin+10, by+1.5);
+  doc.text(`$${total.toFixed(2)}`, pageW-margin-10, by+1.5, {align:'right'});
+
+  y += boxH + 10;
 
   if (r.notas) {
     doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
     doc.text('NOTAS:', margin, y); y += 4;
     doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    const lines = doc.splitTextToSize(r.notas, 170); doc.text(lines, margin, y); y += lines.length*4;
+    const lines = doc.splitTextToSize(r.notas, pageW-(margin*2)); doc.text(lines, margin, y); y += lines.length*4;
   }
 
-  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text(`Factura generada el ${fechaHora}  ·  ${pdfCompanyFooterLine(company)}`, 105, 293, {align:'center'});
+  // ── Footer ──
+  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
+  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
 
   doc.save(`Factura_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
   showToast('Factura descargada ✓');
