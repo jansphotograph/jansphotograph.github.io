@@ -550,6 +550,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41-1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M20 12h2M2 12h2M12 2v2M12 20v2"/></svg>
             Configuración
           </button>
+          <button class="sidebar-link" onclick="switchView('company', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/></svg>
+            Datos de Empresa
+          </button>
         </div>
       </div>
     </aside>
@@ -1127,12 +1131,13 @@
             <table>
               <thead>
                 <tr>
+                  <th>#</th>
                   <th>Cliente</th>
                   <th>Fecha</th>
                   <th>Hora</th>
                   <th>Plan</th>
                   <th>Estado</th>
-                  <th>Recibida</th>
+                  <th>Pendiente</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -1197,6 +1202,62 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
             Guardar todos los planes
           </button>
+        </div>
+      </div>
+
+      <!-- ── DATOS DE EMPRESA ── -->
+      <div class="view" id="view-company">
+        <div class="page-header">
+          <h2>Datos de Empresa</h2>
+          <p>Esta información aparece en tus cotizaciones y facturas en PDF</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+            Información General
+          </div>
+
+          <div class="field">
+            <label>Logo de la empresa</label>
+            <div id="compLogoZone" onclick="document.getElementById('compLogoInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:24px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="compLogoInput" accept="image/*" style="display:none" onchange="handleCompanyLogo(this.files[0])" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="compLogoLabel">Haz clic o arrastra tu logo aquí</div>
+            </div>
+            <div id="compLogoPreview" style="display:none;margin-top:10px;max-width:160px">
+              <img id="compLogoImg" src="" style="width:100%;border-radius:8px;display:block;background:#fff;padding:8px" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field"><label>Nombre de la empresa</label><input type="text" id="compNombre" placeholder="Jans Photograph" /></div>
+            <div class="field"><label>Teléfono</label><input type="text" id="compTelefono" placeholder="+507 6862-2402" /></div>
+          </div>
+
+          <div class="form-row">
+            <div class="field"><label>RUC</label><input type="text" id="compRuc" placeholder="8-888-8888" /></div>
+            <div class="field"><label>DV</label><input type="text" id="compDv" placeholder="00" /></div>
+          </div>
+
+          <div class="field"><label>Correo electrónico</label><input type="email" id="compEmail" placeholder="contacto@empresa.com" /></div>
+
+          <hr class="section-divider" />
+          <span class="section-label-sm">Ubicación</span>
+          <div class="form-row">
+            <div class="field"><label>Corregimiento</label><input type="text" id="compCorregimiento" placeholder="Ej. San Miguelito" /></div>
+            <div class="field"><label>Distrito</label><input type="text" id="compDistrito" placeholder="Ej. Panamá" /></div>
+          </div>
+          <div class="field"><label>Calle</label><input type="text" id="compCalle" placeholder="Ej. Calle 12, Edificio Plaza, Local 3" /></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveCompanyData()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+          </div>
+          <div id="compMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
         </div>
       </div>
 
@@ -1346,6 +1407,9 @@
               </label>
               <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
                 <input type="checkbox" id="chkFaqs" checked style="accent-color:var(--pink)"> Preguntas frecuentes
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkCompany" checked style="accent-color:var(--pink)"> Datos de empresa
               </label>
             </div>
           </div>
@@ -1517,22 +1581,29 @@
 
 <!-- ══ EDIT RESERVA MODAL ══ -->
 <div class="modal-overlay" id="editReservaModal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:520px">
     <div class="modal-header">
-      <h3>Editar Reserva</h3>
+      <h3>Editar Reserva <span id="editResNumero" style="color:var(--pink-l);font-family:monospace;font-size:0.85rem"></span></h3>
       <button class="modal-close" onclick="closeModal('editReservaModal')">×</button>
     </div>
-    <div class="field"><label>Fecha</label><input type="date" id="editResDate" /></div>
-    <div class="field"><label>Hora</label>
-      <select id="editResHora">
-        <option value="8|8:00 AM">8:00 AM</option><option value="9|9:00 AM">9:00 AM</option>
-        <option value="10|10:00 AM">10:00 AM</option><option value="11|11:00 AM">11:00 AM</option>
-        <option value="12|12:00 PM">12:00 PM</option><option value="13|1:00 PM">1:00 PM</option>
-        <option value="14|2:00 PM">2:00 PM</option><option value="15|3:00 PM">3:00 PM</option>
-        <option value="16|4:00 PM">4:00 PM</option><option value="17|5:00 PM">5:00 PM</option>
-        <option value="18|6:00 PM">6:00 PM</option><option value="19|7:00 PM">7:00 PM</option>
-        <option value="20|8:00 PM">8:00 PM</option>
-      </select>
+    <div class="form-row">
+      <div class="field"><label>Nombre</label><input type="text" id="editResNombre" /></div>
+      <div class="field"><label>Teléfono</label><input type="text" id="editResTel" /></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="editResEmail" /></div>
+    <div class="form-row">
+      <div class="field"><label>Fecha</label><input type="date" id="editResDate" /></div>
+      <div class="field"><label>Hora</label>
+        <select id="editResHora">
+          <option value="8|8:00 AM">8:00 AM</option><option value="9|9:00 AM">9:00 AM</option>
+          <option value="10|10:00 AM">10:00 AM</option><option value="11|11:00 AM">11:00 AM</option>
+          <option value="12|12:00 PM">12:00 PM</option><option value="13|1:00 PM">1:00 PM</option>
+          <option value="14|2:00 PM">2:00 PM</option><option value="15|3:00 PM">3:00 PM</option>
+          <option value="16|4:00 PM">4:00 PM</option><option value="17|5:00 PM">5:00 PM</option>
+          <option value="18|6:00 PM">6:00 PM</option><option value="19|7:00 PM">7:00 PM</option>
+          <option value="20|8:00 PM">8:00 PM</option>
+        </select>
+      </div>
     </div>
     <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
     <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
@@ -1774,7 +1845,7 @@ const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
   planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
-  config:'cuenta'
+  config:'cuenta', company:'cuenta'
 };
 
 function switchView(name, btn) {
@@ -1804,6 +1875,7 @@ function switchView(name, btn) {
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
   if (name === 'faqs')           initFaqs();
+  if (name === 'company')        loadCompanyUI();
 }
 
 // ── Dashboard ──
@@ -2255,9 +2327,13 @@ async function saveQuote() {
   const addons    = [];
   checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
   const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
+  const total = planPrice + addonsTotal;
+
+  const numero = nextNumero('COT');
 
   const quote = {
     id:         `q_${Date.now()}`,
+    numero,
     clientType,
     clientName: name,
     clientId:   cid,
@@ -2272,7 +2348,7 @@ async function saveQuote() {
     plan:       planName,
     planPrice,
     addons,
-    total:      planPrice + addonsTotal,
+    total,
     notes:      document.getElementById('qNotes').value,
     status:     'pending',
     createdAt:  new Date().toLocaleDateString('es-PA'),
@@ -2280,13 +2356,49 @@ async function saveQuote() {
 
   state.quotes.push(quote);
   const ok = await ghPut('quotes.json', state.quotes);
+
+  // Also feed into the unified reservas system so it appears in Reservas
+  // with the same control module (status, abono, PDFs)
+  try {
+    const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
+    const [y,m,d] = (quote.sessionDate || '').split('-');
+    const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
+    reservas.push({
+      id:         quote.id,
+      numero,
+      nombre:     name,
+      tel:        phone,
+      email:      quote.email,
+      plan:       planName,
+      notas:      quote.notes,
+      fecha:      quote.sessionDate || '',
+      fechaLabel,
+      hora:       quote.sessionTime || '',
+      horaVal:    quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
+      status:     'pending',
+      abono:      0,
+      totalManual: total,
+      clientId:   cid,
+      clientType,
+      razonSocial: quote.razonSocial,
+      repLegal:    quote.repLegal,
+      address:     quote.address,
+      addons:      addons,
+      origin:     'manual',
+      createdAt:  quote.createdAt,
+    });
+    localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+  } catch(e) {}
+
   if(ok) {
-    showToast('Cotización guardada en GitHub ✓');
+    showToast('Cotización ' + numero + ' guardada ✓');
     clearQuoteForm();
     updateDashboard(); renderQuotesTable();
     switchView('quotes', document.querySelectorAll('.sidebar-link')[2]);
   } else {
-    showToast('Error al guardar en GitHub','error');
+    showToast('Guardada localmente — verifica GitHub para publicar','error');
+    clearQuoteForm();
+    updateDashboard();
   }
 }
 
@@ -2458,6 +2570,243 @@ function downloadPDF() {
 
   doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
   showToast('PDF descargado ✓');
+}
+
+// ═══════════════════════════════════════
+//  PDF — Confirmación de Reserva (banner verde)
+//  PDF — Factura
+// ═══════════════════════════════════════
+function pdfCompanyInfo() {
+  const c = getCompanyData();
+  const ubicacion = [c.corregimiento, c.distrito, c.calle].filter(Boolean).join(', ');
+  return {
+    nombre:    c.nombre || CONFIG.COMPANY_NAME || 'Jans Photograph',
+    telefono:  c.telefono || CONFIG.COMPANY_PHONE || '',
+    email:     c.email || CONFIG.COMPANY_EMAIL || '',
+    ruc:       c.ruc || '',
+    dv:        c.dv || '',
+    ubicacion: ubicacion || '',
+    logoPath:  c.logoPath || ''
+  };
+}
+
+async function loadImageAsDataUrl(path) {
+  if (!path) return null;
+  try {
+    const url = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) { return null; }
+}
+
+function pdfHeaderWithLogo(doc, logoDataUrl, company, rightLabel, margin) {
+  doc.setFillColor(199,30,95); doc.rect(0,0,210,16,'F');
+  let textX = margin;
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, 2, 12, 12, undefined, 'FAST');
+      textX = margin + 16;
+    } catch(e) { /* if logo format unsupported, skip silently */ }
+  }
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, textX, 10.5);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(rightLabel, 210-margin, 10.5, {align:'right'});
+}
+
+function pdfCompanyFooterLine(company) {
+  const parts = [company.telefono, company.email, company.ubicacion].filter(Boolean);
+  return parts.join(' · ');
+}
+
+// ── PDF: Confirmación de Reserva con banner verde ──
+async function generateConfirmationPDF(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const company = pdfCompanyInfo();
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
+  const margin = 18; let y = 26;
+
+  pdfHeaderWithLogo(doc, logoDataUrl, company, `CONFIRMACIÓN #${r.numero||'—'}`, margin);
+
+  // Green "CONFIRMADA" banner
+  doc.setFillColor(22,163,74); doc.roundedRect(margin, y, 210-(margin*2), 14, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('✓  RESERVA CONFIRMADA', 105, y+9, {align:'center'});
+  y += 22;
+
+  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text(pdfCompanyFooterLine(company), margin, y); y += 5;
+  if (company.ruc) { doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, margin, y); y += 5; }
+  y += 3;
+
+  // Client + session info
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DE LA RESERVA', margin, y); y += 7;
+
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  const rows = [
+    ['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'],
+    ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—'],
+    ['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'],
+    ['Plan:', r.plan||'—'],
+  ];
+  rows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, margin, y);
+    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
+    y += 6;
+  });
+
+  y += 4;
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
+  if (total > 0) {
+    doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+    doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('RESUMEN DE PAGO', margin, y); y += 7;
+    doc.setFontSize(9.5); doc.setFont('helvetica','normal');
+    [['Total del plan:', `$${total.toFixed(2)}`], ['Abonado:', `$${abono.toFixed(2)}`]].forEach(([l,v]) => {
+      doc.setTextColor(120,120,120); doc.text(l, margin, y);
+      doc.setTextColor(30,30,30); doc.text(v, margin+38, y);
+      y += 6;
+    });
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
+    doc.text('Saldo pendiente:', margin, y); doc.text(`$${pend.toFixed(2)}`, margin+38, y);
+    y += 10;
+  }
+
+  if (r.notas) {
+    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
+    doc.text('NOTAS:', margin, y); y += 4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    const lines = doc.splitTextToSize(r.notas, 170); doc.text(lines, margin, y); y += lines.length*4+4;
+  }
+
+  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(pdfCompanyFooterLine(company), 105, 293, {align:'center'});
+
+  doc.save(`Confirmacion_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  showToast('PDF de confirmación descargado ✓');
+}
+
+// ── PDF: Factura ──
+async function generateInvoicePDF(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const company = pdfCompanyInfo();
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
+  const margin = 18; let y = 26;
+
+  pdfHeaderWithLogo(doc, logoDataUrl, company, `FACTURA #${r.numero||'—'}`, margin);
+
+  const now = new Date();
+  const fechaHora = now.toLocaleDateString('es-PA') + '  ' + now.toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
+
+  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text(pdfCompanyFooterLine(company), margin, y); y += 5;
+  if (company.ruc) { doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, margin, y); y += 5; }
+  doc.text(`Fecha y hora de emisión: ${fechaHora}`, margin, y); y += 7;
+
+  // Client info
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE', margin, y); y += 7;
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  const clientRows = [
+    ['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'],
+    ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'],
+  ];
+  if (r.razonSocial) clientRows.push(['Razón Social:', r.razonSocial]);
+  if (r.address)     clientRows.push(['Dirección:', r.address]);
+  clientRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, margin, y);
+    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
+    y += 6;
+  });
+  y += 3;
+
+  // Session info
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DETALLE DE SESIÓN', margin, y); y += 7;
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+  [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)]].forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, margin, y);
+    doc.setTextColor(30,30,30); doc.text(String(v), margin+38, y);
+    y += 6;
+  });
+  y += 3;
+
+  // Plan + addons table
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('PLANES Y SERVICIOS', margin, y); y += 7;
+  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y += 4;
+  doc.line(margin, y, 210-margin, y); y += 4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
+  if (r.plan) {
+    doc.setFont('helvetica','bold');
+    doc.text(r.plan, margin, y);
+    doc.text(`$${(r.totalManual !== undefined && r.totalManual !== null ? parseFloat(r.totalManual) : total).toFixed(2)}`, 210-margin, y, {align:'right'});
+    doc.setFont('helvetica','normal');
+    y += 6;
+  }
+  (r.addons || []).forEach(a => {
+    doc.text(a.name, margin+4, y);
+    doc.text(`$${(parseFloat(a.price)||0).toFixed(2)}`, 210-margin, y, {align:'right'});
+    y += 6;
+  });
+  y += 1; doc.line(margin, y, 210-margin, y); y += 7;
+
+  // Totals breakdown
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total de plan(es):', margin, y); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+  doc.text(`$${total.toFixed(2)}`, 210-margin, y, {align:'right'}); y += 6;
+
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Abono realizado:', margin, y); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+  doc.text(`$${abono.toFixed(2)}`, 210-margin, y, {align:'right'}); y += 6;
+
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Cancelación completa:', margin, y); doc.setFont('helvetica','bold');
+  doc.setTextColor(pend <= 0 ? 22 : 220, pend <= 0 ? 163 : 38, pend <= 0 ? 74 : 38);
+  doc.text(pend <= 0 ? 'PAGADO EN TOTALIDAD' : `Pendiente: $${pend.toFixed(2)}`, 210-margin, y, {align:'right'});
+  y += 10;
+
+  // Grand total box
+  doc.setFillColor(199,30,95); doc.roundedRect(margin, y-6, 210-(margin*2), 12, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('TOTAL FACTURADO', margin+4, y+1.5);
+  doc.text(`$${total.toFixed(2)}`, 210-margin-4, y+1.5, {align:'right'});
+  y += 16;
+
+  if (r.notas) {
+    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
+    doc.text('NOTAS:', margin, y); y += 4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    const lines = doc.splitTextToSize(r.notas, 170); doc.text(lines, margin, y); y += lines.length*4;
+  }
+
+  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(`Factura generada el ${fechaHora}  ·  ${pdfCompanyFooterLine(company)}`, 105, 293, {align:'center'});
+
+  doc.save(`Factura_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  showToast('Factura descargada ✓');
 }
 
 // ── GitHub Config UI ──
@@ -2924,16 +3273,48 @@ const WA_NUMBER = '50768622402';
 let allReservas  = [];
 let editingResId = null;
 
+// ── Sequential numbering: WEB-01.. for public reservations, COT-01.. for manual quotes ──
+function nextNumero(prefix) {
+  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  let counter = parseInt(localStorage.getItem(key) || '0', 10);
+  counter += 1;
+  localStorage.setItem(key, String(counter));
+  return prefix + '-' + String(counter).padStart(2, '0');
+}
+
 function loadReservas() {
   try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
+  // Assign WEB- numbers to any reserva that doesn't have one yet (came from public site)
+  let changed = false;
+  allReservas.forEach(r => {
+    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
+    if (r.abono === undefined) { r.abono = 0; changed = true; }
+  });
+  if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
 }
 
 function resStatusLabel(s) {
-  return { pending:'Pendiente', confirmed:'Confirmada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada' }[s] || s;
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada' }[s] || s;
 }
 function resStatusClass(s) {
-  return { pending:'status-pending', confirmed:'status-approved', declined:'status-rejected', cancelled:'status-rejected' }[s] || '';
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected' }[s] || '';
 }
+
+// ── Financial helpers ──
+function resPlanPrice(r) {
+  // Try to resolve the plan's price from publicPlans by name match
+  if (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '') return parseFloat(r.totalManual) || 0;
+  try {
+    const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+    const match = plans.find(p => p.nombre === r.plan);
+    if (match) return parseFloat(match.precio) || 0;
+  } catch(e) {}
+  return 0;
+}
+function resTotal(r)     { return resPlanPrice(r); }
+function resAbono(r)     { return parseFloat(r.abono) || 0; }
+function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r)); }
+function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round((resAbono(r)/t)*100)) : 0; }
 
 function renderReservasTable() {
   loadReservas();
@@ -2952,11 +3333,14 @@ function renderReservasTable() {
   if(badge) badge.textContent = pending;
 
   if(!list.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
     return;
   }
-  tbody.innerHTML = list.map(r => `
+  tbody.innerHTML = list.map(r => {
+    const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
+    return `
     <tr>
+      <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span></td>
       <td>
         <div style="font-weight:600">${r.nombre}</div>
         <div style="font-size:.75rem;color:var(--gray-l)">${r.tel}</div>
@@ -2965,21 +3349,27 @@ function renderReservasTable() {
       <td style="font-size:.88rem">${r.hora || '—'}</td>
       <td style="font-size:.82rem;color:var(--gray-l)">${r.plan || '—'}</td>
       <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
-      <td style="font-size:.78rem;color:var(--gray-l)">${r.createdAt || '—'}</td>
+      <td style="min-width:110px">
+        ${total > 0 ? `
+          <div style="font-size:.78rem;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}">$${pend.toFixed(2)}</div>
+          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">
+            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>
+          </div>
+        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}
+      </td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-sm btn-outline" onclick="viewReserva('${r.id}')">Ver</button>
-          <button class="btn btn-sm btn-green"   onclick="changeResStatus('${r.id}','confirmed')">✓</button>
-          <button class="btn btn-sm btn-red"     onclick="changeResStatus('${r.id}','declined')">✗</button>
           <button class="btn btn-sm btn-outline" onclick="openEditReserva('${r.id}')">✏</button>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function viewReserva(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
-  document.getElementById('reservaModalTitle').textContent = 'Reserva — ' + r.nombre;
+  document.getElementById('reservaModalTitle').textContent = (r.numero || '') + ' — ' + r.nombre;
   const waMsg = encodeURIComponent(
     '¡Hola ' + r.nombre + '! 📸\n' +
     'Tu reserva ha sido confirmada:\n' +
@@ -2988,58 +3378,122 @@ function viewReserva(id) {
     (r.plan ? 'Plan: ' + r.plan + '\n' : '') +
     '\n¡Te esperamos! — Jans Photograph'
   );
+
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
+
   document.getElementById('reservaModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Fecha</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Hora</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Recibida</div><div>${r.createdAt||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Fecha sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Hora sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
+      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
     </div>
     ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Control Financiero</span>
+    <div class="form-row">
+      <div class="field"><label>Total del plan ($)</label><input type="number" id="resTotalInput" min="0" step="0.01" value="${r.totalManual !== undefined && r.totalManual !== null ? r.totalManual : total}" onchange="updateResFinancials('${r.id}')" /></div>
+      <div class="field"><label>Abono realizado ($)</label><input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" onchange="updateResFinancials('${r.id}')" /></div>
+    </div>
+    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      ${renderResFinancialSummary(total, abono, pend, prog)}
+    </div>
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Cambiar Estado</span>
+    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-sm ${r.status==='pending'?'btn-pink':'btn-outline'}"   onclick="changeResStatus('${r.id}','pending')">Pendiente</button>
+      <button class="btn btn-sm ${r.status==='confirmed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','confirmed')">Confirmada</button>
+      <button class="btn btn-sm ${r.status==='completed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','completed')">Completada</button>
+      <button class="btn btn-sm ${r.status==='declined'?'btn-red':'btn-outline'}"   onclick="changeResStatus('${r.id}','declined')">Declinada</button>
+      <button class="btn btn-sm ${r.status==='cancelled'?'btn-red':'btn-outline'}"  onclick="changeResStatus('${r.id}','cancelled')">Cancelada</button>
+    </div>
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Documentos</span>
+    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        PDF Confirmación
+      </button>
+      <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Generar Factura
+      </button>
+    </div>
+
     <hr class="section-divider" />
     <div class="btn-row" style="flex-wrap:wrap">
-      <button class="btn btn-green"   onclick="changeResStatus('${r.id}','confirmed');closeModal('reservaModal')">✓ Confirmar</button>
-      <button class="btn btn-red"     onclick="changeResStatus('${r.id}','declined');closeModal('reservaModal')">✗ Declinar</button>
-      <button class="btn btn-outline" onclick="changeResStatus('${r.id}','cancelled');closeModal('reservaModal')">Cancelar</button>
-      <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>
+      <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
       <a class="btn btn-blue" href="https://wa.me/${WA_NUMBER}?text=${waMsg}" target="_blank" rel="noopener">💬 WhatsApp</a>
-      <button class="btn btn-red"     onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
+      <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
     </div>`;
   openModal('reservaModal');
+}
+
+function renderResFinancialSummary(total, abono, pend, prog) {
+  return `
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+      <span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+      <span style="color:var(--gray-l)">Abonado</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px">
+      <span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}">$${pend.toFixed(2)}</span>
+    </div>
+    <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
+      <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div>
+    </div>
+    <div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">${prog}% pagado</div>`;
+}
+
+function updateResFinancials(id) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const totalInput = document.getElementById('resTotalInput');
+  const abonoInput = document.getElementById('resAbonoInput');
+  allReservas[idx].totalManual = parseFloat(totalInput.value) || 0;
+  allReservas[idx].abono       = parseFloat(abonoInput.value) || 0;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+
+  const r = allReservas[idx];
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
+  document.getElementById('resFinancialSummary').innerHTML = renderResFinancialSummary(total, abono, pend, prog);
+  renderReservasTable();
+  updateDashboard();
 }
 
 function changeResStatus(id, status) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   allReservas[idx].status = status;
 
-  // If confirmed → block calendar slots (±2 hours around horaVal)
-  if(status === 'confirmed') {
+  // If confirmed or completed → block calendar slots (±2 hours around horaVal)
+  if(status === 'confirmed' || status === 'completed') {
     const r   = allReservas[idx];
     const ds  = r.fecha;
     const hv  = parseInt(r.horaVal);
-    // Mark the day as booked in calData
     const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
     calData[ds] = 'booked';
-    // Store confirmed reserva block info
     r.blockedHours = [];
     for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
     localStorage.setItem('jans_calendar', JSON.stringify(calData));
     state.calendar = calData;
     renderCalendar?.();
     ghPutPublic('calendar.json', calData);
-    showToast('Reserva confirmada — fecha bloqueada en el calendario ✓');
+    showToast(status === 'completed' ? 'Sesión marcada como completada ✓' : 'Reserva confirmada — fecha bloqueada en el calendario ✓');
   } else if(status === 'declined' || status === 'cancelled') {
-    // If was confirmed, unblock the calendar day if no other confirmed on same day
     const r   = allReservas[idx];
     const ds  = r.fecha;
-    const othersConfirmed = allReservas.some((x,i) => i!==idx && x.fecha===ds && x.status==='confirmed');
+    const othersConfirmed = allReservas.some((x,i) => i!==idx && x.fecha===ds && (x.status==='confirmed'||x.status==='completed'));
     if(!othersConfirmed) {
       const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
-      calData[ds] = 'available'; // reopen the day
+      calData[ds] = 'available';
       localStorage.setItem('jans_calendar', JSON.stringify(calData));
       state.calendar = calData;
       renderCalendar?.();
@@ -3050,14 +3504,20 @@ function changeResStatus(id, status) {
   }
 
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  ghPutPublic('reservas.json', allReservas.filter(r=>r.status==='confirmed'));
+  ghPutPublic('reservas.json', allReservas.filter(r=>r.status==='confirmed'||r.status==='completed'));
   renderReservasTable();
   updateDashboard();
+  // Refresh modal in place if it's open for this reservation
+  if (document.getElementById('reservaModal')?.classList.contains('active')) viewReserva(id);
 }
 
 function openEditReserva(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
   editingResId = id;
+  document.getElementById('editResNumero').textContent = r.numero ? ('— ' + r.numero) : '';
+  document.getElementById('editResNombre').value = r.nombre || '';
+  document.getElementById('editResTel').value    = r.tel || '';
+  document.getElementById('editResEmail').value  = r.email || '';
   document.getElementById('editResDate').value  = r.fecha || '';
   document.getElementById('editResHora').value  = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
   document.getElementById('editResPlan').value  = r.plan || '';
@@ -3069,12 +3529,15 @@ function saveEditReserva() {
   const idx = allReservas.findIndex(x=>x.id===editingResId); if(idx<0) return;
   const horaRaw = document.getElementById('editResHora').value.split('|');
   const fecha   = document.getElementById('editResDate').value;
-  const [y,m,d] = fecha.split('-');
+  const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
   allReservas[idx] = {
     ...allReservas[idx],
+    nombre:   document.getElementById('editResNombre').value,
+    tel:      document.getElementById('editResTel').value,
+    email:    document.getElementById('editResEmail').value,
     fecha,
-    fechaLabel: parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y,
-    horaVal:  parseInt(horaRaw[0]),
+    fechaLabel: d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
+    horaVal:  horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
     hora:     horaRaw[1] || allReservas[idx].hora,
     plan:     document.getElementById('editResPlan').value,
     notas:    document.getElementById('editResNotas').value,
@@ -3373,6 +3836,7 @@ async function publishReload() {
     chkNotas:     { label:'notas.json',    data: null },
     chkServAdic:  { label:'servicios-adicionales.json', data: null },
     chkFaqs:      { label:'faqs.json',     data: null },
+    chkCompany:   { label:'company.json',  data: null },
   };
 
   // Fill instagram / youtube from localStorage
@@ -3381,6 +3845,7 @@ async function publishReload() {
   try { checks.chkNotas.data     = JSON.parse(localStorage.getItem('jans_notas_reservas') || 'null'); } catch(e) {}
   try { checks.chkServAdic.data  = JSON.parse(localStorage.getItem('jans_serv_adicionales') || 'null'); } catch(e) {}
   try { checks.chkFaqs.data      = JSON.parse(localStorage.getItem('jans_faqs') || 'null'); } catch(e) {}
+  try { checks.chkCompany.data   = JSON.parse(localStorage.getItem('jans_company') || 'null'); } catch(e) {}
 
   for (const [chkId, task] of Object.entries(checks)) {
     const chk = document.getElementById(chkId);
@@ -3827,6 +4292,110 @@ async function saveFaqs() {
 function initFaqs() {
   loadFaqs();
   renderFaqsList();
+}
+
+// ═══════════════════════════════════════
+//  DATOS DE EMPRESA
+// ═══════════════════════════════════════
+const COMPANY_KEY = 'jans_company';
+let companyLogoFileData = null;
+
+function loadCompanyUI() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}'); } catch(e) {}
+  document.getElementById('compNombre').value        = data.nombre        || 'Jans Photograph';
+  document.getElementById('compTelefono').value      = data.telefono      || '';
+  document.getElementById('compRuc').value           = data.ruc           || '';
+  document.getElementById('compDv').value            = data.dv            || '';
+  document.getElementById('compEmail').value         = data.email         || '';
+  document.getElementById('compCorregimiento').value = data.corregimiento || '';
+  document.getElementById('compDistrito').value      = data.distrito      || '';
+  document.getElementById('compCalle').value         = data.calle         || '';
+
+  if (data.logoPath) {
+    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${data.logoPath}`;
+    document.getElementById('compLogoImg').src = rawUrl;
+    document.getElementById('compLogoPreview').style.display = 'block';
+    document.getElementById('compLogoLabel').textContent = '✓ Logo actual: ' + data.logoPath.split('/').pop();
+    document.getElementById('compLogoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+  }
+}
+
+function handleCompanyLogo(file) {
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { showToast('El logo supera 3MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    companyLogoFileData = { base64: e.target.result.split(',')[1], extension: ext };
+    document.getElementById('compLogoImg').src = e.target.result;
+    document.getElementById('compLogoPreview').style.display = 'block';
+    document.getElementById('compLogoLabel').textContent = '✓ ' + file.name;
+    document.getElementById('compLogoZone').style.borderColor = 'rgba(34,197,94,0.5)';
+  };
+  reader.readAsDataURL(file);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('compLogoZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='var(--pink-l)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor='rgba(233,30,140,0.35)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleCompanyLogo(file);
+  });
+});
+
+async function saveCompanyData() {
+  const msgEl = document.getElementById('compMsg');
+  let logoPath = JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}').logoPath || '';
+
+  if (companyLogoFileData) {
+    const imgPath = `assets/images/company/logo.${companyLogoFileData.extension}`;
+    const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+    if (hasGH) {
+      try {
+        let sha = null;
+        const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+        if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+        const body = { message: 'update company logo', content: companyLogoFileData.base64 };
+        if (sha) body.sha = sha;
+        const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+          { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+        if (res.ok) { logoPath = imgPath; companyLogoFileData = null; }
+      } catch(e) {}
+    }
+  }
+
+  const data = {
+    nombre:        document.getElementById('compNombre').value.trim() || 'Jans Photograph',
+    telefono:      document.getElementById('compTelefono').value.trim(),
+    ruc:           document.getElementById('compRuc').value.trim(),
+    dv:            document.getElementById('compDv').value.trim(),
+    email:         document.getElementById('compEmail').value.trim(),
+    corregimiento: document.getElementById('compCorregimiento').value.trim(),
+    distrito:      document.getElementById('compDistrito').value.trim(),
+    calle:         document.getElementById('compCalle').value.trim(),
+    logoPath,
+    updatedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem(COMPANY_KEY, JSON.stringify(data));
+  const ok = await ghPutPublic('company.json', data);
+
+  msgEl.style.display    = 'block';
+  msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
+  msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)';
+  msgEl.style.color      = ok ? '#86efac' : '#fcd34d';
+  msgEl.textContent      = ok ? '✓ Datos de empresa publicados' : '✓ Guardados localmente (configura GitHub para publicar)';
+  showToast(ok ? 'Datos de empresa actualizados ✓' : 'Guardado localmente ✓');
+}
+
+function getCompanyData() {
+  try { return JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}'); } catch(e) { return {}; }
 }
 
 // ── Export JSON ──
