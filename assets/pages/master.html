@@ -2383,7 +2383,7 @@ async function saveQuote() {
       razonSocial: quote.razonSocial,
       repLegal:    quote.repLegal,
       address:     quote.address,
-      addons:      addons,
+      extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
       origin:     'manual',
       createdAt:  quote.createdAt,
     });
@@ -2673,7 +2673,19 @@ async function generateConfirmationPDF(id) {
     doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
     doc.text('RESUMEN DE PAGO', margin, y); y += 7;
     doc.setFontSize(9.5); doc.setFont('helvetica','normal');
-    [['Total del plan:', `$${total.toFixed(2)}`], ['Abonado:', `$${abono.toFixed(2)}`]].forEach(([l,v]) => {
+
+    if (r.plan) {
+      doc.setTextColor(120,120,120); doc.text('Plan:', margin, y);
+      doc.setTextColor(30,30,30); doc.text(`${r.plan} — $${resPlanPrice(r).toFixed(2)}`, margin+38, y);
+      y += 6;
+    }
+    (r.extras || []).forEach(e => {
+      doc.setTextColor(120,120,120); doc.text('Adicional:', margin, y);
+      doc.setTextColor(30,30,30); doc.text(`${e.nombre} — $${(parseFloat(e.precio)||0).toFixed(2)}`, margin+38, y);
+      y += 6;
+    });
+
+    [['Total:', `$${total.toFixed(2)}`], ['Abonado:', `$${abono.toFixed(2)}`]].forEach(([l,v]) => {
       doc.setTextColor(120,120,120); doc.text(l, margin, y);
       doc.setTextColor(30,30,30); doc.text(v, margin+38, y);
       y += 6;
@@ -2761,13 +2773,13 @@ async function generateInvoicePDF(id) {
   if (r.plan) {
     doc.setFont('helvetica','bold');
     doc.text(r.plan, margin, y);
-    doc.text(`$${(r.totalManual !== undefined && r.totalManual !== null ? parseFloat(r.totalManual) : total).toFixed(2)}`, 210-margin, y, {align:'right'});
+    doc.text(`$${resPlanPrice(r).toFixed(2)}`, 210-margin, y, {align:'right'});
     doc.setFont('helvetica','normal');
     y += 6;
   }
-  (r.addons || []).forEach(a => {
-    doc.text(a.name, margin+4, y);
-    doc.text(`$${(parseFloat(a.price)||0).toFixed(2)}`, 210-margin, y, {align:'right'});
+  (r.extras || r.addons || []).forEach(a => {
+    doc.text(a.nombre || a.name, margin+4, y);
+    doc.text(`$${(parseFloat(a.precio !== undefined ? a.precio : a.price)||0).toFixed(2)}`, 210-margin, y, {align:'right'});
     y += 6;
   });
   y += 1; doc.line(margin, y, 210-margin, y); y += 7;
@@ -3302,8 +3314,7 @@ function resStatusClass(s) {
 
 // ── Financial helpers ──
 function resPlanPrice(r) {
-  // Try to resolve the plan's price from publicPlans by name match
-  if (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '') return parseFloat(r.totalManual) || 0;
+  // Resolve the MAIN plan's price by name match from publicPlans
   try {
     const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
     const match = plans.find(p => p.nombre === r.plan);
@@ -3311,10 +3322,36 @@ function resPlanPrice(r) {
   } catch(e) {}
   return 0;
 }
-function resTotal(r)     { return resPlanPrice(r); }
+function resExtrasTotal(r) {
+  // Sum of additional plans/services added manually in the modal
+  return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
+}
+function resTotal(r) {
+  // Base: either the manual override (used for manual quotes where plan price
+  // isn't resolvable from the public catalog) or the resolved plan price.
+  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
+    ? (parseFloat(r.totalManual) || 0)
+    : resPlanPrice(r);
+  return base + resExtrasTotal(r);
+}
 function resAbono(r)     { return parseFloat(r.abono) || 0; }
 function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r)); }
 function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round((resAbono(r)/t)*100)) : 0; }
+
+// ── Catalog for "add extra" dropdown: public plans + maquillaje + impresiones ──
+function getExtrasCatalog() {
+  const out = [];
+  try {
+    const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+    plans.forEach(p => out.push({ nombre: p.nombre, precio: parseFloat(p.precio)||0, grupo: 'Planes' }));
+  } catch(e) {}
+  try {
+    const sa = JSON.parse(localStorage.getItem('jans_serv_adicionales') || '{}');
+    (sa.maquillaje  || []).forEach(s => out.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Maquillaje y Peinado' }));
+    (sa.impresiones || []).forEach(s => out.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Impresiones' }));
+  } catch(e) {}
+  return out;
+}
 
 function renderReservasTable() {
   loadReservas();
@@ -3396,10 +3433,37 @@ function viewReserva(id) {
     ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
 
     <hr class="section-divider" />
+    <span class="section-label-sm">Plan y Servicios Adicionales</span>
+    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0">
+        <span>${r.plan || 'Sin plan principal'}</span>
+        <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>
+      </div>
+      <div id="resExtrasList">${renderResExtrasList(r)}</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
+        <label>Añadir plan o servicio adicional</label>
+        <select id="resExtraSelect">${renderExtrasOptions()}</select>
+      </div>
+      <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
+    </div>
+
+    <hr class="section-divider" />
     <span class="section-label-sm">Control Financiero</span>
     <div class="form-row">
-      <div class="field"><label>Total del plan ($)</label><input type="number" id="resTotalInput" min="0" step="0.01" value="${r.totalManual !== undefined && r.totalManual !== null ? r.totalManual : total}" onchange="updateResFinancials('${r.id}')" /></div>
-      <div class="field"><label>Abono realizado ($)</label><input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" onchange="updateResFinancials('${r.id}')" /></div>
+      <div class="field">
+        <label>Total (auto-calculado) ($)</label>
+        <input type="number" id="resTotalInput" min="0" step="0.01" value="${total.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed" />
+      </div>
+      <div class="field">
+        <label>Abono realizado ($)</label>
+        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" onchange="updateResFinancials('${r.id}')" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Pendiente por pagar ($)</label>
+      <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
     </div>
     <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
       ${renderResFinancialSummary(total, abono, pend, prog)}
@@ -3437,6 +3501,72 @@ function viewReserva(id) {
   openModal('reservaModal');
 }
 
+function renderResExtrasList(r) {
+  const extras = r.extras || [];
+  if (!extras.length) return '<div style="font-size:0.78rem;color:var(--gray);padding:6px 0">Sin servicios adicionales</div>';
+  return extras.map((e, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
+      <span style="color:var(--gray-l)">+ ${e.nombre}</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
+        <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0">✕</button>
+      </span>
+    </div>`).join('');
+}
+
+function renderExtrasOptions() {
+  const catalog = getExtrasCatalog();
+  if (!catalog.length) return '<option value="">— Sin servicios configurados —</option>';
+  const groups = {};
+  catalog.forEach(item => { (groups[item.grupo] = groups[item.grupo] || []).push(item); });
+  let html = '<option value="">— Seleccionar —</option>';
+  Object.entries(groups).forEach(([grupo, items]) => {
+    html += `<optgroup label="${grupo}">`;
+    items.forEach(it => { html += `<option value="${it.nombre}||${it.precio}">${it.nombre} — $${it.precio.toFixed(2)}</option>`; });
+    html += `</optgroup>`;
+  });
+  return html;
+}
+
+function addResExtra(id) {
+  const sel = document.getElementById('resExtraSelect');
+  if (!sel.value) { showToast('Selecciona un servicio primero', 'error'); return; }
+  const [nombre, precio] = sel.value.split('||');
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  if (!allReservas[idx].extras) allReservas[idx].extras = [];
+  allReservas[idx].extras.push({ nombre, precio: parseFloat(precio) || 0 });
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  sel.value = '';
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  updateDashboard();
+  showToast('Servicio añadido ✓');
+}
+
+function removeResExtra(id, extraIdx) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  allReservas[idx].extras.splice(extraIdx, 1);
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  updateDashboard();
+  showToast('Servicio eliminado', 'error');
+}
+
+// Refresh just the financial section of the open modal without a full re-render
+function refreshResFinancialBlock(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
+  const extrasList = document.getElementById('resExtrasList');
+  if (extrasList) extrasList.innerHTML = renderResExtrasList(r);
+  const totalInput = document.getElementById('resTotalInput');
+  if (totalInput) totalInput.value = total.toFixed(2);
+  const pendInput = document.getElementById('resPendienteInput');
+  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend>0?'#fca5a5':'#86efac'; }
+  const summary = document.getElementById('resFinancialSummary');
+  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, pend, prog);
+}
+
 function renderResFinancialSummary(total, abono, pend, prog) {
   return `
     <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
@@ -3456,15 +3586,12 @@ function renderResFinancialSummary(total, abono, pend, prog) {
 
 function updateResFinancials(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
-  const totalInput = document.getElementById('resTotalInput');
   const abonoInput = document.getElementById('resAbonoInput');
-  allReservas[idx].totalManual = parseFloat(totalInput.value) || 0;
+  // Total is auto-calculated from plan + extras — only abono is user-editable here
+  allReservas[idx].totalManual = null; // clear any legacy manual override so it recalculates
   allReservas[idx].abono       = parseFloat(abonoInput.value) || 0;
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-
-  const r = allReservas[idx];
-  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
-  document.getElementById('resFinancialSummary').innerHTML = renderResFinancialSummary(total, abono, pend, prog);
+  refreshResFinancialBlock(id);
   renderReservasTable();
   updateDashboard();
 }
