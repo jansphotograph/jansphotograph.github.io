@@ -502,6 +502,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Blog
           </button>
+          <button class="sidebar-link" onclick="switchView('faqs', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Preguntas Frecuentes
+          </button>
           <button class="sidebar-link" onclick="switchView('services', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
             Servicios (Cotización)
@@ -1196,6 +1200,24 @@
         </div>
       </div>
 
+      <!-- ── PREGUNTAS FRECUENTES ── -->
+      <div class="view" id="view-faqs">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div><h2>Preguntas Frecuentes</h2><p>Aparecen en todas las páginas de planes, al final del catálogo</p></div>
+          <button class="btn btn-pink" onclick="addFaqItem()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva pregunta
+          </button>
+        </div>
+        <div id="faqsList" style="display:flex;flex-direction:column;gap:12px"></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-pink" onclick="saveFaqs()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar y publicar
+          </button>
+        </div>
+      </div>
+
       <!-- ── SERVICIOS ADICIONALES ── -->
       <div class="view" id="view-servAdicionales">
         <div class="page-header">
@@ -1321,6 +1343,9 @@
               </label>
               <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
                 <input type="checkbox" id="chkServAdic" checked style="accent-color:var(--pink)"> Servicios adicionales
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkFaqs" checked style="accent-color:var(--pink)"> Preguntas frecuentes
               </label>
             </div>
           </div>
@@ -1747,7 +1772,7 @@ function toggleSidebarGroup(id) {
 // Map view name → group id, so the right group auto-opens when navigating
 const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
-  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', services:'catalogo', plans:'catalogo',
+  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
   config:'cuenta'
 };
@@ -1778,6 +1803,7 @@ function switchView(name, btn) {
   if (name === 'recargar')      loadLastReloadInfo();
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
+  if (name === 'faqs')           initFaqs();
 }
 
 // ── Dashboard ──
@@ -3318,6 +3344,7 @@ async function publishReload() {
     chkYoutube:   { label:'youtube.json',  data: null },
     chkNotas:     { label:'notas.json',    data: null },
     chkServAdic:  { label:'servicios-adicionales.json', data: null },
+    chkFaqs:      { label:'faqs.json',     data: null },
   };
 
   // Fill instagram / youtube from localStorage
@@ -3325,6 +3352,7 @@ async function publishReload() {
   try { checks.chkYoutube.data   = JSON.parse(localStorage.getItem('jans_yt_preview')  || 'null'); } catch(e) {}
   try { checks.chkNotas.data     = JSON.parse(localStorage.getItem('jans_notas_reservas') || 'null'); } catch(e) {}
   try { checks.chkServAdic.data  = JSON.parse(localStorage.getItem('jans_serv_adicionales') || 'null'); } catch(e) {}
+  try { checks.chkFaqs.data      = JSON.parse(localStorage.getItem('jans_faqs') || 'null'); } catch(e) {}
 
   for (const [chkId, task] of Object.entries(checks)) {
     const chk = document.getElementById(chkId);
@@ -3700,6 +3728,77 @@ function initServAdicionales() {
   loadServAdicionales();
   renderServList('maquillaje');
   renderServList('impresiones');
+}
+
+// ═══════════════════════════════════════
+//  PREGUNTAS FRECUENTES
+// ═══════════════════════════════════════
+const FAQ_KEY = 'jans_faqs';
+let faqsData = [];
+
+function loadFaqs() {
+  try { faqsData = JSON.parse(localStorage.getItem(FAQ_KEY) || '[]'); } catch(e) { faqsData = []; }
+}
+
+function renderFaqsList() {
+  const el = document.getElementById('faqsList');
+  if (!el) return;
+  if (!faqsData.length) {
+    el.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin preguntas. Haz clic en "Nueva pregunta".</div>';
+    return;
+  }
+  el.innerHTML = faqsData.map((f, i) => `
+    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:16px 18px">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;margin-top:6px">
+          <button onclick="moveFaq(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
+          <button onclick="moveFaq(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===faqsData.length-1?'disabled':''}>▼</button>
+        </div>
+        <input type="text" value="${f.pregunta.replace(/"/g,'&quot;')}" placeholder="Pregunta"
+          oninput="faqsData[${i}].pregunta=this.value"
+          style="flex:1;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-family:var(--font);font-size:0.9rem;font-weight:600;outline:none" />
+        <button onclick="deleteFaq(${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1.1rem;padding:4px;flex-shrink:0">✕</button>
+      </div>
+      <textarea placeholder="Respuesta" oninput="faqsData[${i}].respuesta=this.value"
+        style="width:100%;min-height:70px;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--gray-l);font-family:var(--font);font-size:0.85rem;line-height:1.6;outline:none;resize:vertical">${f.respuesta}</textarea>
+    </div>`).join('');
+}
+
+function addFaqItem() {
+  faqsData.push({ pregunta: '', respuesta: '' });
+  renderFaqsList();
+}
+
+function deleteFaq(idx) {
+  if (!confirm('¿Eliminar esta pregunta?')) return;
+  faqsData.splice(idx, 1);
+  renderFaqsList();
+}
+
+function moveFaq(idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= faqsData.length) return;
+  [faqsData[idx], faqsData[ni]] = [faqsData[ni], faqsData[idx]];
+  renderFaqsList();
+}
+
+async function saveFaqs() {
+  // Filter out empty entries
+  const valid = faqsData.filter(f => f.pregunta.trim() && f.respuesta.trim());
+  if (valid.length !== faqsData.length) {
+    showToast('Se omitieron preguntas vacías', 'error');
+  }
+  faqsData = valid;
+  localStorage.setItem(FAQ_KEY, JSON.stringify(faqsData));
+  const ok = await ghPutPublic('faqs.json', faqsData);
+  renderFaqsList();
+  if (ok) showToast('Preguntas frecuentes publicadas ✓');
+  else    showToast('Guardadas localmente — verifica GitHub para publicar', 'error');
+}
+
+function initFaqs() {
+  loadFaqs();
+  renderFaqsList();
 }
 
 // ── Export JSON ──
