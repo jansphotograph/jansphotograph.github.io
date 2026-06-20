@@ -180,33 +180,11 @@
   </section>
 
   <!-- ── Aclaraciones ── -->
-  <section class="aclaraciones-section">
+  <section class="aclaraciones-section" id="aclaracionesSection">
     <h2>Preguntas frecuentes</h2>
-
-    <details class="aclaracion-item">
-      <summary>¿Cómo puedo reservar mi sesión?</summary>
-      <p>Puedes reservar haciendo clic en el botón "Agendar" de cualquiera de nuestros planes. Te redirigiremos a nuestro calendario de disponibilidad para que elijas la fecha y hora que mejor te convenga.</p>
-    </details>
-
-    <details class="aclaracion-item">
-      <summary>¿Cuánto tiempo tarda la entrega de las fotos?</summary>
-      <p>El tiempo de entrega varía según el plan seleccionado. En general, las fotos editadas se entregan entre 5 y 15 días hábiles después de la sesión. Te informaremos el tiempo exacto al momento de la reserva.</p>
-    </details>
-
-    <details class="aclaracion-item">
-      <summary>¿Se puede cambiar la fecha de la sesión?</summary>
-      <p>Sí, puedes reprogramar tu sesión con al menos 48 horas de anticipación sin ningún costo adicional. Los cambios de última hora pueden estar sujetos a disponibilidad.</p>
-    </details>
-
-    <details class="aclaracion-item">
-      <summary>¿Los precios incluyen edición de fotos?</summary>
-      <p>Sí, todos nuestros planes incluyen edición profesional de las fotos seleccionadas. La entrega se realiza en formato digital de alta resolución.</p>
-    </details>
-
-    <details class="aclaracion-item">
-      <summary>¿Qué pasa si el clima no acompaña para sesiones exteriores?</summary>
-      <p>En caso de mal clima para sesiones al aire libre, coordinaremos juntos la mejor alternativa: reprogramar la sesión o trasladarla a un estudio o locación cubierta sin costo adicional.</p>
-    </details>
+    <div id="faqContainer">
+      <div class="aclaracion-item" style="opacity:0.4"><summary style="cursor:default">Cargando preguntas frecuentes...</summary></div>
+    </div>
   </section>
 
     <footer>
@@ -404,6 +382,45 @@
           ticking = true;
         }
       }, { passive: true });
+    })();
+  </script>
+  <script>
+    // ── Load FAQs dynamically — same visual format as before ──
+    (function() {
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+
+      function renderFaqs(faqs) {
+        const container = document.getElementById('faqContainer');
+        if (!container) return;
+        if (!faqs || !faqs.length) {
+          container.innerHTML = '';
+          const section = document.getElementById('aclaracionesSection');
+          if (section) section.style.display = 'none';
+          return;
+        }
+        container.innerHTML = faqs.map(f => `
+          <details class="aclaracion-item">
+            <summary>${f.pregunta}</summary>
+            <p>${f.respuesta}</p>
+          </details>`).join('');
+      }
+
+      // localStorage first (instant)
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_faqs') || '[]');
+        if (local.length) renderFaqs(local);
+      } catch(e) {}
+
+      // GitHub for latest
+      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/faqs.json?t=' + Date.now(), { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(faqs => {
+          if (!faqs) return;
+          localStorage.setItem('jans_faqs', JSON.stringify(faqs));
+          renderFaqs(faqs);
+        })
+        .catch(() => {});
     })();
   </script>
 </body>
