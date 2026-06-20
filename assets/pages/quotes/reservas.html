@@ -581,12 +581,14 @@
 
       const reserva = {
         id:        'r_' + Date.now(),
+        numero:    null, // assigned by Master when it syncs (WEB-01, WEB-02...)
         nombre, tel, email, plan, notas,
         fecha:     selectedDate,
         fechaLabel,
         hora,
         horaVal:   selectedHour,
         status:    'pending',
+        abono:     0,
         createdAt: new Date().toLocaleDateString('es-PA')
       };
 
