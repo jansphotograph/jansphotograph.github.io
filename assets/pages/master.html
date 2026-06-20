@@ -1022,7 +1022,7 @@
               <input type="file" id="igFileInput" accept="image/*" style="display:none" onchange="handleIgFile(this.files[0])" />
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 10px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
               <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Haz clic o arrastra la imagen aquí</div>
-              <div style="font-size:0.75rem;color:var(--gray)">Se guardará como <code>assets/images/social/ig/lastpost.jpg</code></div>
+              <div style="font-size:0.75rem;color:var(--gray)">Se guardará con su formato original (jpg, jpeg, png o webp) como <code>lastpost.[ext]</code></div>
             </div>
           </div>
 
@@ -2647,6 +2647,11 @@ async function loadSocialLinksUI() {
       document.getElementById('igPostUrl').value = ig.igUrl;
       updateIgOpenLink(ig.igUrl);
     }
+    if (ig && ig.igImagePath) {
+      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${ig.igImagePath}`;
+      document.getElementById('igPreviewImg').src = rawUrl;
+      document.getElementById('igPreviewWrap').style.display = 'block';
+    }
   } catch(e) {}
   // Pre-fill YouTube
   try {
@@ -2722,12 +2727,16 @@ async function saveIgLink() {
   if (!igFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
   const igUrl = document.getElementById('igPostUrl').value.trim();
 
-  // Save URL to localStorage so index.html updates the link
-  localStorage.setItem('jans_ig_preview', JSON.stringify({ igUrl, updatedAt: new Date().toISOString() }));
+  // Path includes the real extension of the uploaded file (jpg/jpeg/png/webp)
+  const imagePath = `assets/images/social/ig/lastpost.${igFileData.extension}`;
+
+  // Save URL + image path to localStorage immediately so index.html updates right away
+  const prevData = JSON.parse(localStorage.getItem('jans_ig_preview') || '{}');
+  localStorage.setItem('jans_ig_preview', JSON.stringify({
+    igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString()
+  }));
   updateIgOpenLink(igUrl);
 
-  // Upload image to public repo as lastpost.jpg
-  const imagePath = `assets/images/social/ig/lastpost.${igFileData.extension}`;
   igSetStatus('info', 'Subiendo imagen...');
 
   const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
@@ -2739,6 +2748,25 @@ async function saveIgLink() {
   }
 
   try {
+    // If the previous image had a DIFFERENT extension, delete the old file first
+    // so we don't leave orphaned images (e.g. lastpost.jpg when now using lastpost.png)
+    if (prevData.igImagePath && prevData.igImagePath !== imagePath) {
+      try {
+        const oldRes = await fetch(
+          `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
+          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+        );
+        if (oldRes.ok) {
+          const oldJson = await oldRes.json();
+          await fetch(
+            `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
+            { method: 'DELETE', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'remove old instagram image', sha: oldJson.sha }) }
+          );
+        }
+      } catch(e) { /* non-fatal — continue with upload */ }
+    }
+
     let sha = null;
     const getRes = await fetch(
       `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
@@ -2755,7 +2783,7 @@ async function saveIgLink() {
     );
 
     if (res.ok) {
-      // Also update instagram.json with the URL
+      // Also update instagram.json with the URL + correct image path/extension
       await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString() });
       igSetStatus('success', `✓ Imagen publicada en ${imagePath}`);
       showToast('Instagram publicado ✓');
