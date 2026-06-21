@@ -153,6 +153,7 @@
       .fab-importante { bottom: 18px; left: 14px; padding: 10px 14px; font-size: 0.78rem; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -339,6 +340,11 @@
     const DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
     const HOURS  = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM'];
     const HOUR_VALS = [8,9,10,11,12,13,14,15,16,17,18,19,20];
+
+    // ── Supabase — shared database so reservas reach the Master from any device ──
+    const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let calYear   = new Date().getFullYear();
     let calMonth  = new Date().getMonth();
@@ -566,11 +572,14 @@
     }
 
     // ── Submit ──
-    function submitReserva() {
+    async function submitReserva() {
       const nombre = document.getElementById('rNombre').value.trim();
       const tel    = document.getElementById('rTel').value.trim();
       if(!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
       if(!selectedDate || !selectedHour) { alert('Selecciona fecha y hora.'); return; }
+
+      const btn = document.getElementById('btnReservar');
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
       const [y,m,d] = selectedDate.split('-');
       const hora  = document.getElementById('rHora').value;
@@ -580,22 +589,41 @@
       const fechaLabel = parseInt(d) + ' de ' + MONTHS[parseInt(m)-1] + ' ' + y;
 
       const reserva = {
-        id:        'r_' + Date.now(),
-        numero:    null, // assigned by Master when it syncs (WEB-01, WEB-02...)
+        id:          'r_' + Date.now(),
+        numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
         nombre, tel, email, plan, notas,
-        fecha:     selectedDate,
+        fecha:       selectedDate,
         fechaLabel,
         hora,
-        horaVal:   selectedHour,
-        status:    'pending',
-        abono:     0,
-        createdAt: new Date().toLocaleDateString('es-PA')
+        horaVal:     selectedHour,
+        status:      'pending',
+        abono:       0,
+        origin:      'web',
+        createdAt:   new Date().toLocaleDateString('es-PA')
       };
 
-      // Save to localStorage for Master
-      const all = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
-      all.push(reserva);
-      localStorage.setItem('jans_reservas', JSON.stringify(all));
+      // ── Save to Supabase — this is what makes the reserva reach the Master
+      //    from ANY device, since localStorage alone never leaves this browser. ──
+      let savedOk = false;
+      try {
+        const { error } = await supabase.from('reservas').insert([reserva]);
+        if (!error) savedOk = true;
+        else console.error('Supabase insert error:', error);
+      } catch(e) {
+        console.error('Supabase unreachable:', e);
+      }
+
+      // Keep a local copy too (instant reflection if Master is the same browser/device)
+      try {
+        const all = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
+        all.push(reserva);
+        localStorage.setItem('jans_reservas', JSON.stringify(all));
+      } catch(e) {}
+
+      if (!savedOk) {
+        // Don't block the client — WhatsApp message still carries all the info either way.
+        console.warn('La reserva no pudo guardarse en línea; el mensaje de WhatsApp sigue llevando todos los datos.');
+      }
 
       // Build WhatsApp message with all data
       const msg = encodeURIComponent(
