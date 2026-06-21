@@ -368,6 +368,16 @@
     .status-rejected { background: rgba(239,68,68,0.15);  color: #fca5a5; }
     .status-booked   { background: rgba(199,30,95,0.15);  color: #f9a8d4; }
 
+    /* ── Row highlight (for "Ver" deep-link from Dashboard pending list) ── */
+    @keyframes rowHighlightPulse {
+      0%   { background-color: rgba(199,30,95,0.35); }
+      50%  { background-color: rgba(199,30,95,0.12); }
+      100% { background-color: rgba(199,30,95,0.35); }
+    }
+    tr.row-highlight {
+      animation: rowHighlightPulse 1.1s ease-in-out 3;
+    }
+
     /* ── Services Manager ── */
     .service-item {
       display: flex; align-items: center; gap: 12px;
@@ -2083,7 +2093,7 @@ function updateDashboard() {
         <td>${r.fechaLabel||r.fecha||'—'}</td>
         <td>${r.hora||'—'}</td>
         <td><span class="badge-status status-pending">${r.origin==='manual'?'Manual':'Web'}</span></td>
-        <td><button class="btn btn-sm btn-pink" onclick="switchView('reservas', document.querySelector('.sidebar-link[onclick*=\'reservas\']')); setTimeout(()=>viewReserva('${r.id}'), 150)">Ver</button></td>
+        <td><button class="btn btn-sm btn-pink" onclick="goToReservaInTable('${r.id}')">Ver</button></td>
       </tr>`).join('');
   } else {
     pendingCard.style.display = 'none';
@@ -3858,7 +3868,21 @@ function getExtrasCatalog() {
   return out;
 }
 
-function renderReservasTable() {
+// ── Navigate to the Reservas table from elsewhere (e.g. Dashboard pending list)
+//    and highlight the specific row, clearing any active filters that might hide it. ──
+function goToReservaInTable(id) {
+  const filterStatus = document.getElementById('filterResStatus');
+  const filterMonth  = document.getElementById('filterResMonth');
+  if (filterStatus) filterStatus.value = '';
+  if (filterMonth)  filterMonth.value  = '';
+
+  switchView('reservas', document.querySelector('.sidebar-link[onclick*=\'reservas\']'));
+  // switchView already calls renderReservasTable() with no args; re-render with
+  // the highlight target right after so the row gets the highlight + scroll treatment.
+  setTimeout(() => renderReservasTable(id), 80);
+}
+
+function renderReservasTable(highlightId) {
   loadReservasLocal();
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
@@ -3881,7 +3905,7 @@ function renderReservasTable() {
   tbody.innerHTML = list.map(r => {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
     return `
-    <tr>
+    <tr id="resrow-${r.id}">
       <td>
         <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span>
         ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${r.facturaNumero}</div>` : ''}
@@ -3910,6 +3934,16 @@ function renderReservasTable() {
       </td>
     </tr>`;
   }).join('');
+
+  // ── Scroll to and highlight a specific row (used by the Dashboard's pending-list "Ver" button) ──
+  if (highlightId) {
+    const row = document.getElementById('resrow-' + highlightId);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('row-highlight');
+      setTimeout(() => row.classList.remove('row-highlight'), 3500);
+    }
+  }
 }
 
 function viewReserva(id) {
