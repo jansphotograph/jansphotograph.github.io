@@ -381,6 +381,41 @@
       section.style.display = 'block';
     }
 
+    // ── Sync confirmed/completed reservas from Supabase — real source of truth
+    //    for hour-blocking. Reusable: called on load AND every 60s afterward so
+    //    a visitor with the page open sees fresh availability without reloading. ──
+    async function syncAvailabilityFromSupabase() {
+      if (!sbClient) return;
+      try {
+        const { data, error } = await sbClient
+          .from('reservas')
+          .select('id,fecha,horaVal,status')
+          .in('status', ['confirmed', 'completed']);
+        if (error || !data) return;
+
+        // Merge: keep any local-only entries, but Supabase is authoritative for status
+        const byId = new Map(reservas.map(r => [r.id, r]));
+        data.forEach(remote => {
+          const existing = byId.get(remote.id);
+          if (existing) {
+            existing.status  = remote.status;
+            existing.fecha   = remote.fecha;
+            existing.horaVal = remote.horaVal;
+          } else {
+            byId.set(remote.id, { id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status });
+          }
+        });
+        reservas = Array.from(byId.values());
+        localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+
+        // Re-render hours in case a date is already picked, so the visitor sees
+        // up-to-date availability without needing to reload the page.
+        if (selectedDate) renderTimeSlots(selectedDate);
+      } catch(e) {
+        console.warn('No se pudo sincronizar disponibilidad desde Supabase:', e);
+      }
+    }
+
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async function() {
 
@@ -399,36 +434,12 @@
       try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
       renderCal();
 
-      // ── Sync confirmed/completed reservas from Supabase — this is the real source
-      //    of truth for hour-blocking, since this visitor's own localStorage never
-      //    has reservas confirmed by the Master on a different device. ──
-      if (sbClient) {
-        try {
-          const { data, error } = await sbClient
-            .from('reservas')
-            .select('id,fecha,horaVal,status')
-            .in('status', ['confirmed', 'completed']);
-          if (!error && data) {
-            // Merge: keep any local-only entries, but Supabase is authoritative for status
-            const byId = new Map(reservas.map(r => [r.id, r]));
-            data.forEach(remote => {
-              const existing = byId.get(remote.id);
-              if (existing) {
-                existing.status  = remote.status;
-                existing.fecha   = remote.fecha;
-                existing.horaVal = remote.horaVal;
-              } else {
-                byId.set(remote.id, { id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status });
-              }
-            });
-            reservas = Array.from(byId.values());
-            localStorage.setItem('jans_reservas', JSON.stringify(reservas));
-            renderTimeSlots(selectedDate); // re-render hours in case a date is already picked
-          }
-        } catch(e) {
-          console.warn('No se pudo sincronizar disponibilidad desde Supabase:', e);
-        }
-      }
+      // ── Sync availability from Supabase — real source of truth for hour-blocking ──
+      await syncAvailabilityFromSupabase();
+
+      // Keep refreshing availability every 60s in case the Master confirms a
+      // reserva while this visitor still has the page open.
+      setInterval(syncAvailabilityFromSupabase, 60000);
 
       // ── Load notas importantes ──
       try {
