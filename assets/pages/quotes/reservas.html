@@ -394,10 +394,41 @@
       }
       document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
 
-      // Lee del localStorage (mismo dominio que el Master)
+      // Lee del localStorage (mismo dominio que el Master) — respaldo instantáneo
       try { calData  = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
       try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
       renderCal();
+
+      // ── Sync confirmed/completed reservas from Supabase — this is the real source
+      //    of truth for hour-blocking, since this visitor's own localStorage never
+      //    has reservas confirmed by the Master on a different device. ──
+      if (sbClient) {
+        try {
+          const { data, error } = await sbClient
+            .from('reservas')
+            .select('id,fecha,horaVal,status')
+            .in('status', ['confirmed', 'completed']);
+          if (!error && data) {
+            // Merge: keep any local-only entries, but Supabase is authoritative for status
+            const byId = new Map(reservas.map(r => [r.id, r]));
+            data.forEach(remote => {
+              const existing = byId.get(remote.id);
+              if (existing) {
+                existing.status  = remote.status;
+                existing.fecha   = remote.fecha;
+                existing.horaVal = remote.horaVal;
+              } else {
+                byId.set(remote.id, { id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status });
+              }
+            });
+            reservas = Array.from(byId.values());
+            localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+            renderTimeSlots(selectedDate); // re-render hours in case a date is already picked
+          }
+        } catch(e) {
+          console.warn('No se pudo sincronizar disponibilidad desde Supabase:', e);
+        }
+      }
 
       // ── Load notas importantes ──
       try {
@@ -492,18 +523,22 @@
 
     // ── Time Slots ──
     function getBlockedHours(ds) {
-      // Find confirmed reservas on this day and block ±2 hours
+      // Find confirmed/completed reservas on this day and block ±2 hours
       const blocked = new Set();
-      reservas.filter(r => r.fecha === ds && r.status === 'confirmed').forEach(r => {
+      if (!ds) return blocked;
+      reservas.filter(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed')).forEach(r => {
         const h = parseInt(r.horaVal);
+        if (isNaN(h)) return;
         for(let i = h-2; i <= h+2; i++) blocked.add(i);
       });
       return blocked;
     }
 
     function renderTimeSlots(ds) {
+      if (!ds) return;
       const blocked = getBlockedHours(ds);
       const container = document.getElementById('timeSlots');
+      if (!container) return;
       container.innerHTML = HOURS.map((label, i) => {
         const hv = HOUR_VALS[i];
         const isBlocked = blocked.has(hv);
