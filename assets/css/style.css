@@ -52,6 +52,30 @@ header {
 .header-logo { display: flex; align-items: center; gap: 10px; }
 .header-logo img { height: 48px; width: auto; object-fit: contain; }
 
+/* ── Back button (top of public pages) ── */
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(233,30,140,0.08);
+  border: 1px solid rgba(233,30,140,0.25);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px 7px 10px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-back:hover { background: rgba(233,30,140,0.18); border-color: var(--pink); }
+.btn-back svg { width: 16px; height: 16px; flex-shrink: 0; }
+@media (max-width: 560px) {
+  .btn-back span { display: none; }
+  .btn-back { padding: 8px; border-radius: 50%; }
+}
+
 .header-title {
   position: absolute;
   left: 50%;
