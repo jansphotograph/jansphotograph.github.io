@@ -460,6 +460,7 @@
       .main-content { margin-left: 0; padding: 20px; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .topbar-title { display: none; }
+      #panelChartsGrid { grid-template-columns: 1fr !important; }
     }
     @media (max-width: 560px) {
       .stats-grid { grid-template-columns: 1fr; }
@@ -507,6 +508,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Calendario
         </button>
+        <button class="sidebar-link" onclick="switchView('panel', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
+          Panel Administrativo
+        </button>
       </div>
 
       <!-- Cotizaciones — collapsible group -->
@@ -547,6 +552,11 @@
           <button class="sidebar-link" onclick="switchView('servAdicionales', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             Servicios Adicionales
+          </button>
+          <button class="sidebar-link" onclick="switchView('inventario', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Inventario
+            <span class="badge" id="inventarioBadge" style="display:none">0</span>
           </button>
           <button class="sidebar-link" onclick="switchView('blog', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -1378,6 +1388,10 @@
             </span>
             <button class="btn btn-sm btn-pink" onclick="addServItem('impresiones')">+ Añadir</button>
           </div>
+          <p style="font-size:0.8rem;color:var(--gray-l);margin-bottom:14px">
+            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-link[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
+            para que el stock se descuente automáticamente al confirmar reservas.
+          </p>
           <div id="impList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
         </div>
 
@@ -1389,7 +1403,137 @@
         </div>
       </div>
 
-      <!-- ── NOTAS IMPORTANTES ── -->
+      <!-- ── INVENTARIO ── -->
+      <div class="view" id="view-inventario">
+        <div class="page-header">
+          <h2>Inventario de Papel Foto</h2>
+          <p>Controla tu stock de papel y vincúlalo a los productos de Impresiones</p>
+        </div>
+
+        <!-- Low stock alert banner -->
+        <div id="invLowStockBanner" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fca5a5" stroke-width="2" width="20" height="20" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span id="invLowStockText" style="font-size:0.88rem;color:#fca5a5"></span>
+        </div>
+
+        <!-- Stock cards -->
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:10px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Tipos de Papel
+            </span>
+            <button class="btn btn-sm btn-pink" onclick="addPaperType()">+ Añadir tipo de papel</button>
+          </div>
+          <div id="paperTypesList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px"></div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:24px">
+          <button class="btn btn-pink" onclick="savePaperInventory()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar inventario
+          </button>
+        </div>
+
+        <!-- Movement history -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
+            Historial de Movimientos
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Fecha</th><th>Tipo de papel</th><th>Movimiento</th><th>Cantidad</th><th>Motivo</th></tr></thead>
+              <tbody id="invHistoryTable"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px">Sin movimientos aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANEL ADMINISTRATIVO ── -->
+      <div class="view" id="view-panel">
+        <div class="page-header">
+          <h2>Panel Administrativo</h2>
+          <p>Vista general del negocio: ingresos, inventario y tendencias</p>
+        </div>
+
+        <!-- Revenue summary -->
+        <div class="stats-grid">
+          <div class="stat-card pink">
+            <div class="stat-label">Ingresos este mes</div>
+            <div class="stat-value" id="panelRevMonth">$0</div>
+            <div class="stat-sub" id="panelRevMonthSub">Confirmadas/completadas</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Ingresos totales</div>
+            <div class="stat-value" id="panelRevTotal">$0</div>
+            <div class="stat-sub">Histórico acumulado</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Pendiente por cobrar</div>
+            <div class="stat-value" id="panelRevPending">$0</div>
+            <div class="stat-sub" id="panelRevPendingSub">Saldos de reservas confirmadas</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Ticket promedio</div>
+            <div class="stat-value" id="panelAvgTicket">$0</div>
+            <div class="stat-sub">Por reserva confirmada</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" id="panelChartsGrid">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              Planes más solicitados
+            </div>
+            <div id="panelPlansChart" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center"></div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              Servicios adicionales más vendidos
+            </div>
+            <div id="panelExtrasChart" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center"></div>
+          </div>
+        </div>
+
+        <!-- Inventory status -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Estado del Inventario
+          </div>
+          <div id="panelInventoryStatus" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+
+        <!-- Top clients -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+            Clientes Frecuentes
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Reservas</th><th>Total gastado</th><th>Última visita</th></tr></thead>
+              <tbody id="panelTopClients"><tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Monthly trend -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Reservas por mes (últimos 6 meses)
+          </div>
+          <div id="panelMonthlyChart" style="display:flex;align-items:flex-end;gap:14px;height:160px;padding:10px 4px"></div>
+        </div>
+      </div>
+
+
+
       <div class="view" id="view-notas">
         <div class="page-header">
           <h2>Notas Importantes</h2>
@@ -2015,7 +2159,7 @@ function toggleSidebarGroup(id) {
 // Map view name → group id, so the right group auto-opens when navigating
 const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
-  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo',
+  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo', inventario:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
   config:'cuenta', company:'cuenta'
 };
@@ -2049,6 +2193,8 @@ function switchView(name, btn) {
   if (name === 'recargar')      { loadLastReloadInfo(); updatePollUI(isPollingEnabled()); }
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
+  if (name === 'inventario')      initInventario();
+  if (name === 'panel')           initPanel();
   if (name === 'faqs')           initFaqs();
   if (name === 'company')        loadCompanyUI();
 }
@@ -4163,6 +4309,14 @@ function changeResStatus(id, status) {
     if (!isNaN(hv)) {
       for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
     }
+    // Deduct paper stock for any linked Impresiones product — only once per reserva,
+    // so re-confirming or switching confirmed→completed never double-deducts.
+    // NOTE: inventoryDeducted is tracked locally only (not synced to Supabase) — if you
+    // confirm the same reserva from two different devices, each will deduct once.
+    // For typical single-operator use this is not an issue.
+    if (!r.inventoryDeducted) {
+      try { deductInventoryForReserva(r); r.inventoryDeducted = true; } catch(e) { console.warn('inventory deduction failed', e); }
+    }
     showToast(status === 'completed' ? 'Sesión marcada como completada ✓' : 'Reserva confirmada — horario bloqueado ✓');
   } else if(status === 'declined' || status === 'cancelled' || status === 'pending') {
     showToast('Reserva ' + resStatusLabel(status).toLowerCase());
@@ -4189,6 +4343,14 @@ function changeResStatus(id, status) {
           ghPutPublic('calendar.json', calData);
         }
       }
+    }
+
+    // Restore any paper stock previously deducted for this reserva — it's no
+    // longer confirmed, so the session isn't actually consuming materials.
+    // If it gets re-confirmed later, the flag reset below lets it deduct again.
+    if (r.inventoryDeducted) {
+      try { restoreInventoryForReserva(r); } catch(e) { console.warn('inventory restore failed', e); }
+      r.inventoryDeducted = false;
     }
   }
 
@@ -5027,20 +5189,40 @@ function renderServList(cat) {
     el.innerHTML = `<div style="color:var(--gray);font-size:0.85rem;padding:8px 0">Sin ítems. Haz clic en "+ Añadir".</div>`;
     return;
   }
+  const isImpresiones = cat === 'impresiones';
+  const paperTypes = isImpresiones ? loadPaperTypes() : [];
+  const paperOptions = (selectedId) => `
+    <option value="">— Sin vincular —</option>
+    ${paperTypes.map(p => `<option value="${p.id}" ${p.id===selectedId?'selected':''}>${p.nombre}</option>`).join('')}
+  `;
+
   el.innerHTML = items.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:10px;background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
-      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-        <button onclick="moveServ('${cat}',${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
-        <button onclick="moveServ('${cat}',${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===items.length-1?'disabled':''}>▼</button>
+    <div style="display:flex;flex-direction:column;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick="moveServ('${cat}',${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
+          <button onclick="moveServ('${cat}',${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===items.length-1?'disabled':''}>▼</button>
+        </div>
+        <input type="text" value="${s.nombre}" onchange="servData['${cat}'][${i}].nombre=this.value"
+          style="flex:1;background:transparent;border:none;color:var(--white);font-family:var(--font);font-size:0.9rem;outline:none" />
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="color:var(--gray)">$</span>
+          <input type="number" value="${s.precio}" min="0" step="0.01" onchange="servData['${cat}'][${i}].precio=parseFloat(this.value)||0"
+            style="width:70px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--pink-l);font-family:var(--font);font-size:0.9rem;font-weight:700;padding:4px 6px;text-align:right;outline:none" />
+        </div>
+        <button onclick="deleteServ('${cat}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1rem;padding:0">✕</button>
       </div>
-      <input type="text" value="${s.nombre}" onchange="servData['${cat}'][${i}].nombre=this.value"
-        style="flex:1;background:transparent;border:none;color:var(--white);font-family:var(--font);font-size:0.9rem;outline:none" />
-      <div style="display:flex;align-items:center;gap:4px">
-        <span style="color:var(--gray)">$</span>
-        <input type="number" value="${s.precio}" min="0" step="0.01" onchange="servData['${cat}'][${i}].precio=parseFloat(this.value)||0"
-          style="width:70px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--pink-l);font-family:var(--font);font-size:0.9rem;font-weight:700;padding:4px 6px;text-align:right;outline:none" />
-      </div>
-      <button onclick="deleteServ('${cat}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1rem;padding:0">✕</button>
+      ${isImpresiones ? `
+      <div style="display:flex;align-items:center;gap:10px;padding-left:24px;flex-wrap:wrap">
+        <span style="font-size:0.75rem;color:var(--gray-l)">Papel:</span>
+        <select onchange="servData['${cat}'][${i}].papelTipoId=this.value"
+          style="background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.78rem;padding:4px 8px;outline:none">
+          ${paperOptions(s.papelTipoId)}
+        </select>
+        <span style="font-size:0.75rem;color:var(--gray-l)">Hojas por venta:</span>
+        <input type="number" value="${s.hojasPorVenta || 1}" min="1" step="1" onchange="servData['${cat}'][${i}].hojasPorVenta=parseInt(this.value)||1"
+          style="width:55px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.78rem;padding:4px 6px;text-align:center;outline:none" />
+      </div>` : ''}
     </div>`).join('');
 }
 
@@ -5082,6 +5264,444 @@ function initServAdicionales() {
   loadServAdicionales();
   renderServList('maquillaje');
   renderServList('impresiones');
+}
+
+// ═══════════════════════════════════════
+//  INVENTARIO — Papel Foto
+// ═══════════════════════════════════════
+const INV_KEY      = 'jans_inventario_papel';
+const INV_HIST_KEY = 'jans_inventario_historial';
+let paperTypes  = [];
+let invHistory  = [];
+
+function loadPaperTypes() {
+  try { paperTypes = JSON.parse(localStorage.getItem(INV_KEY) || '[]'); } catch(e) { paperTypes = []; }
+  return paperTypes;
+}
+
+function loadInvHistory() {
+  try { invHistory = JSON.parse(localStorage.getItem(INV_HIST_KEY) || '[]'); } catch(e) { invHistory = []; }
+  return invHistory;
+}
+
+function genPaperId() {
+  return 'paper_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+}
+
+function addPaperType() {
+  loadPaperTypes();
+  paperTypes.push({
+    id: genPaperId(),
+    nombre: '',
+    unidad: 'hojas',     // 'hojas' (sueltas) or 'paquetes' (packs with a defined size)
+    stock: 0,            // current stock, always tracked in sheets internally
+    paqueteSize: 100,    // sheets per package (only relevant when unidad === 'paquetes')
+    minStock: 20,        // low-stock alert threshold, in sheets
+  });
+  renderPaperTypes();
+}
+
+function deletePaperType(id) {
+  if (!confirm('¿Eliminar este tipo de papel? Los productos de Impresiones vinculados a él quedarán sin vincular.')) return;
+  loadPaperTypes();
+  paperTypes = paperTypes.filter(p => p.id !== id);
+  // Unlink any servData.impresiones items pointing to this paper type
+  loadServAdicionales();
+  (servData.impresiones || []).forEach(s => { if (s.papelTipoId === id) s.papelTipoId = ''; });
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  renderPaperTypes();
+  showToast('Tipo de papel eliminado', 'error');
+}
+
+function renderPaperTypes() {
+  loadPaperTypes();
+  const el = document.getElementById('paperTypesList');
+  if (!el) return;
+  if (!paperTypes.length) {
+    el.innerHTML = `<div style="color:var(--gray);font-size:0.85rem;padding:8px 0">Sin tipos de papel registrados. Haz clic en "+ Añadir tipo de papel".</div>`;
+    checkLowStock();
+    return;
+  }
+  el.innerHTML = paperTypes.map((p, i) => {
+    const isLow = p.stock <= p.minStock;
+    const packsAvailable = p.unidad === 'paquetes' ? Math.floor(p.stock / (p.paqueteSize || 1)) : null;
+    return `
+    <div style="background:var(--black);border:1px solid ${isLow ? 'rgba(239,68,68,0.4)' : 'var(--border)'};border-radius:10px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" value="${p.nombre}" placeholder="Ej. Papel foto 4x6 brillante" onchange="paperTypes[${i}].nombre=this.value"
+          style="flex:1;min-width:180px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.95rem;font-weight:600;padding:4px 0;outline:none" />
+        <button onclick="deletePaperType('${p.id}')" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1.1rem;padding:0">✕</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:0.82rem">
+        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
+          Unidad:
+          <select onchange="paperTypes[${i}].unidad=this.value; renderPaperTypes()"
+            style="background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 8px;outline:none">
+            <option value="hojas" ${p.unidad==='hojas'?'selected':''}>Hojas sueltas</option>
+            <option value="paquetes" ${p.unidad==='paquetes'?'selected':''}>Paquetes</option>
+          </select>
+        </label>
+        ${p.unidad === 'paquetes' ? `
+        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
+          Hojas/paquete:
+          <input type="number" value="${p.paqueteSize||100}" min="1" onchange="paperTypes[${i}].paqueteSize=parseInt(this.value)||1; renderPaperTypes()"
+            style="width:60px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+        </label>` : ''}
+        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
+          Stock actual (hojas):
+          <input type="number" value="${p.stock}" min="0" onchange="paperTypes[${i}].stock=parseInt(this.value)||0; renderPaperTypes()"
+            style="width:70px;background:var(--dark);border:1px solid ${isLow?'#fca5a5':'var(--border)'};border-radius:6px;color:${isLow?'#fca5a5':'var(--white)'};font-family:var(--font);font-size:0.85rem;font-weight:700;padding:4px 6px;text-align:center;outline:none" />
+        </label>
+        ${packsAvailable !== null ? `<span style="color:var(--gray)">(~${packsAvailable} paquetes)</span>` : ''}
+        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
+          Alertar bajo:
+          <input type="number" value="${p.minStock}" min="0" onchange="paperTypes[${i}].minStock=parseInt(this.value)||0; renderPaperTypes()"
+            style="width:55px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+        </label>
+        ${isLow ? '<span style="color:#fca5a5;font-weight:700;font-size:0.78rem">⚠ Stock bajo</span>' : ''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-sm btn-outline" onclick="quickAdjustStock('${p.id}', 1)">+ Registrar entrada</button>
+        <button class="btn btn-sm btn-outline" onclick="quickAdjustStock('${p.id}', -1)">− Registrar salida</button>
+      </div>
+    </div>`;
+  }).join('');
+  checkLowStock();
+}
+
+function quickAdjustStock(paperId, direction) {
+  loadPaperTypes();
+  const p = paperTypes.find(x => x.id === paperId);
+  if (!p) return;
+  const label = direction > 0 ? 'añadir' : 'restar';
+  const amountStr = prompt(`¿Cuántas hojas quieres ${label}?`, '100');
+  if (amountStr === null) return;
+  const amount = parseInt(amountStr);
+  if (isNaN(amount) || amount <= 0) { showToast('Cantidad inválida', 'error'); return; }
+  const motivo = direction > 0
+    ? (prompt('Motivo (opcional, ej. "Compra de paquetes")', 'Compra de paquetes') || 'Entrada manual')
+    : (prompt('Motivo (opcional, ej. "Ajuste de inventario")', 'Ajuste manual') || 'Salida manual');
+
+  p.stock = Math.max(0, p.stock + (direction * amount));
+  logInventoryMovement(p.nombre, direction > 0 ? 'entrada' : 'salida', amount, motivo);
+  renderPaperTypes();
+  savePaperInventory(true);
+}
+
+function logInventoryMovement(paperNombre, tipo, cantidad, motivo) {
+  loadInvHistory();
+  invHistory.unshift({
+    fecha: new Date().toLocaleString('es-PA', { dateStyle: 'short', timeStyle: 'short' }),
+    paper: paperNombre,
+    tipo,            // 'entrada' | 'salida'
+    cantidad,
+    motivo,
+  });
+  invHistory = invHistory.slice(0, 100); // keep last 100 movements
+  localStorage.setItem(INV_HIST_KEY, JSON.stringify(invHistory));
+  renderInvHistory();
+}
+
+function renderInvHistory() {
+  loadInvHistory();
+  const tbody = document.getElementById('invHistoryTable');
+  if (!tbody) return;
+  if (!invHistory.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px">Sin movimientos aún</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invHistory.map(h => `
+    <tr>
+      <td style="font-size:0.82rem;color:var(--gray-l)">${h.fecha}</td>
+      <td style="font-size:0.85rem">${h.paper}</td>
+      <td><span style="color:${h.tipo==='entrada'?'#86efac':'#fca5a5'};font-weight:700;font-size:0.8rem">${h.tipo==='entrada'?'↑ Entrada':'↓ Salida'}</span></td>
+      <td style="font-weight:700;font-size:0.85rem">${h.cantidad} hojas</td>
+      <td style="font-size:0.8rem;color:var(--gray-l)">${h.motivo}</td>
+    </tr>`).join('');
+}
+
+function checkLowStock() {
+  const lowItems = paperTypes.filter(p => p.stock <= p.minStock);
+  const banner = document.getElementById('invLowStockBanner');
+  const text   = document.getElementById('invLowStockText');
+  const badge  = document.getElementById('inventarioBadge');
+  if (!banner) return;
+  if (lowItems.length) {
+    banner.style.display = 'flex';
+    text.textContent = lowItems.length === 1
+      ? `"${lowItems[0].nombre}" tiene stock bajo (${lowItems[0].stock} hojas).`
+      : `${lowItems.length} tipos de papel con stock bajo: ${lowItems.map(p=>p.nombre).join(', ')}.`;
+    if (badge) { badge.style.display = 'inline-block'; badge.textContent = lowItems.length; }
+  } else {
+    banner.style.display = 'none';
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+async function savePaperInventory(silent) {
+  loadPaperTypes();
+  localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+  const ok = await ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
+  if (!silent) {
+    if (ok) showToast('Inventario guardado ✓');
+    else    showToast('Guardado localmente — verifica GitHub para publicar', 'error');
+  }
+  checkLowStock();
+}
+
+function initInventario() {
+  loadPaperTypes();
+  loadInvHistory();
+  renderPaperTypes();
+  renderInvHistory();
+}
+
+// ── Automatic stock deduction when a reserva is confirmed ──
+// Looks at the reserva's plan + extras, matches any against servData.impresiones
+// (by name), and if that product is linked to a paper type, deducts the sheets.
+function deductInventoryForReserva(r) {
+  loadServAdicionales();
+  loadPaperTypes();
+  const impresiones = servData.impresiones || [];
+  if (!impresiones.length || !paperTypes.length) return;
+
+  // Collect all "line items" this reserva includes: the main plan name + any extras
+  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
+
+  let changed = false;
+  lineItems.forEach(itemName => {
+    // Match against impresiones catalog by name (plan names may include " ($XX)" suffix)
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
+    if (!match || !match.papelTipoId) return;
+
+    const paper = paperTypes.find(p => p.id === match.papelTipoId);
+    if (!paper) return;
+
+    const sheets = match.hojasPorVenta || 1;
+    paper.stock = Math.max(0, paper.stock - sheets);
+    logInventoryMovement(paper.nombre, 'salida', sheets, `Reserva confirmada: ${r.nombre} (${r.numero||r.id})`);
+    changed = true;
+  });
+
+  if (changed) {
+    localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+    ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
+    checkLowStock();
+  }
+}
+
+// ── Mirror of deductInventoryForReserva — adds the sheets back when a reserva
+//    that had already deducted stock is reverted away from confirmed/completed. ──
+function restoreInventoryForReserva(r) {
+  loadServAdicionales();
+  loadPaperTypes();
+  const impresiones = servData.impresiones || [];
+  if (!impresiones.length || !paperTypes.length) return;
+
+  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
+
+  let changed = false;
+  lineItems.forEach(itemName => {
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
+    if (!match || !match.papelTipoId) return;
+
+    const paper = paperTypes.find(p => p.id === match.papelTipoId);
+    if (!paper) return;
+
+    const sheets = match.hojasPorVenta || 1;
+    paper.stock = paper.stock + sheets;
+    logInventoryMovement(paper.nombre, 'entrada', sheets, `Reserva revertida: ${r.nombre} (${r.numero||r.id})`);
+    changed = true;
+  });
+
+  if (changed) {
+    localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+    ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
+    checkLowStock();
+  }
+}
+
+// ═══════════════════════════════════════
+//  PANEL ADMINISTRATIVO
+// ═══════════════════════════════════════
+
+// ── Reusable SVG donut chart generator ──
+// data: [{ label, value, color }]. Returns an SVG donut + a legend list, no external libs.
+function buildDonutChart(data, opts) {
+  opts = opts || {};
+  const size   = opts.size || 160;
+  const stroke = opts.stroke || 26;
+  const r      = (size - stroke) / 2;
+  const cx = size / 2, cy = size / 2;
+  const circumference = 2 * Math.PI * r;
+  const total = data.reduce((s, d) => s + d.value, 0);
+
+  if (!total) {
+    return `<div style="color:var(--gray);font-size:0.85rem;padding:20px;text-align:center;width:100%">Sin datos suficientes todavía.</div>`;
+  }
+
+  let offset = 0;
+  const segments = data.map(d => {
+    const frac = d.value / total;
+    const dash = frac * circumference;
+    const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d.color}" stroke-width="${stroke}"
+      stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}"
+      transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt" />`;
+    offset += dash;
+    return seg;
+  }).join('');
+
+  const svg = `
+    <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--dark)" stroke-width="${stroke}" />
+      ${segments}
+      <text x="${cx}" y="${cy-3}" text-anchor="middle" fill="var(--white)" font-size="20" font-weight="700" font-family="var(--font)">${total}</text>
+      <text x="${cx}" y="${cy+15}" text-anchor="middle" fill="var(--gray)" font-size="9" font-family="var(--font)">total</text>
+    </svg>`;
+
+  const legend = `
+    <div style="display:flex;flex-direction:column;gap:7px;min-width:140px">
+      ${data.map(d => `
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.8rem">
+          <span style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></span>
+          <span style="flex:1;color:var(--gray-l)">${d.label}</span>
+          <span style="font-weight:700;color:var(--white)">${d.value}</span>
+          <span style="color:var(--gray);font-size:0.72rem">(${Math.round(d.value/total*100)}%)</span>
+        </div>`).join('')}
+    </div>`;
+
+  return svg + legend;
+}
+
+const CHART_COLORS = ['#e91e8c', '#c2176d', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#14b8a6'];
+
+function updatePanelAdministrativo() {
+  loadReservasLocal();
+  loadPaperTypes();
+
+  const billable = allReservas.filter(r => r.status === 'confirmed' || r.status === 'completed');
+  const now = new Date();
+  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
+
+  // ── Revenue cards ──
+  const billableThisMonth = billable.filter(r => {
+    if (!r.fecha) return false;
+    const d = new Date(r.fecha + 'T00:00:00');
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  });
+  const revMonth   = billableThisMonth.reduce((s, r) => s + resTotal(r), 0);
+  const revTotal   = billable.reduce((s, r) => s + resTotal(r), 0);
+  const revPending = billable.reduce((s, r) => s + resPendiente(r), 0);
+  const avgTicket  = billable.length ? revTotal / billable.length : 0;
+
+  document.getElementById('panelRevMonth').textContent   = `$${revMonth.toFixed(2)}`;
+  document.getElementById('panelRevMonthSub').textContent = `${billableThisMonth.length} reserva(s) este mes`;
+  document.getElementById('panelRevTotal').textContent   = `$${revTotal.toFixed(2)}`;
+  document.getElementById('panelRevPending').textContent = `$${revPending.toFixed(2)}`;
+  document.getElementById('panelRevPendingSub').textContent = `De ${billable.filter(r=>resPendiente(r)>0).length} reserva(s)`;
+  document.getElementById('panelAvgTicket').textContent  = `$${avgTicket.toFixed(2)}`;
+
+  // ── Most requested plans (donut) ──
+  const planCounts = {};
+  billable.forEach(r => {
+    if (!r.plan) return;
+    const clean = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    planCounts[clean] = (planCounts[clean] || 0) + 1;
+  });
+  const planData = Object.entries(planCounts)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 8)
+    .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
+  document.getElementById('panelPlansChart').innerHTML = buildDonutChart(planData);
+
+  // ── Most sold extras/additional services (donut) ──
+  const extraCounts = {};
+  billable.forEach(r => {
+    (r.extras || []).forEach(e => {
+      if (!e.nombre) return;
+      extraCounts[e.nombre] = (extraCounts[e.nombre] || 0) + 1;
+    });
+  });
+  const extraData = Object.entries(extraCounts)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 8)
+    .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
+  document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(extraData);
+
+  // ── Inventory status ──
+  const invEl = document.getElementById('panelInventoryStatus');
+  if (!paperTypes.length) {
+    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-link[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
+  } else {
+    invEl.innerHTML = paperTypes.map(p => {
+      const isLow = p.stock <= p.minStock;
+      const pct = p.minStock > 0 ? Math.min(100, Math.round((p.stock / Math.max(p.minStock * 3, 1)) * 100)) : 100;
+      return `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+          <span>${p.nombre}</span>
+          <span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} hojas ${isLow?'⚠':''}</span>
+        </div>
+        <div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Top clients (by phone number, since that's the most reliable unique key) ──
+  const clientMap = {};
+  billable.forEach(r => {
+    const key = r.tel || r.nombre;
+    if (!clientMap[key]) clientMap[key] = { nombre: r.nombre, count: 0, total: 0, lastDate: '' };
+    clientMap[key].count++;
+    clientMap[key].total += resTotal(r);
+    if (!clientMap[key].lastDate || (r.fecha && r.fecha > clientMap[key].lastDate)) {
+      clientMap[key].lastDate = r.fecha || clientMap[key].lastDate;
+    }
+  });
+  const topClients = Object.values(clientMap).sort((a,b) => b.count - a.count).slice(0, 8);
+  const clientsTbody = document.getElementById('panelTopClients');
+  clientsTbody.innerHTML = topClients.length
+    ? topClients.map(c => `
+      <tr>
+        <td style="font-weight:600">${c.nombre}</td>
+        <td>${c.count}</td>
+        <td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td>
+        <td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate || '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
+
+  // ── Monthly trend (last 6 months, simple bar chart) ──
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(thisYear, thisMonth - i, 1);
+    months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('es-PA', { month: 'short' }) });
+  }
+  const monthCounts = months.map(m => {
+    return allReservas.filter(r => {
+      if (!r.fecha) return false;
+      const d = new Date(r.fecha + 'T00:00:00');
+      return d.getFullYear() === m.year && d.getMonth() === m.month;
+    }).length;
+  });
+  const maxCount = Math.max(1, ...monthCounts);
+  const barsEl = document.getElementById('panelMonthlyChart');
+  barsEl.innerHTML = months.map((m, i) => {
+    const h = Math.max(4, Math.round((monthCounts[i] / maxCount) * 130));
+    return `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px">
+        <span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span>
+        <div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div>
+        <span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span>
+      </div>`;
+  }).join('');
+}
+
+function initPanel() {
+  updatePanelAdministrativo();
 }
 
 // ═══════════════════════════════════════
