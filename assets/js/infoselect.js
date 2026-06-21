@@ -6,51 +6,6 @@ const WA_NUMBER     = '50768622402';
 const PHONE_DISPLAY  = '+507 6862-2402';
 const PHONE_DIGITS   = '6862-2402'; // copied value (local format, what people actually dial/Yappy with)
 
-// ── Supabase — same project used across the site, public key (safe to expose) ──
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-let sbClient = null;
-try {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  }
-} catch(e) {
-  console.warn('No se pudo inicializar Supabase:', e);
-}
-
-// ── Load the Yappy QR image, controlled from the Master, stored in Supabase ──
-async function loadYappyQr() {
-  const frame = document.getElementById('qrFrame');
-  const img   = document.getElementById('yappyQrImg');
-  if (!frame || !img) return;
-
-  if (!sbClient) {
-    frame.classList.add('qr-missing');
-    return;
-  }
-
-  try {
-    const { data, error } = await sbClient
-      .from('company_assets')
-      .select('data_url')
-      .eq('id', 'yappy_qr')
-      .single();
-
-    if (error || !data || !data.data_url) {
-      frame.classList.add('qr-missing');
-      return;
-    }
-
-    img.src = data.data_url;
-    img.onload = () => frame.classList.add('qr-loaded');
-    img.onerror = () => frame.classList.add('qr-missing');
-  } catch(e) {
-    frame.classList.add('qr-missing');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', loadYappyQr);
-
 // ── Copy phone number to clipboard, with a graceful fallback for older browsers ──
 async function copyPhoneNumber() {
   const btn     = document.getElementById('copyPhoneBtn');
