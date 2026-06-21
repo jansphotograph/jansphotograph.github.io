@@ -342,9 +342,20 @@
     const HOUR_VALS = [8,9,10,11,12,13,14,15,16,17,18,19,20];
 
     // ── Supabase — shared database so reservas reach the Master from any device ──
+    // Wrapped defensively: if the CDN is slow/blocked, the rest of the page (calendar,
+    // form, etc.) must keep working regardless — Supabase is an enhancement, not a dependency.
     const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let sbClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      } else {
+        console.warn('Supabase SDK no cargó a tiempo — la reserva se guardará solo localmente.');
+      }
+    } catch(e) {
+      console.warn('No se pudo inicializar Supabase:', e);
+    }
 
     let calYear   = new Date().getFullYear();
     let calMonth  = new Date().getMonth();
@@ -605,12 +616,14 @@
       // ── Save to Supabase — this is what makes the reserva reach the Master
       //    from ANY device, since localStorage alone never leaves this browser. ──
       let savedOk = false;
-      try {
-        const { error } = await supabase.from('reservas').insert([reserva]);
-        if (!error) savedOk = true;
-        else console.error('Supabase insert error:', error);
-      } catch(e) {
-        console.error('Supabase unreachable:', e);
+      if (sbClient) {
+        try {
+          const { error } = await sbClient.from('reservas').insert([reserva]);
+          if (!error) savedOk = true;
+          else console.error('Supabase insert error:', error);
+        } catch(e) {
+          console.error('Supabase unreachable:', e);
+        }
       }
 
       // Keep a local copy too (instant reflection if Master is the same browser/device)
