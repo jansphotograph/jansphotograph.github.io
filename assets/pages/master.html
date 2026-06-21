@@ -86,6 +86,32 @@
     }
     .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
+    /* ── Mobile nav toggle (hidden on desktop) ── */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 38px; height: 38px;
+      align-items: center; justify-content: center;
+      color: var(--white);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover { border-color: var(--pink); }
+    .sidebar-toggle svg { width: 19px; height: 19px; }
+
+    /* ── Sidebar overlay (mobile only) ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 149;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .sidebar-overlay.show { display: block; opacity: 1; }
+
     /* ── Layout ── */
     .app-layout { display: flex; padding-top: 60px; min-height: 100vh; }
 
@@ -413,9 +439,17 @@
 
     /* ── Responsive ── */
     @media (max-width: 900px) {
-      .sidebar { display: none; }
+      .sidebar-toggle { display: flex; }
+      .sidebar {
+        z-index: 150;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      }
+      .sidebar.open { transform: translateX(0); }
       .main-content { margin-left: 0; padding: 20px; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
+      .topbar-title { display: none; }
     }
     @media (max-width: 560px) {
       .stats-grid { grid-template-columns: 1fr; }
@@ -434,6 +468,9 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-left">
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <img src="../images/icons/Janssocialmedialogo.png" alt="Logo" />
       <span class="topbar-title">Jans <span>Photograph</span></span>
       <span class="topbar-badge">MASTER</span>
@@ -444,10 +481,12 @@
     </div>
   </div>
 
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
   <div class="app-layout">
 
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebarMain">
       <!-- General — always visible, not collapsible -->
       <div class="sidebar-section">
         <button class="sidebar-link active" onclick="switchView('dashboard', this)">
@@ -1940,6 +1979,23 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // modal-overlay click-outside (moved to DOMContentLoaded)
 
 // ── Sidebar Navigation ──
+// ── Mobile sidebar drawer (hamburger toggle + overlay) ──
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebarMain');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  const opening = !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', opening);
+  overlay.classList.toggle('show', opening);
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebarMain');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('show');
+}
+
 // ── Sidebar collapsible groups ──
 function toggleSidebarGroup(id) {
   const group = document.getElementById('grp-' + id);
@@ -1961,6 +2017,9 @@ function switchView(name, btn) {
   if (!target) { console.warn('View not found:', name); return; }
   target.classList.add('active');
   if (btn) btn.classList.add('active');
+
+  // Close the mobile drawer after navigating, so it doesn't stay covering the screen
+  if (window.innerWidth <= 900) closeSidebar();
 
   // Auto-expand the group containing this view
   const groupId = VIEW_GROUP_MAP[name];
