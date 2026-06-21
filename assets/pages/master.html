@@ -6,6 +6,7 @@
   <title>Master — Jans Photograph</title>
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* Remove number input spinner arrows */
     input[type="number"]::-webkit-outer-spin-button,
@@ -1371,6 +1372,29 @@
           <p>Fuerza a todas las páginas públicas a cargar los últimos cambios</p>
         </div>
 
+        <!-- ── Auto-sync polling ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Sincronización Automática
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
+            Cuando está activa, el Master revisa cada <strong style="color:var(--white)">60 segundos</strong> si hay
+            reservas nuevas (desde Supabase) o cambios publicados, y actualiza la pantalla automáticamente sin que tengas que recargar.
+          </p>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <button class="btn" id="pollToggleBtn" onclick="togglePolling()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="pollToggleLabel">Activar sincronización automática</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="pollStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--gray);flex-shrink:0"></div>
+              <span id="pollStatusText" style="font-size:0.85rem;color:var(--gray-l)">Desactivada</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:12px" id="pollLastCheck"></div>
+        </div>
+
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
@@ -1815,7 +1839,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Render local data first (instant, no network)
     try { renderCalendar(); }     catch(e) { console.error('renderCalendar', e); }
     try { loadPublicPlans(); renderPublicPlans(); } catch(e) { console.error('plans', e); }
-    try { loadReservas(); renderReservasTable(); }  catch(e) { console.error('reservas', e); }
+    try { await loadReservas(); renderReservasTable(); }  catch(e) { console.error('reservas', e); }
+    try { initPollingState(); } catch(e) { console.error('polling', e); }
     try { updateDashboard(); }    catch(e) { console.error('dashboard', e); }
     try { await loadGithubConfigUI(); } catch(e) { console.error('ghConfig', e); }
 
@@ -1920,7 +1945,7 @@ function switchView(name, btn) {
   if (name === 'quotes')        renderQuotesTable();
   if (name === 'social')        loadSocialLinksUI();
   if (name === 'blog')          { loadBlogPosts(); renderBlogPosts(); }
-  if (name === 'recargar')      loadLastReloadInfo();
+  if (name === 'recargar')      { loadLastReloadInfo(); updatePollUI(isPollingEnabled()); }
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
   if (name === 'faqs')           initFaqs();
@@ -2412,7 +2437,7 @@ async function saveQuote() {
     const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
     const [y,m,d] = (quote.sessionDate || '').split('-');
     const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
-    reservas.push({
+    const reservaRecord = {
       id:         quote.id,
       numero,
       nombre:     name,
@@ -2435,8 +2460,13 @@ async function saveQuote() {
       extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
       origin:     'manual',
       createdAt:  quote.createdAt,
-    });
+    };
+    reservas.push(reservaRecord);
     localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+    // Mirror to Supabase so it's visible from any device too
+    supabase.from('reservas').insert([reservaRecord]).then(({error}) => {
+      if (error) console.error('Supabase insert (manual quote) error:', error);
+    });
   } catch(e) {}
 
   if(ok) {
@@ -3496,6 +3526,84 @@ async function saveYtLink() {
 //  RESERVAS MANAGER
 // ═══════════════════════════════════════
 const WA_NUMBER = '50768622402';
+// ═══════════════════════════════════════
+//  SUPABASE — shared database for public reservas
+// ═══════════════════════════════════════
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Pull any reservas from Supabase that the Master doesn't have locally yet
+// (this is what makes reservas submitted from ANY device reach this Master).
+async function syncReservasFromSupabase() {
+  try {
+    const { data, error } = await supabase.from('reservas').select('*').order('created_at', { ascending: true });
+    if (error) { console.error('Supabase fetch error:', error); return false; }
+    if (!data) return false;
+
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+    const localIds = new Set(local.map(r => r.id));
+
+    let added = 0;
+    data.forEach(remote => {
+      if (!localIds.has(remote.id)) {
+        // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
+        local.push({
+          id:            remote.id,
+          numero:        remote.numero || null,
+          nombre:        remote.nombre,
+          tel:           remote.tel,
+          email:         remote.email,
+          plan:          remote.plan,
+          notas:         remote.notas,
+          fecha:         remote.fecha,
+          fechaLabel:    remote.fechaLabel,
+          hora:          remote.hora,
+          horaVal:       remote.horaVal,
+          status:        remote.status || 'pending',
+          abono:         remote.abono || 0,
+          totalManual:   remote.totalManual,
+          extras:        remote.extras || [],
+          clientId:      remote.clientId,
+          clientType:    remote.clientType,
+          razonSocial:   remote.razonSocial,
+          repLegal:      remote.repLegal,
+          address:       remote.address,
+          origin:        remote.origin || 'web',
+          facturaNumero: remote.facturaNumero,
+          createdAt:     remote.createdAt,
+        });
+        added++;
+      }
+    });
+
+    if (added > 0) {
+      localStorage.setItem('jans_reservas', JSON.stringify(local));
+    }
+    return added > 0;
+  } catch(e) {
+    console.error('Supabase sync exception:', e);
+    return false;
+  }
+}
+
+// Push a local change (status, abono, extras, etc.) back up to Supabase so it
+// stays consistent if you ever open the Master from a different device.
+async function pushReservaToSupabase(r) {
+  try {
+    const { error } = await supabase.from('reservas').update({
+      numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
+      extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
+      nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
+      fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
+    }).eq('id', r.id);
+    if (error) console.error('Supabase update error:', error);
+  } catch(e) {
+    console.error('Supabase push exception:', e);
+  }
+}
+
 let allReservas  = [];
 let editingResId = null;
 
@@ -3531,15 +3639,21 @@ function getOrAssignFacturaNumero(r) {
   return num;
 }
 
-function loadReservas() {
+// Local-only load (fast, synchronous) — used by renderReservasTable on every render
+function loadReservasLocal() {
   try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
-  // Assign WEB- numbers to any reserva that doesn't have one yet (came from public site)
   let changed = false;
   allReservas.forEach(r => {
     if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
     if (r.abono === undefined) { r.abono = 0; changed = true; }
   });
   if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+}
+
+// Full load: pulls from Supabase first, then loads locally — used on initial page load and polling
+async function loadReservas() {
+  await syncReservasFromSupabase();
+  loadReservasLocal();
 }
 
 function resStatusLabel(s) {
@@ -3591,7 +3705,7 @@ function getExtrasCatalog() {
 }
 
 function renderReservasTable() {
-  loadReservas();
+  loadReservasLocal();
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
@@ -3778,6 +3892,7 @@ function addResExtra(id) {
   if (!allReservas[idx].extras) allReservas[idx].extras = [];
   allReservas[idx].extras.push({ nombre, precio: parseFloat(precio) || 0 });
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
   sel.value = '';
   refreshResFinancialBlock(id);
   renderReservasTable();
@@ -3789,6 +3904,7 @@ function removeResExtra(id, extraIdx) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   allReservas[idx].extras.splice(extraIdx, 1);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
   refreshResFinancialBlock(id);
   renderReservasTable();
   updateDashboard();
@@ -3833,6 +3949,7 @@ function updateResFinancials(id) {
   allReservas[idx].totalManual = null; // clear any legacy manual override so it recalculates
   allReservas[idx].abono       = parseFloat(abonoInput.value) || 0;
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
   refreshResFinancialBlock(id);
   renderReservasTable();
   updateDashboard();
@@ -3873,6 +3990,7 @@ function changeResStatus(id, status) {
   }
 
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
   ghPutPublic('reservas.json', allReservas.filter(r=>r.status==='confirmed'||r.status==='completed'));
   renderReservasTable();
   updateDashboard();
@@ -3912,6 +4030,7 @@ function saveEditReserva() {
     notas:    document.getElementById('editResNotas').value,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
   closeModal('editReservaModal');
   renderReservasTable();
   showToast('Reserva actualizada ✓');
@@ -3921,10 +4040,89 @@ function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  supabase.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();
   showToast('Reserva eliminada', 'error');
+}
+
+// ═══════════════════════════════════════
+//  AUTO-SYNC POLLING — checks Supabase every 60s for new reservas
+// ═══════════════════════════════════════
+const POLL_KEY = 'jans_polling_enabled';
+const POLL_INTERVAL_MS = 60000;
+let pollIntervalId = null;
+
+function isPollingEnabled() {
+  return localStorage.getItem(POLL_KEY) === 'true';
+}
+
+function updatePollUI(active) {
+  const dot   = document.getElementById('pollStatusDot');
+  const text  = document.getElementById('pollStatusText');
+  const label = document.getElementById('pollToggleLabel');
+  const btn   = document.getElementById('pollToggleBtn');
+  if (!dot) return; // view not rendered yet
+  if (active) {
+    dot.style.background = '#22c55e';
+    text.textContent = 'Activa — revisando cada 60 segundos';
+    label.textContent = 'Desactivar sincronización automática';
+    btn.classList.remove('btn-pink'); btn.classList.add('btn-outline');
+  } else {
+    dot.style.background = 'var(--gray)';
+    text.textContent = 'Desactivada';
+    label.textContent = 'Activar sincronización automática';
+    btn.classList.remove('btn-outline'); btn.classList.add('btn-pink');
+  }
+}
+
+async function pollTick() {
+  const lastCheckEl = document.getElementById('pollLastCheck');
+  try {
+    const hadNew = await syncReservasFromSupabase();
+    loadReservasLocal();
+    if (hadNew) {
+      renderReservasTable();
+      updateDashboard();
+      showToast('Nuevas reservas sincronizadas ✓');
+    }
+  } catch(e) {
+    console.error('Poll tick error:', e);
+  }
+  if (lastCheckEl) {
+    const now = new Date();
+    lastCheckEl.textContent = 'Última revisión: ' + now.toLocaleTimeString('es-PA', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+}
+
+function startPolling() {
+  if (pollIntervalId) clearInterval(pollIntervalId);
+  pollIntervalId = setInterval(pollTick, POLL_INTERVAL_MS);
+  pollTick(); // run immediately on activation, then every interval after
+  localStorage.setItem(POLL_KEY, 'true');
+  updatePollUI(true);
+}
+
+function stopPolling() {
+  if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
+  localStorage.setItem(POLL_KEY, 'false');
+  updatePollUI(false);
+  const lastCheckEl = document.getElementById('pollLastCheck');
+  if (lastCheckEl) lastCheckEl.textContent = '';
+}
+
+function togglePolling() {
+  if (isPollingEnabled()) stopPolling();
+  else startPolling();
+}
+
+// Restore polling state on load (if it was left on from a previous session)
+function initPollingState() {
+  updatePollUI(isPollingEnabled());
+  if (isPollingEnabled()) {
+    pollIntervalId = setInterval(pollTick, POLL_INTERVAL_MS);
+  }
 }
 
 // ── Public Plans Manager ──
