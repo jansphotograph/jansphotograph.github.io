@@ -69,3 +69,20 @@ if (slider) {
     }
   });
 }
+
+// ── Shared "Regresar" button handler — used by the .btn-back button on public pages ──
+// Goes back in browser history if there's a same-site page to return to;
+// otherwise falls back to the homepage so the visitor never gets stuck
+// (e.g. if they arrived directly from Google/WhatsApp with no prior page).
+function goBack() {
+  const cameFromSameSite = document.referrer && document.referrer.includes(window.location.host);
+  if (cameFromSameSite && window.history.length > 1) {
+    window.history.back();
+    return;
+  }
+  // Reuse the header logo's existing href to the homepage — it already has the
+  // correct relative path for this page's depth (avoids guessing path depth,
+  // since GitHub Pages serves from a repo subpath like /jansphotograph.github.io/).
+  const logoLink = document.querySelector('.header-logo a[href*="index.html"]');
+  window.location.href = logoLink ? logoLink.getAttribute('href') : 'index.html';
+}
