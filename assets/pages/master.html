@@ -2464,9 +2464,11 @@ async function saveQuote() {
     reservas.push(reservaRecord);
     localStorage.setItem('jans_reservas', JSON.stringify(reservas));
     // Mirror to Supabase so it's visible from any device too
-    supabase.from('reservas').insert([reservaRecord]).then(({error}) => {
-      if (error) console.error('Supabase insert (manual quote) error:', error);
-    });
+    if (sbClient) {
+      sbClient.from('reservas').insert([reservaRecord]).then(({error}) => {
+        if (error) console.error('Supabase insert (manual quote) error:', error);
+      });
+    }
   } catch(e) {}
 
   if(ok) {
@@ -3531,13 +3533,23 @@ const WA_NUMBER = '50768622402';
 // ═══════════════════════════════════════
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) {
+  console.warn('No se pudo inicializar Supabase:', e);
+}
 
 // Pull any reservas from Supabase that the Master doesn't have locally yet
 // (this is what makes reservas submitted from ANY device reach this Master).
 async function syncReservasFromSupabase() {
+  if (!sbClient) return false;
   try {
-    const { data, error } = await supabase.from('reservas').select('*').order('created_at', { ascending: true });
+    const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
     if (error) { console.error('Supabase fetch error:', error); return false; }
     if (!data) return false;
 
@@ -3591,8 +3603,9 @@ async function syncReservasFromSupabase() {
 // Push a local change (status, abono, extras, etc.) back up to Supabase so it
 // stays consistent if you ever open the Master from a different device.
 async function pushReservaToSupabase(r) {
+  if (!sbClient) return;
   try {
-    const { error } = await supabase.from('reservas').update({
+    const { error } = await sbClient.from('reservas').update({
       numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
       extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
       nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
@@ -4040,7 +4053,7 @@ function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  supabase.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
+  if (sbClient) sbClient.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();
