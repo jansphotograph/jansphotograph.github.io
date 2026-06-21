@@ -408,8 +408,10 @@
         reservas = Array.from(byId.values());
         localStorage.setItem('jans_reservas', JSON.stringify(reservas));
 
-        // Re-render hours in case a date is already picked, so the visitor sees
-        // up-to-date availability without needing to reload the page.
+        // Re-render hours in case a date is already picked, and re-render the calendar
+        // grid too, since day-level "fully booked" now depends on hour availability,
+        // not just calData — so the visitor sees up-to-date availability without reloading.
+        renderCal();
         if (selectedDate) renderTimeSlots(selectedDate);
       } catch(e) {
         console.warn('No se pudo sincronizar disponibilidad desde Supabase:', e);
@@ -502,12 +504,15 @@
         const ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
         const st = calData[ds];
         const isPast = ds < todayStr;
+        // A day is fully booked if the Master explicitly closed it, OR every hour slot
+        // is taken by confirmed/completed reservas — pending requests never block the day.
+        const isFull = st === 'booked' || isDayFull(ds);
         const el = document.createElement('div');
         el.className = 'cal-day';
         el.textContent = d;
         if(ds===todayStr)    el.classList.add('today');
         if(isPast)          { el.classList.add('past'); }
-        else if(st==='booked')   { el.classList.add('booked'); }
+        else if(isFull)      { el.classList.add('booked'); }
         else {
           // available (explicitly marked) or unmarked — both are selectable
           el.classList.add('available');
@@ -545,6 +550,15 @@
       return blocked;
     }
 
+    // A day is "full" only when every single time slot is blocked by confirmed/completed
+    // reservas — pending requests never block anything, and a confirmed reserva only
+    // takes up its own ±2hr range, leaving the rest of the day open for other bookings.
+    function isDayFull(ds) {
+      if (!ds) return false;
+      const blocked = getBlockedHours(ds);
+      return HOUR_VALS.every(hv => blocked.has(hv));
+    }
+
     function renderTimeSlots(ds) {
       if (!ds) return;
       const blocked = getBlockedHours(ds);
@@ -577,13 +591,13 @@
       const st = calData[ds];
       const today = new Date().toISOString().split('T')[0];
 
-      // Block past dates and explicitly booked dates
+      // Block past dates and fully-booked dates (manually closed OR every hour taken)
       if(ds < today) {
         alert('No puedes seleccionar una fecha pasada.');
         document.getElementById('rFecha').value = selectedDate || '';
         return;
       }
-      if(st === 'booked') {
+      if(st === 'booked' || isDayFull(ds)) {
         alert('Esa fecha no está disponible. Por favor elige otra fecha.');
         document.getElementById('rFecha').value = selectedDate || '';
         return;
