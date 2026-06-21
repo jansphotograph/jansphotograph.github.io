@@ -3024,7 +3024,7 @@ async function generateInvoicePDF(id) {
   // ── Two-column client + session data ──
   doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
   doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 9;
+  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
 
   const leftRows = [['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—']];
   if (r.razonSocial) leftRows.push(['Razón Social:', r.razonSocial]);
@@ -3051,7 +3051,7 @@ async function generateInvoicePDF(id) {
     doc.setFont('helvetica','normal');
     yR += Math.max(6, lines.length*5);
   });
-  y = Math.max(yL, yR) + 8;
+  y = Math.max(yL, yR) + 6;
 
   // ── Boxed items table ──
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
@@ -3112,12 +3112,12 @@ async function generateInvoicePDF(id) {
   doc.text('TOTAL FACTURADO', margin+10, by+1.5);
   doc.text(`$${total.toFixed(2)}`, pageW-margin-10, by+1.5, {align:'right'});
 
-  y += boxH + 10;
+  y += boxH + 6;
 
   // ── Seal box ──
   // Defensive: if content already ran long (many items/extras), compress the gap before the seal
   const spaceLeft = 292 - y;
-  const sealGapTop = spaceLeft < 70 ? 4 : 10;
+  const sealGapTop = spaceLeft < 70 ? 3 : 6;
   const sealH = spaceLeft < 70 ? 22 : 28;
   doc.setDrawColor(199,30,95); doc.setLineWidth(0.5);
   doc.roundedRect(margin, y, pageW-(margin*2), sealH, 2, 2, 'S');
@@ -3134,7 +3134,7 @@ async function generateInvoicePDF(id) {
   doc.text('Gracias por confiar en nosotros', pageW/2, y + thanksH/2 + 1, {align:'center'});
   doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
   doc.text(pdfCompanyFooterLine(company), pageW/2, y + thanksH - 2, {align:'center'});
-  y += thanksH + ((292 - y - thanksH) > 25 ? 8 : 4);
+  y += thanksH + ((292 - y - thanksH) > 25 ? 5 : 3);
 
   if (r.notas && (292 - y) > 30) {
     doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
@@ -3147,7 +3147,7 @@ async function generateInvoicePDF(id) {
   }
 
   // ── Dashed cut line — separates the merchant's stub/constancia below ──
-  y += (292 - y) > 25 ? 6 : 3;
+  y += (292 - y) > 25 ? 4 : 2;
   doc.setDrawColor(160,160,160); doc.setLineWidth(0.3);
   doc.setLineDashPattern([2, 2], 0);
   doc.line(margin, y, pageW-margin, y);
@@ -3155,7 +3155,7 @@ async function generateInvoicePDF(id) {
   y += 4;
   doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(150,150,150);
   doc.text('✂  Constancia — recortar y conservar', pageW/2, y, { align: 'center' });
-  y += (292 - y) > 20 ? 7 : 4;
+  y += (292 - y) > 20 ? 5 : 3;
 
   // ── Stub: auto-filled constancia + signature line ──
   doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
@@ -3181,7 +3181,7 @@ async function generateInvoicePDF(id) {
     doc.setFont('helvetica','normal');
     syR += Math.max(stubLineH, lines.length*5);
   });
-  y = Math.max(syL, syR) + ((292 - Math.max(syL, syR)) > 14 ? 8 : 5);
+  y = Math.max(syL, syR) + ((292 - Math.max(syL, syR)) > 14 ? 6 : 4);
 
   doc.setDrawColor(180,180,180); doc.setLineWidth(0.3);
   doc.line(margin, y, margin+80, y);
