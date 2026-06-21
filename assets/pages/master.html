@@ -1395,6 +1395,24 @@
           <div style="font-size:0.78rem;color:var(--gray);margin-top:12px" id="pollLastCheck"></div>
         </div>
 
+        <!-- ── Calendar cleanup ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Limpiar Días Bloqueados Sin Reservas
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
+            Si un día quedó marcado como "ocupado" en el calendario pero ya no tiene ninguna reserva
+            confirmada respaldándolo (por ejemplo, si confirmaste y luego regresaste una reserva a pendiente),
+            usa este botón para liberarlo.
+          </p>
+          <button class="btn btn-outline" onclick="cleanupStaleCalendarDays()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+            Revisar y liberar días sin reservas
+          </button>
+          <div id="cleanupResult" style="font-size:0.82rem;color:var(--gray-l);margin-top:12px"></div>
+        </div>
+
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
@@ -3999,10 +4017,32 @@ function changeResStatus(id, status) {
       for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
     }
     showToast(status === 'completed' ? 'Sesión marcada como completada ✓' : 'Reserva confirmada — horario bloqueado ✓');
-  } else if(status === 'declined' || status === 'cancelled') {
+  } else if(status === 'declined' || status === 'cancelled' || status === 'pending') {
     showToast('Reserva ' + resStatusLabel(status).toLowerCase());
   } else {
     showToast('Estado actualizado ✓');
+  }
+
+  // Clean up any stale whole-day "booked" mark left over from before the day-level
+  // blocking logic was switched to hour-based calculation. If this reserva's day was
+  // manually-or-accidentally marked as fully booked, and no OTHER reserva on that same
+  // day is still confirmed/completed, release the day so it's selectable again.
+  if (status !== 'confirmed' && status !== 'completed') {
+    const r  = allReservas[idx];
+    const ds = r.fecha;
+    if (ds) {
+      const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+      if (calData[ds] === 'booked') {
+        const stillFull = allReservas.some((x,i) => i!==idx && x.fecha===ds && (x.status==='confirmed'||x.status==='completed'));
+        if (!stillFull) {
+          calData[ds] = 'available';
+          localStorage.setItem('jans_calendar', JSON.stringify(calData));
+          state.calendar = calData;
+          renderCalendar?.();
+          ghPutPublic('calendar.json', calData);
+        }
+      }
+    }
   }
 
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
@@ -4138,6 +4178,42 @@ function initPollingState() {
   updatePollUI(isPollingEnabled());
   if (isPollingEnabled()) {
     pollIntervalId = setInterval(pollTick, POLL_INTERVAL_MS);
+  }
+}
+
+// ── One-off cleanup: release any day in calData marked "booked" that no longer
+//    has a confirmed/completed reserva backing it up (leftover from the old
+//    whole-day blocking behavior, or from confirming-then-reverting a reserva). ──
+async function cleanupStaleCalendarDays() {
+  const resultEl = document.getElementById('cleanupResult');
+  resultEl.textContent = 'Revisando...';
+
+  const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+  let releasedCount = 0;
+  const releasedDays = [];
+
+  Object.keys(calData).forEach(ds => {
+    if (calData[ds] !== 'booked') return;
+    const hasConfirmed = allReservas.some(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed'));
+    if (!hasConfirmed) {
+      calData[ds] = 'available';
+      releasedCount++;
+      releasedDays.push(ds);
+    }
+  });
+
+  if (releasedCount > 0) {
+    localStorage.setItem('jans_calendar', JSON.stringify(calData));
+    state.calendar = calData;
+    renderCalendar?.();
+    await ghPutPublic('calendar.json', calData);
+    resultEl.style.color = '#86efac';
+    resultEl.textContent = `✓ Se liberaron ${releasedCount} día(s): ${releasedDays.join(', ')}`;
+    showToast(`${releasedCount} día(s) liberado(s) ✓`);
+  } else {
+    resultEl.style.color = 'var(--gray-l)';
+    resultEl.textContent = 'No se encontraron días bloqueados sin reservas — todo está al día.';
+    showToast('Nada que limpiar ✓');
   }
 }
 
