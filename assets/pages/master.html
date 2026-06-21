@@ -3988,32 +3988,19 @@ function changeResStatus(id, status) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   allReservas[idx].status = status;
 
-  // If confirmed or completed → block calendar slots (±2 hours around horaVal)
+  // If confirmed or completed → block the ±2 hour range around the session
+  // (does NOT close the whole day — other time slots on the same day stay open,
+  // matching exactly how the public page calculates blocked hours via getBlockedHours()).
   if(status === 'confirmed' || status === 'completed') {
-    const r   = allReservas[idx];
-    const ds  = r.fecha;
-    const hv  = parseInt(r.horaVal);
-    const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
-    calData[ds] = 'booked';
+    const r  = allReservas[idx];
+    const hv = parseInt(r.horaVal);
     r.blockedHours = [];
-    for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
-    localStorage.setItem('jans_calendar', JSON.stringify(calData));
-    state.calendar = calData;
-    renderCalendar?.();
-    ghPutPublic('calendar.json', calData);
-    showToast(status === 'completed' ? 'Sesión marcada como completada ✓' : 'Reserva confirmada — fecha bloqueada en el calendario ✓');
-  } else if(status === 'declined' || status === 'cancelled') {
-    const r   = allReservas[idx];
-    const ds  = r.fecha;
-    const othersConfirmed = allReservas.some((x,i) => i!==idx && x.fecha===ds && (x.status==='confirmed'||x.status==='completed'));
-    if(!othersConfirmed) {
-      const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
-      calData[ds] = 'available';
-      localStorage.setItem('jans_calendar', JSON.stringify(calData));
-      state.calendar = calData;
-      renderCalendar?.();
+    if (!isNaN(hv)) {
+      for(let h=hv-2; h<=hv+2; h++) r.blockedHours.push(h);
     }
-    showToast('Reserva ' + resStatusLabel(status).toLowerCase() + ' — calendario actualizado');
+    showToast(status === 'completed' ? 'Sesión marcada como completada ✓' : 'Reserva confirmada — horario bloqueado ✓');
+  } else if(status === 'declined' || status === 'cancelled') {
+    showToast('Reserva ' + resStatusLabel(status).toLowerCase());
   } else {
     showToast('Estado actualizado ✓');
   }
