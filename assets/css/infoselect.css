@@ -112,6 +112,14 @@
   object-fit: contain;
   border-radius: 6px;
 }
+.qr-loading-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray);
+}
+.qr-spinner { animation: qr-spin 0.9s linear infinite; }
+@keyframes qr-spin { to { transform: rotate(360deg); } }
 .qr-missing-msg {
   display: none;
   flex-direction: column;
@@ -122,6 +130,12 @@
   font-size: 0.82rem;
   padding: 0 12px;
 }
+/* States toggled via JS by adding a class to .qr-frame */
+.qr-frame.qr-loaded .qr-loading-msg,
+.qr-frame.qr-loaded .qr-missing-msg { display: none; }
+.qr-frame.qr-loaded img { display: block; }
+
+.qr-frame.qr-missing .qr-loading-msg,
 .qr-frame.qr-missing img { display: none; }
 .qr-frame.qr-missing .qr-missing-msg { display: flex; }
 
