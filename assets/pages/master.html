@@ -6,8 +6,6 @@
   <title>Master — Jans Photograph</title>
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://apis.google.com/js/api.js"></script>
   <style>
     /* Remove number input spinner arrows */
     input[type="number"]::-webkit-outer-spin-button,
@@ -907,42 +905,6 @@
           </div>
         </div>
 
-        <!-- ── Google Calendar ── -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Google Calendar
-          </div>
-          <p style="font-size:0.85rem;color:var(--gray-l);line-height:1.7;margin-bottom:16px">
-            Conecta tu cuenta de Google para sincronizar automáticamente las reservas confirmadas con tu Google Calendar personal.
-            Necesitas crear un Client ID de Google (gratis) una sola vez —
-            <a href="#" onclick="toggleGcalHelp();return false" style="color:var(--pink-l);text-decoration:underline">ver cómo obtenerlo</a>.
-          </p>
-          <div id="gcalHelp" style="display:none;background:var(--dark);border-radius:10px;padding:16px 18px;margin-bottom:16px;font-size:0.82rem;color:var(--gray-l);line-height:1.9">
-            <strong style="color:var(--white)">Pasos (una sola vez, 5 minutos):</strong>
-            1. Ve a <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" style="color:var(--pink-l)">console.cloud.google.com</a> y crea un proyecto nuevo.<br/>
-            2. Ve a "APIs y servicios" → "Biblioteca" → busca <strong>"Google Calendar API"</strong> → Habilitar.<br/>
-            3. Ve a "APIs y servicios" → "Pantalla de consentimiento OAuth" → tipo "Externo" → completa nombre y correo → guarda.<br/>
-            4. Ve a "Credenciales" → "Crear credenciales" → "ID de cliente de OAuth" → tipo "Aplicación web".<br/>
-            5. En "Orígenes de JavaScript autorizados" añade la URL donde abres tu Master (ej. <code>https://jansphotograph.github.io</code>).<br/>
-            6. Copia el <strong>Client ID</strong> generado y pégalo abajo.
-          </div>
-          <div class="field">
-            <label>Google Client ID</label>
-            <input type="text" id="cfgGcalClientId" placeholder="123456789-xxxxxxxx.apps.googleusercontent.com" />
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="saveGcalConfig()">Guardar Client ID</button>
-            <button class="btn btn-outline" id="gcalConnectBtn" onclick="connectGoogleCalendar()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
-              Conectar Google Calendar
-            </button>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
-            <div id="gcalStatusDot" style="width:11px;height:11px;border-radius:50%;background:var(--gray);flex-shrink:0"></div>
-            <span id="gcalStatusText" style="font-size:0.85rem;color:var(--gray-l)">No conectado</span>
-          </div>
-        </div>
 
         <!-- ── Setup móvil notice ── -->
         <div class="card" style="border-color:rgba(233,30,140,0.25)">
@@ -1856,7 +1818,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     try { loadReservas(); renderReservasTable(); }  catch(e) { console.error('reservas', e); }
     try { updateDashboard(); }    catch(e) { console.error('dashboard', e); }
     try { await loadGithubConfigUI(); } catch(e) { console.error('ghConfig', e); }
-    try { loadGcalConfigUI(); } catch(e) { console.error('gcalConfig', e); }
 
     // Load from GitHub in background (non-blocking)
     loadAllData().catch(e => console.warn('GitHub sync failed:', e));
@@ -3685,19 +3646,6 @@ function viewReserva(id) {
     </div>
 
     <hr class="section-divider" />
-    <span class="section-label-sm">Google Calendar</span>
-    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <a class="btn btn-outline" href="${buildGoogleCalendarLink(r)}" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Añadir a Google Calendar
-      </a>
-      <button class="btn btn-outline" id="gcalSyncBtn" onclick="syncReservaToGoogleCalendar('${r.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
-        ${r.gcalEventId ? 'Actualizar en mi Calendar' : 'Sincronizar con mi Calendar'}
-      </button>
-    </div>
-    ${r.gcalEventId ? `<div style="font-size:0.75rem;color:#86efac;margin-top:-10px;margin-bottom:16px">✓ Sincronizada con Google Calendar</div>` : ''}
-
     <hr class="section-divider" />
     <div class="btn-row" style="flex-wrap:wrap">
       <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
@@ -3842,15 +3790,6 @@ function changeResStatus(id, status) {
   updateDashboard();
   // Refresh modal in place if it's open for this reservation
   if (document.getElementById('reservaModal')?.classList.contains('active')) viewReserva(id);
-
-  // Silent auto-sync to Google Calendar on confirm (only if already connected — never prompts login here)
-  if (status === 'confirmed') {
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(GCAL_TOKEN_KEY) || 'null'); } catch(e) {}
-    if (saved && saved.access_token && saved.expires_at > Date.now()) {
-      syncReservaToGoogleCalendar(id).catch(() => {}); // fail silently in background
-    }
-  }
 }
 
 function openEditReserva(id) {
@@ -5268,197 +5207,6 @@ function addCategoryToSelects(slug, name) {
     if (todosOpt) sel.insertBefore(opt, todosOpt);
     else sel.appendChild(opt);
   });
-}
-
-// ═══════════════════════════════════════
-//  GOOGLE CALENDAR
-// ═══════════════════════════════════════
-const GCAL_CONFIG_KEY = 'jans_gcal_config';
-const GCAL_TOKEN_KEY  = 'jans_gcal_token'; // { access_token, expires_at }
-let gcalTokenClient = null;
-let gcalAccessToken = null;
-
-function loadGcalConfig() {
-  try { return JSON.parse(localStorage.getItem(GCAL_CONFIG_KEY) || '{}'); } catch(e) { return {}; }
-}
-
-function toggleGcalHelp() {
-  const el = document.getElementById('gcalHelp');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-
-function saveGcalConfig() {
-  const clientId = document.getElementById('cfgGcalClientId').value.trim();
-  if (!clientId) { showToast('Ingresa un Client ID', 'error'); return; }
-  localStorage.setItem(GCAL_CONFIG_KEY, JSON.stringify({ clientId }));
-  showToast('Client ID guardado ✓');
-  initGcalStatus();
-}
-
-function loadGcalConfigUI() {
-  const cfg = loadGcalConfig();
-  const input = document.getElementById('cfgGcalClientId');
-  if (input && cfg.clientId) input.value = cfg.clientId;
-  initGcalStatus();
-}
-
-function initGcalStatus() {
-  const cfg = loadGcalConfig();
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(GCAL_TOKEN_KEY) || 'null'); } catch(e) {}
-  const dot  = document.getElementById('gcalStatusDot');
-  const text = document.getElementById('gcalStatusText');
-  if (!dot || !text) return;
-
-  if (saved && saved.access_token && saved.expires_at > Date.now()) {
-    gcalAccessToken = saved.access_token;
-    dot.style.background = '#22c55e';
-    text.textContent = '✓ Conectado a Google Calendar';
-  } else if (cfg.clientId) {
-    dot.style.background = '#f59e0b';
-    text.textContent = 'Client ID guardado — haz clic en "Conectar"';
-  } else {
-    dot.style.background = 'var(--gray)';
-    text.textContent = 'No conectado';
-  }
-}
-
-function connectGoogleCalendar() {
-  const cfg = loadGcalConfig();
-  if (!cfg.clientId) { showToast('Guarda primero tu Google Client ID', 'error'); return; }
-  if (typeof google === 'undefined' || !google.accounts) {
-    showToast('Google Identity Services aún no carga — intenta de nuevo en unos segundos', 'error');
-    return;
-  }
-
-  gcalTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: cfg.clientId,
-    scope: 'https://www.googleapis.com/auth/calendar.events',
-    callback: (resp) => {
-      if (resp.error) { showToast('Error al conectar: ' + resp.error, 'error'); return; }
-      gcalAccessToken = resp.access_token;
-      const expiresAt = Date.now() + ((resp.expires_in || 3600) * 1000) - 60000; // 1min safety margin
-      localStorage.setItem(GCAL_TOKEN_KEY, JSON.stringify({ access_token: resp.access_token, expires_at: expiresAt }));
-      initGcalStatus();
-      showToast('Google Calendar conectado ✓');
-    },
-  });
-  gcalTokenClient.requestAccessToken();
-}
-
-function ensureGcalToken() {
-  return new Promise((resolve, reject) => {
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem(GCAL_TOKEN_KEY) || 'null'); } catch(e) {}
-    if (saved && saved.access_token && saved.expires_at > Date.now()) {
-      gcalAccessToken = saved.access_token;
-      resolve(gcalAccessToken);
-      return;
-    }
-    // Token expired or missing — need to reconnect
-    const cfg = loadGcalConfig();
-    if (!cfg.clientId || typeof google === 'undefined') { reject(new Error('Google Calendar no está conectado.')); return; }
-    gcalTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: cfg.clientId,
-      scope: 'https://www.googleapis.com/auth/calendar.events',
-      callback: (resp) => {
-        if (resp.error) { reject(new Error(resp.error)); return; }
-        gcalAccessToken = resp.access_token;
-        const expiresAt = Date.now() + ((resp.expires_in || 3600) * 1000) - 60000;
-        localStorage.setItem(GCAL_TOKEN_KEY, JSON.stringify({ access_token: resp.access_token, expires_at: expiresAt }));
-        initGcalStatus();
-        resolve(gcalAccessToken);
-      },
-    });
-    gcalTokenClient.requestAccessToken();
-  });
-}
-
-// ── Build event start/end ISO datetimes from a reserva's date + hour ──
-function resEventTimes(r) {
-  // r.fecha is 'YYYY-MM-DD', r.horaVal is the hour as integer (e.g. 14 for 2PM)
-  const fecha = r.fecha;
-  const hour  = parseInt(r.horaVal);
-  if (!fecha || isNaN(hour)) return null;
-  const start = new Date(`${fecha}T${String(hour).padStart(2,'0')}:00:00`);
-  const end   = new Date(start.getTime() + 2 * 60 * 60 * 1000); // default 2-hour session block
-  return { start, end };
-}
-
-function toGCalDateStr(date) {
-  // Format: YYYYMMDDTHHmmSSZ-free local format for quick-add link (no Z, local time)
-  const pad = n => String(n).padStart(2, '0');
-  return `${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
-}
-
-// ── Quick-add link (no login needed, works for anyone) ──
-function buildGoogleCalendarLink(r) {
-  const times = resEventTimes(r);
-  const title = encodeURIComponent(`${r.plan || 'Sesión fotográfica'} — ${r.nombre}`);
-  const details = encodeURIComponent(
-    `Cliente: ${r.nombre}\nTeléfono: ${r.tel||''}\n${r.email ? 'Email: '+r.email+'\n' : ''}` +
-    `Plan: ${r.plan||'—'}\n# Cotización: ${r.numero||'—'}\n${r.notas ? 'Notas: '+r.notas : ''}`
-  );
-  if (!times) {
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
-  }
-  const dates = `${toGCalDateStr(times.start)}/${toGCalDateStr(times.end)}`;
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}`;
-}
-
-// ── Real sync: create/update an event via Google Calendar API ──
-async function syncReservaToGoogleCalendar(id) {
-  const r = allReservas.find(x=>x.id===id); if(!r) return;
-  const btn = document.getElementById('gcalSyncBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
-
-  try {
-    const token = await ensureGcalToken();
-    const times = resEventTimes(r);
-    if (!times) { showToast('Esta reserva no tiene fecha/hora definida', 'error'); if(btn){btn.disabled=false;} return; }
-
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Panama';
-    const eventBody = {
-      summary: `${r.plan || 'Sesión fotográfica'} — ${r.nombre}`,
-      description: `Cliente: ${r.nombre}\nTeléfono: ${r.tel||''}\n${r.email ? 'Email: '+r.email+'\n' : ''}Plan: ${r.plan||'—'}\n# Cotización: ${r.numero||'—'}\nEstado: ${resStatusLabel(r.status)}\n${r.notas ? 'Notas: '+r.notas : ''}`,
-      start: { dateTime: times.start.toISOString(), timeZone: tz },
-      end:   { dateTime: times.end.toISOString(),   timeZone: tz },
-    };
-
-    let res;
-    if (r.gcalEventId) {
-      // Update existing event
-      res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${r.gcalEventId}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventBody)
-      });
-    } else {
-      res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(eventBody)
-      });
-    }
-
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      throw new Error(errJson.error?.message || 'Error al sincronizar con Google Calendar');
-    }
-
-    const eventData = await res.json();
-    const idx = allReservas.findIndex(x=>x.id===id);
-    if (idx >= 0) {
-      allReservas[idx].gcalEventId = eventData.id;
-      localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-    }
-
-    showToast('Sincronizada con Google Calendar ✓');
-    if (document.getElementById('reservaModal')?.classList.contains('active')) viewReserva(id);
-  } catch(e) {
-    showToast(e.message || 'Error al sincronizar', 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Sincronizar con mi Calendar'; }
-  }
 }
 
 // ── Export JSON ──
