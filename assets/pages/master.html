@@ -2077,7 +2077,13 @@ function updateDashboard() {
   document.getElementById('statPending').textContent  = pending;
   document.getElementById('statApproved').textContent = approved;
   document.getElementById('statRevenue').textContent  = `$${revenue.toFixed(2)}`;
-  document.getElementById('pendingBadge').textContent = pending;
+
+  // "Cotizaciones" badge counts ONLY manual quotes (state.quotes) — these are a
+  // separate workflow from public web reservas and must never be mixed together.
+  const pendingQuotes = (state.quotes || []).filter(q => q.status === 'pending').length;
+  const pb = document.getElementById('pendingBadge'); if (pb) pb.textContent = pendingQuotes;
+
+  // "Reservas" badge counts pending reservas (web + manual, unified system)
   const rb = document.getElementById('reservasBadge'); if (rb) rb.textContent = pending;
 
   // ── Pending requests card — only shows up when there's something to act on ──
