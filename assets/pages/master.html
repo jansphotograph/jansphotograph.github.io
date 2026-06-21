@@ -3678,11 +3678,27 @@ function resStatusClass(s) {
 
 // ── Financial helpers ──
 function resPlanPrice(r) {
-  // Resolve the MAIN plan's price by name match from publicPlans
+  // Resolve the MAIN plan's price by name match from publicPlans.
+  // r.plan may come as "Plan Kids" (exact) or "Plan Kids ($45)" (from the public
+  // reservation form, which embeds the price in the displayed/stored string) —
+  // try exact match first, then fall back to matching the name with the price suffix stripped.
   try {
     const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-    const match = plans.find(p => p.nombre === r.plan);
+    if (!r.plan) return 0;
+
+    let match = plans.find(p => p.nombre === r.plan);
     if (match) return parseFloat(match.precio) || 0;
+
+    // Strip a trailing " ($XX)" / " ($XX.XX)" suffix and retry
+    const cleanName = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    match = plans.find(p => p.nombre === cleanName);
+    if (match) return parseFloat(match.precio) || 0;
+
+    // Last resort: if the plan string itself contains a price like "($45)", use that
+    // directly as the price, even if the plan name no longer matches the current catalog
+    // (e.g. the plan was renamed/removed after the reserva was made).
+    const priceMatch = r.plan.match(/\(\$([\d.,]+)\)/);
+    if (priceMatch) return parseFloat(priceMatch[1].replace(',', '')) || 0;
   } catch(e) {}
   return 0;
 }
