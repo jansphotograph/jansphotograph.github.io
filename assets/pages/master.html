@@ -2821,6 +2821,7 @@ async function generateConfirmationPDF(id) {
 // ── PDF: Factura ──
 async function generateInvoicePDF(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const facturaNum = getOrAssignFacturaNumero(r);
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
@@ -2856,7 +2857,7 @@ async function generateInvoicePDF(id) {
   if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
 
   doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(`FACTURA #${r.numero||'—'}`, pageW-margin, 16, {align:'right'});
+  doc.text(`FACTURA #${facturaNum}`, pageW-margin, 16, {align:'right'});
   doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
   doc.text(`Emitida: ${fechaHora}`, pageW-margin, 22, {align:'right'});
   if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 26.5, {align:'right'});
@@ -2872,7 +2873,7 @@ async function generateInvoicePDF(id) {
   if (r.razonSocial) leftRows.push(['Razón Social:', r.razonSocial]);
   if (r.address)     leftRows.push(['Dirección:', r.address]);
 
-  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['# Cotización:', r.numero||'—']];
+  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['Origen:', r.numero||'—']];
 
   const startY = y;
   let yL = startY, yR = startY;
@@ -2970,7 +2971,7 @@ async function generateInvoicePDF(id) {
   doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
   doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
 
-  doc.save(`Factura_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  doc.save(`Factura_${facturaNum}_${r.nombre.replace(/\s/g,'_')}.pdf`);
   showToast('Factura descargada ✓');
 }
 
@@ -3447,6 +3448,29 @@ function nextNumero(prefix) {
   return prefix + '-' + String(counter).padStart(2, '0');
 }
 
+// ── Independent, sequential invoice numbering — Factura #001, #002... ──
+// Bumps only when an invoice is actually generated (not when the reserva/quote is created).
+// Each reserva keeps its assigned invoice number (facturaNumero) so re-printing the same
+// invoice doesn't consume a new number — it reuses the one already issued.
+function nextFacturaNumero() {
+  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
+  counter += 1;
+  localStorage.setItem('jans_factura_counter', String(counter));
+  return String(counter).padStart(3, '0');
+}
+
+function getOrAssignFacturaNumero(r) {
+  if (r.facturaNumero) return r.facturaNumero; // already issued — reuse it
+  const idx = allReservas.findIndex(x => x.id === r.id);
+  const num = nextFacturaNumero();
+  if (idx >= 0) {
+    allReservas[idx].facturaNumero = num;
+    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  }
+  r.facturaNumero = num;
+  return num;
+}
+
 function loadReservas() {
   try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
   // Assign WEB- numbers to any reserva that doesn't have one yet (came from public site)
@@ -3530,7 +3554,10 @@ function renderReservasTable() {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
     return `
     <tr>
-      <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span></td>
+      <td>
+        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span>
+        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${r.facturaNumero}</div>` : ''}
+      </td>
       <td>
         <div style="font-weight:600">${r.nombre}</div>
         <div style="font-size:.75rem;color:var(--gray-l)">${r.tel}</div>
@@ -3575,6 +3602,7 @@ function viewReserva(id) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
+      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${r.facturaNumero}</div></div>` : ''}
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
