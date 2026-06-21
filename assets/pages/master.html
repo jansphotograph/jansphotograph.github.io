@@ -1399,16 +1399,16 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Limpiar Días Bloqueados Sin Reservas
+            Limpiar Días y Horas Bloqueadas Sin Reservas
           </div>
           <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
-            Si un día quedó marcado como "ocupado" en el calendario pero ya no tiene ninguna reserva
-            confirmada respaldándolo (por ejemplo, si confirmaste y luego regresaste una reserva a pendiente),
-            usa este botón para liberarlo.
+            Si un día o un horario quedó marcado como "ocupado" pero ya no tiene ninguna reserva confirmada
+            respaldándolo (por ejemplo, si confirmaste y luego regresaste una reserva a pendiente), usa este
+            botón para liberarlo. También te muestra qué horas siguen bloqueadas en este momento.
           </p>
           <button class="btn btn-outline" onclick="cleanupStaleCalendarDays()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
-            Revisar y liberar días sin reservas
+            Revisar y liberar días y horas sin reservas
           </button>
           <div id="cleanupResult" style="font-size:0.82rem;color:var(--gray-l);margin-top:12px"></div>
         </div>
@@ -4188,8 +4188,10 @@ async function cleanupStaleCalendarDays() {
   const resultEl = document.getElementById('cleanupResult');
   resultEl.textContent = 'Revisando...';
 
+  // ── 1. Release whole-day "booked" marks that no longer have a confirmed/completed
+  //       reserva backing them up (leftover from the old day-blocking behavior). ──
   const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
-  let releasedCount = 0;
+  let releasedDaysCount = 0;
   const releasedDays = [];
 
   Object.keys(calData).forEach(ds => {
@@ -4197,24 +4199,77 @@ async function cleanupStaleCalendarDays() {
     const hasConfirmed = allReservas.some(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed'));
     if (!hasConfirmed) {
       calData[ds] = 'available';
-      releasedCount++;
+      releasedDaysCount++;
       releasedDays.push(ds);
     }
   });
 
-  if (releasedCount > 0) {
+  if (releasedDaysCount > 0) {
     localStorage.setItem('jans_calendar', JSON.stringify(calData));
     state.calendar = calData;
     renderCalendar?.();
     await ghPutPublic('calendar.json', calData);
-    resultEl.style.color = '#86efac';
-    resultEl.textContent = `✓ Se liberaron ${releasedCount} día(s): ${releasedDays.join(', ')}`;
-    showToast(`${releasedCount} día(s) liberado(s) ✓`);
-  } else {
-    resultEl.style.color = 'var(--gray-l)';
-    resultEl.textContent = 'No se encontraron días bloqueados sin reservas — todo está al día.';
-    showToast('Nada que limpiar ✓');
   }
+
+  // ── 2. Clear the orphaned blockedHours field on any reserva that is no longer
+  //       confirmed/completed — it isn't read anywhere for the actual hour-blocking
+  //       calculation (that's done live from status), but leaving stale data around
+  //       is confusing, so we clean it up for consistency. ──
+  let clearedHoursCount = 0;
+  const clearedReservas = [];
+  allReservas.forEach(r => {
+    if (r.status !== 'confirmed' && r.status !== 'completed' && r.blockedHours && r.blockedHours.length) {
+      r.blockedHours = [];
+      clearedHoursCount++;
+      clearedReservas.push(r);
+    }
+  });
+  if (clearedHoursCount > 0) {
+    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+    clearedReservas.forEach(r => pushReservaToSupabase(r));
+  }
+
+  // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
+  //       computed live from confirmed/completed reservas — so you can visually
+  //       confirm everything is correct, not just trust that cleanup ran. ──
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeBlocks = {};
+  allReservas
+    .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
+    .forEach(r => {
+      const hv = parseInt(r.horaVal);
+      if (isNaN(hv)) return;
+      if (!activeBlocks[r.fecha]) activeBlocks[r.fecha] = [];
+      for (let h = hv-2; h <= hv+2; h++) activeBlocks[r.fecha].push(h);
+    });
+
+  const summaryLines = Object.keys(activeBlocks).sort().map(ds => {
+    const hours = [...new Set(activeBlocks[ds])].sort((a,b)=>a-b);
+    const hourLabels = hours.map(h => (h % 12 || 12) + (h < 12 ? 'AM' : 'PM'));
+    return `${ds}: ${hourLabels.join(', ')}`;
+  });
+
+  // ── Render result ──
+  let msg = '';
+  if (releasedDaysCount > 0 || clearedHoursCount > 0) {
+    msg += `<div style="color:#86efac;margin-bottom:8px">✓ ${releasedDaysCount} día(s) liberado(s)${releasedDays.length ? ' (' + releasedDays.join(', ') + ')' : ''} · ${clearedHoursCount} registro(s) de horas limpiados</div>`;
+  } else {
+    msg += `<div style="margin-bottom:8px">No había días ni horas huérfanas que limpiar — todo estaba al día.</div>`;
+  }
+
+  if (summaryLines.length) {
+    msg += `<div style="font-weight:600;color:var(--white);margin-bottom:4px">Horas actualmente bloqueadas (por reservas confirmadas):</div>`;
+    msg += summaryLines.map(l => `<div style="margin-bottom:2px">• ${l}</div>`).join('');
+  } else {
+    msg += `<div style="color:var(--gray)">No hay ninguna hora bloqueada en fechas futuras en este momento.</div>`;
+  }
+
+  resultEl.innerHTML = msg;
+  showToast(
+    (releasedDaysCount > 0 || clearedHoursCount > 0)
+      ? `Limpieza completada ✓`
+      : 'Nada que limpiar ✓'
+  );
 }
 
 // ── Public Plans Manager ──
