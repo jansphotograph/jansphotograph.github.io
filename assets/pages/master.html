@@ -2257,6 +2257,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Load social links (async, non-blocking)
     loadSocialLinksUI().catch(e => console.warn('social links failed:', e));
 
+    // ── Restore the last active view from the URL hash (survives page refresh) ──
+    // Must run after all init so the view's render function has data to display.
+    const hash = location.hash.replace('#', '').trim();
+    const knownViews = new Set(Array.from(document.querySelectorAll('[id^="view-"]')).map(el => el.id.replace('view-', '')));
+    if (hash && knownViews.has(hash)) {
+      // Find the matching sidebar button and activate it
+      const btn = document.querySelector(`.sidebar-link[onclick*="'${hash}'"]`);
+      switchView(hash, btn || null);
+    }
+
   } catch(e) {
     console.error('Master init error:', e);
   }
@@ -2359,6 +2369,10 @@ function switchView(name, btn) {
   if (!target) { console.warn('View not found:', name); return; }
   target.classList.add('active');
   if (btn) btn.classList.add('active');
+
+  // Persist the active view in the URL hash so a page refresh lands here,
+  // not back at dashboard. Uses replaceState to avoid polluting browser history.
+  history.replaceState(null, '', '#' + name);
 
   // Close the mobile drawer after navigating, so it doesn't stay covering the screen
   if (window.innerWidth <= 900) closeSidebar();
