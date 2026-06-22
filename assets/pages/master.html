@@ -240,6 +240,13 @@
     .cal-day.today .day-num { color:var(--pink-l); }
     .cal-day.available { background:rgba(34,197,94,0.07); }
     .cal-day.booked    { background:rgba(199,30,95,0.1); }
+    .cal-day.cal-event { position:relative; font-weight:700; }
+    .cal-day.cal-event::after { content:''; position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--ev-color,var(--pink)); }
+    .cal-day.cal-event.ev-pink   { background:rgba(233,30,140,0.18); --ev-color:#e91e8c; }
+    .cal-day.cal-event.ev-blue   { background:rgba(59,130,246,0.18); --ev-color:#3b82f6; }
+    .cal-day.cal-event.ev-green  { background:rgba(34,197,94,0.18);  --ev-color:#22c55e; }
+    .cal-day.cal-event.ev-amber  { background:rgba(245,158,11,0.18); --ev-color:#f59e0b; }
+    .cal-day.cal-event.ev-purple { background:rgba(168,85,247,0.18); --ev-color:#a855f7; }
     .cal-day.booked::after { content:'OCUPADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-15deg); font-size:0.55rem; font-weight:900; letter-spacing:0.12em; color:rgba(233,30,140,0.55); border:1px solid rgba(233,30,140,0.35); padding:2px 6px; border-radius:3px; white-space:nowrap; pointer-events:none; }
     .cal-day .day-num  { font-weight:600; font-size:0.82rem; margin-bottom:4px; flex-shrink:0; }
     .cal-day .day-events { display:flex; flex-direction:column; gap:2px; flex:1; overflow:hidden; }
@@ -708,6 +715,10 @@
                 Sincronizar
               </button>
             </div>
+            <button class="btn btn-pink" onclick="openCalEventModal()" style="gap:7px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
+              Nuevo Evento
+            </button>
           </div>
 
           <!-- Views -->
@@ -725,6 +736,7 @@
           <div class="cal-legend" style="margin-top:16px">
             <div class="cal-legend-item"><div class="dot dot-avail"></div> Disponible</div>
             <div class="cal-legend-item"><div class="dot dot-book"></div> Ocupado</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(233,30,140,0.35)"></div> Evento</div>
             <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(34,197,94,0.18)"></div> Confirmada</div>
             <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.08)"></div> Pendiente</div>
             <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(245,158,11,0.18)"></div> Aplazada</div>
@@ -1964,6 +1976,94 @@
   </div>
 </div>
 
+<!-- ══ CALENDAR EVENT MODALS ══ -->
+
+<!-- Modal 1: Action chooser (Crear / Editar / Eliminar) -->
+<div class="modal-overlay" id="calEventActionModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--pink)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Eventos del Calendario
+      </h3>
+      <button class="modal-close" onclick="closeModal('calEventActionModal')">×</button>
+    </div>
+    <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px">¿Qué deseas hacer?</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-pink" onclick="closeModal('calEventActionModal');openCalEventForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Crear nuevo evento
+      </button>
+      <button class="btn btn-outline" onclick="closeModal('calEventActionModal');openCalEventPicker('edit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Editar / Aplazar evento existente
+      </button>
+      <button class="btn" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5" onclick="closeModal('calEventActionModal');openCalEventPicker('delete')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar evento
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Event picker for Edit/Delete (lists existing calendar events) -->
+<div class="modal-overlay" id="calEventPickerModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 id="calPickerTitle">Seleccionar Evento</h3>
+      <button class="modal-close" onclick="closeModal('calEventPickerModal')">×</button>
+    </div>
+    <div id="calEventPickerList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+    <div style="margin-top:16px;text-align:right">
+      <button class="btn btn-outline" onclick="closeModal('calEventPickerModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Create / Edit form -->
+<div class="modal-overlay" id="calEventFormModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="calEventFormTitle">Nuevo Evento</h3>
+      <button class="modal-close" onclick="closeModal('calEventFormModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Título del evento *</label>
+      <input type="text" id="calEvTitulo" placeholder="Ej. Sesión Familiar García" maxlength="100" />
+    </div>
+    <div class="field">
+      <label>Fecha *</label>
+      <input type="date" id="calEvFecha" />
+    </div>
+    <div class="field" id="calEvNewFechaField" style="display:none">
+      <label>Nueva fecha (aplazar a)</label>
+      <input type="date" id="calEvNuevaFecha" />
+    </div>
+    <div class="field">
+      <label>Descripción (opcional)</label>
+      <textarea id="calEvDesc" style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:70px;outline:none" placeholder="Detalles del evento..."></textarea>
+    </div>
+    <div class="field">
+      <label>Color identificador</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="pink" checked /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#e91e8c"></span> Rosa</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="blue" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#3b82f6"></span> Azul</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="green" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#22c55e"></span> Verde</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="amber" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#f59e0b"></span> Ámbar</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="purple" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#a855f7"></span> Morado</label>
+      </div>
+    </div>
+    <input type="hidden" id="calEvEditDs" />
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="closeModal('calEventFormModal')">Cancelar</button>
+      <button class="btn btn-pink" onclick="saveCalEvent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar Evento
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast">
   <div class="toast-dot"></div>
@@ -2402,16 +2502,26 @@ function renderMonthView(todayStr) {
     const el  = document.createElement('div');
     el.className = 'cal-day';
     if(ds===todayStr) el.classList.add('today');
-    if(st==='booked')    el.classList.add('booked');
-    if(st==='available') el.classList.add('available');
 
-    // Event pills (max 3)
+    // st can be 'booked', 'available', or an event object {type:'event', titulo, color, ...}
+    if (st && typeof st === 'object' && st.type === 'event') {
+      el.classList.add('booked', 'cal-event', `ev-${st.color || 'pink'}`);
+      el.title = st.titulo || 'Evento';
+    } else if(st==='booked')    { el.classList.add('booked'); }
+      else if(st==='available') { el.classList.add('available'); }
+
+    // Reserva event pills (max 3)
     const pills = evs.slice(0,3).map(e =>
       `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
     ).join('');
     const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
 
-    el.innerHTML = `<span class="day-num">${d}</span><div class="day-events">${pills}${more}</div>`;
+    // Calendar event label (if it's an event object, show the title below the day number)
+    const evLabel = (st && typeof st === 'object' && st.type === 'event')
+      ? `<div style="font-size:0.6rem;color:var(--ev-color,var(--pink));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;line-height:1.1;margin-top:1px">${st.titulo||'Evento'}</div>`
+      : '';
+
+    el.innerHTML = `<span class="day-num">${d}</span>${evLabel}<div class="day-events">${pills}${more}</div>`;
     el.addEventListener('click', e => openCtxMenu(e, ds));
     g.appendChild(el);
   }
@@ -2581,6 +2691,141 @@ async function markSelectedBooked() {
 }
 
 // ── Quotes Table ──
+// ════════════════════════════════════════════
+//  CALENDAR EVENTS — eventos bloqueantes en el calendario
+//  Stored as state.calendar[ds] = { type:'event', titulo, descripcion, color }
+//  Clients see the day as fully blocked on reservas.html.
+// ════════════════════════════════════════════
+
+function openCalEventModal() {
+  openModal('calEventActionModal');
+}
+
+// ── Open the event picker (edit or delete mode) ──
+// Lists all days in state.calendar that have a {type:'event'} entry.
+function openCalEventPicker(mode) {
+  const eventDays = Object.entries(state.calendar)
+    .filter(([, v]) => v && typeof v === 'object' && v.type === 'event')
+    .sort(([a],[b]) => a.localeCompare(b));
+
+  if (!eventDays.length) {
+    showToast('No hay eventos en el calendario todavía', 'error');
+    return;
+  }
+
+  const isDelete = mode === 'delete';
+  document.getElementById('calPickerTitle').textContent = isDelete ? 'Eliminar Evento' : 'Seleccionar Evento para Editar';
+
+  const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+  document.getElementById('calEventPickerList').innerHTML = eventDays.map(([ds, ev]) => {
+    const fechaFmt = new Date(ds + 'T00:00:00').toLocaleDateString('es-PA', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+    const color = colorHex[ev.color] || colorHex.pink;
+    return `
+      <div onclick="${isDelete ? `deleteCalEvent('${ds}')` : `openCalEventForm('${ds}')`}"
+        style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all 0.18s"
+        onmouseover="this.style.borderColor='rgba(233,30,140,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.titulo || 'Evento'}</div>
+          <div style="font-size:0.75rem;color:var(--gray-l)">${fechaFmt}</div>
+          ${ev.descripcion ? `<div style="font-size:0.73rem;color:var(--gray);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.descripcion}</div>` : ''}
+        </div>
+        <span style="color:${isDelete ? '#fca5a5' : 'var(--pink-l)'};font-size:0.8rem;font-weight:600;flex-shrink:0">${isDelete ? 'Eliminar →' : 'Editar →'}</span>
+      </div>`;
+  }).join('');
+
+  openModal('calEventPickerModal');
+}
+
+// ── Open create / edit form ──
+// ds is undefined when creating new; ds is 'YYYY-MM-DD' when editing.
+function openCalEventForm(ds) {
+  closeModal('calEventPickerModal');
+
+  const isEdit = !!ds;
+  document.getElementById('calEventFormTitle').textContent = isEdit ? 'Editar Evento' : 'Nuevo Evento';
+
+  const newFechaField = document.getElementById('calEvNewFechaField');
+  newFechaField.style.display = isEdit ? 'flex' : 'none';
+
+  // Reset form
+  document.getElementById('calEvTitulo').value = '';
+  document.getElementById('calEvFecha').value  = ds || '';
+  document.getElementById('calEvNuevaFecha').value = '';
+  document.getElementById('calEvDesc').value   = '';
+  document.getElementById('calEvEditDs').value = ds || '';
+  document.querySelectorAll('[name="calEvColor"]').forEach(r => r.checked = r.value === 'pink');
+
+  // Populate fields if editing
+  if (isEdit && state.calendar[ds] && typeof state.calendar[ds] === 'object') {
+    const ev = state.calendar[ds];
+    document.getElementById('calEvTitulo').value = ev.titulo || '';
+    document.getElementById('calEvDesc').value   = ev.descripcion || '';
+    const colorRadio = document.querySelector(`[name="calEvColor"][value="${ev.color || 'pink'}"]`);
+    if (colorRadio) colorRadio.checked = true;
+  }
+
+  // Lock the date field if editing (the "new date" field is where they pick the new date to move to)
+  document.getElementById('calEvFecha').readOnly = isEdit;
+  document.getElementById('calEvFecha').style.opacity = isEdit ? '0.5' : '1';
+
+  openModal('calEventFormModal');
+}
+
+// ── Save calendar event (create or edit/reschedule) ──
+async function saveCalEvent() {
+  const titulo  = document.getElementById('calEvTitulo').value.trim();
+  const fecha   = document.getElementById('calEvFecha').value;
+  const nuevaFecha = document.getElementById('calEvNuevaFecha').value;
+  const desc    = document.getElementById('calEvDesc').value.trim();
+  const color   = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
+  const editDs  = document.getElementById('calEvEditDs').value; // original date if editing
+
+  if (!titulo) { showToast('El título es obligatorio', 'error'); document.getElementById('calEvTitulo').focus(); return; }
+  if (!fecha && !editDs) { showToast('La fecha es obligatoria', 'error'); document.getElementById('calEvFecha').focus(); return; }
+
+  const targetDs = editDs || fecha; // the day being set to 'event'
+  const newDs    = editDs ? (nuevaFecha || editDs) : fecha; // if rescheduling, use new date
+
+  const evObj = { type: 'event', titulo, descripcion: desc, color };
+
+  // If rescheduling to a different date, release the original day first
+  if (editDs && newDs !== editDs) {
+    state.calendar[editDs] = 'available';
+  }
+
+  state.calendar[newDs] = evObj;
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+  closeModal('calEventFormModal');
+
+  const ok1 = await ghPut('calendar.json', state.calendar);
+  const ok2 = await ghPutPublic('calendar.json', state.calendar);
+
+  if (ok1 && ok2) {
+    showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : 'Evento actualizado ✓') : 'Evento creado — día bloqueado ✓');
+  } else {
+    showToast('Guardado localmente — verifica GitHub en Configuración', 'error');
+  }
+}
+
+// ── Delete calendar event ──
+async function deleteCalEvent(ds) {
+  closeModal('calEventPickerModal');
+  if (!ds || !state.calendar[ds] || typeof state.calendar[ds] !== 'object') return;
+
+  const titulo = state.calendar[ds].titulo || 'este evento';
+  if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
+
+  state.calendar[ds] = 'available';
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+
+  const ok1 = await ghPut('calendar.json', state.calendar);
+  const ok2 = await ghPutPublic('calendar.json', state.calendar);
+  showToast(ok1 && ok2 ? `"${titulo}" eliminado — día liberado ✓` : 'Eliminado localmente — verifica GitHub', ok1 && ok2 ? 'success' : 'error');
+}
+
 function renderQuotesTable() {
   const search = (document.getElementById('searchQuotes').value||'').toLowerCase();
   const filter = document.getElementById('filterStatus').value;
