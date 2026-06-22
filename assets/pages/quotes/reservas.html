@@ -551,6 +551,16 @@
         if (isNaN(h)) return;
         for(let i = h-2; i <= h+2; i++) blocked.add(i);
       });
+
+      // Also block hours from any hour-range calendar event on this day
+      const st = calData[ds];
+      if (st && typeof st === 'object' && st.type === 'event' && st.blockType === 'hours') {
+        const ini = parseInt(st.horaInicio, 10);
+        const fin = parseInt(st.horaFin,    10);
+        if (!isNaN(ini) && !isNaN(fin)) {
+          for (let h = ini; h < fin; h++) blocked.add(h);
+        }
+      }
       return blocked;
     }
 
@@ -561,11 +571,13 @@
       return HOUR_VALS.every(hv => blocked.has(hv));
     }
 
-    // Returns true if a day is manually closed OR has a calendar event OR all hours are full
+    // Returns true if a day is fully blocked (manual close, full-day event, or all hours taken)
     function isDayBlocked(ds) {
       const st = calData[ds];
       if (st === 'booked') return true;
-      if (st && typeof st === 'object' && st.type === 'event') return true;
+      // Full-day event blocks the whole day
+      if (st && typeof st === 'object' && st.type === 'event' && (!st.blockType || st.blockType === 'day')) return true;
+      // Hour-range event: only blocks the day if all slots end up blocked
       return isDayFull(ds);
     }
 
