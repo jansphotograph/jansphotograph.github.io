@@ -2108,10 +2108,15 @@ let state = {
 };
 
 // ── GitHub API ──
-const GH_BASE = `https://api.github.com/repos/${CONFIG.GH_OWNER}/${CONFIG.GH_REPO}/contents/data`;
+// GH_BASE is a FUNCTION (not a const string) so it reads CONFIG.GH_OWNER/REPO
+// at call time, after the async init has decrypted and set those values.
+// Using a static const would capture the placeholder values at parse time.
+function GH_BASE() {
+  return `https://api.github.com/repos/${CONFIG.GH_OWNER}/${CONFIG.GH_REPO}/contents/data`;
+}
 
 async function ghGet(file) {
-  const res = await fetch(`${GH_BASE}/${file}`, {
+  const res = await fetch(`${GH_BASE()}/${file}`, {
     headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
   });
   if (!res.ok) return null;
@@ -2124,7 +2129,7 @@ async function ghPut(file, data) {
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
   if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
-  let res = await fetch(`${GH_BASE}/${file}`, {
+  let res = await fetch(`${GH_BASE()}/${file}`, {
     method: 'PUT',
     headers: {
       Authorization: `token ${CONFIG.GH_TOKEN}`,
@@ -2137,7 +2142,7 @@ async function ghPut(file, data) {
   // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
   if (res.status === 409) {
     try {
-      const getRes = await fetch(`${GH_BASE}/${file}`, {
+      const getRes = await fetch(`${GH_BASE()}/${file}`, {
         headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
       });
       if (getRes.ok) {
@@ -2145,7 +2150,7 @@ async function ghPut(file, data) {
         if (getJson.sha) {
           state.fileSHAs[file] = getJson.sha;
           body.sha = getJson.sha;
-          res = await fetch(`${GH_BASE}/${file}`, {
+          res = await fetch(`${GH_BASE()}/${file}`, {
             method: 'PUT',
             headers: {
               Authorization: `token ${CONFIG.GH_TOKEN}`,
