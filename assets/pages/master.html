@@ -310,6 +310,9 @@
     .modal-close { background: none; border: none; color: var(--gray-l); font-size: 1.4rem; cursor: pointer; padding: 0; line-height: 1; }
     .modal-close:hover { color: var(--white); }
 
+    /* ── Block type toggle active state ── */
+    .calev-block-active { background: rgba(233,30,140,0.15) !important; color: var(--pink-l) !important; }
+
     /* ── Forms ── */
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
@@ -2080,6 +2083,55 @@
       <label>Nueva fecha (aplazar a)</label>
       <input type="date" id="calEvNuevaFecha" />
     </div>
+
+    <!-- Block type toggle -->
+    <div class="field">
+      <label>Tipo de bloqueo</label>
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:9px;overflow:hidden">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;cursor:pointer;transition:background 0.18s;font-size:0.85rem;font-weight:600;text-transform:none;letter-spacing:0" id="calEvBlockDayLabel">
+          <input type="radio" name="calEvBlockType" value="day" checked onchange="onCalEvBlockTypeChange()" style="display:none" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Día completo
+        </label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;cursor:pointer;transition:background 0.18s;font-size:0.85rem;font-weight:600;text-transform:none;letter-spacing:0;border-left:1px solid var(--border)" id="calEvBlockHoursLabel">
+          <input type="radio" name="calEvBlockType" value="hours" onchange="onCalEvBlockTypeChange()" style="display:none" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Rango de horas
+        </label>
+      </div>
+    </div>
+
+    <!-- Hour range (shown only when blockType === 'hours') -->
+    <div id="calEvHoursField" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Hora inicio</label>
+          <select id="calEvHoraInicio">
+            <option value="8">8:00 AM</option><option value="9">9:00 AM</option>
+            <option value="10">10:00 AM</option><option value="11">11:00 AM</option>
+            <option value="12">12:00 PM</option><option value="13">1:00 PM</option>
+            <option value="14">2:00 PM</option><option value="15">3:00 PM</option>
+            <option value="16">4:00 PM</option><option value="17">5:00 PM</option>
+            <option value="18">6:00 PM</option><option value="19">7:00 PM</option>
+            <option value="20">8:00 PM</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Hora fin</label>
+          <select id="calEvHoraFin">
+            <option value="9">9:00 AM</option><option value="10">10:00 AM</option>
+            <option value="11">11:00 AM</option><option value="12">12:00 PM</option>
+            <option value="13">1:00 PM</option><option value="14">2:00 PM</option>
+            <option value="15">3:00 PM</option><option value="16">4:00 PM</option>
+            <option value="17">5:00 PM</option><option value="18">6:00 PM</option>
+            <option value="19">7:00 PM</option><option value="20">8:00 PM</option>
+            <option value="21" selected>9:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div id="calEvHoursPreview" style="font-size:0.78rem;color:var(--gray-l);margin-top:-6px;margin-bottom:8px"></div>
+    </div>
+
     <div class="field">
       <label>Descripción (opcional)</label>
       <textarea id="calEvDesc" style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:70px;outline:none" placeholder="Detalles del evento..."></textarea>
@@ -2691,6 +2743,10 @@ function renderDayView(todayStr) {
   if (daySt && typeof daySt === 'object' && daySt.type === 'event') {
     const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
     const evColor  = colorHex[daySt.color] || colorHex.pink;
+    const fmtH = h => { const s = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:00 ${s}`; };
+    const blockLabel = (!daySt.blockType || daySt.blockType === 'day')
+      ? 'Día completo bloqueado'
+      : `Horas bloqueadas: ${fmtH(daySt.horaInicio)} – ${fmtH(daySt.horaFin)}`;
     const banner   = document.createElement('div');
     banner.style.cssText = `grid-column:1/-1;background:${evColor}18;border:1px solid ${evColor}44;border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px`;
     banner.innerHTML = `
@@ -2699,7 +2755,8 @@ function renderDayView(todayStr) {
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${evColor};margin-bottom:3px">Evento del día</div>
-        <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:${daySt.descripcion ? '4px' : '0'}">${daySt.titulo || 'Evento'}</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">${daySt.titulo || 'Evento'}</div>
+        <div style="font-size:0.78rem;color:${evColor};font-weight:600;margin-bottom:${daySt.descripcion ? '4px' : '0'}">${blockLabel}</div>
         ${daySt.descripcion ? `<div style="font-size:0.82rem;color:var(--gray-l);line-height:1.5">${daySt.descripcion}</div>` : ''}
       </div>
       <button onclick="openCalEventPicker('edit')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>`;
@@ -2751,10 +2808,14 @@ function openCtxMenu(e, ds) {
   infoEl.style.display = hasEvent ? 'block' : 'none';
   if (hasEvent) {
     const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+    const fmtH = h => { const s = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:00 ${s}`; };
     dotEl.style.background  = colorHex[st.color] || colorHex.pink;
     titEl.textContent       = st.titulo || 'Evento';
-    descEl.textContent      = st.descripcion || '';
-    descEl.style.display    = st.descripcion ? 'block' : 'none';
+    const blockLabel = (!st.blockType || st.blockType === 'day')
+      ? 'Día completo bloqueado'
+      : `${fmtH(st.horaInicio)} – ${fmtH(st.horaFin)}`;
+    descEl.innerHTML  = `<span style="color:${colorHex[st.color]||colorHex.pink};font-weight:600;font-size:0.73rem">${blockLabel}</span>${st.descripcion ? `<br>${st.descripcion}` : ''}`;
+    descEl.style.display = 'block';
   }
 
   menu.classList.add('open');
@@ -2877,8 +2938,26 @@ function openCalEventPicker(mode) {
   openModal('calEventPickerModal');
 }
 
+// ── Toggle between full-day and hour-range block UI ──
+function onCalEvBlockTypeChange() {
+  const type = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
+  document.getElementById('calEvHoursField').style.display  = type === 'hours' ? 'block' : 'none';
+  document.getElementById('calEvBlockDayLabel').classList.toggle('calev-block-active',   type === 'day');
+  document.getElementById('calEvBlockHoursLabel').classList.toggle('calev-block-active', type === 'hours');
+  if (type === 'hours') updateCalEvHoursPreview();
+}
+
+function updateCalEvHoursPreview() {
+  const ini  = parseInt(document.getElementById('calEvHoraInicio')?.value || 8, 10);
+  const fin  = parseInt(document.getElementById('calEvHoraFin')?.value   || 21, 10);
+  const fmtH = h => { const suffix = h < 12 ? 'AM' : 'PM'; const h12 = h % 12 || 12; return `${h12}:00 ${suffix}`; };
+  const prev = document.getElementById('calEvHoursPreview');
+  if (prev) prev.textContent = ini < fin
+    ? `Bloquea de ${fmtH(ini)} a ${fmtH(fin)} (${fin - ini} hora(s))`
+    : '⚠ La hora de inicio debe ser anterior a la hora de fin';
+}
+
 // ── Open create / edit form ──
-// ds is undefined when creating new; ds is 'YYYY-MM-DD' when editing.
 function openCalEventForm(ds) {
   closeModal('calEventPickerModal');
 
@@ -2896,6 +2975,12 @@ function openCalEventForm(ds) {
   document.getElementById('calEvEditDs').value = ds || '';
   document.querySelectorAll('[name="calEvColor"]').forEach(r => r.checked = r.value === 'pink');
 
+  // Reset block type to 'day'
+  document.querySelectorAll('[name="calEvBlockType"]').forEach(r => r.checked = r.value === 'day');
+  document.getElementById('calEvHoraInicio').value = '8';
+  document.getElementById('calEvHoraFin').value    = '21';
+  onCalEvBlockTypeChange();
+
   // Populate fields if editing
   if (isEdit && state.calendar[ds] && typeof state.calendar[ds] === 'object') {
     const ev = state.calendar[ds];
@@ -2903,36 +2988,55 @@ function openCalEventForm(ds) {
     document.getElementById('calEvDesc').value   = ev.descripcion || '';
     const colorRadio = document.querySelector(`[name="calEvColor"][value="${ev.color || 'pink'}"]`);
     if (colorRadio) colorRadio.checked = true;
+
+    // Restore block type
+    const blockType = ev.blockType || 'day';
+    const btRadio   = document.querySelector(`[name="calEvBlockType"][value="${blockType}"]`);
+    if (btRadio) btRadio.checked = true;
+    if (blockType === 'hours') {
+      if (ev.horaInicio != null) document.getElementById('calEvHoraInicio').value = String(ev.horaInicio);
+      if (ev.horaFin    != null) document.getElementById('calEvHoraFin').value    = String(ev.horaFin);
+    }
+    onCalEvBlockTypeChange();
   }
 
-  // Lock the date field if editing (the "new date" field is where they pick the new date to move to)
-  document.getElementById('calEvFecha').readOnly = isEdit;
+  // Lock the date field if editing
+  document.getElementById('calEvFecha').readOnly    = isEdit;
   document.getElementById('calEvFecha').style.opacity = isEdit ? '0.5' : '1';
+
+  // Live preview of hour range
+  document.getElementById('calEvHoraInicio').addEventListener('change', updateCalEvHoursPreview);
+  document.getElementById('calEvHoraFin').addEventListener('change',    updateCalEvHoursPreview);
 
   openModal('calEventFormModal');
 }
 
 // ── Save calendar event (create or edit/reschedule) ──
 async function saveCalEvent() {
-  const titulo  = document.getElementById('calEvTitulo').value.trim();
-  const fecha   = document.getElementById('calEvFecha').value;
+  const titulo     = document.getElementById('calEvTitulo').value.trim();
+  const fecha      = document.getElementById('calEvFecha').value;
   const nuevaFecha = document.getElementById('calEvNuevaFecha').value;
-  const desc    = document.getElementById('calEvDesc').value.trim();
-  const color   = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
-  const editDs  = document.getElementById('calEvEditDs').value; // original date if editing
+  const desc       = document.getElementById('calEvDesc').value.trim();
+  const color      = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
+  const blockType  = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
+  const editDs     = document.getElementById('calEvEditDs').value;
+
+  const horaInicio = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraInicio').value, 10) : null;
+  const horaFin    = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraFin').value,    10) : null;
 
   if (!titulo) { showToast('El título es obligatorio', 'error'); document.getElementById('calEvTitulo').focus(); return; }
   if (!fecha && !editDs) { showToast('La fecha es obligatoria', 'error'); document.getElementById('calEvFecha').focus(); return; }
+  if (blockType === 'hours' && horaInicio >= horaFin) {
+    showToast('La hora de inicio debe ser anterior a la hora de fin', 'error'); return;
+  }
 
-  const targetDs = editDs || fecha; // the day being set to 'event'
-  const newDs    = editDs ? (nuevaFecha || editDs) : fecha; // if rescheduling, use new date
+  const newDs = editDs ? (nuevaFecha || editDs) : fecha;
 
-  const evObj = { type: 'event', titulo, descripcion: desc, color };
+  const evObj = { type: 'event', titulo, descripcion: desc, color, blockType };
+  if (blockType === 'hours') { evObj.horaInicio = horaInicio; evObj.horaFin = horaFin; }
 
   // If rescheduling to a different date, release the original day first
-  if (editDs && newDs !== editDs) {
-    state.calendar[editDs] = 'available';
-  }
+  if (editDs && newDs !== editDs) state.calendar[editDs] = 'available';
 
   state.calendar[newDs] = evObj;
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
@@ -2942,8 +3046,12 @@ async function saveCalEvent() {
   const ok1 = await ghPut('calendar.json', state.calendar);
   const ok2 = await ghPutPublic('calendar.json', state.calendar);
 
+  const label = blockType === 'hours'
+    ? `(${horaInicio % 12 || 12}${horaInicio < 12 ? 'AM' : 'PM'} – ${horaFin % 12 || 12}${horaFin < 12 ? 'AM' : 'PM'})`
+    : '(día completo)';
+
   if (ok1 && ok2) {
-    showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : 'Evento actualizado ✓') : 'Evento creado — día bloqueado ✓');
+    showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : `Evento actualizado ${label} ✓`) : `Evento creado — bloqueado ${label} ✓`);
   } else {
     showToast('Guardado localmente — verifica GitHub en Configuración', 'error');
   }
