@@ -2119,10 +2119,15 @@ async function ghGet(file) {
   const res = await fetch(`${GH_BASE()}/${file}`, {
     headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
   });
-  if (!res.ok) return null;
+  if (!res.ok) return null; // 404 = file doesn't exist yet, treat as empty, don't throw
   const json = await res.json();
   state.fileSHAs[file] = json.sha;
-  return JSON.parse(atob(json.content.replace(/\n/g, '')));
+  try {
+    return JSON.parse(atob(json.content.replace(/\n/g, '')));
+  } catch(e) {
+    console.warn(`ghGet: failed to parse ${file}:`, e);
+    return null;
+  }
 }
 
 async function ghPut(file, data) {
@@ -2277,9 +2282,15 @@ async function loadAllData() {
     if(el) el.textContent = CONFIG.GH_OWNER + '/' + CONFIG.GH_REPO;
     showToast('Datos sincronizados ✓', 'success');
   } catch(e) {
-    console.warn('loadAllData error:', e);
-    showToast('Error al cargar datos', 'error');
-    updateDashboard(); renderQuotesTable();
+    console.error('loadAllData error:', e);
+    // Still render local data so the UI isn't blank
+    updateDashboard(); renderQuotesTable(); renderCalendar();
+    renderServices(); renderPlans(); updateQPlanSelect();
+    // Only show the error toast if GitHub is actually configured
+    const token = CONFIG.GH_TOKEN;
+    if (token && !token.startsWith('ghp_XXXX')) {
+      showToast(`Error al sincronizar — revisa la consola del navegador`, 'error');
+    }
   }
 }
 
