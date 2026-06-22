@@ -2124,7 +2124,7 @@ async function ghPut(file, data) {
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
   if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
-  const res = await fetch(`${GH_BASE}/${file}`, {
+  let res = await fetch(`${GH_BASE}/${file}`, {
     method: 'PUT',
     headers: {
       Authorization: `token ${CONFIG.GH_TOKEN}`,
@@ -2133,6 +2133,32 @@ async function ghPut(file, data) {
     },
     body: JSON.stringify(body)
   });
+
+  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  if (res.status === 409) {
+    try {
+      const getRes = await fetch(`${GH_BASE}/${file}`, {
+        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.sha) {
+          state.fileSHAs[file] = getJson.sha;
+          body.sha = getJson.sha;
+          res = await fetch(`${GH_BASE}/${file}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
+    } catch(e) { /* retry failed — return original failed response */ }
+  }
+
   const json = await res.json();
   if (json.content) state.fileSHAs[file] = json.content.sha;
   return res.ok;
