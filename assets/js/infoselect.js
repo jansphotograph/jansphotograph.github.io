@@ -6,6 +6,40 @@ const WA_NUMBER     = '50768622402';
 const PHONE_DISPLAY  = '+507 6862-2402';
 const PHONE_DIGITS   = '6862-2402'; // copied value (local format, what people actually dial/Yappy with)
 
+// ── Load the Yappy QR, trying common image formats in order ──
+// The Master lets the operator upload the QR in whatever format they have
+// (PNG, JPG, WEBP...), always saved as "yappy-qr.<ext>". Since this page has
+// no easy way to know which extension was used without an extra fetch, it
+// just tries each common one in order and uses the first that loads — this
+// keeps the page working regardless of what format was uploaded.
+const QR_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
+
+function loadYappyQrImage() {
+  const frame = document.getElementById('qrFrame');
+  const img   = document.getElementById('yappyQrImg');
+  if (!frame || !img) return;
+
+  let i = 0;
+  function tryNext() {
+    if (i >= QR_EXTENSIONS.length) {
+      frame.classList.add('qr-missing');
+      return;
+    }
+    const ext = QR_EXTENSIONS[i];
+    i++;
+    const candidate = new Image();
+    candidate.onload = () => {
+      img.src = `../../images/company/yappy-qr.${ext}`;
+      frame.classList.add('qr-loaded');
+    };
+    candidate.onerror = tryNext;
+    candidate.src = `../../images/company/yappy-qr.${ext}`;
+  }
+  tryNext();
+}
+
+document.addEventListener('DOMContentLoaded', loadYappyQrImage);
+
 // ── Copy phone number to clipboard, with a graceful fallback for older browsers ──
 async function copyPhoneNumber() {
   const btn     = document.getElementById('copyPhoneBtn');
