@@ -4,5 +4,11 @@
     "titulo": "Boda Abdiel & Osiris",
     "descripcion": "",
     "color": "pink"
+  },
+  "2026-07-04": {
+    "type": "event",
+    "titulo": "Boda de Oro El Copé",
+    "descripcion": "Desfile de Aniversario del Colegio",
+    "color": "pink"
   }
 }
