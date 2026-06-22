@@ -1,3 +1,8 @@
 {
-  "2026-12-12": "booked"
+  "2026-12-12": {
+    "type": "event",
+    "titulo": "Boda Abdiel & Osiris",
+    "descripcion": "FInca La Toscana - Herrera",
+    "color": "pink"
+  }
 }
