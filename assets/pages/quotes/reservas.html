@@ -510,7 +510,7 @@
         const isPast = ds < todayStr;
         // A day is fully booked if the Master explicitly closed it, OR every hour slot
         // is taken by confirmed/completed reservas — pending requests never block the day.
-        const isFull = st === 'booked' || isDayFull(ds);
+        const isFull = isDayBlocked(ds);
         const el = document.createElement('div');
         el.className = 'cal-day';
         el.textContent = d;
@@ -554,13 +554,19 @@
       return blocked;
     }
 
-    // A day is "full" only when every single time slot is blocked by confirmed/completed
-    // reservas — pending requests never block anything, and a confirmed reserva only
-    // takes up its own ±2hr range, leaving the rest of the day open for other bookings.
+    // A day is "full" only when every single time slot is blocked by confirmed/completed reservas
     function isDayFull(ds) {
       if (!ds) return false;
       const blocked = getBlockedHours(ds);
       return HOUR_VALS.every(hv => blocked.has(hv));
+    }
+
+    // Returns true if a day is manually closed OR has a calendar event OR all hours are full
+    function isDayBlocked(ds) {
+      const st = calData[ds];
+      if (st === 'booked') return true;
+      if (st && typeof st === 'object' && st.type === 'event') return true;
+      return isDayFull(ds);
     }
 
     function renderTimeSlots(ds) {
@@ -601,7 +607,7 @@
         document.getElementById('rFecha').value = selectedDate || '';
         return;
       }
-      if(st === 'booked' || isDayFull(ds)) {
+      if(st === 'booked' || isDayBlocked(ds)) {
         alert('Esa fecha no está disponible. Por favor elige otra fecha.');
         document.getElementById('rFecha').value = selectedDate || '';
         return;
