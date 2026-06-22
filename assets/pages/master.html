@@ -5901,7 +5901,8 @@ function loadYappyQrPreview() {
   if (yappyQrFileData) return; // don't overwrite an unsaved pick
   const hasGH = CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
   if (!hasGH) return;
-  const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/assets/images/company/yappy-qr.png?t=${Date.now()}`;
+  const ext = (getCompanyData().yappyQrExt || 'png').toLowerCase();
+  const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/assets/images/company/yappy-qr.${ext}?t=${Date.now()}`;
   const img = document.getElementById('qrPreviewImg');
   const testImg = new Image();
   testImg.onload = () => {
@@ -5924,17 +5925,35 @@ async function saveYappyQr() {
     return;
   }
 
-  // Always publish under the same fixed filename (yappy-qr.png), so the public
-  // page never needs to change its <img src>. If the picked file isn't already
-  // a PNG, warn the operator — we still upload it, but renamed to .png, which
-  // works fine for JPG/JPEG content too (GitHub doesn't validate extensions
-  // against actual image format) and keeps everything consistent.
-  if (yappyQrFileData.extension !== 'png') {
-    showToast(`Subiendo como .png (formato original: .${yappyQrFileData.extension})`);
-  }
-  const imgPath = `assets/images/company/yappy-qr.png`;
+  // Publish under the image's REAL extension (jpg, png, webp, whatever was picked),
+  // so the file is always a valid, correctly-typed image — no more forcing
+  // everything to .png regardless of actual content. The public page is told
+  // exactly which extension to look for via yappyQrExt in company.json.
+  const ext = (yappyQrFileData.extension || 'png').toLowerCase();
+  const KNOWN_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'];
+  const safeExt = KNOWN_EXTS.includes(ext) ? ext : 'png';
+  const imgPath = `assets/images/company/yappy-qr.${safeExt}`;
 
   try {
+    // Clean up any previously-published QR under a DIFFERENT extension, so
+    // switching formats doesn't leave stale orphaned files in the repo that
+    // could confuse a future lookup.
+    for (const oldExt of KNOWN_EXTS) {
+      if (oldExt === safeExt) continue;
+      const oldPath = `assets/images/company/yappy-qr.${oldExt}`;
+      try {
+        const checkRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+        if (checkRes.ok) {
+          const j = await checkRes.json();
+          await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+            { method: 'DELETE', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'remove stale yappy qr format', sha: j.sha }) });
+        }
+      } catch(e) { /* non-fatal — an old file lingering is harmless, just skip cleanup */ }
+    }
+
+    // Upload the new file
     let sha = null;
     const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
       { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
@@ -5947,6 +5966,13 @@ async function saveYappyQr() {
       { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
     if (!res.ok) throw new Error('GitHub upload failed');
+
+    // Record the current extension publicly so infoselect.js knows exactly
+    // which file to request, instead of having to guess/probe formats.
+    const companyData = getCompanyData();
+    companyData.yappyQrExt = safeExt;
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(companyData));
+    await ghPutPublic('company.json', companyData);
 
     yappyQrFileData = null;
     document.getElementById('qrZoneLabel').textContent = '✓ QR publicado — haz clic para reemplazarlo';
