@@ -1961,6 +1961,17 @@
 
 <!-- ══ CALENDAR CONTEXT MENU ══ -->
 <div class="cal-ctx-menu" id="calCtxMenu">
+  <!-- Event info block (shown only when day has a calendar event) -->
+  <div id="ctxEventInfo" style="display:none;padding:10px 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span id="ctxEventDot" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
+      <span id="ctxEventTitulo" style="font-weight:700;font-size:0.88rem;color:var(--white)"></span>
+    </div>
+    <div id="ctxEventDesc" style="font-size:0.76rem;color:var(--gray-l);line-height:1.4;padding-left:17px"></div>
+    <button onclick="closeCtxMenu();openCalEventPicker('edit')" style="margin-top:8px;margin-left:17px;background:none;border:1px solid rgba(233,30,140,0.3);border-radius:6px;color:var(--pink-l);font-size:0.72rem;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--font)">
+      ✏ Editar evento
+    </button>
+  </div>
   <div class="ctx-item" onclick="ctxViewDay()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Ver reservas del día
@@ -2630,6 +2641,26 @@ function renderDayView(todayStr) {
   const evs = getEventsForDate(calViewDay);
   const tl  = document.getElementById('dayTimeline'); tl.innerHTML = '';
 
+  // ── Calendar event info banner (shown when the day has a scheduled event) ──
+  const daySt = state.calendar[calViewDay];
+  if (daySt && typeof daySt === 'object' && daySt.type === 'event') {
+    const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+    const evColor  = colorHex[daySt.color] || colorHex.pink;
+    const banner   = document.createElement('div');
+    banner.style.cssText = `grid-column:1/-1;background:${evColor}18;border:1px solid ${evColor}44;border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px`;
+    banner.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:10px;background:${evColor}25;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="${evColor}" stroke-width="2" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${evColor};margin-bottom:3px">Evento del día</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:${daySt.descripcion ? '4px' : '0'}">${daySt.titulo || 'Evento'}</div>
+        ${daySt.descripcion ? `<div style="font-size:0.82rem;color:var(--gray-l);line-height:1.5">${daySt.descripcion}</div>` : ''}
+      </div>
+      <button onclick="openCalEventPicker('edit')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>`;
+    tl.appendChild(banner);
+  }
+
   HOURS_CAL.forEach((h, hi) => {
     const tlEl = document.createElement('div'); tlEl.className='day-time-label'; tlEl.style.cssText='padding-top:14px;'; tlEl.textContent=HOUR_LABELS[hi]; tl.appendChild(tlEl);
     const cell = document.createElement('div'); cell.className='day-slot hour-block';
@@ -2644,10 +2675,16 @@ function renderDayView(todayStr) {
     tl.appendChild(cell);
   });
 
-  // If no events show message
+  // If no reservas/quotes show contextual message
   if(!evs.length) {
-    const noEvEl = document.createElement('div'); noEvEl.style.cssText='grid-column:2;padding:20px;color:var(--gray);font-size:0.88rem;';
-    noEvEl.textContent = 'Sin reservas ni cotizaciones para este día.'; tl.appendChild(noEvEl);
+    const noEvEl = document.createElement('div');
+    noEvEl.style.cssText = 'grid-column:2;padding:20px;color:var(--gray);font-size:0.88rem;';
+    const daySt2 = state.calendar[calViewDay];
+    const hasCalEvent = daySt2 && typeof daySt2 === 'object' && daySt2.type === 'event';
+    noEvEl.textContent = hasCalEvent
+      ? 'Día reservado para el evento — sin solicitudes de clientes.'
+      : 'Sin reservas ni cotizaciones para este día.';
+    tl.appendChild(noEvEl);
   }
 }
 
@@ -2658,11 +2695,27 @@ let ctxDay = null;
 function openCtxMenu(e, ds) {
   e.stopPropagation();
   ctxDay = ds;
-  const menu = document.getElementById('calCtxMenu');
+  const menu    = document.getElementById('calCtxMenu');
+  const infoEl  = document.getElementById('ctxEventInfo');
+  const dotEl   = document.getElementById('ctxEventDot');
+  const titEl   = document.getElementById('ctxEventTitulo');
+  const descEl  = document.getElementById('ctxEventDesc');
+
+  const st = state.calendar[ds];
+  const hasEvent = st && typeof st === 'object' && st.type === 'event';
+  infoEl.style.display = hasEvent ? 'block' : 'none';
+  if (hasEvent) {
+    const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+    dotEl.style.background  = colorHex[st.color] || colorHex.pink;
+    titEl.textContent       = st.titulo || 'Evento';
+    descEl.textContent      = st.descripcion || '';
+    descEl.style.display    = st.descripcion ? 'block' : 'none';
+  }
+
   menu.classList.add('open');
-  // Position near click
-  const x = Math.min(e.clientX, window.innerWidth  - 220);
-  const y = Math.min(e.clientY, window.innerHeight - 160);
+  // Position near click, keeping menu inside viewport
+  const x = Math.min(e.clientX, window.innerWidth  - 240);
+  const y = Math.min(e.clientY, window.innerHeight - 220);
   menu.style.left = x + 'px';
   menu.style.top  = y + 'px';
 }
