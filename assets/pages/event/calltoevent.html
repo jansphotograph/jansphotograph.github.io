@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Eventos | Jans Photograph</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --pink:      #e91e8c;
+      --pink-dark: #c2176d;
+      --pink-l:    #f472b6;
+      --black:     #0d0d0d;
+      --dark:      #1a1a1a;
+      --dark-mid:  #232323;
+      --border:    rgba(255,255,255,0.08);
+      --gray:      #888;
+      --gray-l:    #aaa;
+      --white:     #ffffff;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --font:      'Inter', system-ui, sans-serif;
+      --serif:     'Playfair Display', Georgia, serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--black); color: var(--white); min-height: 100vh; }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 100;
+      background: rgba(13,13,13,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; gap: 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-left img { height: 30px; width: auto; }
+    .topbar-title { font-family: var(--serif); font-size: 1rem; }
+    .topbar-title span { color: var(--pink); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .btn-back-top {
+      display: flex; align-items: center; gap: 6px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--gray-l); font-family: var(--font); font-size: 0.82rem;
+      padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-back-top:hover { border-color: var(--pink); color: var(--white); }
+
+    /* ── Main ── */
+    main { padding: 88px 28px 60px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Hero ── */
+    .hero { margin-bottom: 36px; }
+    .hero-eyebrow {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--pink); margin-bottom: 8px;
+    }
+    .hero h1 { font-family: var(--serif); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 6px; }
+    .hero h1 span { color: var(--pink); }
+    .hero-sub { color: var(--gray-l); font-size: 0.9rem; }
+
+    /* ── Controls bar ── */
+    .controls-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+    }
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--dark); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 14px; flex: 1; max-width: 320px;
+    }
+    .search-box svg { color: var(--gray); flex-shrink: 0; }
+    .search-box input {
+      background: none; border: none; color: var(--white); font-family: var(--font);
+      font-size: 0.88rem; width: 100%; outline: none;
+    }
+    .search-box input::placeholder { color: var(--gray); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; font-family: var(--font); font-weight: 600; font-size: 0.88rem; padding: 10px 18px; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-pink { background: var(--pink); color: var(--white); }
+    .btn-pink:hover { background: var(--pink-dark); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--white); }
+    .btn-outline:hover { border-color: var(--pink); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 80px 24px; color: var(--gray);
+      border: 2px dashed var(--border); border-radius: 16px; margin-top: 8px;
+    }
+    .empty-state svg { margin: 0 auto 16px; display: block; opacity: 0.3; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--gray-l); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; margin-bottom: 20px; }
+
+    /* ── Events grid ── */
+    .events-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px;
+    }
+    .event-card {
+      background: var(--dark); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .event-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--pink), var(--pink-l));
+    }
+    .event-card:hover { border-color: rgba(233,30,140,0.3); transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(233,30,140,0.25); }
+    .event-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .event-card-badge {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px; background: rgba(233,30,140,0.12); color: var(--pink-l); white-space: nowrap;
+    }
+    .event-card-actions { display: flex; gap: 6px; }
+    .event-card-action {
+      background: none; border: 1px solid var(--border); border-radius: 7px;
+      color: var(--gray-l); padding: 5px 8px; cursor: pointer; font-size: 0.75rem; transition: all 0.18s;
+    }
+    .event-card-action:hover { border-color: var(--pink); color: var(--white); }
+    .event-card-action.del:hover { border-color: var(--red); color: #fca5a5; }
+    .event-card h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+    .event-card-meta { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--gray); }
+    .event-card-meta svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .event-card-count { margin-top: 12px; font-size: 0.78rem; color: var(--gray-l); }
+    .event-card-count strong { color: var(--white); }
+
+    /* ── Filter pills ── */
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .pill {
+      padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); background: transparent; color: var(--gray-l); cursor: pointer; transition: all 0.18s;
+    }
+    .pill.active { background: rgba(233,30,140,0.12); border-color: rgba(233,30,140,0.4); color: var(--pink-l); }
+    .pill:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dark-mid, #232323); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: none; }
+    .toast.success { border-color: rgba(34,197,94,0.4); }
+    .toast.error   { border-color: rgba(239,68,68,0.4); }
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .toast.error .toast-dot { background: var(--red); }
+
+    /* ── Confirm dialog ── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
+    .overlay.open { display: flex; }
+    .confirm-box { background: var(--dark); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 340px; width: 90%; text-align: center; }
+    .confirm-box h3 { margin-bottom: 10px; }
+    .confirm-box p { color: var(--gray-l); font-size: 0.88rem; margin-bottom: 22px; }
+    .confirm-box-btns { display: flex; gap: 10px; justify-content: center; }
+
+    @media (max-width: 600px) {
+      main { padding: 80px 16px 50px; }
+      .events-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" />
+      <span class="topbar-title">Jans <span>Photograph</span></span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-back-top" onclick="window.location.href='../master.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver al Master
+      </button>
+    </div>
+  </div>
+
+  <main>
+    <div class="hero">
+      <span class="hero-eyebrow">Jans Photograph</span>
+      <h1>Control de <span>Eventos</span></h1>
+      <p class="hero-sub">Gestiona todos tus eventos, listas de asistentes y exporta PDFs de control.</p>
+    </div>
+
+    <div class="controls-bar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar evento..." oninput="renderCards()" />
+      </div>
+      <button class="btn btn-pink" onclick="newEvent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Evento
+      </button>
+    </div>
+
+    <div class="filter-pills" id="filterPills">
+      <button class="pill active" data-cat="all" onclick="setFilter('all')">Todos</button>
+    </div>
+
+    <div id="eventGrid" class="events-grid"></div>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="56" height="56"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <h3>Sin eventos todavía</h3>
+      <p>Crea tu primer evento y aparecerá aquí como una tarjeta.</p>
+      <button class="btn btn-pink" onclick="newEvent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Crear Primer Evento
+      </button>
+    </div>
+  </main>
+
+  <!-- Confirm delete dialog -->
+  <div class="overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h3>¿Eliminar evento?</h3>
+      <p id="confirmMsg">Esta acción no se puede deshacer.</p>
+      <div class="confirm-box-btns">
+        <button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
+        <button class="btn" id="confirmBtn" style="background:var(--red);color:var(--white)">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <div class="toast-dot"></div>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    // ── Auth guard ──
+    if (sessionStorage.getItem('jans_master_auth') !== 'true') {
+      window.location.replace('../auth/auth.html');
+    }
+
+    // ── Config (inherited from localStorage set by the Master) ──
+    const LS_CFG = 'jans_gh_config';
+    const LS_ENC = 'jans_gh_token_enc';
+    const EVENTS_FILE = 'events.json';
+
+    function getConfig() {
+      const cfg = JSON.parse(localStorage.getItem(LS_CFG) || '{}');
+      return { owner: cfg.owner || '', repo: cfg.repo || '' };
+    }
+
+    async function getToken() {
+      const enc = localStorage.getItem(LS_ENC);
+      if (!enc) return null;
+      try {
+        const { iv, ct } = JSON.parse(enc);
+        const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(
+          (navigator.userAgent + location.hostname).slice(0, 32).padEnd(32,'x')), 'AES-GCM', false, ['decrypt']);
+        const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: Uint8Array.from(atob(iv),c=>c.charCodeAt(0)) },
+          keyMaterial, Uint8Array.from(atob(ct), c=>c.charCodeAt(0)));
+        return new TextDecoder().decode(pt);
+      } catch(e) { return null; }
+    }
+
+    // ── GitHub helpers ──
+    let fileSHAs = {};
+
+    async function ghGet(file) {
+      const { owner, repo } = getConfig();
+      if (!owner || !repo) return null;
+      const token = await getToken();
+      if (!token) return null;
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+      if (!res.ok) return null;
+      const j = await res.json();
+      fileSHAs[file] = j.sha;
+      return JSON.parse(atob(j.content.replace(/\n/g, '')));
+    }
+
+    async function ghPut(file, data) {
+      const { owner, repo } = getConfig();
+      const token = await getToken();
+      if (!owner || !repo || !token) return false;
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+      const body = { message: `update ${file}`, content };
+      if (fileSHAs[file]) body.sha = fileSHAs[file];
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${file}`,
+        { method: 'PUT', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await res.json();
+      if (j.content) fileSHAs[file] = j.content.sha;
+      return res.ok;
+    }
+
+    // ── State ──
+    let events = [];
+    let activeFilter = 'all';
+    let toastTimer;
+    let pendingDeleteId = null;
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.className = `toast ${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ── Load events from GitHub ──
+    async function loadEvents() {
+      const data = await ghGet(EVENTS_FILE);
+      events = Array.isArray(data) ? data : [];
+    }
+
+    // ── Filter pills ──
+    function setFilter(cat) {
+      activeFilter = cat;
+      document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.cat === cat));
+      renderCards();
+    }
+
+    function buildFilterPills() {
+      const cats = ['all', ...new Set(events.map(e => e.categoria).filter(Boolean))];
+      const container = document.getElementById('filterPills');
+      container.innerHTML = cats.map(c =>
+        `<button class="pill${c === activeFilter ? ' active' : ''}" data-cat="${c}" onclick="setFilter('${c}')">${c === 'all' ? 'Todos' : c}</button>`
+      ).join('');
+    }
+
+    // ── Render event cards ──
+    function renderCards() {
+      const query = (document.getElementById('searchInput').value || '').toLowerCase();
+      const filtered = events.filter(e => {
+        const matchCat  = activeFilter === 'all' || e.categoria === activeFilter;
+        const matchText = !query || e.titulo?.toLowerCase().includes(query) || e.categoria?.toLowerCase().includes(query);
+        return matchCat && matchText;
+      }).sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+
+      const grid = document.getElementById('eventGrid');
+      const empty = document.getElementById('emptyState');
+
+      if (!filtered.length) {
+        grid.innerHTML = '';
+        empty.style.display = events.length ? 'none' : 'block';
+        if (events.length && !filtered.length) {
+          grid.innerHTML = `<div style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px">Sin resultados para esa búsqueda.</div>`;
+        }
+        return;
+      }
+      empty.style.display = 'none';
+      grid.innerHTML = filtered.map(e => {
+        const asistentes = (e.asistentes || []).length;
+        const fecha = e.fecha ? new Date(e.fecha + 'T00:00:00').toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' }) : 'Sin fecha';
+        return `
+        <div class="event-card" onclick="editEvent('${e.id}')">
+          <div class="event-card-header">
+            ${e.categoria ? `<span class="event-card-badge">${e.categoria}</span>` : '<span></span>'}
+            <div class="event-card-actions" onclick="event.stopPropagation()">
+              <button class="event-card-action" onclick="editEvent('${e.id}')" title="Editar">✏</button>
+              <button class="event-card-action del" onclick="confirmDelete('${e.id}','${(e.titulo||'').replace(/'/g,"\\'")}') " title="Eliminar">✕</button>
+            </div>
+          </div>
+          <h2>${e.titulo || 'Sin título'}</h2>
+          <div class="event-card-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${fecha}
+          </div>
+          <div class="event-card-count"><strong>${asistentes}</strong> asistente(s) registrado(s)</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Navigation ──
+    function newEvent() {
+      window.location.href = 'renderevent.html';
+    }
+
+    function editEvent(id) {
+      window.location.href = `renderevent.html?id=${id}`;
+    }
+
+    // ── Delete ──
+    function confirmDelete(id, titulo) {
+      pendingDeleteId = id;
+      document.getElementById('confirmMsg').textContent = `¿Estás seguro que deseas eliminar "${titulo}"? Esta acción no se puede deshacer.`;
+      document.getElementById('confirmBtn').onclick = doDelete;
+      document.getElementById('confirmOverlay').classList.add('open');
+    }
+    function closeConfirm() {
+      document.getElementById('confirmOverlay').classList.remove('open');
+      pendingDeleteId = null;
+    }
+    async function doDelete() {
+      if (!pendingDeleteId) return;
+      events = events.filter(e => e.id !== pendingDeleteId);
+      closeConfirm();
+      renderCards();
+      buildFilterPills();
+      const ok = await ghPut(EVENTS_FILE, events);
+      showToast(ok ? 'Evento eliminado ✓' : 'Eliminado localmente — verifica GitHub', ok ? 'success' : 'error');
+    }
+
+    // ── Init ──
+    (async () => {
+      await loadEvents();
+      buildFilterPills();
+      renderCards();
+    })();
+  </script>
+</body>
+</html>
