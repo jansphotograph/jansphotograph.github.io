@@ -1709,7 +1709,7 @@
         </div>
         <div id="servInsumosList" style="display:flex;flex-direction:column;gap:8px"></div>
         <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">
-          Indica cuántas unidades y/o hojas se consumen por cada venta de este servicio.
+          Indica cuántas unidades se consumen por cada venta de este servicio.
         </div>
       </div>
 
@@ -1853,10 +1853,7 @@
           <label>Stock en unidades</label>
           <input type="number" id="invItemStockUnidades" min="0" step="1" placeholder="0" />
         </div>
-        <div class="field">
-          <label>Stock en hojas</label>
-          <input type="number" id="invItemStockHojas" min="0" step="1" placeholder="0" />
-        </div>
+
       </div>
 
       <div class="field">
@@ -5581,7 +5578,7 @@ function renderServAdicList() {
     const insumoNames = (s.insumos||[]).map(v => {
       loadInvData();
       const inv = invItems.find(x=>x.id===v.insumoId);
-      return inv ? `${inv.titulo} (${v.unidades||0}un / ${v.hojas||0}hj)` : '?';
+      return inv ? `${inv.titulo} (${v.unidades||0} un)` : '?';
     }).join(', ');
 
     return `
@@ -5629,7 +5626,7 @@ function toggleServInsumos(checked) {
 }
 
 function addServInsumoRow() {
-  servTempInsumos.push({ insumoId: '', unidades: 0, hojas: 0 });
+  servTempInsumos.push({ insumoId: '', unidades: 0 });
   renderServInsumosList();
 }
 
@@ -5655,9 +5652,7 @@ function renderServInsumosList() {
         <span style="color:var(--gray)">Un:</span>
         <input type="number" value="${v.unidades}" min="0" step="1" oninput="servTempInsumos[${i}].unidades=+this.value"
           style="width:48px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
-        <span style="color:var(--gray)">Hj:</span>
-        <input type="number" value="${v.hojas}" min="0" step="1" oninput="servTempInsumos[${i}].hojas=+this.value"
-          style="width:48px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+
       </div>
       <button onclick="servTempInsumos.splice(${i},1);renderServInsumosList()"
         style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.9rem;padding:0 4px">✕</button>
@@ -5841,7 +5836,7 @@ function openInvItemModal(id) {
   document.getElementById('invItemTitle').value          = item ? item.titulo : '';
   document.getElementById('invItemDesc').value           = item ? (item.descripcion||'') : '';
   document.getElementById('invItemStockUnidades').value  = item ? (item.stockUnidades||0) : 0;
-  document.getElementById('invItemStockHojas').value     = item ? (item.stockHojas||0) : 0;
+
 
   // Foto
   invTempPhoto = null;
@@ -5920,7 +5915,6 @@ async function saveInvItem() {
   const tiendas     = invTempStores.filter(s => s.nombre.trim());
 
   const stockUnidades = parseInt(document.getElementById('invItemStockUnidades').value) || 0;
-  const stockHojas    = parseInt(document.getElementById('invItemStockHojas').value)    || 0;
 
   if (existingId) {
     const item = invItems.find(x=>x.id===existingId);
@@ -5930,7 +5924,6 @@ async function saveInvItem() {
       item.descripcion   = descripcion;
       item.tiendas       = tiendas;
       item.stockUnidades = stockUnidades;
-      item.stockHojas    = stockHojas;
       if (invTempPhoto) item.foto = invTempPhoto;
     }
   } else {
@@ -5938,7 +5931,7 @@ async function saveInvItem() {
     invItems.push({
       id: newId, titulo, categoryId, descripcion, tiendas,
       foto: invTempPhoto || '',
-      stockUnidades, stockHojas,
+      stockUnidades,
       barcodeValue: genBarcodeValue(titulo),
       creadoEn: new Date().toLocaleDateString('es-PA'),
     });
@@ -5998,7 +5991,6 @@ function renderInvItems() {
         <!-- Stock -->
         <div style="display:flex;gap:12px;margin-top:4px">
           <div style="font-size:0.8rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades||0)>0?'#86efac':'#fca5a5'}">${item.stockUnidades||0}</strong></div>
-          <div style="font-size:0.8rem"><span style="color:var(--gray)">Hojas:</span> <strong style="color:${(item.stockHojas||0)>0?'#86efac':'#fca5a5'}">${item.stockHojas||0}</strong></div>
         </div>
         ${item.tiendas?.length ? `
           <div style="margin-top:6px">
@@ -6185,7 +6177,7 @@ function handleBarcodeScan(code) {
     <div style="font-weight:700;color:var(--white);margin-bottom:6px">${item.titulo}</div>
     <div style="display:flex;gap:20px;font-size:0.85rem">
       <div><span style="color:var(--gray)">Stock unidades:</span> <strong>${item.stockUnidades||0}</strong></div>
-      <div><span style="color:var(--gray)">Stock hojas:</span> <strong>${item.stockHojas||0}</strong></div>
+
     </div>`;
 
   actionsEl.innerHTML = `
@@ -6196,10 +6188,7 @@ function handleBarcodeScan(code) {
           <label>Unidades (+/-)</label>
           <input type="number" id="scanAdjUnidades" value="0" step="1" />
         </div>
-        <div class="field" style="margin-bottom:0">
-          <label>Hojas (+/-)</label>
-          <input type="number" id="scanAdjHojas" value="0" step="1" />
-        </div>
+
       </div>
     </div>
     <div class="btn-row">
@@ -6212,9 +6201,7 @@ async function applyScanAdjustment(id) {
   loadInvData();
   const item  = invItems.find(x=>x.id===id); if(!item) return;
   const adjU  = parseInt(document.getElementById('scanAdjUnidades')?.value) || 0;
-  const adjH  = parseInt(document.getElementById('scanAdjHojas')?.value)    || 0;
   item.stockUnidades = Math.max(0, (item.stockUnidades||0) + adjU);
-  item.stockHojas    = Math.max(0, (item.stockHojas||0)    + adjH);
   await saveInvData();
   renderInvItems();
   showToast(`Stock actualizado: ${item.titulo} ✓`);
@@ -6246,9 +6233,8 @@ function handleReservaScan(code) {
   const existing = reservaScanItems.find(x=>x.id===item.id);
   if (existing) {
     existing.unidades++;
-    existing.hojas++;
   } else {
-    reservaScanItems.push({ id: item.id, titulo: item.titulo, unidades: 1, hojas: 0 });
+    reservaScanItems.push({ id: item.id, titulo: item.titulo, unidades: 1 });
   }
   renderReservaScanList();
   showToast(`Escaneado: ${item.titulo}`);
@@ -6268,9 +6254,7 @@ function renderReservaScanList() {
         <span style="color:var(--gray)">Un:</span>
         <input type="number" value="${s.unidades}" min="0" step="1" oninput="reservaScanItems[${i}].unidades=+this.value"
           style="width:50px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:3px 6px;text-align:center" />
-        <span style="color:var(--gray)">Hj:</span>
-        <input type="number" value="${s.hojas}" min="0" step="1" oninput="reservaScanItems[${i}].hojas=+this.value"
-          style="width:50px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:3px 6px;text-align:center" />
+
         <button onclick="reservaScanItems.splice(${i},1);renderReservaScanList()"
           style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.9rem;padding:0 4px">✕</button>
       </div>
@@ -6283,7 +6267,6 @@ async function confirmReservaScan() {
   for (const s of reservaScanItems) {
     const item = invItems.find(x=>x.id===s.id); if(!item) continue;
     item.stockUnidades = Math.max(0, (item.stockUnidades||0) - s.unidades);
-    item.stockHojas    = Math.max(0, (item.stockHojas||0)    - s.hojas);
   }
   await saveInvData();
   renderInvItems();
