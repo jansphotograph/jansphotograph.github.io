@@ -331,8 +331,83 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
 .btn-green { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
 .btn-green:hover { background: rgba(34,197,94,0.25); }
 
-/* Week grid (calendario semana) */
-.week-grid { display: grid; min-width: 600px; }
+/* ── Week & Day grid ── */
+.week-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  min-width: 600px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.week-header-cell {
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray-l);
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid rgba(255,255,255,0.04);
+  line-height: 1.3;
+}
+.week-header-cell.today-col { color: var(--pink-l); }
+.week-time-label {
+  font-size: 0.72rem;
+  color: var(--gray);
+  padding: 4px 8px 0 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+  min-height: 48px;
+}
+.week-cell {
+  min-height: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid rgba(255,255,255,0.04);
+  padding: 3px 4px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.week-cell:hover { background: rgba(255,255,255,0.03); }
+.week-cell.today-col { background: rgba(199,30,95,0.04); }
+.week-event {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Day view */
+.day-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.day-time-label {
+  font-size: 0.72rem;
+  color: var(--gray);
+  padding: 4px 8px 0 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid var(--border);
+  text-align: right;
+  min-height: 48px;
+}
+.day-cell {
+  min-height: 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.day-cell:hover { background: rgba(255,255,255,0.03); }
 
 /* Social & contact icons (footer preview del sitio) */
 .social-icons { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -353,3 +428,12 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
 .status-postponed { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
 .btn-amber { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.35); color: #fbbf24; }
 .btn-amber:hover { background: rgba(251,191,36,0.25); }
+
+/* ── Day timeline slots ── */
+.day-slot { min-height: 52px; border-bottom: 1px solid rgba(255,255,255,0.04); padding: 4px 10px; cursor: pointer; transition: background 0.12s; }
+.day-slot:hover { background: rgba(255,255,255,0.03); }
+.hour-block { display: flex; flex-direction: column; gap: 3px; }
+.day-event { border-radius: 6px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; }
+.de-time { font-size: 0.7rem; font-weight: 700; opacity: 0.75; margin-bottom: 1px; }
+.de-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.de-plan { font-size: 0.72rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
