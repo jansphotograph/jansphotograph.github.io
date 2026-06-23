@@ -21,6 +21,9 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <img src="../images/icons/Janssocialmedialogo.png" alt="Logo" />
       <span class="topbar-title">Jans <span>Photograph</span></span>
       <span class="topbar-badge">MASTER</span>
@@ -33,92 +36,109 @@
 
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- ── Horizontal Nav Bar ── -->
-  <nav class="hnav" id="hnavMain">
-    <div class="hnav-inner">
+  <div class="app-layout">
 
-      <!-- Always visible -->
-      <button class="hnav-link" onclick="switchView('dashboard',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </button>
-      <button class="hnav-link" onclick="switchView('calendar',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Calendario
-      </button>
-      <button class="hnav-link" onclick="switchView('panel',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
-        Panel
-      </button>
-      <button class="hnav-link" onclick="window.location.href='../pages/event/calltoevent.html'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-        Eventos
-      </button>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="sidebarMain">
 
-      <!-- Cotizaciones dropdown -->
-      <div class="hnav-group" id="grp-cotizaciones">
-        <button class="hnav-link hnav-group-btn" onclick="toggleHnavGroup('cotizaciones')">
+    <!-- Siempre visibles -->
+    <button class="sidebar-link" onclick="switchView('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="sidebar-link" onclick="switchView('calendar',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendario
+    </button>
+    <button class="sidebar-link" onclick="switchView('panel',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
+      Panel
+    </button>
+    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Eventos
+    </button>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Cotizaciones -->
+    <div class="sidebar-group" id="grp-cotizaciones">
+      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('cotizaciones')">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Cotizaciones
-          <span class="badge" id="reservasBadge" style="margin-left:4px">0</span>
-          <svg class="hnav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="badge" id="reservasBadge">0</span>
+          <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="sidebar-items">
+        <button class="sidebar-item" onclick="switchView('reservas',this)">
+          Reservas <span class="badge" id="reservasBadge2">0</span>
         </button>
-        <div class="hnav-dropdown">
-          <button class="hnav-drop-item" onclick="switchView('reservas',this)">
-            Reservas <span class="badge" id="reservasBadge2">0</span>
-          </button>
-          <button class="hnav-drop-item" onclick="switchView('quotes',this)">
-            Cotizaciones <span class="badge" id="pendingBadge">0</span>
-          </button>
-          <button class="hnav-drop-item" onclick="switchView('newquote',this)">Nueva Cotización</button>
-        </div>
-      </div>
-
-      <!-- Catálogo dropdown -->
-      <div class="hnav-group" id="grp-catalogo">
-        <button class="hnav-link hnav-group-btn" onclick="toggleHnavGroup('catalogo')">
-          Catálogo
-          <span class="badge" id="inventarioBadge" style="display:none;margin-left:4px">0</span>
-          <svg class="hnav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        <button class="sidebar-item" onclick="switchView('quotes',this)">
+          Cotizaciones <span class="badge" id="pendingBadge">0</span>
         </button>
-        <div class="hnav-dropdown">
-          <button class="hnav-drop-item" onclick="switchView('planesPublicos',this)">Planes Públicos</button>
-          <button class="hnav-drop-item" onclick="switchView('servAdicionales',this)">Servicios Adicionales</button>
-          <button class="hnav-drop-item" onclick="switchView('inventario',this)">Inventario</button>
-          <button class="hnav-drop-item" onclick="switchView('blog',this)">Blog</button>
-          <button class="hnav-drop-item" onclick="switchView('faqs',this)">Preguntas Frecuentes</button>
-          <button class="hnav-drop-item" onclick="switchView('services',this)">Servicios (Cotización)</button>
-          <button class="hnav-drop-item" onclick="switchView('plans',this)">Planes (Cotización)</button>
-        </div>
+        <button class="sidebar-item" onclick="switchView('newquote',this)">Nueva Cotización</button>
       </div>
-
-      <!-- Contenido dropdown -->
-      <div class="hnav-group" id="grp-contenido">
-        <button class="hnav-link hnav-group-btn" onclick="toggleHnavGroup('contenido')">
-          Contenido
-          <svg class="hnav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="hnav-dropdown">
-          <button class="hnav-drop-item" onclick="switchView('social',this)">Redes Sociales</button>
-          <button class="hnav-drop-item" onclick="switchView('notas',this)">Notas Reservas</button>
-          <button class="hnav-drop-item" onclick="switchView('recargar',this)">Recargar Sitio</button>
-        </div>
-      </div>
-
-      <!-- Cuenta dropdown -->
-      <div class="hnav-group" id="grp-cuenta">
-        <button class="hnav-link hnav-group-btn" onclick="toggleHnavGroup('cuenta')">
-          Cuenta
-          <svg class="hnav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="hnav-dropdown">
-          <button class="hnav-drop-item" onclick="switchView('config',this)">Configuración</button>
-          <button class="hnav-drop-item" onclick="switchView('company',this)">Datos de Empresa</button>
-          <button class="hnav-drop-item" onclick="switchView('team',this)">Equipo</button>
-        </div>
-      </div>
-
     </div>
-  </nav>
+
+    <!-- Catálogo -->
+    <div class="sidebar-group" id="grp-catalogo">
+      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('catalogo')">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Catálogo
+        </span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <span class="badge" id="inventarioBadge" style="display:none">0</span>
+          <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </button>
+      <div class="sidebar-items">
+        <button class="sidebar-item" onclick="switchView('planesPublicos',this)">Planes Públicos</button>
+        <button class="sidebar-item" onclick="switchView('servAdicionales',this)">Servicios Adicionales</button>
+        <button class="sidebar-item" onclick="switchView('inventario',this)">Inventario</button>
+        <button class="sidebar-item" onclick="switchView('blog',this)">Blog</button>
+        <button class="sidebar-item" onclick="switchView('faqs',this)">Preguntas Frecuentes</button>
+        <button class="sidebar-item" onclick="switchView('services',this)">Servicios (Cotización)</button>
+        <button class="sidebar-item" onclick="switchView('plans',this)">Planes (Cotización)</button>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="sidebar-group" id="grp-contenido">
+      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('contenido')">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Contenido
+        </span>
+        <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="sidebar-items">
+        <button class="sidebar-item" onclick="switchView('social',this)">Redes Sociales</button>
+        <button class="sidebar-item" onclick="switchView('notas',this)">Notas Reservas</button>
+        <button class="sidebar-item" onclick="switchView('recargar',this)">Recargar Sitio</button>
+      </div>
+    </div>
+
+    <!-- Cuenta -->
+    <div class="sidebar-group" id="grp-cuenta">
+      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('cuenta')">
+        <span style="display:flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Cuenta
+        </span>
+        <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="sidebar-items">
+        <button class="sidebar-item" onclick="switchView('config',this)">Configuración</button>
+        <button class="sidebar-item" onclick="switchView('company',this)">Datos de Empresa</button>
+      </div>
+    </div>
+
+  </aside>
 
   <!-- ── Main Content ── -->
   <main class="main-content">
@@ -975,7 +995,7 @@
             <button class="btn btn-sm btn-pink" onclick="addServItem('impresiones')">+ Añadir</button>
           </div>
           <p style="font-size:0.8rem;color:var(--gray-l);margin-bottom:14px">
-            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.hnav-drop-item[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
+            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
             para que el stock se descuente automáticamente al confirmar reservas.
           </p>
           <div id="impList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
@@ -1279,6 +1299,7 @@
       </div>
 
     </main>
+  </div><!-- /app-layout -->
 </div><!-- /appScreen -->
 
 <!-- ── BLOG POST MODAL ── -->
@@ -1914,7 +1935,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const hash = location.hash.replace('#', '').trim();
     const knownViews = new Set(Array.from(document.querySelectorAll('[id^="view-"]')).map(el => el.id.replace('view-', '')));
     if (hash && knownViews.has(hash)) {
-      const btn = document.querySelector(`.hnav-link[onclick*="'${hash}'"], .hnav-drop-item[onclick*="'${hash}'"]`);
+      const btn = document.querySelector(`.sidebar-link[onclick*="'${hash}'"], .sidebar-item[onclick*="'${hash}'"]`);
       switchView(hash, btn || null);
     }
 
@@ -1981,27 +2002,31 @@ function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 // modal-overlay click-outside (moved to DOMContentLoaded)
 
-// ── Horizontal nav dropdown toggle ──
-function toggleHnavGroup(id) {
-  const group = document.getElementById('grp-' + id);
-  if (!group) return;
-  const isOpen = group.classList.contains('open');
-  // Close all other open groups first
-  document.querySelectorAll('.hnav-group.open').forEach(g => g.classList.remove('open'));
-  if (!isOpen) group.classList.add('open');
+// ── Sidebar toggle functions ──
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebarMain');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  const opening = !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', opening);
+  overlay.classList.toggle('show', opening);
 }
 
-// Close dropdowns when clicking outside
-document.addEventListener('click', e => {
-  if (!e.target.closest('.hnav-group')) {
-    document.querySelectorAll('.hnav-group.open').forEach(g => g.classList.remove('open'));
-  }
-});
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebarMain');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('show');
+}
 
-// Legacy stubs kept so any residual references don't throw
-function toggleSidebar() {}
-function closeSidebar()  {}
-function toggleSidebarGroup() {}
+function toggleSidebarGroup(id) {
+  const group = document.getElementById('grp-' + id);
+  if (!group) return;
+  group.classList.toggle('open');
+}
+
+// Legacy stub
+function toggleHnavGroup(id) { toggleSidebarGroup(id); }
 
 // ── Sidebar Navigation ──
 
@@ -2015,7 +2040,7 @@ const VIEW_GROUP_MAP = {
 
 function switchView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.hnav-link, .hnav-drop-item').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link, .sidebar-item').forEach(l => l.classList.remove('active'));
   const target = document.getElementById('view-' + name);
   if (!target) { console.warn('View not found:', name); return; }
   target.classList.add('active');
@@ -2024,8 +2049,15 @@ function switchView(name, btn) {
   // Persist the active view in the URL hash
   history.replaceState(null, '', '#' + name);
 
-  // Close any open dropdowns
-  document.querySelectorAll('.hnav-group.open').forEach(g => g.classList.remove('open'));
+  // Auto-open the group that contains this view
+  const grpId = VIEW_GROUP_MAP[name];
+  if (grpId) {
+    const grp = document.getElementById('grp-' + grpId);
+    if (grp && !grp.classList.contains('open')) grp.classList.add('open');
+  }
+
+  // On mobile, close sidebar after navigating
+  if (window.innerWidth <= 768) closeSidebar();
 
   if (name === 'calendar')      renderCalendar();
   if (name === 'services')      renderServices();
@@ -2882,7 +2914,7 @@ async function saveQuote() {
     showToast('Cotización ' + numero + ' guardada ✓');
     clearQuoteForm();
     updateDashboard(); renderQuotesTable();
-    switchView('quotes', document.querySelector('.hnav-drop-item[onclick*="\'quotes\'"]'));
+    switchView('quotes', document.querySelector('.sidebar-item[onclick*="\'quotes\'"]'));
   } else {
     showToast('Guardada localmente — verifica GitHub para publicar','error');
     clearQuoteForm();
@@ -4148,7 +4180,7 @@ function goToReservaInTable(id) {
   if (filterStatus) filterStatus.value = '';
   if (filterMonth)  filterMonth.value  = '';
 
-  switchView('reservas', document.querySelector('.hnav-drop-item[onclick*=\'reservas\']'));
+  switchView('reservas', document.querySelector('.sidebar-item[onclick*=\'reservas\']'));
   // switchView already calls renderReservasTable() with no args; re-render with
   // the highlight target right after so the row gets the highlight + scroll treatment.
   setTimeout(() => renderReservasTable(id), 80);
@@ -5753,7 +5785,7 @@ function updatePanelAdministrativo() {
   // ── Inventory status ──
   const invEl = document.getElementById('panelInventoryStatus');
   if (!paperTypes.length) {
-    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.hnav-drop-item[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
+    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
   } else {
     invEl.innerHTML = paperTypes.map(p => {
       const isLow = p.stock <= p.minStock;
