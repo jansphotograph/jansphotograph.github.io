@@ -628,6 +628,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/></svg>
             Datos de Empresa
           </button>
+          <button class="sidebar-link" onclick="switchView('team', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Equipo
+          </button>
         </div>
       </div>
     </aside>
@@ -1422,6 +1426,28 @@
         </div>
       </div>
 
+      </div>
+
+      <!-- ── EQUIPO ── -->
+      <div class="view" id="view-team">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Equipo</h2>
+            <p>Los miembros que aparecerán en la página "Sobre Nosotros"</p>
+          </div>
+          <button class="btn btn-pink" onclick="openTeamMemberForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Añadir miembro
+          </button>
+        </div>
+        <div id="teamMembersList" style="display:flex;flex-direction:column;gap:14px"></div>
+        <div id="teamEmptyState" style="display:none;text-align:center;padding:48px 24px;color:var(--gray);border:2px dashed var(--border);border-radius:14px;margin-top:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin:0 auto 16px;opacity:0.3;display:block"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <p style="margin-bottom:20px">Sin miembros del equipo aún. Añade el primero.</p>
+          <button class="btn btn-pink" onclick="openTeamMemberForm()">Añadir miembro</button>
+        </div>
+      </div>
+
       <!-- ── PREGUNTAS FRECUENTES ── -->
       <div class="view" id="view-faqs">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -2164,6 +2190,65 @@
   </div>
 </div>
 
+<!-- ══ TEAM MEMBER MODAL ══ -->
+<div class="modal-overlay" id="teamMemberModal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3 id="teamModalTitle">Añadir miembro del equipo</h3>
+      <button class="modal-close" onclick="closeModal('teamMemberModal')">×</button>
+    </div>
+    <input type="hidden" id="teamMemberId" />
+
+    <!-- Photo upload -->
+    <div class="field">
+      <label>Foto del miembro</label>
+      <div id="teamPhotoZone" onclick="document.getElementById('teamPhotoInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark);display:flex;align-items:center;gap:16px">
+        <input type="file" id="teamPhotoInput" accept="image/*" style="display:none" onchange="handleTeamPhoto(this.files[0])" />
+        <img id="teamPhotoPreview" src="" style="display:none;width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(233,30,140,0.4);flex-shrink:0" />
+        <div id="teamPhotoIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(233,30,140,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" width="28" height="28"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div style="text-align:left">
+          <div id="teamPhotoLabel" style="font-size:0.82rem;color:var(--gray-l)">Haz clic o arrastra una foto</div>
+          <div style="font-size:0.72rem;color:var(--gray);margin-top:3px">PNG, JPG, WEBP — máx. 3MB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Nombre *</label>
+      <input type="text" id="teamMemberNombre" placeholder="Ej. Jamil Martínez" maxlength="80" />
+    </div>
+    <div class="field">
+      <label>Rol / Cargo *</label>
+      <input type="text" id="teamMemberRol" placeholder="Ej. Fotógrafo Principal" maxlength="80" />
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="teamMemberBio" placeholder="Una breve descripción de este miembro del equipo..."
+        style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:90px;outline:none"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <button id="teamDeleteBtn" style="display:none" class="btn"
+        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5"
+        onclick="deleteTeamMember()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar
+      </button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn btn-outline" onclick="closeModal('teamMemberModal')">Cancelar</button>
+        <button class="btn btn-pink" onclick="saveTeamMember()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Guardar
+        </button>
+      </div>
+    </div>
+    <div id="teamModalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.82rem"></div>
+  </div>
+</div>
+
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast">
   <div class="toast-dot"></div>
@@ -2448,7 +2533,7 @@ const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
   planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo', inventario:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
-  config:'cuenta', company:'cuenta'
+  config:'cuenta', company:'cuenta', team:'cuenta'
 };
 
 function switchView(name, btn) {
@@ -2489,6 +2574,7 @@ function switchView(name, btn) {
   if (name === 'faqs')           initFaqs();
   if (name === 'company')        loadCompanyUI();
   if (name === 'config')         loadFacturaCounterUI();
+  if (name === 'team')           initTeam();
 }
 
 // ── Dashboard ──
@@ -6266,6 +6352,281 @@ function updatePanelAdministrativo() {
 
 function initPanel() {
   updatePanelAdministrativo();
+}
+
+// ═══════════════════════════════════════
+//  EQUIPO — gestión de miembros del about
+// ═══════════════════════════════════════
+const TEAM_KEY   = 'jans_team';
+const TEAM_FILE  = 'team.json';
+const TEAM_IMG_FOLDER = 'assets/images/team';
+const KNOWN_IMG_EXTS  = ['png','jpg','jpeg','webp','gif'];
+let teamMembers  = [];
+let teamPhotoFileData = null; // { base64, extension } for the pending upload
+
+function loadTeamLocal() {
+  try { teamMembers = JSON.parse(localStorage.getItem(TEAM_KEY) || '[]'); } catch(e) { teamMembers = []; }
+}
+
+function genTeamId() { return 'tm_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+// ── Photo file handling ──
+function handleTeamPhoto(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Selecciona una imagen', 'error'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('La foto supera 3MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    teamPhotoFileData = { base64: e.target.result.split(',')[1], extension: ext };
+    document.getElementById('teamPhotoPreview').src = e.target.result;
+    document.getElementById('teamPhotoPreview').style.display = 'block';
+    document.getElementById('teamPhotoIcon').style.display = 'none';
+    document.getElementById('teamPhotoLabel').textContent = '✓ ' + file.name + ' (sin guardar)';
+    document.getElementById('teamPhotoZone').style.borderColor = 'rgba(245,158,11,0.5)';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag-and-drop on the photo zone
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('teamPhotoZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--pink-l)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = 'rgba(233,30,140,0.35)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleTeamPhoto(file);
+  });
+});
+
+// ── Upload a team member's photo to the public GitHub repo ──
+// Uses the same raw-binary PUT pattern as the Yappy QR upload.
+// If the member previously had a photo with a different extension, delete it first.
+async function uploadTeamPhoto(memberId, base64, ext, oldExt) {
+  const token = CONFIG.GH_TOKEN;
+  if (!token) return null;
+
+  const safeExt = KNOWN_IMG_EXTS.includes(ext) ? ext : 'jpg';
+  const newPath = `${TEAM_IMG_FOLDER}/${memberId}.${safeExt}`;
+
+  // Delete the old photo if the extension changed
+  if (oldExt && oldExt !== safeExt) {
+    const oldPath = `${TEAM_IMG_FOLDER}/${memberId}.${oldExt}`;
+    try {
+      const chk = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+      if (chk.ok) {
+        const { sha } = await chk.json();
+        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+          { method: 'DELETE', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `remove old team photo ${memberId}`, sha }) });
+      }
+    } catch(e) { /* non-fatal */ }
+  }
+
+  // Upload the new photo
+  let sha = null;
+  try {
+    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${newPath}`,
+      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+  } catch(e) {}
+
+  const body = { message: `update team photo ${memberId}`, content: base64 };
+  if (sha) body.sha = sha;
+
+  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${newPath}`,
+    { method: 'PUT', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body) });
+
+  return res.ok ? { path: newPath, ext: safeExt } : null;
+}
+
+// ── Delete a member's photo from GitHub ──
+async function deleteTeamPhoto(memberId, ext) {
+  if (!memberId || !ext) return;
+  const token = CONFIG.GH_TOKEN;
+  if (!token) return;
+  const path = `${TEAM_IMG_FOLDER}/${memberId}.${ext}`;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (!res.ok) return;
+    const { sha } = await res.json();
+    await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+      { method: 'DELETE', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `remove team photo ${memberId}`, sha }) });
+  } catch(e) {}
+}
+
+// ── Open form (create: no id, edit: with id) ──
+function openTeamMemberForm(id) {
+  loadTeamLocal();
+  teamPhotoFileData = null;
+  const isEdit = !!id;
+  document.getElementById('teamModalTitle').textContent = isEdit ? 'Editar miembro' : 'Añadir miembro del equipo';
+  document.getElementById('teamMemberId').value = id || '';
+  document.getElementById('teamMemberNombre').value = '';
+  document.getElementById('teamMemberRol').value = '';
+  document.getElementById('teamMemberBio').value = '';
+  document.getElementById('teamPhotoPreview').style.display = 'none';
+  document.getElementById('teamPhotoIcon').style.display = 'flex';
+  document.getElementById('teamPhotoLabel').textContent = 'Haz clic o arrastra una foto';
+  document.getElementById('teamPhotoZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById('teamDeleteBtn').style.display = isEdit ? 'flex' : 'none';
+  document.getElementById('teamModalMsg').style.display = 'none';
+
+  if (isEdit) {
+    const m = teamMembers.find(x => x.id === id);
+    if (m) {
+      document.getElementById('teamMemberNombre').value = m.nombre || '';
+      document.getElementById('teamMemberRol').value    = m.rol    || '';
+      document.getElementById('teamMemberBio').value    = m.bio    || '';
+      if (m.fotoPath) {
+        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          document.getElementById('teamPhotoPreview').src = rawUrl;
+          document.getElementById('teamPhotoPreview').style.display = 'block';
+          document.getElementById('teamPhotoIcon').style.display = 'none';
+          document.getElementById('teamPhotoLabel').textContent = '✓ Foto actual — haz clic para reemplazar';
+          document.getElementById('teamPhotoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+        };
+        testImg.src = rawUrl;
+      }
+    }
+  }
+  openModal('teamMemberModal');
+}
+
+// ── Save member (create or update) ──
+async function saveTeamMember() {
+  const msgEl  = document.getElementById('teamModalMsg');
+  const nombre = document.getElementById('teamMemberNombre').value.trim();
+  const rol    = document.getElementById('teamMemberRol').value.trim();
+  const bio    = document.getElementById('teamMemberBio').value.trim();
+  const editId = document.getElementById('teamMemberId').value;
+
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  if (!rol)    { showToast('El rol es obligatorio', 'error'); return; }
+
+  msgEl.style.display = 'none';
+  const id = editId || genTeamId();
+  loadTeamLocal();
+
+  // Find old extension if editing (to delete old photo if format changed)
+  const existing = teamMembers.find(x => x.id === id);
+  const oldExt   = existing?.fotoExt || null;
+
+  let fotoPath = existing?.fotoPath || null;
+  let fotoExt  = existing?.fotoExt  || null;
+
+  // Upload new photo if one was picked
+  if (teamPhotoFileData) {
+    showToast('Subiendo foto…');
+    const result = await uploadTeamPhoto(id, teamPhotoFileData.base64, teamPhotoFileData.extension, oldExt);
+    if (result) {
+      fotoPath = result.path;
+      fotoExt  = result.ext;
+    } else {
+      msgEl.style.display = 'block';
+      msgEl.style.background = 'rgba(239,68,68,0.1)';
+      msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
+      msgEl.style.color = '#fca5a5';
+      msgEl.textContent = 'No se pudo subir la foto. Los datos de texto se guardarán igual.';
+    }
+  }
+
+  const member = { id, nombre, rol, bio, fotoPath, fotoExt, updatedAt: new Date().toISOString() };
+
+  if (editId) {
+    const idx = teamMembers.findIndex(x => x.id === editId);
+    if (idx >= 0) teamMembers[idx] = member; else teamMembers.push(member);
+  } else {
+    teamMembers.push(member);
+  }
+
+  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+  // Publish team.json to the public repo so nosotros.html can read it
+  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  closeModal('teamMemberModal');
+  renderTeamList();
+  showToast(ok ? 'Miembro guardado y publicado ✓' : 'Guardado localmente — verifica GitHub', ok ? 'success' : 'error');
+}
+
+// ── Delete member ──
+async function deleteTeamMember() {
+  const id = document.getElementById('teamMemberId').value;
+  if (!id) return;
+  loadTeamLocal();
+  const m = teamMembers.find(x => x.id === id);
+  if (!m) return;
+  if (!confirm(`¿Eliminar a "${m.nombre}" del equipo?`)) return;
+
+  // Delete photo from GitHub
+  if (m.fotoPath && m.fotoExt) await deleteTeamPhoto(id, m.fotoExt);
+
+  teamMembers = teamMembers.filter(x => x.id !== id);
+  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  closeModal('teamMemberModal');
+  renderTeamList();
+  showToast(ok ? 'Miembro eliminado ✓' : 'Eliminado localmente — verifica GitHub', ok ? 'success' : 'error');
+}
+
+// ── Render the team list in the Master view ──
+function renderTeamList() {
+  loadTeamLocal();
+  const list  = document.getElementById('teamMembersList');
+  const empty = document.getElementById('teamEmptyState');
+  if (!teamMembers.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = teamMembers.map(m => {
+    const rawUrl = (m.fotoPath && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github')
+      ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`
+      : null;
+    return `
+    <div style="display:flex;align-items:center;gap:16px;background:var(--dark);border:1px solid var(--border);border-radius:12px;padding:14px 18px">
+      <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(233,30,140,0.08);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)">
+        ${rawUrl
+          ? `<img src="${rawUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'" />`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.4)" stroke-width="1.5" width="24" height="24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`
+        }
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.95rem">${m.nombre}</div>
+        <div style="font-size:0.78rem;color:var(--pink-l);font-weight:600;margin-top:2px">${m.rol}</div>
+        ${m.bio ? `<div style="font-size:0.78rem;color:var(--gray);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.bio}</div>` : ''}
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="openTeamMemberForm('${m.id}')">✏ Editar</button>
+    </div>`;
+  }).join('');
+}
+
+// ── Init team view ──
+async function initTeam() {
+  loadTeamLocal();
+  // If local is empty, try loading from GitHub
+  if (!teamMembers.length) {
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/data/socialmedia/${TEAM_FILE}?t=${Date.now()}`;
+      const res = await fetch(rawUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          teamMembers = data;
+          localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+        }
+      }
+    } catch(e) {}
+  }
+  renderTeamList();
 }
 
 // ═══════════════════════════════════════

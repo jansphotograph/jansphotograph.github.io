@@ -43,7 +43,22 @@
     .value-icon { width: 52px; height: 52px; background: rgba(233,30,140,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--pink); }
     .value-card h3 { font-family: var(--font-display); font-size: 1.1rem; color: var(--white); margin-bottom: 10px; }
     .value-card p { font-size: 0.88rem; color: var(--gray); line-height: 1.7; }
-    @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } .values-grid { grid-template-columns: 1fr 1fr; } }
+    /* ── Team section ── */
+    .team-section { margin-bottom: 80px; }
+    .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+    .team-card { background: var(--dark-mid); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; }
+    .team-card:hover { transform: translateY(-4px); border-color: rgba(233,30,140,0.3); }
+    .team-photo { aspect-ratio: 4/3; background: #111; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .team-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .team-photo svg { opacity: 0.12; }
+    .team-photo-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--pink), #f472b6); }
+    .team-info { padding: 24px; }
+    .team-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .team-role { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--pink); margin-bottom: 12px; }
+    .team-bio { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.75; }
+    .team-skeleton { background: var(--dark-mid); border-radius: 20px; }
+    @keyframes pulse { from { opacity: 0.5; } to { opacity: 0.9; } }
+    @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } .values-grid { grid-template-columns: 1fr 1fr; } .team-grid { grid-template-columns: 1fr; } }
     @media (max-width: 560px) { .values-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -92,14 +107,24 @@
           con autenticidad, luz y emoción.
         </p>
         <p>
-          Nuestro equipo cuenta con años de experiencia en sesiones de parejas, 
-          familias, maternidad, y retratos individuales. Trabajamos con dedicación 
+          Nuestro equipo cuenta con experiencia en sesiones de parejas, 
+          cosplays, cumpleaños, xv años, y retratos. Trabajamos con dedicación 
           para que cada foto sea un recuerdo que perdure para siempre.
         </p>
         <p>
-          Con sede en Panamá, hemos tenido el honor de capturar momentos especiales 
-          de cientos de familias y personas. Cada sesión es única, cada imagen, irrepetible.
+          Con sede en Coclé, hemos tenido el honor de capturar momentos especiales 
+          de diferentes familias y personas. Cada sesión es única, cada imagen, irrepetible.
         </p>
+      </div>
+    </div>
+
+    <div class="team-section">
+      <span class="section-label" style="display:block;margin-bottom:12px;">El equipo</span>
+      <h2 class="section-title">Las personas detrás del lente</h2>
+      <div class="team-grid" id="teamGrid">
+        <!-- Loaded dynamically from data/socialmedia/team.json -->
+        <div class="team-card team-skeleton" style="aspect-ratio:unset;min-height:260px;animation:pulse 1.4s ease infinite alternate"></div>
+        <div class="team-card team-skeleton" style="aspect-ratio:unset;min-height:260px;animation:pulse 1.4s ease infinite alternate 0.2s"></div>
       </div>
     </div>
 
@@ -160,6 +185,48 @@
 
   <script src="../js/main.js"></script>
   <script>
+    // ── Load team members from team.json (published by the Master) ──
+    (async function() {
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+
+      const grid = document.getElementById('teamGrid');
+      if (!grid) return;
+
+      try {
+        const res = await fetch(
+          `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/team.json?t=${Date.now()}`,
+          { cache: 'no-cache' }
+        );
+        if (!res.ok) { grid.innerHTML = ''; return; }
+        const members = await res.json();
+        if (!Array.isArray(members) || !members.length) { grid.innerHTML = ''; return; }
+
+        grid.innerHTML = members.map(m => {
+          const photoHtml = m.fotoPath
+            ? `<img src="https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${m.fotoPath}?t=${Date.now()}"
+                 alt="Foto de ${m.nombre}" loading="lazy"
+                 onerror="this.parentElement.innerHTML=\`<svg width='90' height='90' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='0.8'><circle cx='12' cy='8' r='4'/><path d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/></svg>\`" />`
+            : `<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+          return `
+          <div class="team-card">
+            <div class="team-photo">
+              ${photoHtml}
+              <div class="team-photo-accent"></div>
+            </div>
+            <div class="team-info">
+              <div class="team-name">${m.nombre || ''}</div>
+              <div class="team-role">${m.rol || ''}</div>
+              ${m.bio ? `<p class="team-bio">${m.bio}</p>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      } catch(e) {
+        // On error just clear the skeleton, no broken UI
+        grid.innerHTML = '';
+      }
+    })();
+
     // ── Auto-reload when master publishes an update ──
     (function() {
       const OWNER   = 'jansphotograph';
@@ -176,7 +243,6 @@
           const data = await res.json();
           const current = localStorage.getItem(VER_KEY);
           if (current && current !== String(data.v)) {
-            // New version detected — reload the page
             localStorage.setItem(VER_KEY, String(data.v));
             window.location.reload(true);
           } else {
@@ -185,7 +251,6 @@
         } catch(e) {}
       }
 
-      // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
     })();
