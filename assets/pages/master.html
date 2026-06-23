@@ -2112,7 +2112,10 @@ function updateDashboard() {
   const pb = document.getElementById('pendingBadge'); if (pb) pb.textContent = pendingQuotes;
 
   // "Reservas" badge counts pending reservas (web + manual, unified system)
-  const rb = document.getElementById('reservasBadge'); if (rb) rb.textContent = pending;
+  const rb  = document.getElementById('reservasBadge');
+  const rb2 = document.getElementById('reservasBadge2');
+  if (rb)  { rb.textContent  = pending; rb.style.display  = pending > 0 ? '' : 'none'; }
+  if (rb2) { rb2.textContent = pending; rb2.style.display = pending > 0 ? '' : 'none'; }
 
   // ── Pending requests card — only shows up when there's something to act on ──
   const pendingCard  = document.getElementById('dashPendingCard');
@@ -4156,8 +4159,9 @@ function resTotal(r) {
   return base + resExtrasTotal(r);
 }
 function resAbono(r)     { return parseFloat(r.abono) || 0; }
-function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r)); }
-function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round((resAbono(r)/t)*100)) : 0; }
+function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
+function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r) - resCancelado(r)); }
+function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round(((resAbono(r)+resCancelado(r))/t)*100)) : 0; }
 
 // ── Catalog for "add extra" dropdown: public plans + maquillaje + impresiones ──
 function getExtrasCatalog() {
@@ -4202,7 +4206,9 @@ function renderReservasTable(highlightId) {
   if(!tbody) return;
   const pending = allReservas.filter(r=>r.status==='pending').length;
   const badge   = document.getElementById('reservasBadge');
-  if(badge) badge.textContent = pending;
+  const badge2  = document.getElementById('reservasBadge2');
+  if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
+  if(badge2) { badge2.textContent = pending; badge2.style.display = pending > 0 ? '' : 'none'; }
 
   if(!list.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
@@ -4264,12 +4270,12 @@ function viewReserva(id) {
     '\n¡Te esperamos! — Jans Photograph'
   );
 
-  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
+  const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
 
   document.getElementById('reservaModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resEstadoBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
       ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${r.facturaNumero}</div></div>` : ''}
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
@@ -4310,28 +4316,29 @@ function viewReserva(id) {
         <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" />
       </div>
     </div>
-    <div class="field">
-      <label>Pendiente por pagar ($)</label>
-      <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
+    <div class="form-row">
+      <div class="field">
+        <label>Total cancelado ($)</label>
+        <input type="number" id="resCanceladoInput" min="0" step="0.01" value="${cancelado}" />
+      </div>
+      <div class="field">
+        <label>Pendiente por pagar ($)</label>
+        <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
+      </div>
     </div>
-    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:8px">
-      ${renderResFinancialSummary(total, abono, pend, prog)}
-    </div>
-    <div class="btn-row" style="margin-bottom:16px">
-      <button class="btn btn-pink btn-sm" onclick="updateResFinancials('${r.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-        Guardar abono
-      </button>
+    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      ${renderResFinancialSummary(total, abono, cancelado, pend, prog)}
     </div>
 
     <hr class="section-divider" />
     <span class="section-label-sm">Cambiar Estado</span>
+    <input type="hidden" id="resPendingStatus" value="${r.status}" />
     <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-sm ${r.status==='pending'?'btn-pink':'btn-outline'}"   onclick="changeResStatus('${r.id}','pending')">Pendiente</button>
-      <button class="btn btn-sm ${r.status==='confirmed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','confirmed')">Confirmada</button>
-      <button class="btn btn-sm ${r.status==='completed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','completed')">Completada</button>
-      <button class="btn btn-sm ${r.status==='declined'?'btn-red':'btn-outline'}"   onclick="changeResStatus('${r.id}','declined')">Declinada</button>
-      <button class="btn btn-sm ${r.status==='cancelled'?'btn-red':'btn-outline'}"  onclick="changeResStatus('${r.id}','cancelled')">Cancelada</button>
+      <button id="resBtnPending"   class="btn btn-sm ${r.status==='pending'  ?'btn-pink' :'btn-outline'}" onclick="selectResStatus('pending'  )">Pendiente</button>
+      <button id="resBtnConfirmed" class="btn btn-sm ${r.status==='confirmed'?'btn-green':'btn-outline'}" onclick="selectResStatus('confirmed')">Confirmada</button>
+      <button id="resBtnCompleted" class="btn btn-sm ${r.status==='completed'?'btn-green':'btn-outline'}" onclick="selectResStatus('completed')">Completada</button>
+      <button id="resBtnDeclined"  class="btn btn-sm ${r.status==='declined' ?'btn-red'  :'btn-outline'}" onclick="selectResStatus('declined' )">Declinada</button>
+      <button id="resBtnCancelled" class="btn btn-sm ${r.status==='cancelled'?'btn-red'  :'btn-outline'}" onclick="selectResStatus('cancelled')">Cancelada</button>
     </div>
 
     <hr class="section-divider" />
@@ -4348,8 +4355,11 @@ function viewReserva(id) {
     </div>
 
     <hr class="section-divider" />
-    <hr class="section-divider" />
     <div class="btn-row" style="flex-wrap:wrap">
+      <button class="btn btn-pink" onclick="saveReservaModal('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar cambios
+      </button>
       <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
       <a class="btn btn-blue" href="https://wa.me/${WA_NUMBER}?text=${waMsg}" target="_blank" rel="noopener">💬 WhatsApp</a>
       <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
@@ -4414,7 +4424,7 @@ function removeResExtra(id, extraIdx) {
 // Refresh just the financial section of the open modal without a full re-render
 function refreshResFinancialBlock(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
-  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r), prog = resProgress(r);
+  const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
   const extrasList = document.getElementById('resExtrasList');
   if (extrasList) extrasList.innerHTML = renderResExtrasList(r);
   const totalInput = document.getElementById('resTotalInput');
@@ -4422,16 +4432,19 @@ function refreshResFinancialBlock(id) {
   const pendInput = document.getElementById('resPendienteInput');
   if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend>0?'#fca5a5':'#86efac'; }
   const summary = document.getElementById('resFinancialSummary');
-  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, pend, prog);
+  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
 }
 
-function renderResFinancialSummary(total, abono, pend, prog) {
+function renderResFinancialSummary(total, abono, cancelado, pend, prog) {
   return `
     <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
       <span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
-      <span style="color:var(--gray-l)">Abonado</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
+      <span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+      <span style="color:var(--gray-l)">Cancelado</span><span style="font-weight:700;color:#86efac">$${cancelado.toFixed(2)}</span>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px">
       <span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}">$${pend.toFixed(2)}</span>
@@ -4444,15 +4457,56 @@ function renderResFinancialSummary(total, abono, pend, prog) {
 
 function updateResFinancials(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
-  const abonoInput = document.getElementById('resAbonoInput');
-  // Total is auto-calculated from plan + extras — only abono is user-editable here
-  allReservas[idx].totalManual = null; // clear any legacy manual override so it recalculates
-  allReservas[idx].abono       = parseFloat(abonoInput.value) || 0;
+  const abonoInput     = document.getElementById('resAbonoInput');
+  const canceladoInput = document.getElementById('resCanceladoInput');
+  allReservas[idx].totalManual = null;
+  allReservas[idx].abono     = parseFloat(abonoInput?.value)     || 0;
+  allReservas[idx].cancelado = parseFloat(canceladoInput?.value) || 0;
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
   refreshResFinancialBlock(id);
   renderReservasTable();
   updateDashboard();
+}
+
+// ── Seleccionar estado visualmente sin guardar aún ──
+function selectResStatus(status) {
+  document.getElementById('resPendingStatus').value = status;
+  const map = {
+    pending:   { id:'resBtnPending',   cls:'btn-pink'  },
+    confirmed: { id:'resBtnConfirmed', cls:'btn-green' },
+    completed: { id:'resBtnCompleted', cls:'btn-green' },
+    declined:  { id:'resBtnDeclined',  cls:'btn-red'   },
+    cancelled: { id:'resBtnCancelled', cls:'btn-red'   },
+  };
+  Object.entries(map).forEach(([s, {id, cls}]) => {
+    const btn = document.getElementById(id); if (!btn) return;
+    btn.className = `btn btn-sm ${s === status ? cls : 'btn-outline'}`;
+  });
+  // Actualizar el badge de estado en la cabecera del modal
+  const badge = document.getElementById('resEstadoBadge');
+  if (badge) {
+    badge.className = `badge-status ${resStatusClass(status)}`;
+    badge.textContent = resStatusLabel(status);
+  }
+}
+
+// ── Guardar todos los cambios del modal (estado + financiero) ──
+async function saveReservaModal(id) {
+  const newStatus = document.getElementById('resPendingStatus')?.value;
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+
+  // Aplicar estado si cambió
+  if (newStatus && newStatus !== allReservas[idx].status) {
+    await new Promise(resolve => {
+      changeResStatus(id, newStatus);
+      resolve();
+    });
+  }
+
+  // Aplicar financiero
+  updateResFinancials(id);
+  showToast('Reserva guardada ✓', 'success');
 }
 
 function changeResStatus(id, status) {
