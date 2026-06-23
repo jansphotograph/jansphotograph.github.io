@@ -558,7 +558,8 @@
         const ini = parseInt(st.horaInicio, 10);
         const fin = parseInt(st.horaFin,    10);
         if (!isNaN(ini) && !isNaN(fin)) {
-          for (let h = ini; h < fin; h++) blocked.add(h);
+          // Inclusive of fin: a client selecting the end hour would overlap with the event
+          for (let h = ini; h <= fin; h++) blocked.add(h);
         }
       }
       return blocked;
