@@ -7,6 +7,8 @@
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../css/master.css" />
@@ -1020,6 +1022,10 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
               Nueva categoría
             </button>
+            <button class="btn btn-outline" onclick="openBarcodeScanner()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
+              Escanear
+            </button>
             <button class="btn btn-pink" onclick="openInvItemModal()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Añadir insumo
@@ -1674,8 +1680,79 @@
   </div>
 </div>
 
-<!-- ══ INVENTARIO DE INSUMOS MODALS ══ -->
-<!-- Modal: Nueva Categoría -->
+<!-- ══ MODAL: ESCÁNER DE CÓDIGO DE BARRAS ══ -->
+<div class="modal-overlay" id="barcodeScanner">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="barcodeScannerTitle">Escanear insumo</h3>
+      <button class="modal-close" onclick="closeBarcodeScanner()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:16px">
+        <video id="barcodeVideo" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+        <!-- Guía visual -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:70%;height:40%;border:2px solid var(--pink);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+        </div>
+        <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.7)">Apunta la cámara al código de barras</div>
+      </div>
+      <div id="barcodeScanResult" style="display:none;background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:14px"></div>
+      <div id="barcodeScanActions" style="display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn btn-outline btn-sm" onclick="closeBarcodeScanner()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: VER BARCODE DE INSUMO ══ -->
+<div class="modal-overlay" id="invBarcodeModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3 id="invBarcodeModalTitle">Código de barras</h3>
+      <button class="modal-close" onclick="closeModal('invBarcodeModal')">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <canvas id="invBarcodeCanvas" style="max-width:100%;border-radius:8px;background:#fff;padding:16px"></canvas>
+      <div id="invBarcodeCode" style="font-family:monospace;font-size:0.8rem;color:var(--gray);margin-top:8px"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="downloadBarcode()">⬇ Descargar JPG</button>
+        <button class="btn btn-outline" onclick="uploadBarcodeToGitHub()">☁ Subir a GitHub</button>
+      </div>
+      <div id="invBarcodeMsg" style="margin-top:10px;font-size:0.82rem;color:var(--gray)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ESCANEO DE INSUMOS EN RESERVA ══ -->
+<div class="modal-overlay" id="reservaScanModal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3>Registrar insumos utilizados</h3>
+      <button class="modal-close" onclick="closeReservaScan()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:16px">Escanea los insumos que usaste para esta reserva. El stock se descontará automáticamente.</p>
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:16px">
+        <video id="reservaScanVideo" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:70%;height:40%;border:2px solid var(--pink);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+        </div>
+      </div>
+      <!-- Lista de insumos escaneados -->
+      <div id="reservaScanList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:200px;overflow-y:auto"></div>
+      <div class="btn-row">
+        <button class="btn btn-pink" onclick="confirmReservaScan()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmar y descontar stock
+        </button>
+        <button class="btn btn-outline" onclick="closeReservaScan()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: INVENTARIO DE INSUMOS MODALS ══ -->
 <div class="modal-overlay" id="invCategoryModal">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
@@ -1727,6 +1804,17 @@
         <div class="field">
           <label>Categoría *</label>
           <select id="invItemCategory"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Stock en unidades</label>
+          <input type="number" id="invItemStockUnidades" min="0" step="1" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>Stock en hojas</label>
+          <input type="number" id="invItemStockHojas" min="0" step="1" placeholder="0" />
         </div>
       </div>
 
@@ -1930,6 +2018,26 @@ const CONFIG_PUBLIC = {
 };
 const GH_BASE_PUBLIC = () =>
   `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data/socialmedia`;
+
+// Sube cualquier archivo (base64 sin encabezado) a una ruta del repo público
+async function ghPutPublicFile(path, base64Content, commitMsg) {
+  const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
+  let sha = null;
+  try {
+    const r = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (r.ok) { const j = await r.json(); sha = j.sha; }
+  } catch(e) {}
+  const body = { message: commitMsg || `upload ${path}`, content: base64Content };
+  if (sha) body.sha = sha;
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
 
 async function ghPutPublic(file, data) {
   const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
@@ -4404,6 +4512,10 @@ function viewReserva(id) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Generar Factura
       </button>
+      <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
+        Escanear insumos usados
+      </button>
     </div>
 
     <hr class="section-divider" />
@@ -5600,8 +5712,10 @@ function openInvItemModal(id) {
   const item = id ? invItems.find(x=>x.id===id) : null;
   document.getElementById('invItemModalTitle').textContent = item ? 'Editar insumo' : 'Añadir insumo';
   document.getElementById('invItemId').value    = item ? item.id : '';
-  document.getElementById('invItemTitle').value = item ? item.titulo : '';
-  document.getElementById('invItemDesc').value  = item ? (item.descripcion||'') : '';
+  document.getElementById('invItemTitle').value          = item ? item.titulo : '';
+  document.getElementById('invItemDesc').value           = item ? (item.descripcion||'') : '';
+  document.getElementById('invItemStockUnidades').value  = item ? (item.stockUnidades||0) : 0;
+  document.getElementById('invItemStockHojas').value     = item ? (item.stockHojas||0) : 0;
 
   // Foto
   invTempPhoto = null;
@@ -5679,20 +5793,27 @@ async function saveInvItem() {
   const descripcion = document.getElementById('invItemDesc').value.trim();
   const tiendas     = invTempStores.filter(s => s.nombre.trim());
 
+  const stockUnidades = parseInt(document.getElementById('invItemStockUnidades').value) || 0;
+  const stockHojas    = parseInt(document.getElementById('invItemStockHojas').value)    || 0;
+
   if (existingId) {
     const item = invItems.find(x=>x.id===existingId);
     if (item) {
-      item.titulo      = titulo;
-      item.categoryId  = categoryId;
-      item.descripcion = descripcion;
-      item.tiendas     = tiendas;
+      item.titulo        = titulo;
+      item.categoryId    = categoryId;
+      item.descripcion   = descripcion;
+      item.tiendas       = tiendas;
+      item.stockUnidades = stockUnidades;
+      item.stockHojas    = stockHojas;
       if (invTempPhoto) item.foto = invTempPhoto;
     }
   } else {
+    const newId = genInvId();
     invItems.push({
-      id: genInvId(),
-      titulo, categoryId, descripcion, tiendas,
+      id: newId, titulo, categoryId, descripcion, tiendas,
       foto: invTempPhoto || '',
+      stockUnidades, stockHojas,
+      barcodeValue: genBarcodeValue(titulo),
       creadoEn: new Date().toLocaleDateString('es-PA'),
     });
   }
@@ -5748,6 +5869,11 @@ function renderInvItems() {
       <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px">
         <div style="font-weight:700;font-size:0.95rem;color:var(--white)">${item.titulo}</div>
         ${item.descripcion ? `<div style="font-size:0.8rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ''}
+        <!-- Stock -->
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <div style="font-size:0.8rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades||0)>0?'#86efac':'#fca5a5'}">${item.stockUnidades||0}</strong></div>
+          <div style="font-size:0.8rem"><span style="color:var(--gray)">Hojas:</span> <strong style="color:${(item.stockHojas||0)>0?'#86efac':'#fca5a5'}">${item.stockHojas||0}</strong></div>
+        </div>
         ${item.tiendas?.length ? `
           <div style="margin-top:6px">
             <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:5px">Tiendas</div>
@@ -5759,8 +5885,9 @@ function renderInvItems() {
           </div>` : `<div style="font-size:0.8rem;color:var(--gray);margin-top:4px">Sin tiendas registradas</div>`}
       </div>
       <!-- Acciones -->
-      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>
+        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>
         <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>
       </div>
     </div>`;
@@ -5772,6 +5899,271 @@ function loadPaperTypes() { return []; }
 function savePaperInventory(silent) {}
 function checkLowStock() {}
 function logInventoryMovement() {}
+
+// ═══════════════════════════════════════
+//  SISTEMA DE CÓDIGOS DE BARRA
+// ═══════════════════════════════════════
+let currentBarcodeItem  = null; // insumo cuyo barcode estamos viendo
+let zxingReader         = null; // instancia ZXing activa
+let reservaScanItems    = [];   // insumos escaneados en modal de reserva
+let reservaScanResId    = null; // id de la reserva en proceso
+
+// Genera un código único para el insumo (CODE128 compatible)
+function genBarcodeValue(titulo) {
+  const slug = titulo.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+  return `JANS-${slug}-${rand}`;
+}
+
+// Genera el barcode en un <canvas> y retorna base64 JPG
+function generateBarcodeImage(code, titulo) {
+  const canvas = document.createElement('canvas');
+  JsBarcode(canvas, code, {
+    format: 'CODE128',
+    width: 2, height: 80,
+    displayValue: true,
+    text: `${titulo}\n${code}`,
+    fontOptions: 'bold',
+    font: 'monospace',
+    textAlign: 'center',
+    textPosition: 'bottom',
+    textMargin: 6,
+    fontSize: 13,
+    margin: 16,
+    background: '#ffffff',
+    lineColor: '#000000',
+  });
+  return canvas.toDataURL('image/jpeg', 0.95).split(',')[1]; // base64 sin header
+}
+
+// Abre el modal para ver/descargar el barcode de un insumo
+function viewInvBarcode(id) {
+  loadInvData();
+  const item = invItems.find(x=>x.id===id);
+  if (!item) return;
+  currentBarcodeItem = item;
+
+  // Si no tiene código aún, generarlo y guardarlo
+  if (!item.barcodeValue) {
+    item.barcodeValue = genBarcodeValue(item.titulo);
+    saveInvData();
+  }
+
+  document.getElementById('invBarcodeModalTitle').textContent = item.titulo;
+  document.getElementById('invBarcodeCode').textContent       = item.barcodeValue;
+  document.getElementById('invBarcodeMsg').textContent        = '';
+
+  // Renderizar en el canvas del modal
+  const canvas = document.getElementById('invBarcodeCanvas');
+  JsBarcode(canvas, item.barcodeValue, {
+    format: 'CODE128',
+    width: 2.5, height: 90,
+    displayValue: true,
+    text: `${item.titulo}  |  ${item.barcodeValue}`,
+    font: 'monospace', fontSize: 12,
+    textMargin: 8, margin: 20,
+    background: '#ffffff', lineColor: '#000000',
+  });
+
+  openModal('invBarcodeModal');
+}
+
+// Descarga el barcode como JPG
+function downloadBarcode() {
+  if (!currentBarcodeItem) return;
+  const canvas = document.getElementById('invBarcodeCanvas');
+  const link   = document.createElement('a');
+  const slug   = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  link.download = `${slug}.jpg`;
+  link.href     = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+}
+
+// Sube el barcode a /assets/images/barcodes/{nombre}.jpg en el repo público
+async function uploadBarcodeToGitHub() {
+  if (!currentBarcodeItem) return;
+  const msg  = document.getElementById('invBarcodeMsg');
+  msg.textContent = 'Subiendo a GitHub...';
+  const canvas  = document.getElementById('invBarcodeCanvas');
+  const base64  = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+  const slug    = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  const path    = `assets/images/barcodes/${slug}.jpg`;
+  const ok      = await ghPutPublicFile(path, base64, `barcode: ${currentBarcodeItem.titulo}`);
+  if (ok) {
+    // Guardar la URL del barcode en el insumo
+    loadInvData();
+    const item = invItems.find(x=>x.id===currentBarcodeItem.id);
+    if (item) {
+      item.barcodePath = path;
+      item.barcodeUrl  = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+      await saveInvData();
+    }
+    msg.textContent = `✓ Subido: ${path}`;
+    msg.style.color = '#86efac';
+  } else {
+    msg.textContent = 'Error al subir. Verifica el token de GitHub.';
+    msg.style.color = '#fca5a5';
+  }
+}
+
+// ── Escáner genérico con ZXing ──
+async function startZxingScanner(videoId, onDetect) {
+  if (zxingReader) { try { zxingReader.reset(); } catch(e){} }
+  zxingReader = new ZXing.BrowserMultiFormatReader();
+  try {
+    const devices = await zxingReader.listVideoInputDevices();
+    const camId   = devices.length > 1 ? devices[1].deviceId : devices[0]?.deviceId;
+    zxingReader.decodeFromVideoDevice(camId, videoId, (result, err) => {
+      if (result) onDetect(result.getText());
+    });
+  } catch(e) {
+    showToast('No se pudo acceder a la cámara: ' + e.message, 'error');
+  }
+}
+
+function stopZxingScanner() {
+  if (zxingReader) { try { zxingReader.reset(); } catch(e){} zxingReader = null; }
+}
+
+// ── Escáner para inventario (ajuste de stock) ──
+function openBarcodeScanner() {
+  document.getElementById('barcodeScanResult').style.display  = 'none';
+  document.getElementById('barcodeScanActions').style.display = 'none';
+  openModal('barcodeScanner');
+  startZxingScanner('barcodeVideo', code => {
+    stopZxingScanner();
+    handleBarcodeScan(code);
+  });
+}
+
+function closeBarcodeScanner() {
+  stopZxingScanner();
+  closeModal('barcodeScanner');
+}
+
+function handleBarcodeScan(code) {
+  loadInvData();
+  const item = invItems.find(x => x.barcodeValue === code);
+  const resultEl  = document.getElementById('barcodeScanResult');
+  const actionsEl = document.getElementById('barcodeScanActions');
+  resultEl.style.display  = '';
+  actionsEl.style.display = '';
+
+  if (!item) {
+    resultEl.innerHTML = `<div style="color:#fca5a5;font-size:0.88rem">⚠ Código no reconocido: <code>${code}</code></div>`;
+    actionsEl.innerHTML = `<button class="btn btn-outline btn-sm" onclick="openBarcodeScanner()">Volver a escanear</button>`;
+    return;
+  }
+
+  resultEl.innerHTML = `
+    <div style="font-weight:700;color:var(--white);margin-bottom:6px">${item.titulo}</div>
+    <div style="display:flex;gap:20px;font-size:0.85rem">
+      <div><span style="color:var(--gray)">Stock unidades:</span> <strong>${item.stockUnidades||0}</strong></div>
+      <div><span style="color:var(--gray)">Stock hojas:</span> <strong>${item.stockHojas||0}</strong></div>
+    </div>`;
+
+  actionsEl.innerHTML = `
+    <div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:0.82rem;color:var(--gray-l);margin-bottom:10px">Ajustar stock:</div>
+      <div class="form-row" style="gap:10px">
+        <div class="field" style="margin-bottom:0">
+          <label>Unidades (+/-)</label>
+          <input type="number" id="scanAdjUnidades" value="0" step="1" />
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Hojas (+/-)</label>
+          <input type="number" id="scanAdjHojas" value="0" step="1" />
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="applyScanAdjustment('${item.id}')">Aplicar ajuste</button>
+      <button class="btn btn-outline btn-sm" onclick="openBarcodeScanner()">Escanear otro</button>
+    </div>`;
+}
+
+async function applyScanAdjustment(id) {
+  loadInvData();
+  const item  = invItems.find(x=>x.id===id); if(!item) return;
+  const adjU  = parseInt(document.getElementById('scanAdjUnidades')?.value) || 0;
+  const adjH  = parseInt(document.getElementById('scanAdjHojas')?.value)    || 0;
+  item.stockUnidades = Math.max(0, (item.stockUnidades||0) + adjU);
+  item.stockHojas    = Math.max(0, (item.stockHojas||0)    + adjH);
+  await saveInvData();
+  renderInvItems();
+  showToast(`Stock actualizado: ${item.titulo} ✓`);
+  closeBarcodeScanner();
+}
+
+// ── Escáner para reserva (descuento de stock al completar) ──
+function openReservaScan(resId) {
+  reservaScanResId  = resId;
+  reservaScanItems  = [];
+  renderReservaScanList();
+  openModal('reservaScanModal');
+  startZxingScanner('reservaScanVideo', code => handleReservaScan(code));
+}
+
+function closeReservaScan() {
+  stopZxingScanner();
+  closeModal('reservaScanModal');
+  reservaScanItems = [];
+  reservaScanResId = null;
+}
+
+function handleReservaScan(code) {
+  loadInvData();
+  const item = invItems.find(x => x.barcodeValue === code);
+  if (!item) { showToast('Código no reconocido', 'error'); return; }
+
+  // Si ya está en la lista, incrementar cantidad
+  const existing = reservaScanItems.find(x=>x.id===item.id);
+  if (existing) {
+    existing.unidades++;
+    existing.hojas++;
+  } else {
+    reservaScanItems.push({ id: item.id, titulo: item.titulo, unidades: 1, hojas: 0 });
+  }
+  renderReservaScanList();
+  showToast(`Escaneado: ${item.titulo}`);
+}
+
+function renderReservaScanList() {
+  const el = document.getElementById('reservaScanList');
+  if (!el) return;
+  if (!reservaScanItems.length) {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--gray);text-align:center;padding:12px">Aún no has escaneado ningún insumo</div>`;
+    return;
+  }
+  el.innerHTML = reservaScanItems.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--dark);border-radius:9px;padding:10px 14px">
+      <div style="flex:1;font-size:0.85rem;font-weight:600;color:var(--white)">${s.titulo}</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem">
+        <span style="color:var(--gray)">Un:</span>
+        <input type="number" value="${s.unidades}" min="0" step="1" oninput="reservaScanItems[${i}].unidades=+this.value"
+          style="width:50px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:3px 6px;text-align:center" />
+        <span style="color:var(--gray)">Hj:</span>
+        <input type="number" value="${s.hojas}" min="0" step="1" oninput="reservaScanItems[${i}].hojas=+this.value"
+          style="width:50px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:3px 6px;text-align:center" />
+        <button onclick="reservaScanItems.splice(${i},1);renderReservaScanList()"
+          style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.9rem;padding:0 4px">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+async function confirmReservaScan() {
+  if (!reservaScanItems.length) { showToast('No has escaneado ningún insumo', 'error'); return; }
+  loadInvData();
+  for (const s of reservaScanItems) {
+    const item = invItems.find(x=>x.id===s.id); if(!item) continue;
+    item.stockUnidades = Math.max(0, (item.stockUnidades||0) - s.unidades);
+    item.stockHojas    = Math.max(0, (item.stockHojas||0)    - s.hojas);
+  }
+  await saveInvData();
+  renderInvItems();
+  showToast(`Stock descontado para ${reservaScanItems.length} insumo(s) ✓`);
+  closeReservaScan();
+}
 
 
 
