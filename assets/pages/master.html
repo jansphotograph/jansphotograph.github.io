@@ -587,7 +587,7 @@
             </div>
             <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
               <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
-              <span>Crea una carpeta <code>data/</code> con 4 archivos JSON vacíos: <code>quotes.json</code>, <code>services.json</code>, <code>plans.json</code>, <code>calendar.json</code> — todos iniciando con <code>[]</code> excepto calendar que inicia con <code>{}</code></span>
+              <span>Crea una carpeta <code>data/</code> con 5 archivos JSON vacíos: <code>quotes.json</code>, <code>services.json</code>, <code>plans.json</code>, <code>calendar.json</code>, <code>inventario.json</code> — todos iniciando con <code>[]</code> excepto calendar que inicia con <code>{}</code> e inventario con <code>{"categories":[],"items":[]}</code></span>
             </div>
             <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
               <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
@@ -1010,48 +1010,33 @@
 
       <!-- ── INVENTARIO ── -->
       <div class="view" id="view-inventario">
-        <div class="page-header">
-          <h2>Inventario de Papel Foto</h2>
-          <p>Controla tu stock de papel y vincúlalo a los productos de Impresiones</p>
-        </div>
-
-        <!-- Low stock alert banner -->
-        <div id="invLowStockBanner" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fca5a5" stroke-width="2" width="20" height="20" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span id="invLowStockText" style="font-size:0.88rem;color:#fca5a5"></span>
-        </div>
-
-        <!-- Stock cards -->
-        <div class="card">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-            <span style="display:flex;align-items:center;gap:10px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Tipos de Papel
-            </span>
-            <button class="btn btn-sm btn-pink" onclick="addPaperType()">+ Añadir tipo de papel</button>
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Inventario de Insumos</h2>
+            <p>Gestiona tus insumos por categoría, con fotos, descripción y precios por tienda</p>
           </div>
-          <div id="paperTypesList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="openInvCategoryModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              Nueva categoría
+            </button>
+            <button class="btn btn-pink" onclick="openInvItemModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Añadir insumo
+            </button>
+          </div>
         </div>
 
-        <div class="btn-row" style="margin-bottom:24px">
-          <button class="btn btn-pink" onclick="savePaperInventory()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-            Guardar inventario
-          </button>
+        <!-- Filtro por categoría -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="invCategoryTabs">
+          <button class="btn btn-sm btn-pink" onclick="filterInvCategory('all')" id="invTabAll">Todos</button>
         </div>
 
-        <!-- Movement history -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
-            Historial de Movimientos
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Fecha</th><th>Tipo de papel</th><th>Movimiento</th><th>Cantidad</th><th>Motivo</th></tr></thead>
-              <tbody id="invHistoryTable"><tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px">Sin movimientos aún</td></tr></tbody>
-            </table>
-          </div>
+        <!-- Lista de insumos -->
+        <div id="invItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+        <div id="invEmptyState" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin-bottom:12px;opacity:0.4"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <p style="font-size:0.9rem">No hay insumos todavía.<br>Añade una categoría y luego un insumo.</p>
         </div>
       </div>
 
@@ -1689,6 +1674,83 @@
   </div>
 </div>
 
+<!-- ══ INVENTARIO DE INSUMOS MODALS ══ -->
+<!-- Modal: Nueva Categoría -->
+<div class="modal-overlay" id="invCategoryModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 id="invCategoryModalTitle">Nueva categoría</h3>
+      <button class="modal-close" onclick="closeModal('invCategoryModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invCategoryId" />
+      <div class="field">
+        <label>Nombre de la categoría</label>
+        <input type="text" id="invCategoryName" placeholder="Ej. Papeles, Tintas, Accesorios..." />
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-pink" onclick="saveInvCategory()">Guardar</button>
+        <button class="btn btn-outline" onclick="closeModal('invCategoryModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Insumo -->
+<div class="modal-overlay" id="invItemModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h3 id="invItemModalTitle">Añadir insumo</h3>
+      <button class="modal-close" onclick="closeModal('invItemModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invItemId" />
+
+      <!-- Foto -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div id="invItemPhotoPreview" onclick="document.getElementById('invItemPhotoInput').click()"
+          style="width:80px;height:80px;border-radius:12px;background:var(--dark);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0">
+          <svg id="invItemPhotoIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28" style="color:var(--gray)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div>
+          <div style="font-size:0.85rem;color:var(--white);font-weight:600;margin-bottom:4px">Foto del insumo</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Haz clic para cambiar la imagen</div>
+          <input type="file" id="invItemPhotoInput" accept="image/*" style="display:none" onchange="previewInvItemPhoto(this)" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Título *</label>
+          <input type="text" id="invItemTitle" placeholder="Ej. Papel Foto 4x6 Brillante" />
+        </div>
+        <div class="field">
+          <label>Categoría *</label>
+          <select id="invItemCategory"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="invItemDesc" rows="2" placeholder="Especificaciones, notas, etc." style="resize:vertical"></textarea>
+      </div>
+
+      <div style="margin-top:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="section-label-sm" style="margin:0">Tiendas y precios</span>
+          <button class="btn btn-sm btn-outline" onclick="addInvStore()">+ Añadir tienda</button>
+        </div>
+        <div id="invStoresList" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-pink" onclick="saveInvItem()">Guardar insumo</button>
+        <button class="btn btn-outline" onclick="closeModal('invItemModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TEAM MEMBER MODAL ══ -->
 <div class="modal-overlay" id="teamMemberModal">
   <div class="modal" style="max-width:500px">
@@ -1960,14 +2022,19 @@ async function loadAllData() {
       return;
     }
     showToast('Sincronizando con GitHub…', 'success');
-    const [q, s, pl, cal] = await Promise.all([
+    const [q, s, pl, cal, inv] = await Promise.all([
       ghGet('quotes.json'), ghGet('services.json'),
-      ghGet('plans.json'),  ghGet('calendar.json')
+      ghGet('plans.json'),  ghGet('calendar.json'),
+      ghGet('inventario.json')
     ]);
     if (q)   state.quotes   = q;
     if (s)   state.services = s;
     if (pl)  state.plans    = pl;
     if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); ghPutPublic('calendar.json', cal).catch(()=>{}); }
+    if (inv) {
+      if (Array.isArray(inv.items))      { invItems      = inv.items;      localStorage.setItem(INV_KEY,     JSON.stringify(invItems)); }
+      if (Array.isArray(inv.categories)) { invCategories = inv.categories; localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories)); }
+    }
     updateDashboard(); renderQuotesTable(); renderCalendar();
     renderServices(); renderPlans(); updateQPlanSelect();
     const el = document.getElementById('ghRepoDisplay');
@@ -5421,196 +5488,293 @@ function initServAdicionales() {
 // ═══════════════════════════════════════
 //  INVENTARIO — Papel Foto
 // ═══════════════════════════════════════
-const INV_KEY      = 'jans_inventario_papel';
-const INV_HIST_KEY = 'jans_inventario_historial';
-let paperTypes  = [];
-let invHistory  = [];
+// ═══════════════════════════════════════
+//  INVENTARIO DE INSUMOS
+// ═══════════════════════════════════════
+const INV_KEY      = 'jans_inventario_insumos';
+const INV_CAT_KEY  = 'jans_inventario_categorias';
+let invItems      = [];
+let invCategories = [];
+let invActiveFilter = 'all';
+let invTempStores = [];   // tiendas en el modal abierto
+let invTempPhoto  = null; // base64 de la foto seleccionada
 
-function loadPaperTypes() {
-  try { paperTypes = JSON.parse(localStorage.getItem(INV_KEY) || '[]'); } catch(e) { paperTypes = []; }
-  return paperTypes;
+function loadInvData() {
+  try { invItems      = JSON.parse(localStorage.getItem(INV_KEY)     || '[]'); } catch(e) { invItems      = []; }
+  try { invCategories = JSON.parse(localStorage.getItem(INV_CAT_KEY) || '[]'); } catch(e) { invCategories = []; }
 }
 
-function loadInvHistory() {
-  try { invHistory = JSON.parse(localStorage.getItem(INV_HIST_KEY) || '[]'); } catch(e) { invHistory = []; }
-  return invHistory;
+async function saveInvData() {
+  const data = { categories: invCategories, items: invItems };
+  localStorage.setItem(INV_KEY,     JSON.stringify(invItems));
+  localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
+  const ok = await ghPut('inventario.json', data);
+  if (ok) showToast('Inventario guardado ✓');
+  else    showToast('Guardado localmente — verifica GitHub', 'error');
 }
 
-function genPaperId() {
-  return 'paper_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+async function syncInvFromGitHub() {
+  const data = await ghGet('inventario.json');
+  if (!data) return;
+  if (Array.isArray(data.items))      { invItems      = data.items;      localStorage.setItem(INV_KEY,     JSON.stringify(invItems)); }
+  if (Array.isArray(data.categories)) { invCategories = data.categories; localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories)); }
+}
+function genInvId() { return 'inv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+
+// ── Init ──
+async function initInventario() {
+  loadInvData();
+  renderInvCategoryTabs();
+  renderInvItems();
+  // Sincronizar desde GitHub en background
+  try {
+    await syncInvFromGitHub();
+    renderInvCategoryTabs();
+    renderInvItems();
+  } catch(e) { console.warn('Inventario: sync GitHub falló', e); }
 }
 
-function addPaperType() {
-  loadPaperTypes();
-  paperTypes.push({
-    id: genPaperId(),
-    nombre: '',
-    unidad: 'hojas',     // 'hojas' (sueltas) or 'paquetes' (packs with a defined size)
-    stock: 0,            // current stock, always tracked in sheets internally
-    paqueteSize: 100,    // sheets per package (only relevant when unidad === 'paquetes')
-    minStock: 20,        // low-stock alert threshold, in sheets
-  });
-  renderPaperTypes();
+// ── Categorías ──
+function openInvCategoryModal(id) {
+  loadInvData();
+  const cat = id ? invCategories.find(c=>c.id===id) : null;
+  document.getElementById('invCategoryModalTitle').textContent = cat ? 'Editar categoría' : 'Nueva categoría';
+  document.getElementById('invCategoryId').value   = cat ? cat.id : '';
+  document.getElementById('invCategoryName').value = cat ? cat.nombre : '';
+  openModal('invCategoryModal');
 }
 
-function deletePaperType(id) {
-  if (!confirm('¿Eliminar este tipo de papel? Los productos de Impresiones vinculados a él quedarán sin vincular.')) return;
-  loadPaperTypes();
-  paperTypes = paperTypes.filter(p => p.id !== id);
-  // Unlink any servData.impresiones items pointing to this paper type
-  loadServAdicionales();
-  (servData.impresiones || []).forEach(s => { if (s.papelTipoId === id) s.papelTipoId = ''; });
-  localStorage.setItem(SA_KEY, JSON.stringify(servData));
-  renderPaperTypes();
-  showToast('Tipo de papel eliminado', 'error');
+async function saveInvCategory() {
+  const nombre = document.getElementById('invCategoryName').value.trim();
+  if (!nombre) { showToast('Escribe un nombre para la categoría', 'error'); return; }
+  loadInvData();
+  const existingId = document.getElementById('invCategoryId').value;
+  if (existingId) {
+    const cat = invCategories.find(c=>c.id===existingId);
+    if (cat) cat.nombre = nombre;
+  } else {
+    invCategories.push({ id: genInvId(), nombre });
+  }
+  saveInvData();
+  closeModal('invCategoryModal');
+  renderInvCategoryTabs();
+  renderInvItems();
+  showToast('Categoría guardada ✓');
 }
 
-function renderPaperTypes() {
-  loadPaperTypes();
-  const el = document.getElementById('paperTypesList');
+async function deleteInvCategory(id) {
+  if (!confirm('¿Eliminar esta categoría? Los insumos de esta categoría quedarán sin categoría.')) return;
+  loadInvData();
+  invCategories = invCategories.filter(c=>c.id!==id);
+  invItems.forEach(it => { if (it.categoryId === id) it.categoryId = ''; });
+  saveInvData();
+  if (invActiveFilter === id) invActiveFilter = 'all';
+  renderInvCategoryTabs();
+  renderInvItems();
+  showToast('Categoría eliminada', 'error');
+}
+
+function renderInvCategoryTabs() {
+  loadInvData();
+  const container = document.getElementById('invCategoryTabs');
+  if (!container) return;
+  container.innerHTML = `
+    <button class="btn btn-sm ${invActiveFilter==='all'?'btn-pink':'btn-outline'}" onclick="filterInvCategory('all')">Todos</button>
+    ${invCategories.map(c => `
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="btn btn-sm ${invActiveFilter===c.id?'btn-pink':'btn-outline'}" onclick="filterInvCategory('${c.id}')">${c.nombre}</button>
+        <button onclick="openInvCategoryModal('${c.id}')" title="Editar" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.8rem;padding:2px 4px">✏</button>
+        <button onclick="deleteInvCategory('${c.id}')" title="Eliminar" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.8rem;padding:2px 4px">✕</button>
+      </div>`).join('')}`;
+}
+
+function filterInvCategory(id) {
+  invActiveFilter = id;
+  renderInvCategoryTabs();
+  renderInvItems();
+}
+
+// ── Items ──
+function openInvItemModal(id) {
+  loadInvData();
+  const item = id ? invItems.find(x=>x.id===id) : null;
+  document.getElementById('invItemModalTitle').textContent = item ? 'Editar insumo' : 'Añadir insumo';
+  document.getElementById('invItemId').value    = item ? item.id : '';
+  document.getElementById('invItemTitle').value = item ? item.titulo : '';
+  document.getElementById('invItemDesc').value  = item ? (item.descripcion||'') : '';
+
+  // Foto
+  invTempPhoto = null;
+  const preview = document.getElementById('invItemPhotoPreview');
+  const icon    = document.getElementById('invItemPhotoIcon');
+  if (item?.foto) {
+    preview.style.backgroundImage = `url(${item.foto})`;
+    preview.style.backgroundSize  = 'cover';
+    preview.style.backgroundPosition = 'center';
+    if (icon) icon.style.display = 'none';
+  } else {
+    preview.style.backgroundImage = '';
+    if (icon) icon.style.display = '';
+  }
+
+  // Categoría select
+  const catSel = document.getElementById('invItemCategory');
+  catSel.innerHTML = `<option value="">— Sin categoría —</option>` +
+    invCategories.map(c => `<option value="${c.id}" ${item?.categoryId===c.id?'selected':''}>${c.nombre}</option>`).join('');
+
+  // Tiendas
+  invTempStores = item ? JSON.parse(JSON.stringify(item.tiendas||[])) : [];
+  renderInvStoresList();
+
+  openModal('invItemModal');
+}
+
+function previewInvItemPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    invTempPhoto = e.target.result;
+    const preview = document.getElementById('invItemPhotoPreview');
+    const icon    = document.getElementById('invItemPhotoIcon');
+    preview.style.backgroundImage = `url(${invTempPhoto})`;
+    preview.style.backgroundSize  = 'cover';
+    preview.style.backgroundPosition = 'center';
+    if (icon) icon.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function addInvStore() {
+  invTempStores.push({ nombre: '', precio: '' });
+  renderInvStoresList();
+}
+
+function renderInvStoresList() {
+  const el = document.getElementById('invStoresList');
   if (!el) return;
-  if (!paperTypes.length) {
-    el.innerHTML = `<div style="color:var(--gray);font-size:0.85rem;padding:8px 0">Sin tipos de papel registrados. Haz clic en "+ Añadir tipo de papel".</div>`;
-    checkLowStock();
+  if (!invTempStores.length) {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--gray);padding:6px 0">Sin tiendas añadidas aún.</div>`;
     return;
   }
-  el.innerHTML = paperTypes.map((p, i) => {
-    const isLow = p.stock <= p.minStock;
-    const packsAvailable = p.unidad === 'paquetes' ? Math.floor(p.stock / (p.paqueteSize || 1)) : null;
+  el.innerHTML = invTempStores.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--dark);border-radius:9px;padding:10px 12px">
+      <input type="text" value="${s.nombre}" placeholder="Nombre de tienda"
+        oninput="invTempStores[${i}].nombre=this.value"
+        style="flex:2;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.85rem;padding:3px 0;outline:none" />
+      <span style="color:var(--gray);font-size:0.85rem">$</span>
+      <input type="number" value="${s.precio}" placeholder="0.00" min="0" step="0.01"
+        oninput="invTempStores[${i}].precio=this.value"
+        style="width:80px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.85rem;font-weight:700;padding:3px 0;outline:none;text-align:right" />
+      <button onclick="invTempStores.splice(${i},1);renderInvStoresList()"
+        style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1rem;padding:0;flex-shrink:0">✕</button>
+    </div>`).join('');
+}
+
+async function saveInvItem() {
+  const titulo = document.getElementById('invItemTitle').value.trim();
+  if (!titulo) { showToast('El título es obligatorio', 'error'); return; }
+  loadInvData();
+  const existingId  = document.getElementById('invItemId').value;
+  const categoryId  = document.getElementById('invItemCategory').value;
+  const descripcion = document.getElementById('invItemDesc').value.trim();
+  const tiendas     = invTempStores.filter(s => s.nombre.trim());
+
+  if (existingId) {
+    const item = invItems.find(x=>x.id===existingId);
+    if (item) {
+      item.titulo      = titulo;
+      item.categoryId  = categoryId;
+      item.descripcion = descripcion;
+      item.tiendas     = tiendas;
+      if (invTempPhoto) item.foto = invTempPhoto;
+    }
+  } else {
+    invItems.push({
+      id: genInvId(),
+      titulo, categoryId, descripcion, tiendas,
+      foto: invTempPhoto || '',
+      creadoEn: new Date().toLocaleDateString('es-PA'),
+    });
+  }
+  saveInvData();
+  closeModal('invItemModal');
+  renderInvItems();
+  showToast('Insumo guardado ✓');
+}
+
+async function deleteInvItem(id) {
+  if (!confirm('¿Eliminar este insumo?')) return;
+  loadInvData();
+  invItems = invItems.filter(x=>x.id!==id);
+  saveInvData();
+  renderInvItems();
+  showToast('Insumo eliminado', 'error');
+}
+
+function renderInvItems() {
+  loadInvData();
+  const grid  = document.getElementById('invItemsGrid');
+  const empty = document.getElementById('invEmptyState');
+  if (!grid) return;
+
+  const filtered = invActiveFilter === 'all'
+    ? invItems
+    : invItems.filter(x => x.categoryId === invActiveFilter);
+
+  if (!filtered.length) {
+    grid.style.display  = 'none';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  grid.style.display  = '';
+  if (empty) empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(item => {
+    const cat      = invCategories.find(c=>c.id===item.categoryId);
+    const bestPrice = item.tiendas?.length
+      ? Math.min(...item.tiendas.map(s=>parseFloat(s.precio)||Infinity))
+      : null;
+
     return `
-    <div style="background:var(--black);border:1px solid ${isLow ? 'rgba(239,68,68,0.4)' : 'var(--border)'};border-radius:10px;padding:14px 16px">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-        <input type="text" value="${p.nombre}" placeholder="Ej. Papel foto 4x6 brillante" onchange="paperTypes[${i}].nombre=this.value"
-          style="flex:1;min-width:180px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.95rem;font-weight:600;padding:4px 0;outline:none" />
-        <button onclick="deletePaperType('${p.id}')" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1.1rem;padding:0">✕</button>
+    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden">
+      <!-- Foto -->
+      <div style="height:150px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+        ${item.foto
+          ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}
+        ${cat ? `<span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.6);color:var(--white);font-size:0.7rem;font-weight:600;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)">${cat.nombre}</span>` : ''}
       </div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:0.82rem">
-        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
-          Unidad:
-          <select onchange="paperTypes[${i}].unidad=this.value; renderPaperTypes()"
-            style="background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 8px;outline:none">
-            <option value="hojas" ${p.unidad==='hojas'?'selected':''}>Hojas sueltas</option>
-            <option value="paquetes" ${p.unidad==='paquetes'?'selected':''}>Paquetes</option>
-          </select>
-        </label>
-        ${p.unidad === 'paquetes' ? `
-        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
-          Hojas/paquete:
-          <input type="number" value="${p.paqueteSize||100}" min="1" onchange="paperTypes[${i}].paqueteSize=parseInt(this.value)||1; renderPaperTypes()"
-            style="width:60px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
-        </label>` : ''}
-        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
-          Stock actual (hojas):
-          <input type="number" value="${p.stock}" min="0" onchange="paperTypes[${i}].stock=parseInt(this.value)||0; renderPaperTypes()"
-            style="width:70px;background:var(--dark);border:1px solid ${isLow?'#fca5a5':'var(--border)'};border-radius:6px;color:${isLow?'#fca5a5':'var(--white)'};font-family:var(--font);font-size:0.85rem;font-weight:700;padding:4px 6px;text-align:center;outline:none" />
-        </label>
-        ${packsAvailable !== null ? `<span style="color:var(--gray)">(~${packsAvailable} paquetes)</span>` : ''}
-        <label style="display:flex;align-items:center;gap:6px;color:var(--gray-l)">
-          Alertar bajo:
-          <input type="number" value="${p.minStock}" min="0" onchange="paperTypes[${i}].minStock=parseInt(this.value)||0; renderPaperTypes()"
-            style="width:55px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
-        </label>
-        ${isLow ? '<span style="color:#fca5a5;font-weight:700;font-size:0.78rem">⚠ Stock bajo</span>' : ''}
+      <!-- Info -->
+      <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-weight:700;font-size:0.95rem;color:var(--white)">${item.titulo}</div>
+        ${item.descripcion ? `<div style="font-size:0.8rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ''}
+        ${item.tiendas?.length ? `
+          <div style="margin-top:6px">
+            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:5px">Tiendas</div>
+            ${item.tiendas.map(s => `
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;padding:4px 0;border-top:1px solid rgba(255,255,255,0.04)">
+                <span style="color:var(--gray-l)">${s.nombre}</span>
+                <span style="font-weight:700;color:${parseFloat(s.precio)===bestPrice?'#86efac':'var(--white)'}">$${parseFloat(s.precio||0).toFixed(2)}</span>
+              </div>`).join('')}
+          </div>` : `<div style="font-size:0.8rem;color:var(--gray);margin-top:4px">Sin tiendas registradas</div>`}
       </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn btn-sm btn-outline" onclick="quickAdjustStock('${p.id}', 1)">+ Registrar entrada</button>
-        <button class="btn btn-sm btn-outline" onclick="quickAdjustStock('${p.id}', -1)">− Registrar salida</button>
+      <!-- Acciones -->
+      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>
+        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>
       </div>
     </div>`;
   }).join('');
-  checkLowStock();
 }
 
-function quickAdjustStock(paperId, direction) {
-  loadPaperTypes();
-  const p = paperTypes.find(x => x.id === paperId);
-  if (!p) return;
-  const label = direction > 0 ? 'añadir' : 'restar';
-  const amountStr = prompt(`¿Cuántas hojas quieres ${label}?`, '100');
-  if (amountStr === null) return;
-  const amount = parseInt(amountStr);
-  if (isNaN(amount) || amount <= 0) { showToast('Cantidad inválida', 'error'); return; }
-  const motivo = direction > 0
-    ? (prompt('Motivo (opcional, ej. "Compra de paquetes")', 'Compra de paquetes') || 'Entrada manual')
-    : (prompt('Motivo (opcional, ej. "Ajuste de inventario")', 'Ajuste manual') || 'Salida manual');
+// ── Stubs de compatibilidad para funciones legacy que usan deductInventory ──
+function loadPaperTypes() { return []; }
+function savePaperInventory(silent) {}
+function checkLowStock() {}
+function logInventoryMovement() {}
 
-  p.stock = Math.max(0, p.stock + (direction * amount));
-  logInventoryMovement(p.nombre, direction > 0 ? 'entrada' : 'salida', amount, motivo);
-  renderPaperTypes();
-  savePaperInventory(true);
-}
 
-function logInventoryMovement(paperNombre, tipo, cantidad, motivo) {
-  loadInvHistory();
-  invHistory.unshift({
-    fecha: new Date().toLocaleString('es-PA', { dateStyle: 'short', timeStyle: 'short' }),
-    paper: paperNombre,
-    tipo,            // 'entrada' | 'salida'
-    cantidad,
-    motivo,
-  });
-  invHistory = invHistory.slice(0, 100); // keep last 100 movements
-  localStorage.setItem(INV_HIST_KEY, JSON.stringify(invHistory));
-  renderInvHistory();
-}
 
-function renderInvHistory() {
-  loadInvHistory();
-  const tbody = document.getElementById('invHistoryTable');
-  if (!tbody) return;
-  if (!invHistory.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:20px">Sin movimientos aún</td></tr>';
-    return;
-  }
-  tbody.innerHTML = invHistory.map(h => `
-    <tr>
-      <td style="font-size:0.82rem;color:var(--gray-l)">${h.fecha}</td>
-      <td style="font-size:0.85rem">${h.paper}</td>
-      <td><span style="color:${h.tipo==='entrada'?'#86efac':'#fca5a5'};font-weight:700;font-size:0.8rem">${h.tipo==='entrada'?'↑ Entrada':'↓ Salida'}</span></td>
-      <td style="font-weight:700;font-size:0.85rem">${h.cantidad} hojas</td>
-      <td style="font-size:0.8rem;color:var(--gray-l)">${h.motivo}</td>
-    </tr>`).join('');
-}
-
-function checkLowStock() {
-  const lowItems = paperTypes.filter(p => p.stock <= p.minStock);
-  const banner = document.getElementById('invLowStockBanner');
-  const text   = document.getElementById('invLowStockText');
-  const badge  = document.getElementById('inventarioBadge');
-  if (!banner) return;
-  if (lowItems.length) {
-    banner.style.display = 'flex';
-    text.textContent = lowItems.length === 1
-      ? `"${lowItems[0].nombre}" tiene stock bajo (${lowItems[0].stock} hojas).`
-      : `${lowItems.length} tipos de papel con stock bajo: ${lowItems.map(p=>p.nombre).join(', ')}.`;
-    if (badge) { badge.style.display = 'inline-block'; badge.textContent = lowItems.length; }
-  } else {
-    banner.style.display = 'none';
-    if (badge) badge.style.display = 'none';
-  }
-}
-
-async function savePaperInventory(silent) {
-  loadPaperTypes();
-  localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
-  const ok = await ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
-  if (!silent) {
-    if (ok) showToast('Inventario guardado ✓');
-    else    showToast('Guardado localmente — verifica GitHub para publicar', 'error');
-  }
-  checkLowStock();
-}
-
-function initInventario() {
-  loadPaperTypes();
-  loadInvHistory();
-  renderPaperTypes();
-  renderInvHistory();
-}
-
-// ── Automatic stock deduction when a reserva is confirmed ──
-// Looks at the reserva's plan + extras, matches any against servData.impresiones
-// (by name), and if that product is linked to a paper type, deducts the sheets.
 function deductInventoryForReserva(r) {
   loadServAdicionales();
   loadPaperTypes();
