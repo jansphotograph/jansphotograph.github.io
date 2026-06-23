@@ -1995,7 +1995,8 @@ async function ghGet(file) {
   const json = await res.json();
   state.fileSHAs[file] = json.sha;
   try {
-    return JSON.parse(atob(json.content.replace(/\n/g, '')));
+    const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    return JSON.parse(decoded);
   } catch(e) {
     console.warn(`ghGet: failed to parse ${file}:`, e);
     return null;
@@ -5343,7 +5344,7 @@ async function loadLastReloadInfo() {
     );
     if (res.ok) {
       const j = await res.json();
-      const d = JSON.parse(atob(j.content.replace(/\n/g,'')));
+      const d = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))));
       const ts = new Date(d.ts).toLocaleString('es-PA', { dateStyle:'medium', timeStyle:'short' });
       el.innerHTML = '<strong style="color:var(--white)">' + ts + '</strong><br><span style="color:var(--gray)">' + (d.note||'Sin nota') + '</span>';
     } else {
