@@ -931,6 +931,8 @@
         </div>
       </div>
 
+      </div>
+
       <!-- ── EQUIPO ── -->
       <div class="view" id="view-team">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -2106,11 +2108,16 @@ function updateDashboard() {
 
   // "Cotizaciones" badge counts ONLY manual quotes (state.quotes) — these are a
   // separate workflow from public web reservas and must never be mixed together.
+  // «Cotizaciones» badge — solo quotes pendientes
   const pendingQuotes = (state.quotes || []).filter(q => q.status === 'pending').length;
-  const pb = document.getElementById('pendingBadge'); if (pb) pb.textContent = pendingQuotes;
+  const pb = document.getElementById('pendingBadge');
+  if (pb) { pb.textContent = pendingQuotes; pb.style.display = pendingQuotes > 0 ? '' : 'none'; }
 
-  // "Reservas" badge counts pending reservas (web + manual, unified system)
-  const rb = document.getElementById('reservasBadge'); if (rb) rb.textContent = pending;
+  // «Reservas» badge — reservas pendientes (grupo + pestaña)
+  const rb  = document.getElementById('reservasBadge');
+  const rb2 = document.getElementById('reservasBadge2');
+  if (rb)  { rb.textContent  = pending; rb.style.display  = pending > 0 ? '' : 'none'; }
+  if (rb2) { rb2.textContent = pending; rb2.style.display = pending > 0 ? '' : 'none'; }
 
   // ── Pending requests card — only shows up when there's something to act on ──
   const pendingCard  = document.getElementById('dashPendingCard');
@@ -4200,7 +4207,9 @@ function renderReservasTable(highlightId) {
   if(!tbody) return;
   const pending = allReservas.filter(r=>r.status==='pending').length;
   const badge   = document.getElementById('reservasBadge');
-  if(badge) badge.textContent = pending;
+  const badge2  = document.getElementById('reservasBadge2');
+  if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
+  if(badge2) { badge2.textContent = pending; badge2.style.display = pending > 0 ? '' : 'none'; }
 
   if(!list.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
