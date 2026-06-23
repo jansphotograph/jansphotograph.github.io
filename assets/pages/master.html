@@ -7,9 +7,477 @@
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="../css/master.css" />
+  <style>
+    /* Remove number input spinner arrows */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    /* ══════════════════════════════════════════
+       MASTER — JANS PHOTOGRAPH ADMIN SYSTEM
+       ══════════════════════════════════════════ */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:     #c71e5f;
+      --pink-l:   #e91e8c;
+      --black:    #0d0d0d;
+      --dark:     #141414;
+      --panel:    #1c1c1c;
+      --border:   rgba(255,255,255,0.07);
+      --gray:     #666;
+      --gray-l:   #999;
+      --white:    #ffffff;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --blue:     #3b82f6;
+      --font:     'Inter', system-ui, sans-serif;
+      --serif:    'Playfair Display', Georgia, serif;
+      --radius:   12px;
+      --shadow:   0 8px 32px rgba(0,0,0,0.45);
+    }
+
+    html, body { height: 100%; background: var(--black); color: var(--white); font-family: var(--font); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: var(--dark); }
+    ::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 3px; }
+
+    /* Login moved to assets/pages/auth/auth.html */
+
+    /* ══════════════ MAIN APP ══════════════ */
+    #appScreen { display: block; min-height: 100vh; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px;
+      background: rgba(20,20,20,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .topbar-left img { height: 32px; width: auto; }
+    .topbar-title { font-family: var(--serif); font-size: 1.1rem; }
+    .topbar-title span { color: var(--pink-l); }
+    .topbar-badge { font-size: 0.68rem; background: var(--pink); color: white; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.05em; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .topbar-user { font-size: 0.82rem; color: var(--gray-l); }
+    .btn-logout {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--gray-l);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Mobile nav toggle (hidden on desktop) ── */
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 38px; height: 38px;
+      align-items: center; justify-content: center;
+      color: var(--white);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover { border-color: var(--pink); }
+    .sidebar-toggle svg { width: 19px; height: 19px; }
+
+    /* ── Sidebar overlay (mobile only) ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 149;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .sidebar-overlay.show { display: block; opacity: 1; }
+
+    /* ── Layout ── */
+    .app-layout { display: flex; padding-top: 60px; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--dark);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: fixed;
+      top: 60px; bottom: 0;
+      overflow-y: auto;
+    }
+    .sidebar-section { padding: 0 16px; margin-bottom: 8px; }
+    .sidebar-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); padding: 0 12px; margin-bottom: 6px; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      font-size: 0.88rem;
+      color: var(--gray-l);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none; background: none; width: 100%; text-align: left; font-family: var(--font);
+      margin-bottom: 2px;
+    }
+    .sidebar-link svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+    .sidebar-link.active { background: rgba(199,30,95,0.15); color: var(--pink-l); }
+    .sidebar-link .badge { margin-left: auto; background: var(--pink); color: white; font-size: 0.65rem; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+
+    /* ── Collapsible sidebar groups ── */
+    .sidebar-group { padding: 0 16px; margin-bottom: 4px; }
+    .sidebar-group-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: none;
+      border: none;
+      color: var(--gray-l);
+      font-family: var(--font);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 10px 8px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-group-toggle:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+    .sidebar-group-toggle .chev { width: 14px; height: 14px; transition: transform 0.25s ease; flex-shrink: 0; }
+    .sidebar-group.open .sidebar-group-toggle .chev { transform: rotate(180deg); }
+    .sidebar-group-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .sidebar-group.open .sidebar-group-body { max-height: 500px; }
+
+    /* ── Main Content ── */
+    .main-content { margin-left: 220px; flex: 1; padding: 32px; }
+
+    /* ── Views ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 28px; }
+    .page-header h2 { font-size: 1.5rem; font-weight: 700; }
+    .page-header p { color: var(--gray-l); font-size: 0.88rem; margin-top: 4px; }
+
+    /* ── Stats cards ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .stat-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-l); margin-bottom: 8px; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-sub { font-size: 0.75rem; color: var(--gray-l); margin-top: 4px; }
+    .stat-card.pink .stat-value { color: var(--pink-l); }
+    .stat-card.green .stat-value { color: var(--green); }
+    .stat-card.amber .stat-value { color: var(--amber); }
+    .stat-card.blue .stat-value { color: var(--blue); }
+
+    /* ── Cards / Panels ── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .card-title svg { width: 18px; height: 18px; color: var(--pink-l); }
+
+    /* ── CALENDAR ── */
+    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .cal-nav { display: flex; align-items: center; gap: 12px; }
+    .cal-nav-btn {
+      background: var(--dark); border: 1px solid var(--border);
+      color: var(--white); width: 32px; height: 32px; border-radius: 8px;
+      cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .cal-nav-btn:hover { border-color: var(--pink); color: var(--pink-l); }
+    .cal-month { font-size: 1.05rem; font-weight: 700; min-width: 160px; text-align: center; }
+
+    /* ── Calendar views ── */
+    .cal-view-btns { display:flex; gap:6px; }
+    .cal-view-btn  { padding:7px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--gray-l); font-size:0.78rem; font-weight:600; cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+    .cal-view-btn.active { background:var(--pink); border-color:var(--pink); color:#fff; }
+    .cal-view-btn:hover:not(.active) { border-color:var(--white); color:var(--white); }
+    /* Month */
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+    .cal-dow  { text-align:center; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--gray); padding:8px 0; }
+    .cal-day  { min-height:80px; display:flex; flex-direction:column; padding:6px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all 0.15s; position:relative; overflow:hidden; }
+    .cal-day:hover:not(.empty) { border-color:rgba(233,30,140,0.35); background:rgba(255,255,255,0.03); }
+    .cal-day.empty   { cursor:default; }
+    .cal-day.today   { border-color:var(--pink); }
+    .cal-day.today .day-num { color:var(--pink-l); }
+    .cal-day.available { background:rgba(34,197,94,0.07); }
+    .cal-day.booked    { background:rgba(199,30,95,0.1); }
+    .cal-day.cal-event { position:relative; font-weight:700; }
+    .cal-day.cal-event::after { content:''; position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:5px; height:5px; border-radius:50%; background:var(--ev-color,var(--pink)); }
+    .cal-day.cal-event.ev-pink   { background:rgba(233,30,140,0.18); --ev-color:#e91e8c; }
+    .cal-day.cal-event.ev-blue   { background:rgba(59,130,246,0.18); --ev-color:#3b82f6; }
+    .cal-day.cal-event.ev-green  { background:rgba(34,197,94,0.18);  --ev-color:#22c55e; }
+    .cal-day.cal-event.ev-amber  { background:rgba(245,158,11,0.18); --ev-color:#f59e0b; }
+    .cal-day.cal-event.ev-purple { background:rgba(168,85,247,0.18); --ev-color:#a855f7; }
+    .cal-day.booked::after { content:'OCUPADO'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-15deg); font-size:0.55rem; font-weight:900; letter-spacing:0.12em; color:rgba(233,30,140,0.55); border:1px solid rgba(233,30,140,0.35); padding:2px 6px; border-radius:3px; white-space:nowrap; pointer-events:none; }
+    .cal-day .day-num  { font-weight:600; font-size:0.82rem; margin-bottom:4px; flex-shrink:0; }
+    .cal-day .day-events { display:flex; flex-direction:column; gap:2px; flex:1; overflow:hidden; }
+    .ev-pill { font-size:0.62rem; font-weight:600; padding:2px 5px; border-radius:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.4; }
+    .ev-pill.ev-pending   { background:rgba(255,255,255,0.08); color:#999; }
+    .ev-pill.ev-confirmed { background:rgba(34,197,94,0.18);   color:#86efac; }
+    .ev-pill.ev-postponed { background:rgba(245,158,11,0.18);  color:#fcd34d; }
+    .ev-pill.ev-cancelled { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.25); text-decoration:line-through; }
+    /* Week */
+    .week-grid { display:grid; grid-template-columns:56px repeat(7,1fr); }
+    .week-header-cell { text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:700; color:var(--gray-l); border-bottom:1px solid var(--border); }
+    .week-header-cell.today-col { color:var(--pink-l); }
+    .week-time-label { font-size:0.68rem; color:var(--gray); padding:0 8px 0 0; text-align:right; line-height:1; margin-top:-7px; }
+    .week-cell { border-left:1px solid var(--border); border-bottom:1px solid rgba(255,255,255,0.03); min-height:44px; position:relative; padding:2px; }
+    .week-cell.today-col { background:rgba(233,30,140,0.03); }
+    .week-event { font-size:0.68rem; font-weight:600; padding:3px 6px; border-radius:5px; margin-bottom:2px; cursor:pointer; line-height:1.4; }
+    /* Day */
+    .day-timeline { display:grid; grid-template-columns:56px 1fr; }
+    .day-time-label { font-size:0.72rem; color:var(--gray); text-align:right; padding-right:12px; margin-top:-9px; line-height:1; }
+    .day-slot { border-bottom:1px solid rgba(255,255,255,0.04); min-height:52px; padding:4px 6px; position:relative; }
+    .day-slot.hour-block { border-bottom:1px solid rgba(255,255,255,0.08); }
+    .day-event { border-radius:7px; padding:5px 10px; margin-bottom:3px; cursor:pointer; }
+    .day-event .de-time { font-size:0.68rem; opacity:0.7; margin-bottom:2px; }
+    .day-event .de-name { font-size:0.82rem; font-weight:700; }
+    .day-event .de-plan { font-size:0.72rem; opacity:0.75; }
+    /* Context menu */
+    .cal-ctx-menu { position:fixed; z-index:9000; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:8px; min-width:196px; box-shadow:0 12px 40px rgba(0,0,0,0.55); display:none; }
+    .cal-ctx-menu.open { display:block; }
+    .ctx-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; font-size:0.88rem; cursor:pointer; color:var(--white); transition:background 0.15s; }
+    .ctx-item:hover { background:rgba(255,255,255,0.07); }
+    .ctx-item svg { width:15px; height:15px; flex-shrink:0; color:var(--pink-l); }
+    .ctx-divider { border:none; border-top:1px solid var(--border); margin:4px 0; }
+    .ctx-item.ctx-danger  { color:#fca5a5; }
+    .ctx-item.ctx-danger svg { color:#fca5a5; }
+    .ctx-item.ctx-success { color:#86efac; }
+    .ctx-item.ctx-success svg { color:#86efac; }
+    .dot-quote { background: var(--blue); }
+    .dot-book  { background: var(--pink-l); }
+    .dot-avail { background: var(--green); }
+
+    .cal-legend { display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap; }
+    .cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--gray-l); }
+    .cal-legend-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Day Detail Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px; width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+      transform: translateY(16px); transition: transform 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--gray-l); font-size: 1.4rem; cursor: pointer; padding: 0; line-height: 1; }
+    .modal-close:hover { color: var(--white); }
+
+    /* ── Block type toggle active state ── */
+    .calev-block-active { background: rgba(233,30,140,0.15) !important; color: var(--pink-l) !important; }
+
+    /* ── Forms ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-l); margin-bottom: 7px; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--white);
+      font-size: 0.9rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--pink); }
+    .field textarea { resize: vertical; min-height: 80px; }
+    .field select option { background: var(--dark); }
+
+    .radio-group { display: flex; gap: 12px; }
+    .radio-btn {
+      flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 9px;
+      text-align: center; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+      color: var(--gray-l);
+    }
+    .radio-btn.selected { border-color: var(--pink); color: var(--pink-l); background: rgba(199,30,95,0.1); }
+
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    .section-label-sm { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--pink-l); margin-bottom: 14px; display: block; }
+
+    /* ── Buttons ── */
+    .btn { padding: 10px 20px; border-radius: 9px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; font-family: var(--font); transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+    .btn svg { width: 15px; height: 15px; }
+    .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+    .btn-pink { background: var(--pink); color: white; }
+    .btn-pink:hover { background: var(--pink-l); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--gray-l); }
+    .btn-outline:hover { border-color: var(--white); color: var(--white); }
+    .btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .btn-green:hover { background: rgba(34,197,94,0.25); }
+    .btn-red { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+    .btn-red:hover { background: rgba(239,68,68,0.22); }
+    .btn-blue { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .btn-blue:hover { background: rgba(59,130,246,0.25); }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { text-align: left; padding: 10px 14px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge-status {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .status-pending  { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .status-approved { background: rgba(34,197,94,0.15);  color: #86efac; }
+    .status-rejected { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+    .status-booked   { background: rgba(199,30,95,0.15);  color: #f9a8d4; }
+
+    /* ── Row highlight (for "Ver" deep-link from Dashboard pending list) ── */
+    @keyframes rowHighlightPulse {
+      0%   { background-color: rgba(199,30,95,0.35); }
+      50%  { background-color: rgba(199,30,95,0.12); }
+      100% { background-color: rgba(199,30,95,0.35); }
+    }
+    tr.row-highlight {
+      animation: rowHighlightPulse 1.1s ease-in-out 3;
+    }
+
+    /* ── Services Manager ── */
+    .service-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .service-item:last-child { border-bottom: none; }
+    .service-item input { flex: 1; }
+    .service-item .price-input { width: 100px; }
+
+    /* ── Plans Manager ── */
+    .plan-card {
+      background: var(--dark); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px; margin-bottom: 12px;
+    }
+    .plan-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .plan-name { font-weight: 700; font-size: 0.95rem; }
+    .plan-price { color: var(--pink-l); font-weight: 700; }
+
+    /* ── PDF Preview ── */
+    #pdfPreview {
+      background: white; color: #111; padding: 40px;
+      border-radius: var(--radius); font-family: Arial, sans-serif;
+      font-size: 13px; line-height: 1.6;
+      max-width: 700px; margin: 0 auto;
+    }
+    .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 2px solid #c71e5f; }
+    .pdf-company h1 { font-size: 22px; color: #c71e5f; margin: 0; }
+    .pdf-company p { color: #666; font-size: 11px; margin: 2px 0; }
+    .pdf-quote-info { text-align: right; }
+    .pdf-quote-info h2 { font-size: 18px; color: #111; }
+    .pdf-quote-info p { color: #666; font-size: 11px; margin: 2px 0; }
+    .pdf-section { margin-bottom: 20px; }
+    .pdf-section h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #c71e5f; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+    .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pdf-field { margin-bottom: 6px; }
+    .pdf-label { font-size: 10px; color: #999; text-transform: uppercase; }
+    .pdf-value { font-size: 13px; font-weight: 600; }
+    .pdf-table { width: 100%; border-collapse: collapse; }
+    .pdf-table th { background: #f5f5f5; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; color: #666; }
+    .pdf-table td { padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+    .pdf-total-row td { font-weight: 700; font-size: 14px; color: #c71e5f; border-top: 2px solid #c71e5f; border-bottom: none; }
+    .pdf-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #eee; text-align: center; color: #999; font-size: 11px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 20px;
+      font-size: 0.88rem; box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(34,197,94,0.4); }
+    .toast.error   { border-color: rgba(239,68,68,0.4); }
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .toast.success .toast-dot { background: var(--green); }
+    .toast.error   .toast-dot { background: var(--red); }
+
+    /* ── Config notice ── */
+    .config-notice {
+      background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;
+      font-size: 0.85rem; color: #fcd34d; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .config-notice svg { flex-shrink: 0; margin-top: 1px; }
+    .config-notice code { background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-size: 0.82rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .sidebar-toggle { display: flex; }
+      .sidebar {
+        z-index: 150;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 20px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .topbar-title { display: none; }
+      #panelChartsGrid { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 560px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-row.triple { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
@@ -21,8 +489,8 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-left">
-      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menú">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Abrir menú">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <img src="../images/icons/Janssocialmedialogo.png" alt="Logo" />
       <span class="topbar-title">Jans <span>Photograph</span></span>
@@ -38,110 +506,134 @@
 
   <div class="app-layout">
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar" id="sidebarMain">
-
-    <!-- Siempre visibles -->
-    <button class="sidebar-link" onclick="switchView('dashboard',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </button>
-    <button class="sidebar-link" onclick="switchView('calendar',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Calendario
-    </button>
-    <button class="sidebar-link" onclick="switchView('panel',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
-      Panel
-    </button>
-    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Eventos
-    </button>
-
-    <div class="sidebar-divider"></div>
-
-    <!-- Cotizaciones -->
-    <div class="sidebar-group" id="grp-cotizaciones">
-      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('cotizaciones')">
-        <span style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Cotizaciones
-        </span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span class="badge" id="reservasBadge">0</span>
-          <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-        </span>
-      </button>
-      <div class="sidebar-items">
-        <button class="sidebar-item" onclick="switchView('reservas',this)">
-          Reservas <span class="badge" id="reservasBadge2">0</span>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebarMain">
+      <!-- General — always visible, not collapsible -->
+      <div class="sidebar-section">
+        <button class="sidebar-link active" onclick="switchView('dashboard', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
         </button>
-        <button class="sidebar-item" onclick="switchView('quotes',this)">
-          Cotizaciones <span class="badge" id="pendingBadge">0</span>
+        <button class="sidebar-link" onclick="switchView('calendar', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Calendario
         </button>
-        <button class="sidebar-item" onclick="switchView('newquote',this)">Nueva Cotización</button>
+        <button class="sidebar-link" onclick="switchView('panel', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
+          Panel Administrativo
+        </button>
+        <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Control de Eventos
+        </button>
       </div>
-    </div>
 
-    <!-- Catálogo -->
-    <div class="sidebar-group" id="grp-catalogo">
-      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('catalogo')">
-        <span style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Catálogo
-        </span>
-        <span style="display:flex;align-items:center;gap:6px">
-          <span class="badge" id="inventarioBadge" style="display:none">0</span>
-          <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-        </span>
-      </button>
-      <div class="sidebar-items">
-        <button class="sidebar-item" onclick="switchView('planesPublicos',this)">Planes Públicos</button>
-        <button class="sidebar-item" onclick="switchView('servAdicionales',this)">Servicios Adicionales</button>
-        <button class="sidebar-item" onclick="switchView('inventario',this)">Inventario</button>
-        <button class="sidebar-item" onclick="switchView('blog',this)">Blog</button>
-        <button class="sidebar-item" onclick="switchView('faqs',this)">Preguntas Frecuentes</button>
-        <button class="sidebar-item" onclick="switchView('services',this)">Servicios (Cotización)</button>
-        <button class="sidebar-item" onclick="switchView('plans',this)">Planes (Cotización)</button>
+      <!-- Cotizaciones — collapsible group -->
+      <div class="sidebar-group" id="grp-cotizaciones">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('cotizaciones')">
+          <span>Cotizaciones</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('reservas', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Reservas
+            <span class="badge" id="reservasBadge">0</span>
+          </button>
+          <button class="sidebar-link" onclick="switchView('quotes', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Cotizaciones
+            <span class="badge" id="pendingBadge">0</span>
+          </button>
+          <button class="sidebar-link" onclick="switchView('newquote', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Nueva Cotización
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Contenido -->
-    <div class="sidebar-group" id="grp-contenido">
-      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('contenido')">
-        <span style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          Contenido
-        </span>
-        <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="sidebar-items">
-        <button class="sidebar-item" onclick="switchView('social',this)">Redes Sociales</button>
-        <button class="sidebar-item" onclick="switchView('notas',this)">Notas Reservas</button>
-        <button class="sidebar-item" onclick="switchView('recargar',this)">Recargar Sitio</button>
+      <!-- Catálogo — planes, servicios, blog -->
+      <div class="sidebar-group" id="grp-catalogo">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('catalogo')">
+          <span>Catálogo</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('planesPublicos', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Planes Públicos
+          </button>
+          <button class="sidebar-link" onclick="switchView('servAdicionales', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Servicios Adicionales
+          </button>
+          <button class="sidebar-link" onclick="switchView('inventario', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Inventario
+            <span class="badge" id="inventarioBadge" style="display:none">0</span>
+          </button>
+          <button class="sidebar-link" onclick="switchView('blog', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Blog
+          </button>
+          <button class="sidebar-link" onclick="switchView('faqs', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Preguntas Frecuentes
+          </button>
+          <button class="sidebar-link" onclick="switchView('services', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Servicios (Cotización)
+          </button>
+          <button class="sidebar-link" onclick="switchView('plans', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Planes (Cotización)
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Cuenta -->
-    <div class="sidebar-group" id="grp-cuenta">
-      <button class="sidebar-group-btn" onclick="toggleSidebarGroup('cuenta')">
-        <span style="display:flex;align-items:center;gap:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          Cuenta
-        </span>
-        <svg class="sidebar-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="sidebar-items">
-        <button class="sidebar-item" onclick="switchView('config',this)">Configuración</button>
-        <button class="sidebar-item" onclick="switchView('company',this)">Datos de Empresa</button>
+      <!-- Contenido del sitio — notas, redes, recargar -->
+      <div class="sidebar-group" id="grp-contenido">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('contenido')">
+          <span>Contenido del Sitio</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('social', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Redes Sociales
+          </button>
+          <button class="sidebar-link" onclick="switchView('notas', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Notas Reservas
+          </button>
+          <button class="sidebar-link" onclick="switchView('recargar', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Recargar Sitio
+          </button>
+        </div>
       </div>
-    </div>
 
-  </aside>
+      <!-- Cuenta — config -->
+      <div class="sidebar-group" id="grp-cuenta">
+        <button class="sidebar-group-toggle" onclick="toggleSidebarGroup('cuenta')">
+          <span>Cuenta</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sidebar-group-body">
+          <button class="sidebar-link" onclick="switchView('config', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41-1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M20 12h2M2 12h2M12 2v2M12 20v2"/></svg>
+            Configuración
+          </button>
+          <button class="sidebar-link" onclick="switchView('company', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/></svg>
+            Datos de Empresa
+          </button>
+        </div>
+      </div>
+    </aside>
 
-  <!-- ── Main Content ── -->
-  <main class="main-content">
+    <!-- Main Content -->
+    <main class="main-content">
 
       <!-- ── DASHBOARD ── -->
       <div class="view active" id="view-dashboard">
@@ -930,24 +1422,6 @@
         </div>
       </div>
 
-      </div>
-
-      <!-- ── EQUIPO ── -->
-      <div class="view" id="view-team">
-        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div>
-            <h2>Equipo</h2>
-            <p>Los miembros que aparecerán en la página "Sobre Nosotros"</p>
-          </div>
-          <button class="btn btn-pink" onclick="openTeamMemberForm()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Añadir miembro
-          </button>
-        </div>
-        <div id="teamMembersList" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
-        <div id="teamEmptyState" style="display:none"></div>
-      </div>
-
       <!-- ── PREGUNTAS FRECUENTES ── -->
       <div class="view" id="view-faqs">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -995,7 +1469,7 @@
             <button class="btn btn-sm btn-pink" onclick="addServItem('impresiones')">+ Añadir</button>
           </div>
           <p style="font-size:0.8rem;color:var(--gray-l);margin-bottom:14px">
-            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
+            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-link[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
             para que el stock se descuente automáticamente al confirmar reservas.
           </p>
           <div id="impList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
@@ -1690,65 +2164,6 @@
   </div>
 </div>
 
-<!-- ══ TEAM MEMBER MODAL ══ -->
-<div class="modal-overlay" id="teamMemberModal">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <h3 id="teamModalTitle">Añadir miembro del equipo</h3>
-      <button class="modal-close" onclick="closeModal('teamMemberModal')">×</button>
-    </div>
-    <input type="hidden" id="teamMemberId" />
-
-    <!-- Photo upload -->
-    <div class="field">
-      <label>Foto del miembro</label>
-      <div id="teamPhotoZone" onclick="document.getElementById('teamPhotoInput').click()"
-        style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark);display:flex;align-items:center;gap:16px">
-        <input type="file" id="teamPhotoInput" accept="image/*" style="display:none" onchange="handleTeamPhoto(this.files[0])" />
-        <img id="teamPhotoPreview" src="" style="display:none;width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(233,30,140,0.4);flex-shrink:0" />
-        <div id="teamPhotoIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(233,30,140,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" width="28" height="28"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        </div>
-        <div style="text-align:left">
-          <div id="teamPhotoLabel" style="font-size:0.82rem;color:var(--gray-l)">Haz clic o arrastra una foto</div>
-          <div style="font-size:0.72rem;color:var(--gray);margin-top:3px">PNG, JPG, WEBP — máx. 3MB</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Nombre *</label>
-      <input type="text" id="teamMemberNombre" placeholder="Ej. Jamil Martínez" maxlength="80" />
-    </div>
-    <div class="field">
-      <label>Rol / Cargo *</label>
-      <input type="text" id="teamMemberRol" placeholder="Ej. Fotógrafo Principal" maxlength="80" />
-    </div>
-    <div class="field">
-      <label>Descripción</label>
-      <textarea id="teamMemberBio" placeholder="Una breve descripción de este miembro del equipo..."
-        style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:90px;outline:none"></textarea>
-    </div>
-
-    <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;align-items:center;flex-wrap:wrap">
-      <button id="teamDeleteBtn" style="display:none" class="btn"
-        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5"
-        onclick="deleteTeamMember()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        Eliminar
-      </button>
-      <div style="display:flex;gap:10px;margin-left:auto">
-        <button class="btn btn-outline" onclick="closeModal('teamMemberModal')">Cancelar</button>
-        <button class="btn btn-pink" onclick="saveTeamMember()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-          Guardar
-        </button>
-      </div>
-    </div>
-    <div id="teamModalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.82rem"></div>
-  </div>
-</div>
-
 <!-- ══ TOAST ══ -->
 <div class="toast" id="toast">
   <div class="toast-dot"></div>
@@ -1931,11 +2346,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Load social links (async, non-blocking)
     loadSocialLinksUI().catch(e => console.warn('social links failed:', e));
 
-    // ── Restore the last active view from the URL hash ──
+    // ── Restore the last active view from the URL hash (survives page refresh) ──
+    // Must run after all init so the view's render function has data to display.
     const hash = location.hash.replace('#', '').trim();
     const knownViews = new Set(Array.from(document.querySelectorAll('[id^="view-"]')).map(el => el.id.replace('view-', '')));
     if (hash && knownViews.has(hash)) {
-      const btn = document.querySelector(`.sidebar-link[onclick*="'${hash}'"], .sidebar-item[onclick*="'${hash}'"]`);
+      // Find the matching sidebar button and activate it
+      const btn = document.querySelector(`.sidebar-link[onclick*="'${hash}'"]`);
       switchView(hash, btn || null);
     }
 
@@ -2002,7 +2419,8 @@ function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 // modal-overlay click-outside (moved to DOMContentLoaded)
 
-// ── Sidebar toggle functions ──
+// ── Sidebar Navigation ──
+// ── Mobile sidebar drawer (hamburger toggle + overlay) ──
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebarMain');
   const overlay = document.getElementById('sidebarOverlay');
@@ -2019,46 +2437,41 @@ function closeSidebar() {
   if (overlay) overlay.classList.remove('show');
 }
 
+// ── Sidebar collapsible groups ──
 function toggleSidebarGroup(id) {
   const group = document.getElementById('grp-' + id);
-  if (!group) return;
-  group.classList.toggle('open');
+  if (group) group.classList.toggle('open');
 }
-
-// Legacy stub
-function toggleHnavGroup(id) { toggleSidebarGroup(id); }
-
-// ── Sidebar Navigation ──
 
 // Map view name → group id, so the right group auto-opens when navigating
 const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones',
   planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo', inventario:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
-  config:'cuenta', company:'cuenta', team:'cuenta'
+  config:'cuenta', company:'cuenta'
 };
 
 function switchView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.sidebar-link, .sidebar-item').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
   const target = document.getElementById('view-' + name);
   if (!target) { console.warn('View not found:', name); return; }
   target.classList.add('active');
   if (btn) btn.classList.add('active');
 
-  // Persist the active view in the URL hash
+  // Persist the active view in the URL hash so a page refresh lands here,
+  // not back at dashboard. Uses replaceState to avoid polluting browser history.
   history.replaceState(null, '', '#' + name);
 
-  // Auto-open the group that contains this view
-  const grpId = VIEW_GROUP_MAP[name];
-  if (grpId) {
-    const grp = document.getElementById('grp-' + grpId);
-    if (grp && !grp.classList.contains('open')) grp.classList.add('open');
+  // Close the mobile drawer after navigating, so it doesn't stay covering the screen
+  if (window.innerWidth <= 900) closeSidebar();
+
+  // Auto-expand the group containing this view
+  const groupId = VIEW_GROUP_MAP[name];
+  if (groupId) {
+    const group = document.getElementById('grp-' + groupId);
+    if (group) group.classList.add('open');
   }
-
-  // On mobile, close sidebar after navigating
-  if (window.innerWidth <= 768) closeSidebar();
-
   if (name === 'calendar')      renderCalendar();
   if (name === 'services')      renderServices();
   if (name === 'plans')         renderPlans();
@@ -2073,10 +2486,9 @@ function switchView(name, btn) {
   if (name === 'servAdicionales') initServAdicionales();
   if (name === 'inventario')      initInventario();
   if (name === 'panel')           initPanel();
-  if (name === 'faqs')            initFaqs();
-  if (name === 'company')         loadCompanyUI();
-  if (name === 'config')          loadFacturaCounterUI();
-  if (name === 'team')            initTeam();
+  if (name === 'faqs')           initFaqs();
+  if (name === 'company')        loadCompanyUI();
+  if (name === 'config')         loadFacturaCounterUI();
 }
 
 // ── Dashboard ──
@@ -2914,7 +3326,7 @@ async function saveQuote() {
     showToast('Cotización ' + numero + ' guardada ✓');
     clearQuoteForm();
     updateDashboard(); renderQuotesTable();
-    switchView('quotes', document.querySelector('.sidebar-item[onclick*="\'quotes\'"]'));
+    switchView('quotes', document.querySelectorAll('.sidebar-link')[2]);
   } else {
     showToast('Guardada localmente — verifica GitHub para publicar','error');
     clearQuoteForm();
@@ -4180,7 +4592,7 @@ function goToReservaInTable(id) {
   if (filterStatus) filterStatus.value = '';
   if (filterMonth)  filterMonth.value  = '';
 
-  switchView('reservas', document.querySelector('.sidebar-item[onclick*=\'reservas\']'));
+  switchView('reservas', document.querySelector('.sidebar-link[onclick*=\'reservas\']'));
   // switchView already calls renderReservasTable() with no args; re-render with
   // the highlight target right after so the row gets the highlight + scroll treatment.
   setTimeout(() => renderReservasTable(id), 80);
@@ -5785,7 +6197,7 @@ function updatePanelAdministrativo() {
   // ── Inventory status ──
   const invEl = document.getElementById('panelInventoryStatus');
   if (!paperTypes.length) {
-    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
+    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-link[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
   } else {
     invEl.innerHTML = paperTypes.map(p => {
       const isLow = p.stock <= p.minStock;
@@ -5854,340 +6266,6 @@ function updatePanelAdministrativo() {
 
 function initPanel() {
   updatePanelAdministrativo();
-}
-
-// ═══════════════════════════════════════
-//  EQUIPO — gestión de miembros del about
-// ═══════════════════════════════════════
-const TEAM_KEY   = 'jans_team';
-const TEAM_FILE  = 'team.json';
-const TEAM_IMG_FOLDER = 'assets/images/team';
-const KNOWN_IMG_EXTS  = ['png','jpg','jpeg','webp','gif'];
-let teamMembers  = [];
-let teamPhotoFileData = null; // { base64, extension } for the pending upload
-
-function loadTeamLocal() {
-  try { teamMembers = JSON.parse(localStorage.getItem(TEAM_KEY) || '[]'); } catch(e) { teamMembers = []; }
-}
-
-function genTeamId() { return 'tm_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
-
-// ── Photo file handling ──
-function handleTeamPhoto(file) {
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { showToast('Selecciona una imagen', 'error'); return; }
-  if (file.size > 3 * 1024 * 1024) { showToast('La foto supera 3MB', 'error'); return; }
-  const ext = file.name.split('.').pop().toLowerCase();
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    teamPhotoFileData = { base64: e.target.result.split(',')[1], extension: ext };
-    document.getElementById('teamPhotoPreview').src = e.target.result;
-    document.getElementById('teamPhotoPreview').style.display = 'block';
-    document.getElementById('teamPhotoIcon').style.display = 'none';
-    document.getElementById('teamPhotoLabel').textContent = '✓ ' + file.name + ' (sin guardar)';
-    document.getElementById('teamPhotoZone').style.borderColor = 'rgba(245,158,11,0.5)';
-  };
-  reader.readAsDataURL(file);
-}
-
-// Drag-and-drop on the photo zone
-document.addEventListener('DOMContentLoaded', () => {
-  const zone = document.getElementById('teamPhotoZone');
-  if (!zone) return;
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--pink-l)'; });
-  zone.addEventListener('dragleave', () => { zone.style.borderColor = 'rgba(233,30,140,0.35)'; });
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) handleTeamPhoto(file);
-  });
-});
-
-// ── Upload a team member's photo to the public GitHub repo ──
-// Uses the same raw-binary PUT pattern as the Yappy QR upload.
-// If the member previously had a photo with a different extension, delete it first.
-async function uploadTeamPhoto(memberId, base64, ext, oldExt) {
-  const token = CONFIG.GH_TOKEN;
-  if (!token) return null;
-
-  const safeExt = KNOWN_IMG_EXTS.includes(ext) ? ext : 'jpg';
-  const newPath = `${TEAM_IMG_FOLDER}/${memberId}.${safeExt}`;
-
-  // Delete the old photo if the extension changed
-  if (oldExt && oldExt !== safeExt) {
-    const oldPath = `${TEAM_IMG_FOLDER}/${memberId}.${oldExt}`;
-    try {
-      const chk = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
-        { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
-      if (chk.ok) {
-        const { sha } = await chk.json();
-        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
-          { method: 'DELETE', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: `remove old team photo ${memberId}`, sha }) });
-      }
-    } catch(e) { /* non-fatal */ }
-  }
-
-  // Upload the new photo
-  let sha = null;
-  try {
-    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${newPath}`,
-      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
-    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
-  } catch(e) {}
-
-  const body = { message: `update team photo ${memberId}`, content: base64 };
-  if (sha) body.sha = sha;
-
-  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${newPath}`,
-    { method: 'PUT', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body) });
-
-  return res.ok ? { path: newPath, ext: safeExt } : null;
-}
-
-// ── Delete a member's photo from GitHub ──
-async function deleteTeamPhoto(memberId, ext) {
-  if (!memberId || !ext) return;
-  const token = CONFIG.GH_TOKEN;
-  if (!token) return;
-  const path = `${TEAM_IMG_FOLDER}/${memberId}.${ext}`;
-  try {
-    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
-      { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
-    if (!res.ok) return;
-    const { sha } = await res.json();
-    await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
-      { method: 'DELETE', headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: `remove team photo ${memberId}`, sha }) });
-  } catch(e) {}
-}
-
-// ── Open form (create: no id, edit: with id) ──
-function openTeamMemberForm(id) {
-  loadTeamLocal();
-  teamPhotoFileData = null;
-  const isEdit = !!id;
-  document.getElementById('teamModalTitle').textContent = isEdit ? 'Editar miembro' : 'Añadir miembro del equipo';
-  document.getElementById('teamMemberId').value = id || '';
-  document.getElementById('teamMemberNombre').value = '';
-  document.getElementById('teamMemberRol').value = '';
-  document.getElementById('teamMemberBio').value = '';
-  document.getElementById('teamPhotoPreview').style.display = 'none';
-  document.getElementById('teamPhotoIcon').style.display = 'flex';
-  document.getElementById('teamPhotoLabel').textContent = 'Haz clic o arrastra una foto';
-  document.getElementById('teamPhotoZone').style.borderColor = 'rgba(233,30,140,0.35)';
-  document.getElementById('teamDeleteBtn').style.display = isEdit ? 'flex' : 'none';
-  document.getElementById('teamModalMsg').style.display = 'none';
-
-  if (isEdit) {
-    const m = teamMembers.find(x => x.id === id);
-    if (m) {
-      document.getElementById('teamMemberNombre').value = m.nombre || '';
-      document.getElementById('teamMemberRol').value    = m.rol    || '';
-      document.getElementById('teamMemberBio').value    = m.bio    || '';
-      if (m.fotoPath) {
-        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`;
-        const testImg = new Image();
-        testImg.onload = () => {
-          document.getElementById('teamPhotoPreview').src = rawUrl;
-          document.getElementById('teamPhotoPreview').style.display = 'block';
-          document.getElementById('teamPhotoIcon').style.display = 'none';
-          document.getElementById('teamPhotoLabel').textContent = '✓ Foto actual — haz clic para reemplazar';
-          document.getElementById('teamPhotoZone').style.borderColor = 'rgba(34,197,94,0.4)';
-        };
-        testImg.src = rawUrl;
-      }
-    }
-  }
-  openModal('teamMemberModal');
-}
-
-// ── Save member (create or update) ──
-async function saveTeamMember() {
-  const msgEl  = document.getElementById('teamModalMsg');
-  const nombre = document.getElementById('teamMemberNombre').value.trim();
-  const rol    = document.getElementById('teamMemberRol').value.trim();
-  const bio    = document.getElementById('teamMemberBio').value.trim();
-  const editId = document.getElementById('teamMemberId').value;
-
-  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
-  if (!rol)    { showToast('El rol es obligatorio', 'error'); return; }
-
-  msgEl.style.display = 'none';
-  const id = editId || genTeamId();
-  loadTeamLocal();
-
-  // Find old extension if editing (to delete old photo if format changed)
-  const existing = teamMembers.find(x => x.id === id);
-  const oldExt   = existing?.fotoExt || null;
-
-  let fotoPath = existing?.fotoPath || null;
-  let fotoExt  = existing?.fotoExt  || null;
-
-  // Upload new photo if one was picked
-  if (teamPhotoFileData) {
-    showToast('Subiendo foto…');
-    const result = await uploadTeamPhoto(id, teamPhotoFileData.base64, teamPhotoFileData.extension, oldExt);
-    if (result) {
-      fotoPath = result.path;
-      fotoExt  = result.ext;
-    } else {
-      msgEl.style.display = 'block';
-      msgEl.style.background = 'rgba(239,68,68,0.1)';
-      msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
-      msgEl.style.color = '#fca5a5';
-      msgEl.textContent = 'No se pudo subir la foto. Los datos de texto se guardarán igual.';
-    }
-  }
-
-  const member = { id, nombre, rol, bio, fotoPath, fotoExt, updatedAt: new Date().toISOString() };
-
-  if (editId) {
-    const idx = teamMembers.findIndex(x => x.id === editId);
-    if (idx >= 0) teamMembers[idx] = member; else teamMembers.push(member);
-  } else {
-    teamMembers.push(member);
-  }
-
-  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-  // Publish team.json to the public repo so nosotros.html can read it
-  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
-  closeModal('teamMemberModal');
-  renderTeamList();
-  showToast(ok ? 'Miembro guardado y publicado ✓' : 'Guardado localmente — verifica GitHub', ok ? 'success' : 'error');
-}
-
-// ── Delete member ──
-async function deleteTeamMember() {
-  const id = document.getElementById('teamMemberId').value;
-  if (!id) return;
-  loadTeamLocal();
-  const m = teamMembers.find(x => x.id === id);
-  if (!m) return;
-  if (!confirm(`¿Eliminar a "${m.nombre}" del equipo?`)) return;
-
-  // Delete photo from GitHub
-  if (m.fotoPath && m.fotoExt) await deleteTeamPhoto(id, m.fotoExt);
-
-  teamMembers = teamMembers.filter(x => x.id !== id);
-  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
-  closeModal('teamMemberModal');
-  renderTeamList();
-  showToast(ok ? 'Miembro eliminado ✓' : 'Eliminado localmente — verifica GitHub', ok ? 'success' : 'error');
-}
-
-// ── Render the team list in the Master view ──
-function renderTeamList() {
-  loadTeamLocal();
-  const list  = document.getElementById('teamMembersList');
-  const empty = document.getElementById('teamEmptyState');
-
-  if (!list) return;
-  empty.style.display = 'none';
-  list.style.display = 'grid';
-
-  const AVATAR_COLORS = [
-    { bg:'rgba(212,83,126,0.15)', color:'#f472b6' },
-    { bg:'rgba(59,130,246,0.15)', color:'#60a5fa' },
-    { bg:'rgba(34,197,94,0.15)',  color:'#4ade80' },
-    { bg:'rgba(245,158,11,0.15)', color:'#fbbf24' },
-    { bg:'rgba(168,85,247,0.15)', color:'#c084fc' },
-    { bg:'rgba(20,184,166,0.15)', color:'#2dd4bf' },
-  ];
-
-  function getInitials(nombre) {
-    return (nombre || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-  }
-
-  const cards = teamMembers.map((m, i) => {
-    const av = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    const rawUrl = (m.fotoPath && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github')
-      ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`
-      : null;
-
-    const avatarHtml = rawUrl
-      ? `<img src="${rawUrl}" alt="${m.nombre}"
-           style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-         <div style="display:none;width:72px;height:72px;border-radius:50%;background:${av.bg};align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>`
-      : `<div style="width:72px;height:72px;border-radius:50%;background:${av.bg};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>`;
-
-    return `
-    <div style="background:var(--dark);border:1px solid var(--border);border-radius:14px;overflow:hidden">
-
-      <!-- Avatar strip -->
-      <div style="background:rgba(255,255,255,0.03);padding:20px 20px 16px;display:flex;align-items:center;gap:14px;position:relative;border-bottom:1px solid var(--border)">
-        <div style="flex-shrink:0;position:relative">${avatarHtml}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.rol || '—'}</div>
-          <div style="font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombre || '—'}</div>
-        </div>
-        <!-- Pink accent line bottom -->
-        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),#f472b6)"></div>
-      </div>
-
-      <!-- Bio -->
-      <div style="padding:14px 20px 16px;min-height:60px">
-        ${m.bio
-          ? `<p style="font-size:0.82rem;color:var(--gray-l);line-height:1.65;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${m.bio}</p>`
-          : `<p style="font-size:0.8rem;color:var(--gray);font-style:italic;margin:0">Sin descripción</p>`}
-      </div>
-
-      <!-- Actions -->
-      <div style="padding:0 14px 14px;display:flex;gap:8px">
-        <button class="btn btn-sm btn-outline" onclick="openTeamMemberForm('${m.id}')" style="flex:1;justify-content:center;gap:6px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Editar
-        </button>
-        <button class="btn btn-sm" onclick="confirmDeleteTeamMember('${m.id}','${(m.nombre||'').replace(/'/g,"\\'")}')"
-          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5;padding:0 12px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-
-  // "Add member" card at the end
-  const addCard = `
-    <div onclick="openTeamMemberForm()" style="background:transparent;border:1px dashed rgba(255,255,255,0.12);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:140px;cursor:pointer;transition:border-color 0.2s"
-      onmouseover="this.style.borderColor='rgba(233,30,140,0.4)'"
-      onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
-      <div style="width:44px;height:44px;border-radius:50%;background:rgba(233,30,140,0.1);display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.6)" stroke-width="2" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
-      <span style="font-size:0.82rem;color:var(--gray-l);font-weight:600">Añadir miembro</span>
-    </div>`;
-
-  list.innerHTML = cards + addCard;
-}
-
-// ── Confirm delete from the card's inline button ──
-function confirmDeleteTeamMember(id, nombre) {
-  document.getElementById('teamMemberId').value = id;
-  document.getElementById('teamMemberNombre').value = nombre;
-  if (confirm(`¿Eliminar a "${nombre}" del equipo? Esta acción no se puede deshacer.`)) {
-    deleteTeamMember();
-  }
-}
-async function initTeam() {
-  loadTeamLocal();
-  // If local is empty, try loading from GitHub
-  if (!teamMembers.length) {
-    try {
-      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/data/socialmedia/${TEAM_FILE}?t=${Date.now()}`;
-      const res = await fetch(rawUrl);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length) {
-          teamMembers = data;
-          localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-        }
-      }
-    } catch(e) {}
-  }
-  renderTeamList();
 }
 
 // ═══════════════════════════════════════
