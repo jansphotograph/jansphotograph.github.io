@@ -2961,7 +2961,7 @@ function updateCalEvHoursPreview() {
   const fmtH = h => { const suffix = h < 12 ? 'AM' : 'PM'; const h12 = h % 12 || 12; return `${h12}:00 ${suffix}`; };
   const prev = document.getElementById('calEvHoursPreview');
   if (prev) prev.textContent = ini < fin
-    ? `Bloquea de ${fmtH(ini)} a ${fmtH(fin)} (${fin - ini} hora(s))`
+    ? `Bloquea de ${fmtH(ini)} a ${fmtH(fin)} — slots bloqueados: ${fmtH(ini)} a ${fmtH(fin)} (inclusive)`
     : '⚠ La hora de inicio debe ser anterior a la hora de fin';
 }
 
