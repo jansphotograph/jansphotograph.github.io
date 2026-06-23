@@ -969,42 +969,25 @@
 
       <!-- ── SERVICIOS ADICIONALES ── -->
       <div class="view" id="view-servAdicionales">
-        <div class="page-header">
-          <h2>Servicios Adicionales</h2>
-          <p>Gestiona los servicios de maquillaje/peinado e impresiones</p>
-        </div>
-
-        <!-- Maquillaje y Peinado -->
-        <div class="card">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-            <span style="display:flex;align-items:center;gap:10px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              Maquillaje y Peinado
-            </span>
-            <button class="btn btn-sm btn-pink" onclick="addServItem('maquillaje')">+ Añadir</button>
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Servicios Adicionales</h2>
+            <p>Gestiona tus servicios y vincúlalos a insumos del inventario</p>
           </div>
-          <div id="maqList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+          <button class="btn btn-pink" onclick="openServModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo servicio
+          </button>
         </div>
 
-        <!-- Impresiones -->
-        <div class="card">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-            <span style="display:flex;align-items:center;gap:10px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Impresiones
-            </span>
-            <button class="btn btn-sm btn-pink" onclick="addServItem('impresiones')">+ Añadir</button>
-          </div>
-          <p style="font-size:0.8rem;color:var(--gray-l);margin-bottom:14px">
-            Vincula cada producto con un tipo de papel del <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\'inventario\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a>
-            para que el stock se descuente automáticamente al confirmar reservas.
-          </p>
-          <div id="impList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+        <div id="servAdicList" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="servAdicEmpty" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
+          <p style="font-size:0.9rem">No hay servicios. Haz clic en "Nuevo servicio" para empezar.</p>
         </div>
 
-        <div class="btn-row">
+        <div class="btn-row" style="margin-top:20px">
           <button class="btn btn-pink" onclick="saveServAdicionales()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
             Guardar y publicar
           </button>
         </div>
@@ -1675,6 +1658,64 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
           Guardar Evento
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: SERVICIO ADICIONAL ══ -->
+<div class="modal-overlay" id="servModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 id="servModalTitle">Nuevo servicio</h3>
+      <button class="modal-close" onclick="closeModal('servModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="servModalId" />
+
+      <div class="form-row">
+        <div class="field">
+          <label>Nombre del servicio *</label>
+          <input type="text" id="servModalNombre" placeholder="Ej. Impresión 4x6, Maquillaje..." />
+        </div>
+        <div class="field">
+          <label>Precio ($) *</label>
+          <input type="number" id="servModalPrecio" min="0" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <input type="text" id="servModalDesc" placeholder="Descripción breve (opcional)" />
+      </div>
+
+      <!-- Toggle usa insumos -->
+      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
+        <label class="toggle-switch" style="flex-shrink:0">
+          <input type="checkbox" id="servModalUsaInsumo" onchange="toggleServInsumos(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;color:var(--white)">¿Utiliza insumos?</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Activa para vincular insumos del inventario</div>
+        </div>
+      </div>
+
+      <!-- Selector de insumos (visible solo si usa insumos) -->
+      <div id="servInsumosBlock" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="section-label-sm" style="margin:0">Insumos vinculados</span>
+          <button class="btn btn-sm btn-outline" onclick="addServInsumoRow()">+ Añadir insumo</button>
+        </div>
+        <div id="servInsumosList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">
+          Indica cuántas unidades y/o hojas se consumen por cada venta de este servicio.
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-pink" onclick="saveServModal()">Guardar servicio</button>
+        <button class="btn btn-outline" onclick="closeModal('servModal')">Cancelar</button>
       </div>
     </div>
   </div>
@@ -5507,100 +5548,185 @@ let servData = { maquillaje: [], impresiones: [] };
 function loadServAdicionales() {
   try {
     const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
-    servData = { maquillaje: saved.maquillaje || [], impresiones: saved.impresiones || [] };
-  } catch(e) { servData = { maquillaje: [], impresiones: [] }; }
+    // Migrar formato antiguo (maquillaje/impresiones) al nuevo (lista plana)
+    if (Array.isArray(saved)) {
+      servData = { items: saved };
+    } else if (saved.items) {
+      servData = saved;
+    } else {
+      // Migrar desde formato viejo
+      const migrated = [];
+      (saved.maquillaje||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: false, insumos: [] }));
+      (saved.impresiones||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: true,  insumos: s.insumos||[] }));
+      servData = { items: migrated };
+    }
+  } catch(e) { servData = { items: [] }; }
 }
 
-function renderServList(cat) {
-  const listId  = cat === 'maquillaje' ? 'maqList' : 'impList';
-  const el      = document.getElementById(listId);
+function genServId() { return 'srv_' + Date.now() + '_' + Math.random().toString(36).slice(2,5); }
+
+function renderServAdicList() {
+  const el    = document.getElementById('servAdicList');
+  const empty = document.getElementById('servAdicEmpty');
   if (!el) return;
-  const items   = servData[cat] || [];
+  const items = servData.items || [];
   if (!items.length) {
-    el.innerHTML = `<div style="color:var(--gray);font-size:0.85rem;padding:8px 0">Sin ítems. Haz clic en "+ Añadir".</div>`;
+    el.innerHTML = '';
+    if (empty) empty.style.display = '';
     return;
   }
-  const isImpresiones = cat === 'impresiones';
-  const paperTypes = isImpresiones ? loadPaperTypes() : [];
-  const paperOptions = (selectedId) => `
-    <option value="">— Sin vincular —</option>
-    ${paperTypes.map(p => `<option value="${p.id}" ${p.id===selectedId?'selected':''}>${p.nombre}</option>`).join('')}
-  `;
+  if (empty) empty.style.display = 'none';
 
-  el.innerHTML = items.map((s, i) => `
-    <div style="display:flex;flex-direction:column;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button onclick="moveServ('${cat}',${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
-          <button onclick="moveServ('${cat}',${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.8rem;line-height:1;padding:0" ${i===items.length-1?'disabled':''}>▼</button>
-        </div>
-        <input type="text" value="${s.nombre}" onchange="servData['${cat}'][${i}].nombre=this.value"
-          style="flex:1;background:transparent;border:none;color:var(--white);font-family:var(--font);font-size:0.9rem;outline:none" />
-        <div style="display:flex;align-items:center;gap:4px">
-          <span style="color:var(--gray)">$</span>
-          <input type="number" value="${s.precio}" min="0" step="0.01" onchange="servData['${cat}'][${i}].precio=parseFloat(this.value)||0"
-            style="width:70px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--pink-l);font-family:var(--font);font-size:0.9rem;font-weight:700;padding:4px 6px;text-align:right;outline:none" />
-        </div>
-        <button onclick="deleteServ('${cat}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1rem;padding:0">✕</button>
+  el.innerHTML = items.map((s, i) => {
+    const insumoNames = (s.insumos||[]).map(v => {
+      loadInvData();
+      const inv = invItems.find(x=>x.id===v.insumoId);
+      return inv ? `${inv.titulo} (${v.unidades||0}un / ${v.hojas||0}hj)` : '?';
+    }).join(', ');
+
+    return `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+        <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
+        <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===items.length-1?'disabled':''}>▼</button>
       </div>
-      ${isImpresiones ? `
-      <div style="display:flex;align-items:center;gap:10px;padding-left:24px;flex-wrap:wrap">
-        <span style="font-size:0.75rem;color:var(--gray-l)">Papel:</span>
-        <select onchange="servData['${cat}'][${i}].papelTipoId=this.value"
-          style="background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.78rem;padding:4px 8px;outline:none">
-          ${paperOptions(s.papelTipoId)}
-        </select>
-        <span style="font-size:0.75rem;color:var(--gray-l)">Hojas por venta:</span>
-        <input type="number" value="${s.hojasPorVenta || 1}" min="1" step="1" onchange="servData['${cat}'][${i}].hojasPorVenta=parseInt(this.value)||1"
-          style="width:55px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.78rem;padding:4px 6px;text-align:center;outline:none" />
-      </div>` : ''}
+      <div style="flex:1;min-width:160px">
+        <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre||'Sin nombre'}</div>
+        ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ''}
+        ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ''}
+        ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ''}
+      </div>
+      <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio||0).toFixed(2)}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-outline" onclick="openServModal('${s.id}')">✏</button>
+        <button class="btn btn-sm btn-red" onclick="deleteServAdic('${s.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal ──
+let servTempInsumos = []; // [{insumoId, unidades, hojas}]
+
+function openServModal(id) {
+  loadServAdicionales();
+  const s = id ? (servData.items||[]).find(x=>x.id===id) : null;
+  document.getElementById('servModalTitle').textContent  = s ? 'Editar servicio' : 'Nuevo servicio';
+  document.getElementById('servModalId').value           = s ? s.id : '';
+  document.getElementById('servModalNombre').value       = s ? s.nombre : '';
+  document.getElementById('servModalPrecio').value       = s ? s.precio : '';
+  document.getElementById('servModalDesc').value         = s ? (s.descripcion||'') : '';
+  const usaInsumo = s ? !!s.usaInsumo : false;
+  document.getElementById('servModalUsaInsumo').checked  = usaInsumo;
+  document.getElementById('servInsumosBlock').style.display = usaInsumo ? '' : 'none';
+  servTempInsumos = s ? JSON.parse(JSON.stringify(s.insumos||[])) : [];
+  renderServInsumosList();
+  openModal('servModal');
+}
+
+function toggleServInsumos(checked) {
+  document.getElementById('servInsumosBlock').style.display = checked ? '' : 'none';
+}
+
+function addServInsumoRow() {
+  servTempInsumos.push({ insumoId: '', unidades: 0, hojas: 0 });
+  renderServInsumosList();
+}
+
+function renderServInsumosList() {
+  const el = document.getElementById('servInsumosList');
+  if (!el) return;
+  loadInvData();
+  const options = `<option value="">— Selecciona un insumo —</option>` +
+    invItems.map(x => `<option value="${x.id}">${x.titulo}</option>`).join('');
+
+  if (!servTempInsumos.length) {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--gray)">Sin insumos añadidos.</div>`;
+    return;
+  }
+
+  el.innerHTML = servTempInsumos.map((v, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--dark);border-radius:9px;padding:10px 12px;flex-wrap:wrap">
+      <select oninput="servTempInsumos[${i}].insumoId=this.value"
+        style="flex:2;min-width:140px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:5px 8px;outline:none">
+        ${options.replace(`value="${v.insumoId}"`, `value="${v.insumoId}" selected`)}
+      </select>
+      <div style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
+        <span style="color:var(--gray)">Un:</span>
+        <input type="number" value="${v.unidades}" min="0" step="1" oninput="servTempInsumos[${i}].unidades=+this.value"
+          style="width:48px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+        <span style="color:var(--gray)">Hj:</span>
+        <input type="number" value="${v.hojas}" min="0" step="1" oninput="servTempInsumos[${i}].hojas=+this.value"
+          style="width:48px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+      </div>
+      <button onclick="servTempInsumos.splice(${i},1);renderServInsumosList()"
+        style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.9rem;padding:0 4px">✕</button>
     </div>`).join('');
 }
 
-function addServItem(cat) {
-  servData[cat].push({ nombre: '', precio: '' });
-  renderServList(cat);
+function saveServModal() {
+  const nombre = document.getElementById('servModalNombre').value.trim();
+  const precio = parseFloat(document.getElementById('servModalPrecio').value) || 0;
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  loadServAdicionales();
+  const existingId = document.getElementById('servModalId').value;
+  const usaInsumo  = document.getElementById('servModalUsaInsumo').checked;
+  const desc       = document.getElementById('servModalDesc').value.trim();
+  const insumos    = usaInsumo ? servTempInsumos.filter(v=>v.insumoId) : [];
+
+  if (existingId) {
+    const s = servData.items.find(x=>x.id===existingId);
+    if (s) Object.assign(s, { nombre, precio, descripcion: desc, usaInsumo, insumos });
+  } else {
+    servData.items.push({ id: genServId(), nombre, precio, descripcion: desc, usaInsumo, insumos });
+  }
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  closeModal('servModal');
+  renderServAdicList();
+  showToast('Servicio guardado ✓');
 }
 
-function deleteServ(cat, idx) {
-  servData[cat].splice(idx, 1);
-  renderServList(cat);
+function deleteServAdic(id) {
+  if (!confirm('¿Eliminar este servicio?')) return;
+  loadServAdicionales();
+  servData.items = servData.items.filter(x=>x.id!==id);
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  renderServAdicList();
+  showToast('Servicio eliminado', 'error');
 }
 
-function moveServ(cat, idx, dir) {
-  const arr = servData[cat];
-  const ni  = idx + dir;
-  if (ni < 0 || ni >= arr.length) return;
-  [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
-  renderServList(cat);
+function moveServAdic(idx, dir) {
+  const arr = servData.items; const ni = idx+dir;
+  if (ni<0||ni>=arr.length) return;
+  [arr[idx],arr[ni]]=[arr[ni],arr[idx]];
+  renderServAdicList();
 }
 
 async function saveServAdicionales() {
-  // Collect latest values from inputs before saving
-  ['maquillaje','impresiones'].forEach(cat => {
-    const listId = cat === 'maquillaje' ? 'maqList' : 'impList';
-    const inputs = document.querySelectorAll(`#${listId} input[type="text"]`);
-    const prices = document.querySelectorAll(`#${listId} input[type="number"]`);
-    inputs.forEach((inp, i) => { if (servData[cat][i]) servData[cat][i].nombre = inp.value; });
-    prices.forEach((inp, i) => { if (servData[cat][i]) servData[cat][i].precio = parseFloat(inp.value) || 0; });
-  });
-
+  loadServAdicionales();
   localStorage.setItem(SA_KEY, JSON.stringify(servData));
-  const ok = await ghPutPublic('servicios-adicionales.json', servData);
+  // Publicar formato compatible con el sitio público (lista plana con nombre y precio)
+  const publicData = {
+    maquillaje: servData.items.filter(s=>!s.usaInsumo).map(s=>({ nombre:s.nombre, precio:s.precio })),
+    impresiones: servData.items.filter(s=>s.usaInsumo).map(s=>({ nombre:s.nombre, precio:s.precio })),
+    all: servData.items.map(s=>({ nombre:s.nombre, precio:s.precio, descripcion:s.descripcion }))
+  };
+  const ok = await ghPutPublic('servicios-adicionales.json', publicData);
   if (ok) showToast('Servicios adicionales publicados ✓');
-  else    showToast('Guardados localmente — verifica GitHub para publicar', 'error');
+  else    showToast('Guardados localmente — verifica GitHub', 'error');
 }
 
 function initServAdicionales() {
   loadServAdicionales();
-  renderServList('maquillaje');
-  renderServList('impresiones');
+  renderServAdicList();
 }
 
-// ═══════════════════════════════════════
-//  INVENTARIO — Papel Foto
-// ═══════════════════════════════════════
-// ═══════════════════════════════════════
+// Stubs legacy para compatibilidad con código antiguo
+function addServItem(cat) {}
+function renderServList(cat) {}
+function deleteServ(cat, idx) {}
+function moveServ(cat, idx, dir) {}
+
 //  INVENTARIO DE INSUMOS
 // ═══════════════════════════════════════
 const INV_KEY      = 'jans_inventario_insumos';
