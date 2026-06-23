@@ -2108,16 +2108,11 @@ function updateDashboard() {
 
   // "Cotizaciones" badge counts ONLY manual quotes (state.quotes) — these are a
   // separate workflow from public web reservas and must never be mixed together.
-  // «Cotizaciones» badge — solo quotes pendientes
   const pendingQuotes = (state.quotes || []).filter(q => q.status === 'pending').length;
-  const pb = document.getElementById('pendingBadge');
-  if (pb) { pb.textContent = pendingQuotes; pb.style.display = pendingQuotes > 0 ? '' : 'none'; }
+  const pb = document.getElementById('pendingBadge'); if (pb) pb.textContent = pendingQuotes;
 
-  // «Reservas» badge — reservas pendientes (grupo + pestaña)
-  const rb  = document.getElementById('reservasBadge');
-  const rb2 = document.getElementById('reservasBadge2');
-  if (rb)  { rb.textContent  = pending; rb.style.display  = pending > 0 ? '' : 'none'; }
-  if (rb2) { rb2.textContent = pending; rb2.style.display = pending > 0 ? '' : 'none'; }
+  // "Reservas" badge counts pending reservas (web + manual, unified system)
+  const rb = document.getElementById('reservasBadge'); if (rb) rb.textContent = pending;
 
   // ── Pending requests card — only shows up when there's something to act on ──
   const pendingCard  = document.getElementById('dashPendingCard');
@@ -4207,9 +4202,7 @@ function renderReservasTable(highlightId) {
   if(!tbody) return;
   const pending = allReservas.filter(r=>r.status==='pending').length;
   const badge   = document.getElementById('reservasBadge');
-  const badge2  = document.getElementById('reservasBadge2');
-  if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
-  if(badge2) { badge2.textContent = pending; badge2.style.display = pending > 0 ? '' : 'none'; }
+  if(badge) badge.textContent = pending;
 
   if(!list.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
@@ -4314,15 +4307,21 @@ function viewReserva(id) {
       </div>
       <div class="field">
         <label>Abono realizado ($)</label>
-        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" onchange="updateResFinancials('${r.id}')" />
+        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" />
       </div>
     </div>
     <div class="field">
       <label>Pendiente por pagar ($)</label>
       <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
     </div>
-    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:8px">
       ${renderResFinancialSummary(total, abono, pend, prog)}
+    </div>
+    <div class="btn-row" style="margin-bottom:16px">
+      <button class="btn btn-pink btn-sm" onclick="updateResFinancials('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar abono
+      </button>
     </div>
 
     <hr class="section-divider" />
