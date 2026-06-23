@@ -348,3 +348,8 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
 .toggle-slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:var(--white); border-radius:50%; transition:0.2s; }
 .toggle-switch input:checked + .toggle-slider { background:var(--pink); }
 .toggle-switch input:checked + .toggle-slider:before { transform:translateX(20px); }
+
+/* ── Estado Aplazada ── */
+.status-postponed { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+.btn-amber { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.35); color: #fbbf24; }
+.btn-amber:hover { background: rgba(251,191,36,0.25); }
