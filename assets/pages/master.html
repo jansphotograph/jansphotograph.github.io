@@ -2073,12 +2073,11 @@ function switchView(name, btn) {
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
   if (name === 'inventario')      initInventario();
-  if (name === 'team')            renderTeamList();
+  if (name === 'team')            initTeam();
   if (name === 'panel')           initPanel();
   if (name === 'faqs')            initFaqs();
   if (name === 'company')         loadCompanyUI();
   if (name === 'config')          loadFacturaCounterUI();
-  if (name === 'team')            initTeam();
 }
 
 // ── Dashboard ──
