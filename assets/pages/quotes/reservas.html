@@ -564,20 +564,27 @@
       return blocked;
     }
 
-    // A day is "full" only when every single time slot is blocked by confirmed/completed reservas
+    // A day is "full" only when every single time slot is blocked by hours
     function isDayFull(ds) {
       if (!ds) return false;
       const blocked = getBlockedHours(ds);
       return HOUR_VALS.every(hv => blocked.has(hv));
     }
 
-    // Returns true if a day is fully blocked (manual close, full-day event, or all hours taken)
+    // isDayBlocked: returns true only when the ENTIRE day should be closed on the calendar grid.
+    // Hour-range events NEVER block the full day — they only block specific hours in the
+    // time slot picker (handled by getBlockedHours above). Only full-day events and
+    // manual 'booked' closures lock the calendar day itself.
     function isDayBlocked(ds) {
       const st = calData[ds];
       if (st === 'booked') return true;
-      // Full-day event blocks the whole day
-      if (st && typeof st === 'object' && st.type === 'event' && (!st.blockType || st.blockType === 'day')) return true;
-      // Hour-range event: only blocks the day if all slots end up blocked
+      if (st && typeof st === 'object' && st.type === 'event') {
+        // Only block the full day when blockType is 'day' (or missing for legacy events)
+        if (!st.blockType || st.blockType === 'day') return true;
+        // blockType === 'hours': day stays selectable, only specific hours are blocked
+        return false;
+      }
+      // No event — block if all time slots are taken by confirmed reservas
       return isDayFull(ds);
     }
 
