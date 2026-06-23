@@ -49,7 +49,6 @@ button { cursor: pointer; }
 /* ── App Layout — topbar fija + sidebar izquierdo + contenido ── */
 .app-layout {
   display: flex;
-  padding-top: var(--topbar-h);
   min-height: 100vh;
 }
 
@@ -127,10 +126,10 @@ button { cursor: pointer; }
 }
 .sidebar-overlay.show { display: block; }
 
-/* ── Main Content — offset por sidebar ── */
+/* ── Main Content — offset por sidebar y topbar ── */
 .main-content {
   margin-left: var(--sidebar-w);
-  padding-top: 32px;
+  padding-top: calc(var(--topbar-h) + 32px);
   padding-left: 32px;
   padding-right: 32px;
   padding-bottom: 60px;
@@ -307,7 +306,7 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
     margin-left: 0;
     padding-left: 16px;
     padding-right: 16px;
-    padding-top: 80px;
+    padding-top: calc(var(--topbar-h) + 20px);
   }
 
   /* Botón hamburguesa visible */
@@ -318,3 +317,6 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
   .form-row { grid-template-columns: 1fr; }
   .form-row.triple { grid-template-columns: 1fr; }
 }
+
+/* ── Social & contact icons (footer preview) ── */
+.social-icon svg, .contact-icon svg { width: 20px; height: 20px; flex-shrink: 0; }
