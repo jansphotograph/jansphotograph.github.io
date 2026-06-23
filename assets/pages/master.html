@@ -2001,7 +2001,7 @@
       <span id="ctxEventTitulo" style="font-weight:700;font-size:0.88rem;color:var(--white)"></span>
     </div>
     <div id="ctxEventDesc" style="font-size:0.76rem;color:var(--gray-l);line-height:1.4;padding-left:17px"></div>
-    <button onclick="closeCtxMenu();openCalEventPicker('edit')" style="margin-top:8px;margin-left:17px;background:none;border:1px solid rgba(233,30,140,0.3);border-radius:6px;color:var(--pink-l);font-size:0.72rem;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--font)">
+    <button onclick="closeCtxMenu();openCalEventEdit(ctxDay)" style="margin-top:8px;margin-left:17px;background:none;border:1px solid rgba(233,30,140,0.3);border-radius:6px;color:var(--pink-l);font-size:0.72rem;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--font)">
       ✏ Editar evento
     </button>
   </div>
@@ -2147,12 +2147,19 @@
       </div>
     </div>
     <input type="hidden" id="calEvEditDs" />
-    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="btn btn-outline" onclick="closeModal('calEventFormModal')">Cancelar</button>
-      <button class="btn btn-pink" onclick="saveCalEvent()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-        Guardar Evento
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;flex-wrap:wrap;align-items:center">
+      <button id="calEvDeleteBtn" style="display:none" class="btn" onclick="deleteCalEventFromForm()"
+        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar evento
       </button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn btn-outline" onclick="closeModal('calEventFormModal')">Cancelar</button>
+        <button class="btn btn-pink" onclick="saveCalEvent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Guardar Evento
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -2759,7 +2766,8 @@ function renderDayView(todayStr) {
         <div style="font-size:0.78rem;color:${evColor};font-weight:600;margin-bottom:${daySt.descripcion ? '4px' : '0'}">${blockLabel}</div>
         ${daySt.descripcion ? `<div style="font-size:0.82rem;color:var(--gray-l);line-height:1.5">${daySt.descripcion}</div>` : ''}
       </div>
-      <button onclick="openCalEventPicker('edit')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>`;
+      <button onclick="openCalEventEdit('${calViewDay}')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>
+      <button onclick="openCalEventDeleteDirect('${calViewDay}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:6px">✕ Eliminar</button>`;
     tl.appendChild(banner);
   }
 
@@ -3000,6 +3008,10 @@ function openCalEventForm(ds) {
     onCalEvBlockTypeChange();
   }
 
+  // Show/hide the Delete button depending on create vs edit mode
+  const deleteBtn = document.getElementById('calEvDeleteBtn');
+  if (deleteBtn) deleteBtn.style.display = isEdit ? 'flex' : 'none';
+
   // Lock the date field if editing
   document.getElementById('calEvFecha').readOnly    = isEdit;
   document.getElementById('calEvFecha').style.opacity = isEdit ? '0.5' : '1';
@@ -3009,6 +3021,30 @@ function openCalEventForm(ds) {
   document.getElementById('calEvHoraFin').addEventListener('change',    updateCalEvHoursPreview);
 
   openModal('calEventFormModal');
+}
+
+// ── Delete from inside the edit form (uses the stored calEvEditDs hidden field) ──
+async function deleteCalEventFromForm() {
+  const ds = document.getElementById('calEvEditDs').value;
+  if (!ds) return;
+  const titulo = (state.calendar[ds]?.titulo) || 'este evento';
+  if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
+  closeModal('calEventFormModal');
+  await deleteCalEvent(ds);
+}
+
+// ── Direct open-edit for a specific date (used by day-view banner "Editar" button) ──
+// Skips the picker entirely and goes straight to the form with that event pre-loaded.
+function openCalEventEdit(ds) {
+  openCalEventForm(ds);
+}
+
+// ── Direct delete for a specific date (used by day-view banner "Eliminar" button) ──
+async function openCalEventDeleteDirect(ds) {
+  if (!ds || !state.calendar[ds] || typeof state.calendar[ds] !== 'object') return;
+  const titulo = state.calendar[ds].titulo || 'este evento';
+  if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
+  await deleteCalEvent(ds);
 }
 
 // ── Save calendar event (create or edit/reschedule) ──
