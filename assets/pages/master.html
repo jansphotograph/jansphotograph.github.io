@@ -4322,10 +4322,10 @@ async function loadReservas() {
 }
 
 function resStatusLabel(s) {
-  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada' }[s] || s;
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
 }
 function resStatusClass(s) {
-  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected' }[s] || '';
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
 }
 
 // ── Financial helpers ──
@@ -4532,12 +4532,38 @@ function viewReserva(id) {
     <hr class="section-divider" />
     <span class="section-label-sm">Cambiar Estado</span>
     <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-sm ${r.status==='pending'?'btn-pink':'btn-outline'}"   onclick="changeResStatus('${r.id}','pending')">Pendiente</button>
-      <button class="btn btn-sm ${r.status==='confirmed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','confirmed')">Confirmada</button>
-      <button class="btn btn-sm ${r.status==='completed'?'btn-green':'btn-outline'}" onclick="changeResStatus('${r.id}','completed')">Completada</button>
-      <button class="btn btn-sm ${r.status==='declined'?'btn-red':'btn-outline'}"   onclick="changeResStatus('${r.id}','declined')">Declinada</button>
-      <button class="btn btn-sm ${r.status==='cancelled'?'btn-red':'btn-outline'}"  onclick="changeResStatus('${r.id}','cancelled')">Cancelada</button>
+      <button class="btn btn-sm ${r.status==='pending'   ?'btn-pink'  :'btn-outline'}" onclick="changeResStatus('${r.id}','pending'   )">Pendiente</button>
+      <button class="btn btn-sm ${r.status==='confirmed' ?'btn-green' :'btn-outline'}" onclick="changeResStatus('${r.id}','confirmed' )">Confirmada</button>
+      <button class="btn btn-sm ${r.status==='completed' ?'btn-green' :'btn-outline'}" onclick="changeResStatus('${r.id}','completed' )">Completada</button>
+      <button class="btn btn-sm ${r.status==='postponed' ?'btn-amber' :'btn-outline'}" onclick="changeResStatus('${r.id}','postponed' )">Aplazada</button>
+      <button class="btn btn-sm ${r.status==='declined'  ?'btn-red'   :'btn-outline'}" onclick="changeResStatus('${r.id}','declined'  )">Declinada</button>
+      <button class="btn btn-sm ${r.status==='cancelled' ?'btn-red'   :'btn-outline'}" onclick="changeResStatus('${r.id}','cancelled' )">Cancelada</button>
     </div>
+
+    <!-- Sección aplazamiento -->
+    <div id="resPostponeBlock" style="display:${r.status==='postponed'?'':'none'}">
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:10px">
+          📅 Sesión aplazada
+          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${r.fechaOriginal}</span>` : ''}
+        </div>
+        <div class="form-row">
+          <div class="field" style="margin-bottom:0">
+            <label>Nueva fecha</label>
+            <input type="date" id="resNewFecha" value="${r.fechaNueva||r.fecha||''}" />
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Nueva hora</label>
+            <input type="time" id="resNewHora" value="${r.horaNueva||r.hora||''}" />
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">El estado de la reserva se mantiene como <strong style="color:#fbbf24">Aplazada</strong>. Guarda los cambios para aplicar la nueva fecha.</div>
+        <div style="margin-top:12px">
+          <button class="btn btn-amber btn-sm" onclick="applyPostpone('${r.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar nueva fecha
+          </button>
+        </div>
 
     <hr class="section-divider" />
     <span class="section-label-sm">Documentos</span>
@@ -4664,8 +4690,53 @@ function updateResFinancials(id) {
   updateDashboard();
 }
 
+// ── Aplazar reserva ──
+function applyPostpone(id) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const r         = allReservas[idx];
+  const nuevaFecha = document.getElementById('resNewFecha')?.value;
+  const nuevaHora  = document.getElementById('resNewHora')?.value;
+  if (!nuevaFecha) { showToast('Selecciona una nueva fecha', 'error'); return; }
+
+  // Guardar fecha original si aún no se había guardado
+  if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
+
+  // Aplicar nueva fecha y hora
+  r.fechaNueva  = nuevaFecha;
+  r.horaNueva   = nuevaHora || r.hora;
+  r.fecha       = nuevaFecha;
+  r.hora        = nuevaHora || r.hora;
+  r.fechaLabel  = new Date(nuevaFecha + 'T12:00:00').toLocaleDateString('es-PA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(r);
+  renderReservasTable();
+  updateDashboard();
+
+  // Actualizar el badge de fecha en el modal
+  const fechaEl = document.querySelector('#reservaModalBody [data-field="fecha"]');
+  if (fechaEl) fechaEl.textContent = r.fechaLabel;
+
+  showToast(`Sesión aplazada al ${r.fechaLabel} ✓`);
+}
+
 function changeResStatus(id, status) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const r = allReservas[idx];
+
+  // Si se aplaza, guardar la fecha original (solo la primera vez)
+  if (status === 'postponed') {
+    if (!r.fechaOriginal && r.fecha) r.fechaOriginal = r.fecha;
+    // Mostrar el bloque de aplazamiento en el modal
+    const block = document.getElementById('resPostponeBlock');
+    if (block) block.style.display = '';
+    showToast('Reserva marcada como aplazada — ingresa la nueva fecha');
+  } else {
+    // Ocultar el bloque si cambia a otro estado
+    const block = document.getElementById('resPostponeBlock');
+    if (block) block.style.display = 'none';
+  }
+
   allReservas[idx].status = status;
 
   // If confirmed or completed → block the ±2 hour range around the session
