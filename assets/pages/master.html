@@ -931,8 +931,6 @@
         </div>
       </div>
 
-      </div>
-
       <!-- ── EQUIPO ── -->
       <div class="view" id="view-team">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -2073,11 +2071,12 @@ function switchView(name, btn) {
   if (name === 'notas')         { loadNotasUI(); updateNotasPreview(); }
   if (name === 'servAdicionales') initServAdicionales();
   if (name === 'inventario')      initInventario();
-  if (name === 'team')            initTeam();
+  if (name === 'team')            renderTeamList();
   if (name === 'panel')           initPanel();
   if (name === 'faqs')            initFaqs();
   if (name === 'company')         loadCompanyUI();
   if (name === 'config')          loadFacturaCounterUI();
+  if (name === 'team')            initTeam();
 }
 
 // ── Dashboard ──
