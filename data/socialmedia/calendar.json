@@ -11,13 +11,5 @@
     "descripcion": "Desfile de Aniversario del Colegio",
     "color": "pink"
   },
-  "2026-06-24": {
-    "type": "event",
-    "titulo": "Prueba A",
-    "descripcion": "probando 123",
-    "color": "pink",
-    "blockType": "hours",
-    "horaInicio": 10,
-    "horaFin": 14
-  }
+  "2026-06-24": "available"
 }
