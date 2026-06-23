@@ -5598,8 +5598,8 @@ function renderServAdicList() {
       </div>
       <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio||0).toFixed(2)}</div>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-sm btn-outline" onclick="openServModal('${s.id}')">✏</button>
-        <button class="btn btn-sm btn-red" onclick="deleteServAdic('${s.id}')">🗑</button>
+        <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>
+        <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>
       </div>
     </div>`;
   }).join('');
