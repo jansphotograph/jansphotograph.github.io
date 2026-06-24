@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "r_1782022210214",
+    "numero": "WEB-03",
+    "nombre": "Brittany Camarena",
+    "tel": "61643327",
+    "email": "camarenabrittany36@gmail.com",
+    "plan": "Plan Zafiro ($55)",
+    "notas": "",
+    "fecha": "2026-06-24",
+    "fechaLabel": "miércoles, 24 de junio de 2026",
+    "hora": "14:00",
+    "horaVal": 14,
+    "status": "confirmed",
+    "abono": 0,
+    "totalManual": null,
+    "extras": [],
+    "clientId": null,
+    "clientType": null,
+    "razonSocial": null,
+    "repLegal": null,
+    "address": null,
+    "origin": "web",
+    "facturaNumero": "003",
+    "createdAt": "06/21/2026",
+    "blockedHours": [
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "inventoryDeducted": true,
+    "fechaOriginal": "2026-06-23",
+    "fechaNueva": "2026-06-24",
+    "horaNueva": "14:00"
+  }
+]
