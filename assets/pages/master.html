@@ -56,7 +56,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
       Panel
     </button>
-    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent'">
+    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Eventos
     </button>
@@ -4589,10 +4589,12 @@ function viewReserva(id) {
     </div>
 
     <hr class="section-divider" />
-    <hr class="section-divider" />
     <div class="btn-row" style="flex-wrap:wrap">
-      <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
-      <a class="btn btn-blue" href="https://wa.me/${WA_NUMBER}?text=${waMsg}" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <button class="btn btn-pink" onclick="saveReservaChanges('${r.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar
+      </button>
+      <button class="btn btn-outline" onclick="closeModal('reservaModal')">Cancelar</button>
       <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
     </div>`;
   openModal('reservaModal');
@@ -4697,6 +4699,44 @@ function updateResFinancials(id) {
 }
 
 // ── Aplazar reserva ──
+// ── Guardar todos los cambios del modal de reserva ──
+async function saveReservaChanges(id) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const r = allReservas[idx];
+
+  // 1. Estado
+  const newStatus = r.status; // ya fue actualizado por changeResStatus al hacer click
+
+  // 2. Financiero
+  const abonoInput     = document.getElementById('resAbonoInput');
+  const canceladoInput = document.getElementById('resCanceladoInput');
+  if (abonoInput)     r.abono     = parseFloat(abonoInput.value)     || 0;
+  if (canceladoInput) r.cancelado = parseFloat(canceladoInput.value) || 0;
+
+  // 3. Fecha aplazada (si aplica)
+  if (r.status === 'postponed') {
+    const nuevaFecha = document.getElementById('resNewFecha')?.value;
+    const nuevaHora  = document.getElementById('resNewHora')?.value;
+    if (nuevaFecha) {
+      if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
+      r.fechaNueva = nuevaFecha;
+      r.horaNueva  = nuevaHora || r.hora;
+      r.fecha      = nuevaFecha;
+      r.hora       = nuevaHora || r.hora;
+      r.fechaLabel = new Date(nuevaFecha + 'T12:00:00').toLocaleDateString('es-PA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    }
+  }
+
+  // Guardar
+  allReservas[idx] = r;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(r);
+  renderReservasTable();
+  updateDashboard();
+  closeModal('reservaModal');
+  showToast('Reserva guardada ✓');
+}
+
 function applyPostpone(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   const r         = allReservas[idx];
@@ -7395,9 +7435,9 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
 
   <header>
     <div class="header-logo">
-      <a href="/"><img src="../../images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
+      <a href="../../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
     </div>
-    <a href="/" class="header-title">Jans <span>Photograph</span></a>
+    <a href="../../../../index.html" class="header-title">Jans <span>Photograph</span></a>
     <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -7406,13 +7446,13 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   <div class="nav-overlay" id="navOverlay"></div>
   <nav class="nav-drawer" id="navDrawer">
     <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="../servicios">Servicios</a></li>
-      <li><a href="../nosotros">Sobre Nosotros</a></li>
-      <li><a href="../blogs">Blogs</a></li>
+      <li><a href="../../../../index.html">Home</a></li>
+      <li><a href="../servicios.html">Servicios</a></li>
+      <li><a href="../nosotros.html">Sobre Nosotros</a></li>
+      <li><a href="../blogs.html">Blogs</a></li>
     </ul>
     <hr class="nav-lock-divider" />
-    <a href="../auth/auth" class="nav-lock-link">
+    <a href="../auth/auth.html" class="nav-lock-link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Master
     </a>
@@ -7480,7 +7520,7 @@ ${galleryItems}
         <div class="footer-col">
           <h3 class="footer-col-title">Conócenos</h3>
           <p class="knowus-text">Somos apasionados de la fotografía. Cada sesión es una historia que merece ser contada.</p>
-          <a class="knowus-link" href="../nosotros">¡Conócenos dando clic aquí! →</a>
+          <a class="knowus-link" href="../nosotros.html">¡Conócenos dando clic aquí! →</a>
         </div>
       </div>
       <div class="footer-bottom">
@@ -7556,7 +7596,7 @@ ${galleryItems}
             <ul class="pc-includes">
               \${(p.incluye || []).map(i => \`<li>\${i}</li>\`).join('')}
             </ul>
-            <a href="../quotes/reservas?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}"
+            <a href="../quotes/reservas.html?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}"
               class="btn-agendar">Agendar</a>
           </div>\`;
         }).join('');
