@@ -1447,12 +1447,13 @@
 
 <!-- ══ RESERVA DETAIL MODAL ══ -->
 <div class="modal-overlay" id="reservaModal">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-header">
+  <div class="modal" style="max-width:560px;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
       <h3 id="reservaModalTitle">Detalle de Reserva</h3>
       <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
     </div>
-    <div id="reservaModalBody"></div>
+    <div id="reservaModalBody" class="modal-body" style="flex:1;overflow-y:auto;padding:0 32px 8px"></div>
+    <div id="reservaModalFooter" style="flex-shrink:0;padding:16px 32px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap"></div>
   </div>
 </div>
 
@@ -4452,7 +4453,6 @@ function renderReservasTable(highlightId) {
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-sm btn-outline" onclick="viewReserva('${r.id}')">Ver</button>
-          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${r.id}')">✏</button>
         </div>
       </td>
     </tr>`;
@@ -4589,14 +4589,17 @@ function viewReserva(id) {
     </div>
 
     <hr class="section-divider" />
-    <div class="btn-row" style="flex-wrap:wrap">
+    <div style="height:8px"></div>`;
+
+  // Botones en footer fijo
+  document.getElementById('reservaModalFooter').innerHTML = `
       <button class="btn btn-pink" onclick="saveReservaChanges('${r.id}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
         Guardar
       </button>
-      <button class="btn btn-outline" onclick="closeModal('reservaModal')">Cancelar</button>
-      <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>
-    </div>`;
+      <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
+      <button class="btn btn-ghost" onclick="closeModal('reservaModal')">Cancelar</button>
+      <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>`;
   openModal('reservaModal');
 }
 
@@ -4699,31 +4702,26 @@ function updateResFinancials(id) {
 }
 
 // ── Aplazar reserva ──
-// ── Guardar todos los cambios del modal de reserva ──
+// ── Guardar todos los cambios del modal ──
 async function saveReservaChanges(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   const r = allReservas[idx];
-
   // Financiero
-  const abonoInput     = document.getElementById('resAbonoInput');
-  const canceladoInput = document.getElementById('resCanceladoInput');
-  if (abonoInput)     r.abono     = parseFloat(abonoInput.value)     || 0;
-  if (canceladoInput) r.cancelado = parseFloat(canceladoInput.value) || 0;
-
-  // Fecha aplazada (si aplica)
+  const abonoEl     = document.getElementById('resAbonoInput');
+  const canceladoEl = document.getElementById('resCanceladoInput');
+  if (abonoEl)     r.abono     = parseFloat(abonoEl.value)     || 0;
+  if (canceladoEl) r.cancelado = parseFloat(canceladoEl.value) || 0;
+  // Fecha aplazada
   if (r.status === 'postponed') {
-    const nuevaFecha = document.getElementById('resNewFecha')?.value;
-    const nuevaHora  = document.getElementById('resNewHora')?.value;
-    if (nuevaFecha) {
+    const nf = document.getElementById('resNewFecha')?.value;
+    const nh = document.getElementById('resNewHora')?.value;
+    if (nf) {
       if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
-      r.fechaNueva = nuevaFecha;
-      r.horaNueva  = nuevaHora || r.hora;
-      r.fecha      = nuevaFecha;
-      r.hora       = nuevaHora || r.hora;
-      r.fechaLabel = new Date(nuevaFecha + 'T12:00:00').toLocaleDateString('es-PA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      r.fechaNueva = nf; r.horaNueva = nh||r.hora;
+      r.fecha = nf; r.hora = nh||r.hora;
+      r.fechaLabel = new Date(nf+'T12:00:00').toLocaleDateString('es-PA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     }
   }
-
   allReservas[idx] = r;
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(r);
