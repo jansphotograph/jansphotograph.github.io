@@ -1547,13 +1547,7 @@
         </select>
       </div>
     </div>
-    <div class="form-row">
-      <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
-      <div class="field">
-        <label>Precio del plan ($) <span style="font-weight:400;color:var(--gray);font-size:0.8rem">— vacío = precio original</span></label>
-        <input type="number" id="editResPrecio" min="0" step="0.01" placeholder="Dejar vacío para precio del plan" />
-      </div>
-    </div>
+    <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
     <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-pink" onclick="saveEditReserva()">Guardar cambios</button>
@@ -2415,10 +2409,16 @@ function switchView(name, btn) {
   if (name === 'calendar')      renderCalendar();
   if (name === 'services')      renderServices();
   if (name === 'plans')         renderPlans();
-  if (name === 'reservas')      renderReservasTable();
   if (name === 'planesPublicos'){ loadPublicPlans(); renderPublicPlans(); }
-  if (name === 'dashboard')     updateDashboard();
-  if (name === 'quotes')        renderQuotesTable();
+  if (name === 'dashboard' || name === 'reservas' || name === 'quotes') {
+    (async () => {
+      await syncReservasFromSupabase();
+      loadReservasLocal();
+      if (name === 'dashboard') updateDashboard();
+      if (name === 'reservas')  renderReservasTable();
+      if (name === 'quotes')    renderQuotesTable();
+    })();
+  }
   if (name === 'social')        loadSocialLinksUI();
   if (name === 'blog')          { loadBlogPosts(); renderBlogPosts(); }
   if (name === 'recargar')      { loadLastReloadInfo(); updatePollUI(isPollingEnabled()); }
@@ -2437,75 +2437,76 @@ function switchView(name, btn) {
 // ── Dashboard ──
 function updateDashboard() {
   loadReservasLocal();
+  const activeRes = allReservas.filter(r => r.status !== 'deleted');
+  const activeQ   = (state.quotes || []);
+  const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
+  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
-  const total    = allReservas.length;
-  const pendingList = allReservas.filter(r => r.status === 'pending');
-  const pending  = pendingList.length;
-  const now      = new Date();
-  const thisMonth = now.getMonth();
-  const thisYear  = now.getFullYear();
-  const approved = allReservas.filter(r => {
-    if (r.status !== 'confirmed' && r.status !== 'completed') return false;
-    if (!r.fecha) return false;
-    const d = new Date(r.fecha + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  }).length;
-  const revenue = allReservas
-    .filter(r => r.status === 'confirmed' || r.status === 'completed')
-    .reduce((s, r) => s + resTotal(r), 0);
+  const pendingR   = activeRes.filter(r => r.status === 'pending');
+  const pendingQ   = activeQ.filter(q => q.status === 'pending');
+  const confirmedR = activeRes.filter(r => r.status === 'confirmed');
+  const confirmedQ = activeQ.filter(q => q.status === 'confirmed');
+  const completedR = activeRes.filter(r => r.status === 'completed');
+  const completedQ = activeQ.filter(q => q.status === 'completed');
 
-  document.getElementById('statTotal').textContent    = total;
-  document.getElementById('statPending').textContent  = pending;
-  document.getElementById('statApproved').textContent = approved;
-  document.getElementById('statRevenue').textContent  = `$${revenue.toFixed(2)}`;
+  const approvedRMonth = confirmedR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+  const approvedQMonth = confirmedQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+  const revenueR = [...confirmedR,...completedR].reduce((s,r)=>s+resTotal(r),0);
+  const revenueQ = [...confirmedQ,...completedQ].reduce((s,q)=>s+(parseFloat(q.total)||0),0);
 
-  // «Cotizaciones» badge counts ONLY manual quotes (state.quotes)
-  const pendingQuotes = (state.quotes || []).filter(q => q.status === 'pending').length;
-  const pb  = document.getElementById('pendingBadge');
-  if (pb) { pb.textContent = pendingQuotes; pb.style.display = pendingQuotes > 0 ? '' : 'none'; }
+  const el = id => document.getElementById(id);
+  if(el('statOpsTotal'))    el('statOpsTotal').textContent    = activeRes.length + activeQ.length;
+  if(el('statCompleted'))   el('statCompleted').textContent   = completedR.length + completedQ.length;
+  if(el('statCompletedRes'))el('statCompletedRes').textContent= completedR.length;
+  if(el('statCompletedQ')) el('statCompletedQ').textContent  = completedQ.length;
+  if(el('statRevenue'))     el('statRevenue').textContent     = '$'+(revenueR+revenueQ).toFixed(2);
+  if(el('statPendingRes'))  el('statPendingRes').textContent  = pendingR.length;
+  if(el('statPendingQ'))    el('statPendingQ').textContent    = pendingQ.length;
+  if(el('statApprovedRes')) el('statApprovedRes').textContent = approvedRMonth;
+  if(el('statApprovedQ'))   el('statApprovedQ').textContent   = approvedQMonth;
+  // compatibilidad con IDs viejos
+  if(el('statTotal'))   el('statTotal').textContent   = activeRes.length;
+  if(el('statPending')) el('statPending').textContent = pendingR.length + pendingQ.length;
+  if(el('statApproved'))el('statApproved').textContent= approvedRMonth + approvedQMonth;
 
-  // «Reservas» badge counts pending reservas (web + manual)
-  const rb  = document.getElementById('reservasBadge');
-  const rb2 = document.getElementById('reservasBadge2');
-  if (rb)  { rb.textContent  = pending; rb.style.display  = pending > 0 ? '' : 'none'; }
-  if (rb2) { rb2.textContent = pending; rb2.style.display = pending > 0 ? '' : 'none'; }
+  const pb=el('pendingBadge'); if(pb){pb.textContent=pendingQ.length;pb.style.display=pendingQ.length>0?'':'none';}
+  const rb=el('reservasBadge'),rb2=el('reservasBadge2');
+  if(rb){rb.textContent=pendingR.length;rb.style.display=pendingR.length>0?'':'none';}
+  if(rb2){rb2.textContent=pendingR.length;rb2.style.display=pendingR.length>0?'':'none';}
 
-  // ── Pending requests card — only shows up when there's something to act on ──
-  const pendingCard  = document.getElementById('dashPendingCard');
-  const pendingTable = document.getElementById('dashPendingTable');
-  if (pending > 0) {
-    pendingCard.style.display = '';
-    pendingTable.innerHTML = pendingList.slice().reverse().map(r => `
-      <tr>
-        <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero||'—'}</span></td>
-        <td>${r.nombre}</td>
-        <td>${r.plan||'—'}</td>
-        <td>${r.fechaLabel||r.fecha||'—'}</td>
-        <td>${r.hora||'—'}</td>
-        <td><span class="badge-status status-pending">${r.origin==='manual'?'Manual':'Web'}</span></td>
-        <td><button class="btn btn-sm btn-pink" onclick="goToReservaInTable('${r.id}')">Ver</button></td>
-      </tr>`).join('');
-  } else {
-    pendingCard.style.display = 'none';
-  }
-
-  // ── Recent reservas table ──
-  const rows = allReservas.slice(-6).reverse().map(r => `
-    <tr>
-      <td>${r.nombre}</td>
-      <td>${r.plan||'—'}</td>
-      <td>$${resTotal(r).toFixed(2)}</td>
-      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
-      <td>${r.fechaLabel||r.fecha||'—'}</td>
+  const allPending=[
+    ...pendingR.map(r=>({numero:r.numero||'—',cliente:r.nombre,tipo:'Reserva',plan:r.plan||'—',fecha:r.fechaLabel||r.fecha||'—',hora:r.hora||'—',total:resTotal(r),isReserva:true,id:r.id})),
+    ...pendingQ.map(q=>({numero:q.numero||'—',cliente:q.clientName,tipo:q.tipo==='evento'?'Evento':'Foto',plan:q.plan||'—',fecha:q.sessionDate||'—',hora:q.sessionTime||'—',total:parseFloat(q.total)||0,isReserva:false,id:q.id}))
+  ];
+  const pendingCard=el('dashPendingCard'),pendingTable=el('dashPendingTable');
+  if(allPending.length>0){
+    if(pendingCard)pendingCard.style.display='';
+    if(pendingTable)pendingTable.innerHTML=allPending.map(item=>`<tr>
+      <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${item.numero}</span></td>
+      <td style="font-weight:600">${item.cliente}</td>
+      <td><span class="badge-status status-pending" style="font-size:0.72rem">${item.tipo}</span></td>
+      <td>${item.plan}</td><td style="font-size:0.82rem">${item.fecha}</td><td style="font-size:0.82rem">${item.hora}</td>
+      <td style="font-weight:700">$${item.total.toFixed(2)}</td>
+      <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
     </tr>`).join('');
-  document.getElementById('dashRecentTable').innerHTML = rows || '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
+  } else { if(pendingCard)pendingCard.style.display='none'; }
+
+  const dashRecent=el('dashRecentTable');
+  if(dashRecent)dashRecent.innerHTML=activeRes.length
+    ?activeRes.slice(-6).reverse().map(r=>`<tr><td>${r.nombre}</td><td>${r.plan||'—'}</td><td>$${resTotal(r).toFixed(2)}</td><td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td><td>${r.fechaLabel||r.fecha||'—'}</td></tr>`).join('')
+    :'<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
+
+  const dashQ=el('dashRecentQuotes');
+  if(dashQ)dashQ.innerHTML=activeQ.length
+    ?activeQ.slice(-6).reverse().map(q=>`<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td>${q.plan||'—'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td></tr>`).join('')
+    :'<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
 
 function statusLabel(s) {
-  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', postponed:'Aplazada', cancelled:'Cancelada', approved:'Confirmada', booked:'Confirmada', rejected:'Cancelada' }[s] || s;
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
 }
 function statusClassQ(s) {
-  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', postponed:'status-postponed', cancelled:'status-rejected', approved:'status-approved', booked:'status-approved', rejected:'status-rejected' }[s] || '';
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
 }
 
 // ── Calendar ──
@@ -3091,77 +3092,39 @@ function renderQuotesTable() {
 
 function viewQuote(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  const total     = parseFloat(q.total)   || 0;
-  const abono     = parseFloat(q.abono)   || 0;
-  const pagado    = parseFloat(q.pagado)  || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-  const prog      = total > 0 ? Math.min(100, Math.round(((abono+pagado)/total)*100)) : 0;
-
-  document.getElementById('quoteModalTitle').textContent = `${q.numero||'Cotización'} — ${q.clientName}`;
-
-  document.getElementById('quoteModalBody').innerHTML = `
-    <!-- Info básica -->
+  const total=parseFloat(q.total)||0, abono=parseFloat(q.abono)||0, pagado=parseFloat(q.pagado)||0;
+  const pendiente=Math.max(0,total-abono-pagado), prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
+  document.getElementById('quoteModalTitle').textContent=`${q.numero||'Cotización'} — ${q.clientName}`;
+  document.getElementById('quoteModalBody').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div>
-        <div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div>
-        <div style="font-weight:700;font-size:1rem">${q.clientName}</div>
-        <div style="color:var(--gray-l);font-size:0.82rem">${q.clientType==='juridica'?'Persona Jurídica':'Persona Natural'} · ${q.clientId||''}</div>
-      </div>
-      <div>
-        <div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div>
-        <span id="qStatusBadge" class="badge-status ${statusClassQ?statusClassQ(q.status):''}">${statusLabel(q.status)}</span>
-      </div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div><div style="font-weight:700">${q.clientName}</div><div style="color:var(--gray-l);font-size:0.82rem">${q.clientType==='juridica'?'Jurídica':'Natural'} · ${q.clientId||''}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div><span id="qStatusBadge" class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></div>
       <div><div style="font-size:.72rem;color:var(--gray)">Teléfono</div><div>${q.phone||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>${q.email||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray)">Fecha</div><div>${q.sessionDate||'—'} ${q.sessionTime||''}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>${q.location||'—'}</div></div>
     </div>
-
     <hr class="section-divider"/>
-    <!-- Plan & servicios -->
     <span class="section-label-sm">Plan &amp; Servicios</span>
     <div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px">
-        <span>${q.plan||'Sin plan'}</span><span>$${(q.planPrice||0).toFixed(2)}</span>
-      </div>
-      ${(q.addons||[]).filter(a=>a.price>0).map(a=>`
-        <div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0">
-          <span>+ ${a.name}</span><span>$${parseFloat(a.price).toFixed(2)}</span>
-        </div>`).join('')}
-      ${(q.addons||[]).filter(a=>!a.price||a.price===0).map(a=>`
-        <div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">✓ ${a.name}</div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>${q.plan||'Sin plan'}</span><span>$${(q.planPrice||0).toFixed(2)}</span></div>
+      ${(q.addons||[]).filter(a=>a.price>0).map(a=>`<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ ${a.name}</span><span>$${parseFloat(a.price).toFixed(2)}</span></div>`).join('')}
+      ${(q.addons||[]).filter(a=>!a.price||a.price===0).map(a=>`<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">✓ ${a.name}</div>`).join('')}
     </div>
-
-    <!-- Precio total editable -->
-    <div class="form-row" style="margin-bottom:16px">
-      <div class="field">
-        <label>Total cotización ($)</label>
-        <input type="number" id="qTotalInput" min="0" step="0.01" value="${total.toFixed(2)}"
-          oninput="updateQFinancials('${q.id}')" />
-      </div>
+    <div class="field" style="margin-bottom:16px">
+      <label>Total cotización ($)</label>
+      <input type="number" id="qTotalInput" min="0" step="0.01" value="${total.toFixed(2)}" oninput="updateQFinancials('${q.id}')" />
     </div>
-
     <hr class="section-divider"/>
-    <!-- Control financiero -->
     <span class="section-label-sm">Control Financiero</span>
     <div class="form-row" style="margin-bottom:8px">
-      <div class="field">
-        <label>Abono recibido ($)</label>
-        <input type="number" id="qAbonoInput" min="0" step="0.01" value="${abono.toFixed(2)}"
-          oninput="updateQFinancials('${q.id}')" />
-      </div>
-      <div class="field">
-        <label>Pago completado ($)</label>
-        <input type="number" id="qPagadoInput" min="0" step="0.01" value="${pagado.toFixed(2)}"
-          oninput="updateQFinancials('${q.id}')" />
-      </div>
+      <div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="${abono.toFixed(2)}" oninput="updateQFinancials('${q.id}')" /></div>
+      <div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="${pagado.toFixed(2)}" oninput="updateQFinancials('${q.id}')" /></div>
     </div>
     <div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-      ${renderQFinancialSummary(total, abono, pagado, pendiente, prog)}
+      ${renderQFinancialSummary(total,abono,pagado,pendiente,prog)}
     </div>
-
     <hr class="section-divider"/>
-    <!-- Cambiar estado -->
     <span class="section-label-sm">Estado</span>
     <div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">
       <button class="btn btn-sm ${q.status==='pending'   ?'btn-pink'  :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','pending')">Pendiente</button>
@@ -3170,85 +3133,62 @@ function viewQuote(id) {
       <button class="btn btn-sm ${q.status==='postponed' ?'btn-amber' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','postponed')">Aplazada</button>
       <button class="btn btn-sm ${q.status==='cancelled' ?'btn-red'   :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','cancelled')">Cancelada</button>
     </div>
-
     ${q.notes?`<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">${q.notes}</p>`:''}`;
 
-  document.getElementById('quoteModalFooter').innerHTML = `
+  const fEl = document.getElementById('quoteModalFooter');
+  if (fEl) fEl.innerHTML=`
     <button class="btn btn-pink" onclick="saveQuoteChanges('${q.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-      Guardar
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar
     </button>
-    <button class="btn btn-outline" onclick="generateQuotePDF('${q.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-      PDF
-    </button>
-    <button class="btn btn-outline" onclick="generateQuoteInvoicePDF('${q.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Factura
-    </button>
-    <button class="btn btn-ghost" onclick="closeModal('quoteModal')">Cancelar</button>
-    <button class="btn btn-red"   onclick="deleteQuote('${q.id}')">🗑</button>`;
+    <button class="btn btn-outline" onclick="generateQuotePDF('${q.id}')">PDF</button>
+    <button class="btn btn-outline" onclick="generateQuoteInvoicePDF('${q.id}')">Factura</button>
+    <button class="btn btn-ghost"   onclick="closeModal('quoteModal')">Cancelar</button>
+    <button class="btn btn-red"     onclick="deleteQuote('${q.id}')">🗑</button>`;
 
   openModal('quoteModal');
 }
 
-function renderQFinancialSummary(total, abono, pagado, pendiente, prog) {
-  return `
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
-      <span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
-      <span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px">
-      <span style="color:var(--gray-l)">Pendiente</span>
-      <span style="font-weight:700;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</span>
-    </div>
-    <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
-      <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div>
-    </div>
+function renderQFinancialSummary(total,abono,pagado,pendiente,prog){
+  return `<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</span></div>
+    <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>
     <div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">${prog}% pagado</div>`;
 }
 
-function updateQFinancials(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  const total     = parseFloat(document.getElementById('qTotalInput')?.value)  || 0;
-  const abono     = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
-  const pagado    = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-  const prog      = total > 0 ? Math.min(100, Math.round(((abono+pagado)/total)*100)) : 0;
-  const el = document.getElementById('qFinancialSummary');
-  if (el) el.innerHTML = renderQFinancialSummary(total, abono, pagado, pendiente, prog);
+function updateQFinancials(id){
+  const total=parseFloat(document.getElementById('qTotalInput')?.value)||0;
+  const abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
+  const pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
+  const pendiente=Math.max(0,total-abono-pagado);
+  const prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
+  const el=document.getElementById('qFinancialSummary');
+  if(el)el.innerHTML=renderQFinancialSummary(total,abono,pagado,pendiente,prog);
 }
 
-function changeQuoteStatus(id, status) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  q.status = status;
-  const badge = document.getElementById('qStatusBadge');
-  if (badge) { badge.className = `badge-status ${statusClassQ?statusClassQ(status):''}`; badge.textContent = statusLabel(status); }
-  const statuses = ['pending','confirmed','completed','postponed','cancelled'];
-  const classes  = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', cancelled:'btn-red' };
-  statuses.forEach(s => {
-    const btn = document.querySelector(`#quoteModalBody .btn[onclick*="changeQuoteStatus('${id}','${s}')"]`);
-    if (btn) btn.className = `btn btn-sm ${s===status ? classes[s] : 'btn-outline'}`;
+function changeQuoteStatus(id,status){
+  const q=state.quotes.find(x=>x.id===id);if(!q)return;
+  q.status=status;
+  const badge=document.getElementById('qStatusBadge');
+  if(badge){badge.className=`badge-status ${statusClassQ(status)}`;badge.textContent=statusLabel(status);}
+  ['pending','confirmed','completed','postponed','cancelled'].forEach(s=>{
+    const classes={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
+    const btn=document.querySelector(`#quoteModalBody .btn[onclick*="changeQuoteStatus('${id}','${s}')"]`);
+    if(btn)btn.className=`btn btn-sm ${s===status?classes[s]:'btn-outline'}`;
   });
 }
 
-async function saveQuoteChanges(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  const newTotal = parseFloat(document.getElementById('qTotalInput')?.value);
-  if (!isNaN(newTotal)) q.total  = newTotal;
-  q.abono  = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
-  q.pagado = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
-  // status ya actualizado por changeQuoteStatus
-  if (q.status === 'confirmed' && q.sessionDate && q.sessionTime) {
-    await blockCalendarForQuote(q);
-  }
-  const ok = await ghPut('quotes.json', state.quotes);
-  renderQuotesTable();
-  updateDashboard();
+async function saveQuoteChanges(id){
+  const q=state.quotes.find(x=>x.id===id);if(!q)return;
+  const newTotal=parseFloat(document.getElementById('qTotalInput')?.value);
+  if(!isNaN(newTotal))q.total=newTotal;
+  q.abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
+  q.pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
+  if(q.status==='confirmed'&&q.sessionDate&&q.sessionTime){await blockCalendarForQuote(q);}
+  const ok=await ghPut('quotes.json',state.quotes);
+  renderQuotesTable();updateDashboard();
   closeModal('quoteModal');
-  showToast(ok ? `Cotización ${q.numero||''} guardada ✓` : 'Error al guardar', ok?'':'error');
+  showToast(ok?`Cotización ${q.numero||''} guardada ✓`:'Error al guardar',ok?'':'error');
 }
 
 
@@ -4709,8 +4649,9 @@ function renderReservasTable(highlightId) {
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
-    if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+    if (r.status === 'deleted') return false;
+    if (filterStatus && r.status !== filterStatus) return false;
+    if (filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
 
@@ -5174,13 +5115,12 @@ function openEditReserva(id) {
   editingResId = id;
   document.getElementById('editResNumero').textContent = r.numero ? ('— ' + r.numero) : '';
   document.getElementById('editResNombre').value = r.nombre || '';
-  document.getElementById('editResTel').value    = r.tel    || '';
-  document.getElementById('editResEmail').value  = r.email  || '';
-  document.getElementById('editResDate').value   = r.fecha  || '';
-  document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
-  document.getElementById('editResPlan').value   = r.plan   || '';
-  document.getElementById('editResPrecio').value = (r.totalManual !== null && r.totalManual !== undefined) ? r.totalManual : '';
-  document.getElementById('editResNotas').value  = r.notas  || '';
+  document.getElementById('editResTel').value    = r.tel || '';
+  document.getElementById('editResEmail').value  = r.email || '';
+  document.getElementById('editResDate').value  = r.fecha || '';
+  document.getElementById('editResHora').value  = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
+  document.getElementById('editResPlan').value  = r.plan || '';
+  document.getElementById('editResNotas').value = r.notas || '';
   openModal('editReservaModal');
 }
 
@@ -5189,25 +5129,22 @@ function saveEditReserva() {
   const horaRaw = document.getElementById('editResHora').value.split('|');
   const fecha   = document.getElementById('editResDate').value;
   const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
-  const precioVal = document.getElementById('editResPrecio')?.value;
   allReservas[idx] = {
     ...allReservas[idx],
-    nombre:      document.getElementById('editResNombre').value,
-    tel:         document.getElementById('editResTel').value,
-    email:       document.getElementById('editResEmail').value,
+    nombre:   document.getElementById('editResNombre').value,
+    tel:      document.getElementById('editResTel').value,
+    email:    document.getElementById('editResEmail').value,
     fecha,
-    fechaLabel:  d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
-    horaVal:     horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
-    hora:        horaRaw[1] || allReservas[idx].hora,
-    plan:        document.getElementById('editResPlan').value,
-    notas:       document.getElementById('editResNotas').value,
-    totalManual: precioVal !== '' && precioVal !== undefined ? (parseFloat(precioVal) || 0) : null,
+    fechaLabel: d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
+    horaVal:  horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
+    hora:     horaRaw[1] || allReservas[idx].hora,
+    plan:     document.getElementById('editResPlan').value,
+    notas:    document.getElementById('editResNotas').value,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
   closeModal('editReservaModal');
   renderReservasTable();
-  updateDashboard();
   showToast('Reserva actualizada ✓');
 }
 
@@ -6838,127 +6775,56 @@ const CHART_COLORS = ['#e91e8c', '#c2176d', '#f59e0b', '#22c55e', '#3b82f6', '#a
 function updatePanelAdministrativo() {
   loadReservasLocal();
   loadPaperTypes();
-
-  const billable = allReservas.filter(r => r.status === 'confirmed' || r.status === 'completed');
-  const now = new Date();
-  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
-
-  // ── Revenue cards ──
-  const billableThisMonth = billable.filter(r => {
-    if (!r.fecha) return false;
-    const d = new Date(r.fecha + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  });
-  const revMonth   = billableThisMonth.reduce((s, r) => s + resTotal(r), 0);
-  const revTotal   = billable.reduce((s, r) => s + resTotal(r), 0);
-  const revPending = billable.reduce((s, r) => s + resPendiente(r), 0);
-  const avgTicket  = billable.length ? revTotal / billable.length : 0;
-
-  document.getElementById('panelRevMonth').textContent   = `$${revMonth.toFixed(2)}`;
-  document.getElementById('panelRevMonthSub').textContent = `${billableThisMonth.length} reserva(s) este mes`;
-  document.getElementById('panelRevTotal').textContent   = `$${revTotal.toFixed(2)}`;
-  document.getElementById('panelRevPending').textContent = `$${revPending.toFixed(2)}`;
-  document.getElementById('panelRevPendingSub').textContent = `De ${billable.filter(r=>resPendiente(r)>0).length} reserva(s)`;
-  document.getElementById('panelAvgTicket').textContent  = `$${avgTicket.toFixed(2)}`;
-
-  // ── Most requested plans (donut) ──
-  const planCounts = {};
-  billable.forEach(r => {
-    if (!r.plan) return;
-    const clean = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
-    planCounts[clean] = (planCounts[clean] || 0) + 1;
-  });
-  const planData = Object.entries(planCounts)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0, 8)
-    .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
-  document.getElementById('panelPlansChart').innerHTML = buildDonutChart(planData);
-
-  // ── Most sold extras/additional services (donut) ──
-  const extraCounts = {};
-  billable.forEach(r => {
-    (r.extras || []).forEach(e => {
-      if (!e.nombre) return;
-      extraCounts[e.nombre] = (extraCounts[e.nombre] || 0) + 1;
-    });
-  });
-  const extraData = Object.entries(extraCounts)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0, 8)
-    .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
-  document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(extraData);
-
-  // ── Inventory status ──
-  const invEl = document.getElementById('panelInventoryStatus');
-  if (!paperTypes.length) {
-    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
-  } else {
-    invEl.innerHTML = paperTypes.map(p => {
-      const isLow = p.stock <= p.minStock;
-      const pct = p.minStock > 0 ? Math.min(100, Math.round((p.stock / Math.max(p.minStock * 3, 1)) * 100)) : 100;
-      return `
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-          <span>${p.nombre}</span>
-          <span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} hojas ${isLow?'⚠':''}</span>
-        </div>
-        <div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── Top clients (by phone number, since that's the most reliable unique key) ──
-  const clientMap = {};
-  billable.forEach(r => {
-    const key = r.tel || r.nombre;
-    if (!clientMap[key]) clientMap[key] = { nombre: r.nombre, count: 0, total: 0, lastDate: '' };
-    clientMap[key].count++;
-    clientMap[key].total += resTotal(r);
-    if (!clientMap[key].lastDate || (r.fecha && r.fecha > clientMap[key].lastDate)) {
-      clientMap[key].lastDate = r.fecha || clientMap[key].lastDate;
-    }
-  });
-  const topClients = Object.values(clientMap).sort((a,b) => b.count - a.count).slice(0, 8);
-  const clientsTbody = document.getElementById('panelTopClients');
-  clientsTbody.innerHTML = topClients.length
-    ? topClients.map(c => `
-      <tr>
-        <td style="font-weight:600">${c.nombre}</td>
-        <td>${c.count}</td>
-        <td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td>
-        <td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate || '—'}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
-
-  // ── Monthly trend (last 6 months, simple bar chart) ──
-  const months = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(thisYear, thisMonth - i, 1);
-    months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('es-PA', { month: 'short' }) });
-  }
-  const monthCounts = months.map(m => {
-    return allReservas.filter(r => {
-      if (!r.fecha) return false;
-      const d = new Date(r.fecha + 'T00:00:00');
-      return d.getFullYear() === m.year && d.getMonth() === m.month;
-    }).length;
-  });
-  const maxCount = Math.max(1, ...monthCounts);
-  const barsEl = document.getElementById('panelMonthlyChart');
-  barsEl.innerHTML = months.map((m, i) => {
-    const h = Math.max(4, Math.round((monthCounts[i] / maxCount) * 130));
-    return `
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px">
-        <span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span>
-        <div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div>
-        <span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span>
-      </div>`;
-  }).join('');
+  const activeRes = allReservas.filter(r=>r.status!=='deleted');
+  const activeQ   = (state.quotes||[]);
+  const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
+  const thisMonth = now.getMonth(), thisYear=now.getFullYear();
+  const billR=activeRes.filter(r=>r.status==='confirmed'||r.status==='completed');
+  const billQ=activeQ.filter(q=>q.status==='confirmed'||q.status==='completed');
+  const billRM=billR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const billQM=billQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const compRM=activeRes.filter(r=>{if(r.status!=='completed')return false;const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const confRM=activeRes.filter(r=>{if(r.status!=='confirmed')return false;const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const compQM=activeQ.filter(q=>{if(q.status!=='completed')return false;const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const confQM=activeQ.filter(q=>{if(q.status!=='confirmed')return false;const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const revMonth=compRM.reduce((s,r)=>s+resTotal(r),0)+confRM.reduce((s,r)=>s+(parseFloat(r.abono)||0)+(parseFloat(r.cancelado)||0),0)+compQM.reduce((s,q)=>s+(parseFloat(q.total)||0),0)+confQM.reduce((s,q)=>s+(parseFloat(q.abono)||0)+(parseFloat(q.pagado)||0),0);
+  const validR=activeRes.filter(r=>r.status!=='cancelled');
+  const validQ=activeQ.filter(q=>q.status!=='cancelled');
+  const revTotal=validR.reduce((s,r)=>s+resTotal(r),0)+validQ.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+  const pendR=activeRes.filter(r=>r.status==='confirmed'||r.status==='pending');
+  const pendQ=activeQ.filter(q=>q.status==='confirmed'||q.status==='pending');
+  const revPend=pendR.reduce((s,r)=>s+resPendiente(r),0)+pendQ.reduce((s,q)=>s+Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)),0);
+  const pendCount=pendR.filter(r=>resPendiente(r)>0).length+pendQ.filter(q=>Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0))>0).length;
+  const el=id=>document.getElementById(id);
+  el('panelRevMonth').textContent='$'+revMonth.toFixed(2);
+  el('panelRevMonthSub').textContent=(compRM.length+confRM.length+compQM.length+confQM.length)+' sesión(es) este mes';
+  el('panelRevTotal').textContent='$'+revTotal.toFixed(2);
+  el('panelRevPending').textContent='$'+revPend.toFixed(2);
+  el('panelRevPendingSub').textContent='De '+pendCount+' sesión(es)';
+  const planCounts={};
+  [...activeRes,...activeQ].forEach(x=>{const p=x.plan;if(!p)return;const c=p.replace(/\s*\(\$[\d.,]+\)\s*$/,'').trim();planCounts[c]=(planCounts[c]||0)+1;});
+  el('panelPlansChart').innerHTML=buildDonutChart(Object.entries(planCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+  const extraCounts={};
+  activeRes.forEach(r=>(r.extras||[]).forEach(e=>{if(e.nombre)extraCounts[e.nombre]=(extraCounts[e.nombre]||0)+1;}));
+  activeQ.forEach(q=>(q.addons||[]).filter(a=>a.price>0).forEach(a=>{if(a.name)extraCounts[a.name]=(extraCounts[a.name]||0)+1;}));
+  el('panelExtrasChart').innerHTML=buildDonutChart(Object.entries(extraCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+  const invEl=el('panelInventoryStatus');
+  if(!paperTypes.length){invEl.innerHTML='<div style="color:var(--gray);font-size:0.85rem">Sin tipos de papel registrados.</div>';}
+  else{invEl.innerHTML=paperTypes.map(p=>{const isLow=p.stock<=p.minStock;const pct=p.minStock>0?Math.min(100,Math.round((p.stock/Math.max(p.minStock*3,1))*100)):100;return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px"><span>${p.nombre}</span><span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} ${isLow?'⚠':''}</span></div><div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div></div></div>`;}).join('');}
+  const clientMap={};
+  activeRes.forEach(r=>{const k=r.tel||r.nombre;if(!clientMap[k])clientMap[k]={nombre:r.nombre,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=resTotal(r);if((r.fecha||'')>clientMap[k].lastDate)clientMap[k].lastDate=r.fecha;});
+  activeQ.forEach(q=>{const k=q.phone||q.clientName;if(!clientMap[k])clientMap[k]={nombre:q.clientName,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=parseFloat(q.total)||0;if((q.sessionDate||'')>clientMap[k].lastDate)clientMap[k].lastDate=q.sessionDate;});
+  el('panelTopClients').innerHTML=Object.values(clientMap).sort((a,b)=>b.count-a.count).slice(0,8).map(c=>`<tr><td style="font-weight:600">${c.nombre}</td><td>${c.count}</td><td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td><td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
+  const months=[];for(let i=5;i>=0;i--){const d=new Date(thisYear,thisMonth-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('es-PA',{month:'short'})});}
+  const monthCounts=months.map(m=>{const cR=activeRes.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;const cQ=activeQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;return cR+cQ;});
+  const maxCount=Math.max(1,...monthCounts);
+  el('panelMonthlyChart').innerHTML=months.map((m,i)=>{const h=Math.max(4,Math.round((monthCounts[i]/maxCount)*130));return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px"><span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span><div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div><span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span></div>`;}).join('');
 }
 
-function initPanel() {
+async function initPanel() {
+  showToast('Cargando datos...');
+  await syncReservasFromSupabase();
+  loadReservasLocal();
   updatePanelAdministrativo();
 }
 
