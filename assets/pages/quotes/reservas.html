@@ -16,7 +16,7 @@
   <meta property="og:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta property="og:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
   <meta property="og:url"         content="https://jansphotograph.github.io/assets/pages/quotes/reservas.html" />
-  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png.html" />
+  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
@@ -24,7 +24,7 @@
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
-  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png.html" />
+  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
 
   <!-- Geo -->
   <meta name="geo.region"      content="PA" />
@@ -163,9 +163,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         <span>Regresar</span>
       </button>
-      <a href="index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" height="48" style="width:auto;max-height:48px" /></a>
+      <a href="../../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" height="48" style="width:auto;max-height:48px" /></a>
     </div>
-    <a href="index.html" class="header-title">Jans <span>Photograph</span></a>
+    <a href="../../../../index.html" class="header-title">Jans <span>Photograph</span></a>
     <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -173,7 +173,7 @@
   <div class="nav-overlay" id="navOverlay"></div>
   <nav class="nav-drawer" id="navDrawer">
     <ul>
-      <li><a href="index.html">Home</a></li>
+      <li><a href="../../../../index.html">Home</a></li>
       <li><a href="../servicios.html">Servicios</a></li>
       <li><a href="../nosotros.html">Sobre Nosotros</a></li>
       <li><a href="../blogs.html">Blogs</a></li>
@@ -244,13 +244,18 @@
           <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
-              <label>Fecha</label>
+              <label>Fecha de sesión</label>
               <input type="date" id="rFecha" onchange="onDateInputChange()" />
             </div>
             <div class="res-field">
               <label>Hora</label>
               <input type="text" id="rHora" placeholder="Selecciona en el calendario" readonly style="cursor:default;color:#888" />
             </div>
+          </div>
+          <div class="res-field">
+            <label>Fecha de cumpleaños 🎂</label>
+            <input type="date" id="rCumple" onchange="onCumpleChange()" />
+            <div id="cumpleMsg" style="display:none;margin-top:6px;padding:10px 14px;border-radius:8px;font-size:0.83rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5"></div>
           </div>
           <div class="res-field"><label>Notas</label><textarea id="rNotas" placeholder="Locación, requerimientos especiales..."></textarea></div>
           <button class="btn-reservar" id="btnReservar" onclick="submitReserva()" disabled>
@@ -614,6 +619,31 @@
       updateSubmitBtn();
     }
 
+    // ── Validación cumpleaños ──
+    function onCumpleChange() {
+      const cumple = document.getElementById('rCumple').value;
+      const msgEl  = document.getElementById('cumpleMsg');
+      const btnEl  = document.getElementById('btnReservar');
+      if (!cumple || !selectedDate) { if(msgEl) msgEl.style.display='none'; return; }
+
+      const sesionDate     = new Date(selectedDate + 'T00:00:00');
+      const cumpleDate     = new Date(cumple + 'T00:00:00');
+      const cumpleEsteAnio = new Date(sesionDate.getFullYear(), cumpleDate.getMonth(), cumpleDate.getDate());
+      const diffDias       = Math.round((cumpleEsteAnio - sesionDate) / (1000*60*60*24));
+
+      if (diffDias === 1) {
+        msgEl.style.display = '';
+        msgEl.textContent   = '⚠ No realizamos sesiones el día anterior al cumpleaños. Por favor elige otra fecha para tu sesión.';
+        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Fecha no disponible'; }
+      } else {
+        msgEl.style.display = 'none';
+        if (btnEl && selectedDate && selectedHour) {
+          btnEl.disabled = false;
+          btnEl.textContent = 'Solicitar sesión';
+        }
+      }
+    }
+
     // ── Date input change (manual typing) ──
     function onDateInputChange() {
       const ds = document.getElementById('rFecha').value;
@@ -645,6 +675,7 @@
       document.getElementById('timeCardDate').textContent = parseInt(d) + ' de ' + MONTHS[calMonth] + ' ' + calYear;
       updateSelectedInfo();
       updateSubmitBtn();
+      onCumpleChange();
     }
 
     function updateSelectedInfo() {
@@ -679,6 +710,20 @@
       if(!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
       if(!selectedDate || !selectedHour) { alert('Selecciona fecha y hora.'); return; }
 
+      // Validar que la sesión no sea el día anterior al cumpleaños
+      const cumple = document.getElementById('rCumple').value;
+      if (cumple) {
+        const sesionDate = new Date(selectedDate + 'T00:00:00');
+        const cumpleDate = new Date(cumple + 'T00:00:00');
+        // Calcular el cumpleaños de este año
+        const cumpleEsteAnio = new Date(sesionDate.getFullYear(), cumpleDate.getMonth(), cumpleDate.getDate());
+        const diffDias = Math.round((cumpleEsteAnio - sesionDate) / (1000*60*60*24));
+        if (diffDias === 1) {
+          alert('Lo sentimos, no realizamos sesiones el día anterior al cumpleaños. Por favor elige otra fecha para tu sesión.');
+          return;
+        }
+      }
+
       const btn = document.getElementById('btnReservar');
       if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
@@ -691,8 +736,9 @@
 
       const reserva = {
         id:          'r_' + Date.now(),
-        numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
+        numero:      null,
         nombre, tel, email, plan, notas,
+        cumpleanos:  document.getElementById('rCumple').value || null,
         fecha:       selectedDate,
         fechaLabel,
         hora,
