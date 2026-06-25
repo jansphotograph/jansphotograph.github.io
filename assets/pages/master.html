@@ -458,18 +458,44 @@
       <div class="view" id="view-plans">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <h2>Planes Fotográficos</h2>
-            <p>Crea y administra los paquetes de sesiones</p>
+            <h2>Planes (Cotización)</h2>
+            <p>Administra los planes fotográficos y de cobertura de evento</p>
           </div>
-          <button class="btn btn-pink" onclick="addPlan()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo Plan
-          </button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline" onclick="addPlan('fotografico')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Plan Fotográfico
+            </button>
+            <button class="btn btn-blue" onclick="addPlan('evento')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Cobertura de Evento
+            </button>
+          </div>
         </div>
-        <div id="plansContainer"></div>
+
+        <!-- Planes Fotográficos -->
+        <div style="margin-bottom:28px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--pink-l)">📷 Planes Fotográficos</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div id="plansContainerFotografico"></div>
+          <div id="plansEmptyFotografico" style="display:none;color:var(--gray);font-size:0.85rem;padding:12px 0">Sin planes fotográficos. Haz clic en "Plan Fotográfico" para añadir uno.</div>
+        </div>
+
+        <!-- Cobertura de Evento -->
+        <div style="margin-bottom:28px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#93c5fd">🎬 Cobertura de Evento</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div id="plansContainerEvento"></div>
+          <div id="plansEmptyEvento" style="display:none;color:var(--gray);font-size:0.85rem;padding:12px 0">Sin planes de cobertura. Haz clic en "Cobertura de Evento" para añadir uno.</div>
+        </div>
+
         <div class="btn-row">
           <button class="btn btn-pink" onclick="savePlans()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
             Guardar Planes
           </button>
         </div>
@@ -3157,8 +3183,22 @@ function selectClientType(type) {
 function updateQPlanSelect() {
   const sel = document.getElementById('qPlan');
   const current = sel.value;
-  sel.innerHTML = '<option value="">— Seleccionar —</option>' +
-    state.plans.map(p=>`<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
+
+  const fotograficos = state.plans.filter(p => (p.categoria||'fotografico') === 'fotografico');
+  const eventos      = state.plans.filter(p => p.categoria === 'evento');
+
+  let html = '<option value="">— Seleccionar —</option>';
+  if (fotograficos.length) {
+    html += `<optgroup label="📷 Planes Fotográficos">`;
+    html += fotograficos.map(p => `<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
+    html += `</optgroup>`;
+  }
+  if (eventos.length) {
+    html += `<optgroup label="🎬 Cobertura de Evento">`;
+    html += eventos.map(p => `<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
+    html += `</optgroup>`;
+  }
+  sel.innerHTML = html;
   sel.value = current;
   renderServiceChecks();
 }
@@ -3318,13 +3358,20 @@ async function saveServices() {
 
 // ── Plans ──
 function renderPlans() {
-  const c = document.getElementById('plansContainer');
-  if(!state.plans.length){c.innerHTML='<div class="card" style="text-align:center;color:var(--gray);padding:32px">Sin planes. Haz clic en "Nuevo Plan".</div>';return;}
-  c.innerHTML = state.plans.map((p,i)=>`
+  const fotCont  = document.getElementById('plansContainerFotografico');
+  const evCont   = document.getElementById('plansContainerEvento');
+  const fotEmpty = document.getElementById('plansEmptyFotografico');
+  const evEmpty  = document.getElementById('plansEmptyEvento');
+  if (!fotCont) return;
+
+  const fotograficos = state.plans.map((p,i) => ({p,i})).filter(({p}) => (p.categoria||'fotografico') === 'fotografico');
+  const eventos      = state.plans.map((p,i) => ({p,i})).filter(({p}) => p.categoria === 'evento');
+
+  const renderCard = ({p,i}) => `
     <div class="plan-card">
       <div class="plan-card-header">
         <input type="text" value="${p.name}" placeholder="Nombre del plan" onchange="state.plans[${i}].name=this.value" style="background:transparent;border:none;color:var(--white);font-weight:700;font-size:0.95rem;font-family:var(--font);outline:none;flex:1" />
-        <button class="btn btn-sm btn-red" onclick="state.plans.splice(${i},1);renderPlans()">✕</button>
+        <button class="btn btn-sm btn-red" onclick="state.plans.splice(${i},1);renderPlans();updateQPlanSelect()">✕</button>
       </div>
       <div class="form-row">
         <div class="field"><label>Precio ($)</label><input type="number" value="${p.price}" min="0" step="0.01" onchange="state.plans[${i}].price=parseFloat(this.value)||0" /></div>
@@ -3332,8 +3379,8 @@ function renderPlans() {
       </div>
       <div class="form-row">
         <div class="field"><label>Personas incluidas</label><input type="number" value="${p.personasIncluidas||1}" min="1" step="1" onchange="state.plans[${i}].personasIncluidas=parseInt(this.value)||1" /></div>
-        <div class="field"><label>Máx. personas extra permitidas</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
-        <div class="field"><label>Precio por persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
+        <div class="field"><label>Máx. personas extra</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
+        <div class="field"><label>Precio persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
       </div>
       <div class="form-row">
         <div class="field">
@@ -3346,9 +3393,18 @@ function renderPlans() {
         </div>
       </div>
       <div class="field"><label>Descripción / Incluye</label><textarea onchange="state.plans[${i}].description=this.value" placeholder="Ej. 30 fotos editadas, entrega digital...">${p.description||''}</textarea></div>
-    </div>`).join('');
+    </div>`;
+
+  fotCont.innerHTML = fotograficos.map(renderCard).join('');
+  evCont.innerHTML  = eventos.map(renderCard).join('');
+  if (fotEmpty) fotEmpty.style.display = fotograficos.length ? 'none' : '';
+  if (evEmpty)  evEmpty.style.display  = eventos.length      ? 'none' : '';
 }
-function addPlan() { state.plans.push({name:'Nuevo Plan',price:0,duration:'',description:'',personasIncluidas:1,maxPersonasExtra:0,precioPersonaExtra:0,tipoUbicacion:'estudio'}); renderPlans(); }
+
+function addPlan(categoria = 'fotografico') {
+  state.plans.push({ name: categoria === 'evento' ? 'Nueva Cobertura' : 'Nuevo Plan', price: 0, duration: '', description: '', categoria, personasIncluidas: 1, maxPersonasExtra: 0, precioPersonaExtra: 0, tipoUbicacion: 'estudio' });
+  renderPlans(); updateQPlanSelect();
+}
 async function savePlans() {
   const ok = await ghPut('plans.json', state.plans);
   if(ok){showToast('Planes guardados ✓'); updateQPlanSelect();}
