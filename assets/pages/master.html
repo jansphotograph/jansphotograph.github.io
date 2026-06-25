@@ -4036,6 +4036,14 @@ function downloadPDF() { if(state.currentPDFQuote) generateQuotePDF(state.curren
 // ── Factura de Cotización ──
 async function generateQuoteInvoicePDF(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
+
+  // Asignar número de factura compartido (mismo contador que reservas)
+  if (!q.facturaNumero) {
+    q.facturaNumero = nextFacturaNumero();
+    // Guardar en quotes.json
+    await ghPut('quotes.json', state.quotes);
+  }
+  const facturaNum = q.facturaNumero;
   const { jsPDF } = window.jspdf;
   const doc     = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
@@ -4060,7 +4068,7 @@ async function generateQuoteInvoicePDF(id) {
   if(company.ubicacion){ const ls=doc.splitTextToSize(company.ubicacion,95); doc.text(ls,logoTextX,cy); }
   if(company.ruc){ doc.setFontSize(7.5); doc.setTextColor(180,180,180); doc.text(`RUC: ${company.ruc}${company.dv?' DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'}); }
   doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(`FACTURA — ${sanitizeText(q.numero)||''}`, pageW-margin, 22, {align:'right'});
+  doc.text(`FACT-${facturaNum}`, pageW-margin, 22, {align:'right'});
   doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
   doc.text(`Emitido: ${q.createdAt||new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
 
@@ -4069,7 +4077,7 @@ async function generateQuoteInvoicePDF(id) {
   // Banner verde "FACTURA"
   doc.setFillColor(22,163,74); doc.roundedRect(margin,y,pageW-(margin*2),14,2,2,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text('FACTURA DE SERVICIOS', pageW/2, y+9, {align:'center'});
+  doc.text(`FACTURA #${facturaNum}`, pageW/2, y+9, {align:'center'});
   y += 24;
 
   // Datos cliente + sesión
@@ -4085,12 +4093,12 @@ async function generateQuoteInvoicePDF(id) {
     ['Email:', sanitizeText(q.email)||'—'],
   ];
   const rightRows = [
+    ['# Factura:', `FACT-${facturaNum}`],
+    ['Origen:', sanitizeText(q.numero)||'—'],
     ['Tipo:', q.tipo==='evento'?'Cobertura de Evento':'Plan Fotografico'],
     ['Fecha:', q.sessionDate||'—'],
     ['Hora:', q.sessionTime||'—'],
-    ['Lugar:', sanitizeText(q.location)||'—'],
     ['Estado:', statusLabel(q.status)],
-    ['# Factura:', sanitizeText(q.numero)||'—'],
   ];
 
   const startY=y; let yL=startY, yR=startY;
@@ -4193,7 +4201,7 @@ async function generateQuoteInvoicePDF(id) {
   doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
 
   const slug = sanitizeText(q.clientName||'cliente').replace(/\s/g,'_');
-  doc.save(`Factura_${slug}_${sanitizeText(q.numero)||''}.pdf`);
+  doc.save(`Factura_${facturaNum}_${slug}.pdf`);
   showToast('Factura descargada ✓');
 }
 
