@@ -158,9 +158,9 @@
             <div class="stat-sub">Total registradas</div>
           </div>
           <div class="stat-card amber">
-            <div class="stat-label">Solicitudes Pendientes</div>
+            <div class="stat-label">Pendientes</div>
             <div class="stat-value" id="statPending">0</div>
-            <div class="stat-sub">Esperando tu confirmación</div>
+            <div class="stat-sub">Reservas + cotizaciones</div>
           </div>
           <div class="stat-card green">
             <div class="stat-label">Confirmadas</div>
@@ -170,32 +170,48 @@
           <div class="stat-card blue">
             <div class="stat-label">Ingresos Est.</div>
             <div class="stat-value" id="statRevenue">$0</div>
-            <div class="stat-sub">Reservas confirmadas/completadas</div>
+            <div class="stat-sub">Confirmadas/completadas</div>
           </div>
         </div>
 
+        <!-- Solicitudes pendientes (reservas + cotizaciones) -->
         <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
           <div class="card-title" style="color:#fcd34d">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Solicitudes de reserva pendientes
+            Solicitudes pendientes
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Origen</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Total</th><th></th></tr></thead>
               <tbody id="dashPendingTable"></tbody>
             </table>
           </div>
         </div>
 
+        <!-- Últimas reservas -->
         <div class="card">
           <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             Últimas reservas
           </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Cliente</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody id="dashRecentTable"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Últimas cotizaciones -->
+        <div class="card" style="margin-top:0">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Últimas cotizaciones
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th></tr></thead>
+              <tbody id="dashRecentQuotes"><tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -2538,61 +2554,88 @@ function switchView(name, btn) {
 // ── Dashboard ──
 function updateDashboard() {
   loadReservasLocal();
-  // Excluir eliminadas de todas las métricas
   const activeReservas = allReservas.filter(r => r.status !== 'deleted');
+  const activeQuotes   = state.quotes || [];
 
-  const total    = activeReservas.length;
-  const pendingList = activeReservas.filter(r => r.status === 'pending');
-  const pending  = pendingList.length;
-  const now      = todayPanama();
+  const now = todayPanama();
   const thisMonth = now.getMonth();
   const thisYear  = now.getFullYear();
-  const approved = activeReservas.filter(r => {
+
+  // ── Stats cards ──
+  const totalReservas  = activeReservas.length;
+  const pendingReservas = activeReservas.filter(r => r.status === 'pending');
+  const pendingQuotes  = activeQuotes.filter(q => q.status === 'pending');
+  const totalPending   = pendingReservas.length + pendingQuotes.length;
+
+  const approvedRes = activeReservas.filter(r => {
     if (r.status !== 'confirmed' && r.status !== 'completed') return false;
     if (!r.fecha) return false;
     const d = new Date(r.fecha + 'T00:00:00');
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   }).length;
-  const revenue = activeReservas
+  const approvedQ = activeQuotes.filter(q => {
+    if (q.status !== 'confirmed' && q.status !== 'completed') return false;
+    if (!q.sessionDate) return false;
+    const d = new Date(q.sessionDate + 'T00:00:00');
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  }).length;
+
+  const revenueRes = activeReservas
     .filter(r => r.status === 'confirmed' || r.status === 'completed')
     .reduce((s, r) => s + resTotal(r), 0);
+  const revenueQ = activeQuotes
+    .filter(q => q.status === 'confirmed' || q.status === 'completed')
+    .reduce((s, q) => s + (parseFloat(q.total)||0), 0);
 
-  document.getElementById('statTotal').textContent    = total;
-  document.getElementById('statPending').textContent  = pending;
-  document.getElementById('statApproved').textContent = approved;
-  document.getElementById('statRevenue').textContent  = `$${revenue.toFixed(2)}`;
+  document.getElementById('statTotal').textContent    = totalReservas;
+  document.getElementById('statPending').textContent  = totalPending;
+  document.getElementById('statApproved').textContent = approvedRes + approvedQ;
+  document.getElementById('statRevenue').textContent  = `$${(revenueRes+revenueQ).toFixed(2)}`;
 
-  // «Cotizaciones» badge counts ONLY manual quotes (state.quotes)
-  const pendingQuotes = (state.quotes || []).filter(q => q.status === 'pending').length;
+  // ── Badges sidebar ──
+  const pendingQCount = pendingQuotes.length;
   const pb  = document.getElementById('pendingBadge');
-  if (pb) { pb.textContent = pendingQuotes; pb.style.display = pendingQuotes > 0 ? '' : 'none'; }
-
-  // «Reservas» badge counts pending reservas (web + manual)
+  if (pb) { pb.textContent = pendingQCount; pb.style.display = pendingQCount > 0 ? '' : 'none'; }
   const rb  = document.getElementById('reservasBadge');
   const rb2 = document.getElementById('reservasBadge2');
-  if (rb)  { rb.textContent  = pending; rb.style.display  = pending > 0 ? '' : 'none'; }
-  if (rb2) { rb2.textContent = pending; rb2.style.display = pending > 0 ? '' : 'none'; }
+  const pR  = pendingReservas.length;
+  if (rb)  { rb.textContent  = pR; rb.style.display  = pR > 0 ? '' : 'none'; }
+  if (rb2) { rb2.textContent = pR; rb2.style.display = pR > 0 ? '' : 'none'; }
 
-  // ── Pending requests card — only shows up when there's something to act on ──
+  // ── Card pendientes (reservas + cotizaciones) ──
   const pendingCard  = document.getElementById('dashPendingCard');
   const pendingTable = document.getElementById('dashPendingTable');
-  if (pending > 0) {
+  const allPending   = [
+    ...pendingReservas.map(r => ({
+      id: r.id, numero: r.numero||'—', cliente: r.nombre, tipo: 'Reserva',
+      plan: r.plan||'—', fecha: r.fechaLabel||r.fecha||'—', hora: r.hora||'—',
+      total: resTotal(r), isReserva: true
+    })),
+    ...pendingQuotes.map(q => ({
+      id: q.id, numero: q.numero||'—', cliente: q.clientName, tipo: q.tipo==='evento'?'Evento':'Foto',
+      plan: q.plan||'—', fecha: q.sessionDate||'—', hora: q.sessionTime||'—',
+      total: parseFloat(q.total)||0, isReserva: false
+    }))
+  ].reverse();
+
+  if (allPending.length > 0) {
     pendingCard.style.display = '';
-    pendingTable.innerHTML = pendingList.slice().reverse().map(r => `
+    pendingTable.innerHTML = allPending.map(item => `
       <tr>
-        <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero||'—'}</span></td>
-        <td>${r.nombre}</td>
-        <td>${r.plan||'—'}</td>
-        <td>${r.fechaLabel||r.fecha||'—'}</td>
-        <td>${r.hora||'—'}</td>
-        <td><span class="badge-status status-pending">${r.origin==='manual'?'Manual':'Web'}</span></td>
-        <td><button class="btn btn-sm btn-pink" onclick="goToReservaInTable('${r.id}')">Ver</button></td>
+        <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${item.numero}</span></td>
+        <td style="font-weight:600">${item.cliente}</td>
+        <td><span class="badge-status ${item.isReserva?'status-pending':'status-pending'}" style="font-size:0.72rem">${item.tipo}</span></td>
+        <td>${item.plan}</td>
+        <td style="font-size:0.82rem">${item.fecha}</td>
+        <td style="font-size:0.82rem">${item.hora}</td>
+        <td style="font-weight:700">$${item.total.toFixed(2)}</td>
+        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\\"quotes\\"]'));viewQuote('${item.id}')`}">Ver</button></td>
       </tr>`).join('');
   } else {
     pendingCard.style.display = 'none';
   }
 
-  // ── Recent reservas table ──
+  // ── Últimas reservas ──
   const rows = activeReservas.slice(-6).reverse().map(r => `
     <tr>
       <td>${r.nombre}</td>
@@ -2602,6 +2645,18 @@ function updateDashboard() {
       <td>${r.fechaLabel||r.fecha||'—'}</td>
     </tr>`).join('');
   document.getElementById('dashRecentTable').innerHTML = rows || '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
+
+  // ── Últimas cotizaciones ──
+  const qRows = activeQuotes.slice(-6).reverse().map(q => `
+    <tr>
+      <td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td>
+      <td style="font-weight:600">${q.clientName}</td>
+      <td>${q.tipo==='evento'?'Evento':'Foto'}</td>
+      <td>${q.plan||'—'}</td>
+      <td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td>
+      <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
+    </tr>`).join('');
+  document.getElementById('dashRecentQuotes').innerHTML = qRows || '<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
 
 function statusLabel(s) {
