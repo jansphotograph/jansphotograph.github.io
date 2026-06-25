@@ -2528,6 +2528,7 @@ function switchView(name, btn) {
   if (name === 'panel')           initPanel();
   if (name === 'faqs')            initFaqs();
   if (name === 'eventoForm')      initEventoForm();
+  if (name === 'newquote')        { loadPublicPlans(); updateQPlanSelect(); renderServiceChecks(); }
   if (name === 'company')         loadCompanyUI();
   if (name === 'config')          loadFacturaCounterUI();
   if (name === 'team')            initTeam();
@@ -3266,6 +3267,26 @@ function updateQPlanSelect() {
   const current = sel.value;
   loadPublicPlans();
 
+  // Si no hay planes en localStorage, intentar cargar desde GitHub
+  if (!publicPlans.length) {
+    const owner = localStorage.getItem('jans_public_owner') || 'jansphotograph';
+    const repo  = localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io';
+    fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/data/socialmedia/planes.json?t=${Date.now()}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.length) {
+          localStorage.setItem('jans_planes', JSON.stringify(data));
+          publicPlans = data;
+          _renderQPlanOptions(sel, current);
+        }
+      }).catch(() => {});
+    sel.innerHTML = '<option value="">Cargando planes...</option>';
+    return;
+  }
+  _renderQPlanOptions(sel, current);
+}
+
+function _renderQPlanOptions(sel, current) {
   // Agrupar por categoría
   const cats = {};
   publicPlans.forEach(p => {
@@ -3275,15 +3296,19 @@ function updateQPlanSelect() {
   });
 
   let html = '<option value="">— Seleccionar plan —</option>';
-  Object.entries(cats).forEach(([cat, planes]) => {
-    const label = (CAT_LABELS && CAT_LABELS[cat]) ? CAT_LABELS[cat] : cat;
-    html += `<optgroup label="${label}">`;
-    planes.forEach(p => {
-      const desc = (p.descripcion||'').replace(/"/g, '&quot;');
-      html += `<option value="${p.nombre}" data-price="${p.precio}" data-desc="${desc}" data-max-extra="${p.personasExtra||0}" data-precio-extra="${p.precioPersonaExtra||0}">${p.nombre} — $${parseFloat(p.precio).toFixed(2)}</option>`;
+  if (!Object.keys(cats).length) {
+    html = '<option value="">Sin planes disponibles — ve a Planes Públicos para añadir</option>';
+  } else {
+    Object.entries(cats).forEach(([cat, planes]) => {
+      const label = (typeof CAT_LABELS !== 'undefined' && CAT_LABELS[cat]) ? CAT_LABELS[cat] : cat;
+      html += `<optgroup label="${label}">`;
+      planes.forEach(p => {
+        const desc = (p.descripcion||'').replace(/"/g, '&quot;');
+        html += `<option value="${p.nombre}" data-price="${p.precio}" data-desc="${desc}" data-max-extra="${p.personasExtra||0}" data-precio-extra="${p.precioPersonaExtra||0}">${p.nombre} — $${parseFloat(p.precio||0).toFixed(2)}</option>`;
+      });
+      html += `</optgroup>`;
     });
-    html += `</optgroup>`;
-  });
+  }
   sel.innerHTML = html;
   sel.value = current;
   onQPlanChange();
