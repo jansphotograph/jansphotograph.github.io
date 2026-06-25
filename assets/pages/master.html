@@ -276,9 +276,10 @@
             <select id="filterStatus" onchange="renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
               <option value="">Todos</option>
               <option value="pending">Pendiente</option>
-              <option value="approved">Aprobada</option>
-              <option value="booked">Reservada</option>
-              <option value="rejected">Rechazada</option>
+              <option value="confirmed">Confirmada</option>
+              <option value="completed">Completada</option>
+              <option value="postponed">Aplazada</option>
+              <option value="cancelled">Cancelada</option>
             </select>
           </div>
           <div class="table-wrap">
@@ -2604,7 +2605,10 @@ function updateDashboard() {
 }
 
 function statusLabel(s) {
-  return {pending:'Pendiente',approved:'Aprobada',booked:'Reservada',rejected:'Rechazada'}[s]||s;
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', postponed:'Aplazada', cancelled:'Cancelada', approved:'Confirmada', booked:'Confirmada', rejected:'Cancelada' }[s] || s;
+}
+function statusClassQ(s) {
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', postponed:'status-postponed', cancelled:'status-rejected', approved:'status-approved', booked:'status-approved', rejected:'status-rejected' }[s] || '';
 }
 
 // ── Calendar ──
@@ -3171,69 +3175,208 @@ async function deleteCalEvent(ds) {
 }
 
 function renderQuotesTable() {
-  const search = (document.getElementById('searchQuotes').value||'').toLowerCase();
-  const filter = document.getElementById('filterStatus').value;
+  const search = (document.getElementById('searchQuotes')?.value||'').toLowerCase();
+  const filter = document.getElementById('filterStatus')?.value || '';
   let quotes = state.quotes.filter(q => {
-    const matchSearch = !search || q.clientName.toLowerCase().includes(search);
+    const matchSearch = !search || (q.clientName||'').toLowerCase().includes(search);
     const matchStatus = !filter || q.status===filter;
     return matchSearch && matchStatus;
   }).reverse();
   const tbody = document.getElementById('quotesTable');
+  if(!tbody) return;
   if(!quotes.length){tbody.innerHTML='<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';return;}
-  tbody.innerHTML = quotes.map((q,i)=>`
+  tbody.innerHTML = quotes.map(q => {
+    const abono     = parseFloat(q.abono)    || 0;
+    const pagado    = parseFloat(q.pagado)   || 0;
+    const total     = parseFloat(q.total)    || 0;
+    const pendiente = Math.max(0, total - abono - pagado);
+    return `
     <tr>
-      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3,'0')}</td>
+      <td style="color:var(--gray-l);font-size:0.78rem;font-family:monospace">${q.numero||'—'}</td>
       <td><div style="font-weight:600">${q.clientName}</div><div style="font-size:0.75rem;color:var(--gray-l)">${q.email||''}</div></td>
-      <td>${q.clientType==='juridica'?'Jurídica':'Natural'}</td>
+      <td>${q.tipo==='evento'?'🎬 Evento':'📷 Foto'}</td>
       <td>${q.plan||'—'}</td>
-      <td style="font-weight:700">$${(q.total||0).toFixed(2)}</td>
-      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
-      <td style="font-size:0.8rem;color:var(--gray-l)">${q.createdAt||'—'}</td>
+      <td style="font-weight:700">$${total.toFixed(2)}</td>
+      <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
+      <td style="font-size:0.8rem;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</td>
       <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
-          <button class="btn btn-sm btn-blue"    onclick="showPDF('${q.id}')">PDF</button>
-          <button class="btn btn-sm btn-green"   onclick="changeStatus('${q.id}','approved')">✓</button>
-          <button class="btn btn-sm btn-red"     onclick="changeStatus('${q.id}','rejected')">✗</button>
-        </div>
+        <button class="btn btn-sm btn-outline" data-qid="${q.id}" onclick="viewQuote(this.dataset.qid)">Ver</button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function viewQuote(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  document.getElementById('quoteModalTitle').textContent = `Cotización — ${q.clientName}`;
+  const abono    = parseFloat(q.abono)  || 0;
+  const pagado   = parseFloat(q.pagado) || 0;
+  const total    = parseFloat(q.total)  || 0;
+  const pendiente = Math.max(0, total - abono - pagado);
+
+  document.getElementById('quoteModalTitle').textContent = `${q.numero||'Cotización'} — ${q.clientName}`;
   document.getElementById('quoteModalBody').innerHTML = `
+    <!-- Info cliente -->
     <div class="form-row" style="margin-bottom:12px">
-      <div><span class="section-label-sm">Cliente</span><div style="font-weight:700;font-size:1.05rem">${q.clientName}</div><div style="color:var(--gray-l);font-size:0.85rem">${q.clientType==='juridica'?'Persona Jurídica':'Persona Natural'} · ${q.clientId||''}</div></div>
-      <div><span class="section-label-sm">Estado</span><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></div>
+      <div>
+        <span class="section-label-sm">Cliente</span>
+        <div style="font-weight:700;font-size:1.05rem">${q.clientName}</div>
+        <div style="color:var(--gray-l);font-size:0.85rem">${q.clientType==='juridica'?'Persona Jurídica':'Persona Natural'} · ${q.clientId||''}</div>
+      </div>
+      <div><span class="section-label-sm">Estado</span><span id="qStatusBadge" class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></div>
     </div>
-    <div class="form-row" style="gap:12px;margin-bottom:16px">
-      <div><div style="font-size:0.75rem;color:var(--gray)">Teléfono</div><div>${q.phone||'—'}</div></div>
-      <div><div style="font-size:0.75rem;color:var(--gray)">Email</div><div>${q.email||'—'}</div></div>
-      <div><div style="font-size:0.75rem;color:var(--gray)">Fecha sesión</div><div>${q.sessionDate||'—'} ${q.sessionTime||''}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;font-size:0.85rem">
+      <div><div style="color:var(--gray);font-size:0.75rem">Teléfono</div><div>${q.phone||'—'}</div></div>
+      <div><div style="color:var(--gray);font-size:0.75rem">Email</div><div>${q.email||'—'}</div></div>
+      <div><div style="color:var(--gray);font-size:0.75rem">Fecha</div><div>${q.sessionDate||'—'} ${q.sessionTime||''}</div></div>
     </div>
+
     <hr class="section-divider"/>
+    <!-- Plan & servicios -->
     <span class="section-label-sm">Plan &amp; Servicios</span>
-    <div style="margin-bottom:12px"><b>${q.plan||'Sin plan'}</b> — $${(q.planPrice||0).toFixed(2)}</div>
-    ${(q.addons||[]).map(a=>`<div style="color:var(--gray-l);font-size:0.85rem">+ ${a.name} — $${a.price.toFixed(2)}</div>`).join('')}
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
-      <span style="font-weight:700">Total</span>
-      <span style="font-weight:700;color:var(--pink-l);font-size:1.1rem">$${(q.total||0).toFixed(2)}</span>
+    <div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px">
+        <span>${q.plan||'Sin plan'}</span><span>$${(q.planPrice||0).toFixed(2)}</span>
+      </div>
+      ${(q.addons||[]).filter(a=>a.price>0).map(a=>`
+        <div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:3px 0">
+          <span>+ ${a.name}</span><span>$${parseFloat(a.price).toFixed(2)}</span>
+        </div>`).join('')}
+      ${(q.addons||[]).filter(a=>a.price===0).map(a=>`
+        <div style="color:var(--gray-l);font-size:0.82rem;padding:2px 0">${a.name}</div>`).join('')}
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700">
+        <span>Total</span><span style="color:var(--pink-l)">$${total.toFixed(2)}</span>
+      </div>
     </div>
+
+    <hr class="section-divider"/>
+    <!-- Control financiero -->
+    <span class="section-label-sm">Control Financiero</span>
+    <div class="form-row" style="margin-bottom:8px">
+      <div class="field">
+        <label>Abono recibido ($)</label>
+        <input type="number" id="qAbonoInput" min="0" step="0.01" value="${abono}" oninput="updateQuoteFinancials('${q.id}')" />
+      </div>
+      <div class="field">
+        <label>Pago total recibido ($)</label>
+        <input type="number" id="qPagadoInput" min="0" step="0.01" value="${pagado}" oninput="updateQuoteFinancials('${q.id}')" />
+      </div>
+    </div>
+    <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px" id="qFinancialSummary">
+      ${renderQuoteFinancialSummary(total, abono, pagado, pendiente)}
+    </div>
+
+    <hr class="section-divider"/>
+    <!-- Cambiar estado -->
+    <span class="section-label-sm">Estado</span>
+    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-sm ${q.status==='pending'   ?'btn-pink'  :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','pending')">Pendiente</button>
+      <button class="btn btn-sm ${q.status==='confirmed' ?'btn-green' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','confirmed')">Confirmada</button>
+      <button class="btn btn-sm ${q.status==='completed' ?'btn-green' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','completed')">Completada</button>
+      <button class="btn btn-sm ${q.status==='postponed' ?'btn-amber' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','postponed')">Aplazada</button>
+      <button class="btn btn-sm ${q.status==='cancelled' ?'btn-red'   :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','cancelled')">Cancelada</button>
+    </div>
+
     ${q.notes?`<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">${q.notes}</p>`:''}
-    <div class="btn-row">
-      <select onchange="changeStatus('${q.id}',this.value)" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;flex:1">
-        <option value="">Cambiar estado…</option>
-        <option value="pending">Pendiente</option>
-        <option value="approved">Aprobada</option>
-        <option value="booked">Reservada</option>
-        <option value="rejected">Rechazada</option>
-      </select>
-      <button class="btn btn-blue" onclick="showPDF('${q.id}');closeModal('quoteModal')">Ver PDF</button>
-      <button class="btn btn-red"  onclick="deleteQuote('${q.id}')">Eliminar</button>
+
+    <div class="btn-row" style="flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-pink" onclick="saveQuoteChanges('${q.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar
+      </button>
+      <button class="btn btn-blue" onclick="showPDF('${q.id}');closeModal('quoteModal')">PDF</button>
+      <button class="btn btn-ghost" onclick="closeModal('quoteModal')">Cancelar</button>
+      <button class="btn btn-red"  onclick="deleteQuote('${q.id}')">🗑</button>
     </div>`;
   openModal('quoteModal');
+}
+
+function renderQuoteFinancialSummary(total, abono, pagado, pendiente) {
+  const prog = total > 0 ? Math.min(100, Math.round(((abono+pagado)/total)*100)) : 0;
+  return `
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
+      <span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
+      <span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px">
+      <span style="color:var(--gray-l)">Pendiente</span>
+      <span style="font-weight:700;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</span>
+    </div>
+    <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
+      <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div>
+    </div>
+    <div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">${prog}% pagado</div>`;
+}
+
+function updateQuoteFinancials(id) {
+  const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  const abono   = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
+  const pagado  = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
+  const total   = parseFloat(q.total) || 0;
+  const pendiente = Math.max(0, total - abono - pagado);
+  const el = document.getElementById('qFinancialSummary');
+  if (el) el.innerHTML = renderQuoteFinancialSummary(total, abono, pagado, pendiente);
+}
+
+function changeQuoteStatus(id, status) {
+  const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  q.status = status;
+  // Actualizar badge en el modal
+  const badge = document.getElementById('qStatusBadge');
+  if (badge) { badge.className = `badge-status ${statusClassQ(status)}`; badge.textContent = statusLabel(status); }
+  // Actualizar botones
+  const statuses = ['pending','confirmed','completed','postponed','cancelled'];
+  const classes  = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', cancelled:'btn-red' };
+  statuses.forEach(s => {
+    const btn = document.querySelector(`.btn[onclick*="changeQuoteStatus('${id}','${s}')"]`);
+    if (btn) btn.className = `btn btn-sm ${s===status ? classes[s] : 'btn-outline'}`;
+  });
+}
+
+async function saveQuoteChanges(id) {
+  const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  q.abono  = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
+  q.pagado = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
+  // status ya fue actualizado por changeQuoteStatus
+
+  // Si confirmada: bloquear calendario (2h antes, duración + 1h)
+  if (q.status === 'confirmed' && q.sessionDate && q.sessionTime) {
+    await blockCalendarForQuote(q);
+  }
+
+  await ghPut('quotes.json', state.quotes);
+  updateDashboard(); renderQuotesTable();
+  closeModal('quoteModal');
+  showToast(`Cotización ${q.numero||''} guardada ✓`);
+}
+
+async function blockCalendarForQuote(q) {
+  try {
+    const [hh, mm] = (q.sessionTime||'0:0').split(':').map(Number);
+    const durHoras = q.eventoData?.horas || 1;
+    // Bloquear desde 2h antes hasta 1h después del fin
+    const startBlock = hh - 2;
+    const endBlock   = hh + durHoras + 1;
+    const fecha = q.sessionDate;
+
+    // Marcar horas bloqueadas en el calendario
+    if (!state.calendar[fecha]) state.calendar[fecha] = {};
+    if (typeof state.calendar[fecha] === 'string') {
+      state.calendar[fecha] = { status: state.calendar[fecha] };
+    }
+    // Guardar bloqueo de horas (array de horas bloqueadas)
+    const blockedHours = [];
+    for (let h = Math.max(0, startBlock); h <= Math.min(23, endBlock); h++) {
+      blockedHours.push(h);
+    }
+    state.calendar[fecha].blockedHours = blockedHours;
+    state.calendar[fecha].quoteLock    = q.id;
+
+    localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+    await ghPut('calendar.json', state.calendar);
+    showToast(`Calendario bloqueado: ${fecha} de ${Math.max(0,startBlock)}:00 a ${Math.min(23,endBlock)}:00`);
+  } catch(e) { console.warn('blockCalendar error', e); }
 }
 
 async function changeStatus(id, status) {
