@@ -358,14 +358,15 @@
       <div class="view" id="view-newquote">
         <div class="page-header">
           <h2>Nueva Cotización</h2>
-          <p>Completa los datos del cliente y selecciona los servicios</p>
+          <p>Completa los datos del cliente y selecciona el tipo de servicio</p>
         </div>
 
         <div class="card">
+          <!-- Tipo de cliente -->
           <span class="section-label-sm">Tipo de Cliente</span>
           <div class="radio-group" style="margin-bottom:20px">
-            <div class="radio-btn selected" id="rNatural"   onclick="selectClientType('natural')">👤 Persona Natural</div>
-            <div class="radio-btn"          id="rJuridica"  onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
+            <div class="radio-btn selected" id="rNatural"  onclick="selectClientType('natural')">👤 Persona Natural</div>
+            <div class="radio-btn"          id="rJuridica" onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
           </div>
 
           <span class="section-label-sm">Datos del Cliente</span>
@@ -384,28 +385,66 @@
           <div class="field"><label>Dirección</label><input type="text" id="qAddress" placeholder="Ciudad, Provincia" /></div>
 
           <hr class="section-divider"/>
-          <span class="section-label-sm">Sesión Fotográfica</span>
+          <span class="section-label-sm">Fecha y Lugar</span>
           <div class="form-row">
-            <div class="field"><label>Fecha de Sesión *</label><input type="date" id="qDate" /></div>
+            <div class="field"><label>Fecha *</label><input type="date" id="qDate" /></div>
             <div class="field"><label>Hora</label><input type="time" id="qTime" /></div>
           </div>
-          <div class="form-row">
-            <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior" /></div>
-            <div class="field"><label>Plan Fotográfico</label>
-              <select id="qPlan" onchange="updateTotal()">
-                <option value="">— Seleccionar —</option>
-              </select>
+          <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior / Dirección del evento" /></div>
+
+          <hr class="section-divider"/>
+          <!-- Selector de tipo de servicio -->
+          <span class="section-label-sm">Tipo de Servicio</span>
+          <div class="radio-group" style="margin-bottom:20px">
+            <div class="radio-btn selected" id="qTipoFoto"    onclick="selectQuoteTipo('fotografico')">📷 Plan Fotográfico</div>
+            <div class="radio-btn"          id="qTipoEvento"  onclick="selectQuoteTipo('evento')">🎬 Cobertura de Evento</div>
+          </div>
+
+          <!-- BLOQUE: Plan Fotográfico -->
+          <div id="qBloqueFoto">
+            <div class="form-row">
+              <div class="field" style="flex:2">
+                <label>Plan Fotográfico</label>
+                <select id="qPlan" onchange="updateTotal()">
+                  <option value="">— Seleccionar —</option>
+                </select>
+              </div>
+            </div>
+            <span class="section-label-sm" style="margin-top:8px">Servicios Adicionales</span>
+            <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px"></div>
+          </div>
+
+          <!-- BLOQUE: Cobertura de Evento -->
+          <div id="qBloqueEvento" style="display:none">
+            <div class="form-row">
+              <div class="field">
+                <label>Horas de cobertura *</label>
+                <input type="number" id="qEventoHoras" min="1" step="0.5" value="1" oninput="updateTotal()" placeholder="Ej. 3" />
+              </div>
+              <div class="field">
+                <label>Precio por hora ($)</label>
+                <input type="number" id="qEventoPrecioHora" value="50" min="0" step="0.01" oninput="updateTotal()" />
+              </div>
+              <div class="field">
+                <label>Costo transporte ($) <span style="font-weight:400;color:var(--gray)">(si aplica)</span></label>
+                <input type="number" id="qEventoTransporte" value="0" min="0" step="0.01" oninput="updateTotal()" />
+              </div>
+            </div>
+            <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:8px;font-size:0.85rem">
+              <div style="font-weight:700;color:var(--white);margin-bottom:8px">La cobertura incluye:</div>
+              <div style="display:flex;flex-direction:column;gap:5px;color:var(--gray-l)">
+                <div>📸 Todas las fotos tomadas durante el tiempo de cobertura</div>
+                <div>🖼️ Entrega en alta calidad mediante correo electrónico</div>
+                <div>🎬 Video recopilatorio de aprox. 1 minuto</div>
+                <div id="qEventoTransporteInfo" style="display:none;color:#fbbf24">🚗 Costo de transporte adicional según lugar indicado</div>
+              </div>
             </div>
           </div>
 
           <hr class="section-divider"/>
-          <span class="section-label-sm">Servicios Adicionales</span>
-          <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;"></div>
-
-          <hr class="section-divider"/>
           <span class="section-label-sm">Resumen</span>
           <div style="background:var(--dark);border-radius:var(--radius);padding:20px">
-            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan para ver el resumen.</div>
+            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan o tipo de cobertura para ver el resumen.</div>
             <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
               <span style="font-weight:700;font-size:1.05rem">Total Estimado</span>
               <span style="font-weight:700;font-size:1.4rem;color:var(--pink-l)" id="qTotal">$0.00</span>
@@ -416,7 +455,7 @@
 
           <div class="btn-row">
             <button class="btn btn-pink" onclick="saveQuote()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               Guardar Cotización
             </button>
             <button class="btn btn-outline" onclick="clearQuoteForm()">Limpiar</button>
@@ -3204,113 +3243,176 @@ function updateQPlanSelect() {
 }
 
 function renderServiceChecks() {
-  const all = [...state.services.makeup, ...state.services.print];
-  document.getElementById('qServicesCheck').innerHTML = all.map(s=>`
+  // Usar servData (nuevo sistema) con fallback al sistema legacy
+  loadServAdicionales();
+  const items = servData.items || [];
+  const legacy = [...(state.services?.makeup||[]), ...(state.services?.print||[])];
+  const all = items.length
+    ? items.map(s => ({ name: s.nombre, price: parseFloat(s.precio)||0 }))
+    : legacy.map(s => ({ name: s.name, price: parseFloat(s.price)||0 }));
+
+  const el = document.getElementById('qServicesCheck');
+  if (!el) return;
+  if (!all.length) {
+    el.innerHTML = '<div style="color:var(--gray);font-size:0.85rem">Sin servicios adicionales. Agrégalos en la pestaña "Servicios Adicionales".</div>';
+    return;
+  }
+  el.innerHTML = all.map(s=>`
     <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">
       <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />
-      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>
+      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${parseFloat(s.price).toFixed(2)}</span>
     </label>`).join('');
 }
 
+let quoteTipo = 'fotografico'; // 'fotografico' | 'evento'
+
+function selectQuoteTipo(tipo) {
+  quoteTipo = tipo;
+  document.getElementById('qTipoFoto').classList.toggle('selected',   tipo === 'fotografico');
+  document.getElementById('qTipoEvento').classList.toggle('selected', tipo === 'evento');
+  document.getElementById('qBloqueFoto').style.display   = tipo === 'fotografico' ? '' : 'none';
+  document.getElementById('qBloqueEvento').style.display = tipo === 'evento'       ? '' : 'none';
+  updateTotal();
+}
+
 function updateTotal() {
-  const planSel = document.getElementById('qPlan');
-  const opt = planSel.options[planSel.selectedIndex];
-  const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
-  const planName  = opt ? opt.value : '';
-  const checks = document.querySelectorAll('#qServicesCheck input:checked');
-  let addonsTotal = 0;
+  let total = 0;
   let summaryHTML = '';
-  if(planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
-  checks.forEach(c => {
-    const [name, price] = c.value.split('||');
-    addonsTotal += parseFloat(price);
-    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
-  });
-  const total = planPrice + addonsTotal;
-  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
+
+  if (quoteTipo === 'evento') {
+    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)         || 0;
+    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value)     || 50;
+    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value)     || 0;
+    const subtotal   = horas * precioHora;
+    total = subtotal + transporte;
+
+    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Cobertura de Evento (${horas}h × $${precioHora})</span><span>$${subtotal.toFixed(2)}</span></div>`;
+    summaryHTML += `<div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:0.82rem;color:var(--gray-l)">
+      <span>📸 Todas las fotos en alta calidad por correo</span>
+      <span>🎬 Video recopilatorio ~1 min</span>
+    </div>`;
+    if (transporte > 0) {
+      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Costo de transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
+    }
+    const infoEl = document.getElementById('qEventoTransporteInfo');
+    if (infoEl) infoEl.style.display = transporte > 0 ? '' : 'none';
+
+  } else {
+    const planSel   = document.getElementById('qPlan');
+    const opt       = planSel?.options[planSel.selectedIndex];
+    const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
+    const planName  = opt ? opt.value : '';
+    const checks    = document.querySelectorAll('#qServicesCheck input:checked');
+    let addonsTotal = 0;
+
+    if (planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
+    checks.forEach(c => {
+      const [name, price] = c.value.split('||');
+      addonsTotal += parseFloat(price);
+      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
+    });
+    total = planPrice + addonsTotal;
+  }
+
+  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan o tipo de cobertura para ver el resumen.</span>';
   document.getElementById('qTotal').textContent = `$${total.toFixed(2)}`;
 }
 
 async function saveQuote() {
-  const name = document.getElementById('qClientName').value.trim();
-  const cid  = document.getElementById('qClientId').value.trim();
-  const phone= document.getElementById('qPhone').value.trim();
+  const name  = document.getElementById('qClientName').value.trim();
+  const cid   = document.getElementById('qClientId').value.trim();
+  const phone = document.getElementById('qPhone').value.trim();
   if(!name||!cid||!phone){showToast('Completa los campos obligatorios (*)','error');return;}
 
-  const planSel   = document.getElementById('qPlan');
-  const planOpt   = planSel.options[planSel.selectedIndex];
-  const planName  = planOpt ? planOpt.value : '';
-  const planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
-  const checks    = document.querySelectorAll('#qServicesCheck input:checked');
-  const addons    = [];
-  checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
-  const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
-  const total = planPrice + addonsTotal;
-
   const numero = nextNumero('COT');
+  let planName = '', planPrice = 0, addons = [], total = 0;
+  let eventoData = null;
+
+  if (quoteTipo === 'evento') {
+    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)      || 0;
+    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value) || 50;
+    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value) || 0;
+    planName   = `Cobertura de Evento (${horas}h)`;
+    planPrice  = horas * precioHora;
+    total      = planPrice + transporte;
+    eventoData = { horas, precioHora, transporte };
+    if (transporte > 0) addons.push({ name: 'Transporte', price: transporte });
+    addons.push({ name: '📸 Todas las fotos en alta calidad por correo', price: 0 });
+    addons.push({ name: '🎬 Video recopilatorio (~1 min)', price: 0 });
+  } else {
+    const planSel  = document.getElementById('qPlan');
+    const planOpt  = planSel.options[planSel.selectedIndex];
+    planName  = planOpt ? planOpt.value : '';
+    planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
+    const checks = document.querySelectorAll('#qServicesCheck input:checked');
+    checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
+    total = planPrice + addons.reduce((s,a)=>s+a.price,0);
+  }
 
   const quote = {
-    id:         `q_${Date.now()}`,
+    id:          `q_${Date.now()}`,
     numero,
+    tipo:        quoteTipo,
     clientType,
-    clientName: name,
-    clientId:   cid,
-    razonSocial:document.getElementById('qRazonSocial').value,
-    repLegal:   document.getElementById('qRepLegal').value,
+    clientName:  name,
+    clientId:    cid,
+    razonSocial: document.getElementById('qRazonSocial').value,
+    repLegal:    document.getElementById('qRepLegal').value,
     phone,
-    email:      document.getElementById('qEmail').value,
-    address:    document.getElementById('qAddress').value,
-    sessionDate:document.getElementById('qDate').value,
-    sessionTime:document.getElementById('qTime').value,
-    location:   document.getElementById('qLocation').value,
-    plan:       planName,
+    email:       document.getElementById('qEmail').value,
+    address:     document.getElementById('qAddress').value,
+    sessionDate: document.getElementById('qDate').value,
+    sessionTime: document.getElementById('qTime').value,
+    location:    document.getElementById('qLocation').value,
+    plan:        planName,
     planPrice,
     addons,
+    eventoData,
     total,
-    notes:      document.getElementById('qNotes').value,
-    status:     'pending',
-    createdAt:  new Date().toLocaleDateString('es-PA'),
+    notes:       document.getElementById('qNotes').value,
+    status:      'pending',
+    createdAt:   new Date().toLocaleDateString('es-PA'),
   };
 
   state.quotes.push(quote);
   const ok = await ghPut('quotes.json', state.quotes);
 
-  // Also feed into the unified reservas system so it appears in Reservas
-  // with the same control module (status, abono, PDFs)
+  // Agregar al sistema de reservas
   try {
     const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
     const [y,m,d] = (quote.sessionDate || '').split('-');
     const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
     const reservaRecord = {
-      id:         quote.id,
+      id:          quote.id,
       numero,
-      nombre:     name,
-      tel:        phone,
-      email:      quote.email,
-      plan:       planName,
-      notas:      quote.notes,
-      fecha:      quote.sessionDate || '',
+      nombre:      name,
+      tel:         phone,
+      email:       quote.email,
+      plan:        planName,
+      notas:       quote.notes,
+      fecha:       quote.sessionDate || '',
       fechaLabel,
-      hora:       quote.sessionTime || '',
-      horaVal:    quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
-      status:     'pending',
-      abono:      0,
+      hora:        quote.sessionTime || '',
+      horaVal:     quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
+      status:      'pending',
+      abono:       0,
       totalManual: total,
-      clientId:   cid,
+      clientId:    cid,
       clientType,
       razonSocial: quote.razonSocial,
       repLegal:    quote.repLegal,
       address:     quote.address,
-      extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
-      origin:     'manual',
-      createdAt:  quote.createdAt,
+      extras:      addons.filter(a=>a.price>0).map(a => ({ nombre: a.name, precio: a.price })),
+      origin:      'manual',
+      tipo:        quoteTipo,
+      eventoData,
+      createdAt:   quote.createdAt,
     };
     reservas.push(reservaRecord);
     localStorage.setItem('jans_reservas', JSON.stringify(reservas));
-    // Mirror to Supabase so it's visible from any device too
     if (sbClient) {
       sbClient.from('reservas').insert([reservaRecord]).then(({error}) => {
-        if (error) console.error('Supabase insert (manual quote) error:', error);
+        if (error) console.error('Supabase insert error:', error);
       });
     }
   } catch(e) {}
@@ -3321,10 +3423,21 @@ async function saveQuote() {
     updateDashboard(); renderQuotesTable();
     switchView('quotes', document.querySelector('.sidebar-item[onclick*="\'quotes\'"]'));
   } else {
-    showToast('Guardada localmente — verifica GitHub para publicar','error');
-    clearQuoteForm();
-    updateDashboard();
+    showToast('Guardada localmente — verifica GitHub','error');
+    clearQuoteForm(); updateDashboard();
   }
+}
+
+
+function clearQuoteForm() {
+  ['qClientName','qClientId','qRazonSocial','qRepLegal','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  const planEl = document.getElementById('qPlan'); if (planEl) planEl.value = '';
+  document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
+  const horasEl = document.getElementById('qEventoHoras'); if(horasEl) horasEl.value = '1';
+  const transpEl = document.getElementById('qEventoTransporte'); if(transpEl) transpEl.value = '0';
+  selectClientType('natural');
+  selectQuoteTipo('fotografico');
+  updateTotal();
 }
 
 function clearQuoteForm() {
