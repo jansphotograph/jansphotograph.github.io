@@ -153,33 +153,55 @@
           <h2>Dashboard</h2>
           <p>Resumen general del estudio</p>
         </div>
-        <div class="stats-grid">
+        <!-- Fila 1: totales globales -->
+        <div class="stats-grid" style="margin-bottom:12px">
           <div class="stat-card pink">
-            <div class="stat-label">Reservas</div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-sub">Total registradas</div>
-          </div>
-          <div class="stat-card amber">
-            <div class="stat-label">Solicitudes Pendientes</div>
-            <div class="stat-value" id="statPending">0</div>
-            <div class="stat-sub">Esperando tu confirmación</div>
+            <div class="stat-label">Operaciones totales</div>
+            <div class="stat-value" id="statOpsTotal">0</div>
+            <div class="stat-sub">Reservas + cotizaciones</div>
           </div>
           <div class="stat-card green">
-            <div class="stat-label">Confirmadas</div>
-            <div class="stat-value" id="statApproved">0</div>
-            <div class="stat-sub">Este mes</div>
+            <div class="stat-label">Completadas</div>
+            <div class="stat-value" id="statCompleted">0</div>
+            <div class="stat-sub"><span id="statCompletedRes">0</span> res · <span id="statCompletedQ">0</span> cot</div>
           </div>
           <div class="stat-card blue">
             <div class="stat-label">Ingresos Est.</div>
             <div class="stat-value" id="statRevenue">$0</div>
-            <div class="stat-sub">Reservas confirmadas/completadas</div>
+            <div class="stat-sub">Confirmadas + completadas</div>
+          </div>
+        </div>
+        <!-- Fila 2: pendientes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card amber">
+            <div class="stat-label">Reservas pendientes</div>
+            <div class="stat-value" id="statPendingRes">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Cotizaciones pendientes</div>
+            <div class="stat-value" id="statPendingQ">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+        </div>
+        <!-- Fila 3: confirmadas este mes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card green">
+            <div class="stat-label">Reservas confirmadas</div>
+            <div class="stat-value" id="statApprovedRes">0</div>
+            <div class="stat-sub">Este mes</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Cotizaciones confirmadas</div>
+            <div class="stat-value" id="statApprovedQ">0</div>
+            <div class="stat-sub">Este mes</div>
           </div>
         </div>
 
         <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
           <div class="card-title" style="color:#fcd34d">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Solicitudes pendientes
+            Solicitudes de reserva pendientes
           </div>
           <div class="table-wrap">
             <table>
@@ -191,26 +213,13 @@
 
         <div class="card">
           <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
             Últimas reservas
           </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Cliente</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody id="dashRecentTable"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Últimas cotizaciones
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th></tr></thead>
-              <tbody id="dashRecentQuotes"><tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -1127,12 +1136,7 @@
           <div class="stat-card amber">
             <div class="stat-label">Pendiente por cobrar</div>
             <div class="stat-value" id="panelRevPending">$0</div>
-            <div class="stat-sub" id="panelRevPendingSub">Saldos de reservas confirmadas</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-label">Ticket promedio</div>
-            <div class="stat-value" id="panelAvgTicket">$0</div>
-            <div class="stat-sub">Por reserva confirmada</div>
+            <div class="stat-sub" id="panelRevPendingSub">No completadas aún</div>
           </div>
         </div>
 
@@ -1559,7 +1563,10 @@
         </select>
       </div>
     </div>
-    <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+    <div class="form-row">
+      <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+      <div class="field"><label>Precio del plan ($) <span style="font-weight:400;color:var(--gray)">(sobrescribe el auto-calculado)</span></label><input type="number" id="editResPrecio" min="0" step="0.01" placeholder="Precio personalizado" /></div>
+    </div>
     <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-pink" onclick="saveEditReserva()">Guardar cambios</button>
@@ -2445,47 +2452,52 @@ function updateDashboard() {
   loadReservasLocal();
   const activeRes = allReservas.filter(r => r.status !== 'deleted');
   const activeQ   = (state.quotes || []);
-  const now       = typeof todayPanama === 'function' ? todayPanama() : new Date();
+  const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
   const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
-  const pendingR = activeRes.filter(r => r.status === 'pending');
-  const pendingQ = activeQ.filter(q => q.status === 'pending');
+  const pendingR    = activeRes.filter(r => r.status === 'pending');
+  const pendingQ    = activeQ.filter(q => q.status === 'pending');
+  const confirmedR  = activeRes.filter(r => r.status === 'confirmed');
+  const confirmedQ  = activeQ.filter(q => q.status === 'confirmed');
+  const completedR  = activeRes.filter(r => r.status === 'completed');
+  const completedQ  = activeQ.filter(q => q.status === 'completed');
 
-  const approvedR = activeRes.filter(r => {
-    if (r.status !== 'confirmed' && r.status !== 'completed') return false;
-    const d = new Date((r.fecha||'') + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  }).length;
-  const approvedQ = activeQ.filter(q => {
-    if (q.status !== 'confirmed' && q.status !== 'completed') return false;
-    const d = new Date((q.sessionDate||'') + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  }).length;
+  const approvedRMonth = confirmedR.filter(r => { const d=new Date((r.fecha||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; }).length;
+  const approvedQMonth = confirmedQ.filter(q => { const d=new Date((q.sessionDate||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; }).length;
 
-  const revenueR = activeRes.filter(r => r.status==='confirmed'||r.status==='completed').reduce((s,r)=>s+resTotal(r),0);
-  const revenueQ = activeQ.filter(q => q.status==='confirmed'||q.status==='completed').reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+  const revenueR = [...confirmedR,...completedR].reduce((s,r)=>s+resTotal(r),0);
+  const revenueQ = [...confirmedQ,...completedQ].reduce((s,q)=>s+(parseFloat(q.total)||0),0);
 
-  document.getElementById('statTotal').textContent    = activeRes.length;
-  document.getElementById('statPending').textContent  = pendingR.length + pendingQ.length;
-  document.getElementById('statApproved').textContent = approvedR + approvedQ;
-  document.getElementById('statRevenue').textContent  = '$' + (revenueR + revenueQ).toFixed(2);
+  // Operaciones totales
+  const el = id => document.getElementById(id);
+  if(el('statOpsTotal'))    el('statOpsTotal').textContent    = activeRes.length + activeQ.length;
+  if(el('statCompleted'))   el('statCompleted').textContent   = completedR.length + completedQ.length;
+  if(el('statCompletedRes'))el('statCompletedRes').textContent= completedR.length;
+  if(el('statCompletedQ')) el('statCompletedQ').textContent  = completedQ.length;
+  if(el('statRevenue'))     el('statRevenue').textContent     = '$'+(revenueR+revenueQ).toFixed(2);
+  if(el('statPendingRes'))  el('statPendingRes').textContent  = pendingR.length;
+  if(el('statPendingQ'))    el('statPendingQ').textContent    = pendingQ.length;
+  if(el('statApprovedRes')) el('statApprovedRes').textContent = approvedRMonth;
+  if(el('statApprovedQ'))   el('statApprovedQ').textContent   = approvedQMonth;
 
-  const pb  = document.getElementById('pendingBadge');
-  if (pb) { pb.textContent = pendingQ.length; pb.style.display = pendingQ.length > 0 ? '' : 'none'; }
-  const rb  = document.getElementById('reservasBadge');
-  const rb2 = document.getElementById('reservasBadge2');
-  if (rb)  { rb.textContent  = pendingR.length; rb.style.display  = pendingR.length > 0 ? '' : 'none'; }
-  if (rb2) { rb2.textContent = pendingR.length; rb2.style.display = pendingR.length > 0 ? '' : 'none'; }
+  // Badges
+  const pb  = el('pendingBadge');
+  if (pb)  { pb.textContent  = pendingQ.length;  pb.style.display  = pendingQ.length  > 0 ? '' : 'none'; }
+  const rb  = el('reservasBadge');
+  const rb2 = el('reservasBadge2');
+  if (rb)  { rb.textContent  = pendingR.length;  rb.style.display  = pendingR.length  > 0 ? '' : 'none'; }
+  if (rb2) { rb2.textContent = pendingR.length;  rb2.style.display = pendingR.length  > 0 ? '' : 'none'; }
 
+  // Tabla pendientes
   const allPending = [
-    ...pendingR.map(r => ({ numero:r.numero||'—', cliente:r.nombre, tipo:'Reserva', plan:r.plan||'—', fecha:r.fechaLabel||r.fecha||'—', hora:r.hora||'—', total:resTotal(r), isReserva:true, id:r.id })),
-    ...pendingQ.map(q => ({ numero:q.numero||'—', cliente:q.clientName, tipo:q.tipo==='evento'?'Evento':'Foto', plan:q.plan||'—', fecha:q.sessionDate||'—', hora:q.sessionTime||'—', total:parseFloat(q.total)||0, isReserva:false, id:q.id }))
+    ...pendingR.map(r=>({numero:r.numero||'—',cliente:r.nombre,tipo:'Reserva',plan:r.plan||'—',fecha:r.fechaLabel||r.fecha||'—',hora:r.hora||'—',total:resTotal(r),isReserva:true,id:r.id})),
+    ...pendingQ.map(q=>({numero:q.numero||'—',cliente:q.clientName,tipo:q.tipo==='evento'?'Evento':'Foto',plan:q.plan||'—',fecha:q.sessionDate||'—',hora:q.sessionTime||'—',total:parseFloat(q.total)||0,isReserva:false,id:q.id}))
   ];
-  const pendingCard  = document.getElementById('dashPendingCard');
-  const pendingTable = document.getElementById('dashPendingTable');
+  const pendingCard  = el('dashPendingCard');
+  const pendingTable = el('dashPendingTable');
   if (allPending.length > 0) {
-    if (pendingCard) pendingCard.style.display = '';
-    if (pendingTable) pendingTable.innerHTML = allPending.map(item => `
+    if(pendingCard)  pendingCard.style.display = '';
+    if(pendingTable) pendingTable.innerHTML = allPending.map(item=>`
       <tr>
         <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${item.numero}</span></td>
         <td style="font-weight:600">${item.cliente}</td>
@@ -2494,20 +2506,20 @@ function updateDashboard() {
         <td style="font-size:0.82rem">${item.fecha}</td>
         <td style="font-size:0.82rem">${item.hora}</td>
         <td style="font-weight:700">$${item.total.toFixed(2)}</td>
-        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva ? `goToReservaInTable('${item.id}')` : `switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
+        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
       </tr>`).join('');
   } else {
-    if (pendingCard) pendingCard.style.display = 'none';
+    if(pendingCard) pendingCard.style.display = 'none';
   }
 
-  const dashRecent = document.getElementById('dashRecentTable');
-  if (dashRecent) dashRecent.innerHTML = activeRes.length
-    ? activeRes.slice(-6).reverse().map(r => `<tr><td>${r.nombre}</td><td>${r.plan||'—'}</td><td>$${resTotal(r).toFixed(2)}</td><td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td><td>${r.fechaLabel||r.fecha||'—'}</td></tr>`).join('')
+  const dashRecent = el('dashRecentTable');
+  if(dashRecent) dashRecent.innerHTML = activeRes.length
+    ? activeRes.slice(-6).reverse().map(r=>`<tr><td>${r.nombre}</td><td>${r.plan||'—'}</td><td>$${resTotal(r).toFixed(2)}</td><td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td><td>${r.fechaLabel||r.fecha||'—'}</td></tr>`).join('')
     : '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
 
-  const dashQ = document.getElementById('dashRecentQuotes');
-  if (dashQ) dashQ.innerHTML = activeQ.length
-    ? activeQ.slice(-6).reverse().map(q => `<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td>${q.plan||'—'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${typeof statusClassQ==='function'?statusClassQ(q.status):''}">${statusLabel(q.status)}</span></td></tr>`).join('')
+  const dashQ = el('dashRecentQuotes');
+  if(dashQ) dashQ.innerHTML = activeQ.length
+    ? activeQ.slice(-6).reverse().map(q=>`<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td>${q.plan||'—'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${typeof statusClassQ==='function'?statusClassQ(q.status):''}">${statusLabel(q.status)}</span></td></tr>`).join('')
     : '<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
 
@@ -4384,10 +4396,10 @@ async function syncReservasFromSupabase() {
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas')||'[]'); } catch(e) {}
     const remoteIds = new Set(data.map(r=>r.id));
-    local = local.filter(r => r.status==='deleted' || remoteIds.has(r.id));
+    local = local.filter(r=>r.status==='deleted'||remoteIds.has(r.id));
     const byId = new Map(local.map(r=>[r.id,r]));
     data.forEach(remote => {
-      const norm = { id:remote.id, numero:remote.numero||null, nombre:remote.nombre, tel:remote.tel, email:remote.email, plan:remote.plan, notas:remote.notas, fecha:remote.fecha, fechaLabel:remote.fechaLabel||remote.fecha, hora:remote.hora, horaVal:remote.horaVal, status:remote.status||'pending', abono:remote.abono||0, cancelado:remote.cancelado||0, totalManual:remote.totalManual, extras:remote.extras||[], clientId:remote.clientId, clientType:remote.clientType, razonSocial:remote.razonSocial, repLegal:remote.repLegal, address:remote.address, origin:remote.origin||'web', facturaNumero:remote.facturaNumero, createdAt:remote.createdAt, cumpleanos:remote.cumpleanos, personasExtra:remote.personasExtra||0, costoPersonasExtra:remote.costoPersonasExtra||0, quiereExterior:remote.quiereExterior||false, lugarExterior:remote.lugarExterior||'', costoExterior:remote.costoExterior||0, fechaOriginal:remote.fechaOriginal, fechaNueva:remote.fechaNueva };
+      const norm = {id:remote.id,numero:remote.numero||null,nombre:remote.nombre,tel:remote.tel,email:remote.email,plan:remote.plan,notas:remote.notas,fecha:remote.fecha,fechaLabel:remote.fechaLabel||remote.fecha,hora:remote.hora,horaVal:remote.horaVal,status:remote.status||'pending',abono:remote.abono||0,cancelado:remote.cancelado||0,totalManual:remote.totalManual,extras:remote.extras||[],clientId:remote.clientId,clientType:remote.clientType,razonSocial:remote.razonSocial,repLegal:remote.repLegal,address:remote.address,origin:remote.origin||'web',facturaNumero:remote.facturaNumero,createdAt:remote.createdAt,cumpleanos:remote.cumpleanos,personasExtra:remote.personasExtra||0,costoPersonasExtra:remote.costoPersonasExtra||0,quiereExterior:remote.quiereExterior||false,lugarExterior:remote.lugarExterior||'',costoExterior:remote.costoExterior||0,fechaOriginal:remote.fechaOriginal,fechaNueva:remote.fechaNueva};
       byId.set(remote.id, byId.has(remote.id) ? {...byId.get(remote.id),...norm} : norm);
     });
     const merged = Array.from(byId.values()).filter(r=>r.status!=='deleted');
@@ -4554,8 +4566,8 @@ function renderReservasTable(highlightId) {
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
     if (r.status === 'deleted') return false;
-    if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
+    if (filterStatus && r.status !== filterStatus) return false;
+    if (filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
 
@@ -5024,6 +5036,7 @@ function openEditReserva(id) {
   document.getElementById('editResDate').value  = r.fecha || '';
   document.getElementById('editResHora').value  = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
   document.getElementById('editResPlan').value  = r.plan || '';
+  document.getElementById('editResPrecio').value = (r.totalManual !== null && r.totalManual !== undefined) ? r.totalManual : '';
   document.getElementById('editResNotas').value = r.notas || '';
   openModal('editReservaModal');
 }
@@ -5033,6 +5046,7 @@ function saveEditReserva() {
   const horaRaw = document.getElementById('editResHora').value.split('|');
   const fecha   = document.getElementById('editResDate').value;
   const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
+  const precioEditVal = document.getElementById('editResPrecio')?.value;
   allReservas[idx] = {
     ...allReservas[idx],
     nombre:   document.getElementById('editResNombre').value,
@@ -5044,6 +5058,7 @@ function saveEditReserva() {
     hora:     horaRaw[1] || allReservas[idx].hora,
     plan:     document.getElementById('editResPlan').value,
     notas:    document.getElementById('editResNotas').value,
+    totalManual: precioEditVal !== '' && precioEditVal !== undefined ? (parseFloat(precioEditVal) || 0) : null,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
@@ -6683,47 +6698,69 @@ function updatePanelAdministrativo() {
   const activeQ   = (state.quotes||[]);
   const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
   const thisMonth = now.getMonth(), thisYear=now.getFullYear();
-  const billR = activeRes.filter(r=>r.status==='confirmed'||r.status==='completed');
-  const billQ = activeQ.filter(q=>q.status==='confirmed'||q.status==='completed');
-  const billRM = billR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
-  const billQM = billQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
-  const revMonth  = billRM.reduce((s,r)=>s+resTotal(r),0)+billQM.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
-  const revTotal  = billR.reduce((s,r)=>s+resTotal(r),0)+billQ.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
-  const revPend   = billR.reduce((s,r)=>s+resPendiente(r),0)+billQ.reduce((s,q)=>s+Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)),0);
-  const totalBill = billR.length+billQ.length;
-  const avgTicket = totalBill ? revTotal/totalBill : 0;
-  const pendCount = billR.filter(r=>resPendiente(r)>0).length+billQ.filter(q=>Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0))>0).length;
-  document.getElementById('panelRevMonth').textContent    = '$'+revMonth.toFixed(2);
-  document.getElementById('panelRevMonthSub').textContent = (billRM.length+billQM.length)+' sesión(es) este mes';
-  document.getElementById('panelRevTotal').textContent    = '$'+revTotal.toFixed(2);
-  document.getElementById('panelRevPending').textContent  = '$'+revPend.toFixed(2);
-  document.getElementById('panelRevPendingSub').textContent = 'De '+pendCount+' sesión(es)';
-  document.getElementById('panelAvgTicket').textContent   = '$'+avgTicket.toFixed(2);
+
+  // Ingresos este mes: completadas (total) + confirmadas (solo abono)
+  const completedRMonth = activeRes.filter(r=>{if(r.status!=='completed')return false;const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const confirmedRMonth = activeRes.filter(r=>{if(r.status!=='confirmed')return false;const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const completedQMonth = activeQ.filter(q=>{if(q.status!=='completed')return false;const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const confirmedQMonth = activeQ.filter(q=>{if(q.status!=='confirmed')return false;const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+
+  const revMonth =
+    completedRMonth.reduce((s,r)=>s+resTotal(r),0) +
+    confirmedRMonth.reduce((s,r)=>s+(parseFloat(r.abono)||0)+(parseFloat(r.cancelado)||0),0) +
+    completedQMonth.reduce((s,q)=>s+(parseFloat(q.total)||0),0) +
+    confirmedQMonth.reduce((s,q)=>s+(parseFloat(q.abono)||0)+(parseFloat(q.pagado)||0),0);
+
+  // Ingresos totales: suma de todos los totales (no canceladas)
+  const validR = activeRes.filter(r=>r.status!=='cancelled'&&r.status!=='declined');
+  const validQ = activeQ.filter(q=>q.status!=='cancelled');
+  const revTotal = validR.reduce((s,r)=>s+resTotal(r),0) + validQ.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+
+  // Pendiente por cobrar: no completadas (confirmadas + pendientes)
+  const pendR = activeRes.filter(r=>r.status==='confirmed'||r.status==='pending');
+  const pendQ = activeQ.filter(q=>q.status==='confirmed'||q.status==='pending');
+  const revPend = pendR.reduce((s,r)=>s+resPendiente(r),0) + pendQ.reduce((s,q)=>s+Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)),0);
+  const pendCount = pendR.filter(r=>resPendiente(r)>0).length + pendQ.filter(q=>Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0))>0).length;
+
+  const el = id => document.getElementById(id);
+  el('panelRevMonth').textContent    = '$'+revMonth.toFixed(2);
+  el('panelRevMonthSub').textContent = (completedRMonth.length+confirmedRMonth.length+completedQMonth.length+confirmedQMonth.length)+' sesión(es) este mes';
+  el('panelRevTotal').textContent    = '$'+revTotal.toFixed(2);
+  el('panelRevPending').textContent  = '$'+revPend.toFixed(2);
+  el('panelRevPendingSub').textContent = 'De '+pendCount+' sesión(es)';
+
+  // Planes más solicitados
   const planCounts={};
   [...activeRes,...activeQ].forEach(x=>{const p=x.plan;if(!p)return;const c=p.replace(/\s*\(\$[\d.,]+\)\s*$/,'').trim();planCounts[c]=(planCounts[c]||0)+1;});
-  document.getElementById('panelPlansChart').innerHTML = buildDonutChart(Object.entries(planCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+  el('panelPlansChart').innerHTML = buildDonutChart(Object.entries(planCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+
+  // Servicios adicionales
   const extraCounts={};
   activeRes.forEach(r=>(r.extras||[]).forEach(e=>{if(e.nombre)extraCounts[e.nombre]=(extraCounts[e.nombre]||0)+1;}));
   activeQ.forEach(q=>(q.addons||[]).filter(a=>a.price>0).forEach(a=>{if(a.name)extraCounts[a.name]=(extraCounts[a.name]||0)+1;}));
-  document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(Object.entries(extraCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
-  const invEl=document.getElementById('panelInventoryStatus');
+  el('panelExtrasChart').innerHTML = buildDonutChart(Object.entries(extraCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+
+  // Inventario
+  const invEl=el('panelInventoryStatus');
   if(!paperTypes.length){invEl.innerHTML='<div style="color:var(--gray);font-size:0.85rem">Sin tipos de papel registrados.</div>';}
   else{invEl.innerHTML=paperTypes.map(p=>{const isLow=p.stock<=p.minStock;const pct=p.minStock>0?Math.min(100,Math.round((p.stock/Math.max(p.minStock*3,1))*100)):100;return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px"><span>${p.nombre}</span><span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} ${isLow?'⚠':''}</span></div><div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div></div></div>`;}).join('');}
+
+  // Top clientes
   const clientMap={};
   activeRes.forEach(r=>{const k=r.tel||r.nombre;if(!clientMap[k])clientMap[k]={nombre:r.nombre,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=resTotal(r);if((r.fecha||'')>clientMap[k].lastDate)clientMap[k].lastDate=r.fecha;});
   activeQ.forEach(q=>{const k=q.phone||q.clientName;if(!clientMap[k])clientMap[k]={nombre:q.clientName,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=parseFloat(q.total)||0;if((q.sessionDate||'')>clientMap[k].lastDate)clientMap[k].lastDate=q.sessionDate;});
   const topClients=Object.values(clientMap).sort((a,b)=>b.count-a.count).slice(0,8);
-  const clientsTbody=document.getElementById('panelTopClients');
-  clientsTbody.innerHTML=topClients.length?topClients.map(c=>`<tr><td style="font-weight:600">${c.nombre}</td><td>${c.count}</td><td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td><td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
-  const months=[];
-  for(let i=5;i>=0;i--){const d=new Date(thisYear,thisMonth-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('es-PA',{month:'short'})});}
+  el('panelTopClients').innerHTML=topClients.length?topClients.map(c=>`<tr><td style="font-weight:600">${c.nombre}</td><td>${c.count}</td><td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td><td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
+
+  // Gráfico mensual
+  const months=[];for(let i=5;i>=0;i--){const d=new Date(thisYear,thisMonth-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('es-PA',{month:'short'})});}
   const monthCounts=months.map(m=>{
     const cR=activeRes.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;
     const cQ=activeQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;
     return cR+cQ;
   });
   const maxCount=Math.max(1,...monthCounts);
-  document.getElementById('panelMonthlyChart').innerHTML=months.map((m,i)=>{const h=Math.max(4,Math.round((monthCounts[i]/maxCount)*130));return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px"><span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span><div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div><span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span></div>`;}).join('');
+  el('panelMonthlyChart').innerHTML=months.map((m,i)=>{const h=Math.max(4,Math.round((monthCounts[i]/maxCount)*130));return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px"><span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span><div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div><span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span></div>`;}).join('');
 }
 
 function initPanel() {
