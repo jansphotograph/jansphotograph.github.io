@@ -56,7 +56,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
       Panel
     </button>
-    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
+    <button class="sidebar-link" onclick="window.location.href='event/calltoevent.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Eventos
     </button>
@@ -1510,7 +1510,7 @@
 
 <!-- ══ RESERVA DETAIL MODAL ══ -->
 <div class="modal-overlay" id="reservaModal">
-  <div class="modal" style="max-width:560px;display:flex;flex-direction:column;padding:0;overflow:hidden">
+  <div class="modal modal-flex" style="max-width:560px">
     <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
       <h3 id="reservaModalTitle">Detalle de Reserva</h3>
       <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
@@ -2430,20 +2430,22 @@ function switchView(name, btn) {
 // ── Dashboard ──
 function updateDashboard() {
   loadReservasLocal();
+  // Excluir eliminadas de todas las métricas
+  const activeReservas = allReservas.filter(r => r.status !== 'deleted');
 
-  const total    = allReservas.length;
-  const pendingList = allReservas.filter(r => r.status === 'pending');
+  const total    = activeReservas.length;
+  const pendingList = activeReservas.filter(r => r.status === 'pending');
   const pending  = pendingList.length;
   const now      = new Date();
   const thisMonth = now.getMonth();
   const thisYear  = now.getFullYear();
-  const approved = allReservas.filter(r => {
+  const approved = activeReservas.filter(r => {
     if (r.status !== 'confirmed' && r.status !== 'completed') return false;
     if (!r.fecha) return false;
     const d = new Date(r.fecha + 'T00:00:00');
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   }).length;
-  const revenue = allReservas
+  const revenue = activeReservas
     .filter(r => r.status === 'confirmed' || r.status === 'completed')
     .reduce((s, r) => s + resTotal(r), 0);
 
@@ -2483,7 +2485,7 @@ function updateDashboard() {
   }
 
   // ── Recent reservas table ──
-  const rows = allReservas.slice(-6).reverse().map(r => `
+  const rows = activeReservas.slice(-6).reverse().map(r => `
     <tr>
       <td>${r.nombre}</td>
       <td>${r.plan||'—'}</td>
@@ -3316,10 +3318,25 @@ function renderPlans() {
         <div class="field"><label>Precio ($)</label><input type="number" value="${p.price}" min="0" step="0.01" onchange="state.plans[${i}].price=parseFloat(this.value)||0" /></div>
         <div class="field"><label>Duración</label><input type="text" value="${p.duration||''}" placeholder="Ej. 2 horas" onchange="state.plans[${i}].duration=this.value" /></div>
       </div>
+      <div class="form-row">
+        <div class="field"><label>Personas incluidas</label><input type="number" value="${p.personasIncluidas||1}" min="1" step="1" onchange="state.plans[${i}].personasIncluidas=parseInt(this.value)||1" /></div>
+        <div class="field"><label>Máx. personas extra permitidas</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
+        <div class="field"><label>Precio por persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Tipo de ubicación</label>
+          <select onchange="state.plans[${i}].tipoUbicacion=this.value" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);padding:8px 12px;outline:none;width:100%">
+            <option value="estudio" ${(p.tipoUbicacion||'estudio')==='estudio'?'selected':''}>Solo estudio</option>
+            <option value="exterior" ${p.tipoUbicacion==='exterior'?'selected':''}>Solo exterior</option>
+            <option value="ambos" ${p.tipoUbicacion==='ambos'?'selected':''}>Estudio y exterior</option>
+          </select>
+        </div>
+      </div>
       <div class="field"><label>Descripción / Incluye</label><textarea onchange="state.plans[${i}].description=this.value" placeholder="Ej. 30 fotos editadas, entrega digital...">${p.description||''}</textarea></div>
     </div>`).join('');
 }
-function addPlan() { state.plans.push({name:'Nuevo Plan',price:0,duration:'',description:''}); renderPlans(); }
+function addPlan() { state.plans.push({name:'Nuevo Plan',price:0,duration:'',description:'',personasIncluidas:1,maxPersonasExtra:0,precioPersonaExtra:0,tipoUbicacion:'estudio'}); renderPlans(); }
 async function savePlans() {
   const ok = await ghPut('plans.json', state.plans);
   if(ok){showToast('Planes guardados ✓'); updateQPlanSelect();}
@@ -3582,6 +3599,10 @@ async function generateConfirmationPDF(id) {
     const boxItems = [];
     if (r.plan) boxItems.push(['Plan', r.plan, resPlanPrice(r)]);
     (r.extras || []).forEach(e => boxItems.push(['Adicional', e.nombre, parseFloat(e.precio)||0]));
+    if (r.personasExtra > 0 && r.costoPersonasExtra > 0)
+      boxItems.push(['Personas extra', `+${r.personasExtra} persona(s)`, parseFloat(r.costoPersonasExtra)||0]);
+    if (r.quiereExterior && r.costoExterior > 0)
+      boxItems.push(['Sesión exterior', r.lugarExterior||'Exterior', parseFloat(r.costoExterior)||0]);
 
     const lineH   = 6;
     const boxPadY = 8;
@@ -3725,6 +3746,10 @@ async function generateInvoicePDF(id) {
   (r.extras || r.addons || []).forEach(a => {
     items.push([a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0]);
   });
+  if (r.personasExtra > 0 && r.costoPersonasExtra > 0)
+    items.push([`Personas adicionales (+${r.personasExtra})`, parseFloat(r.costoPersonasExtra)||0]);
+  if (r.quiereExterior && r.costoExterior > 0)
+    items.push([`Sesión exterior — ${r.lugarExterior||''}`, parseFloat(r.costoExterior)||0]);
 
   const rowH    = 6.5;
   const boxPadY = 8;
@@ -4339,51 +4364,80 @@ try {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
+    // Solo traer reservas que NO estén eliminadas
+    const { data, error } = await sbClient
+      .from('reservas')
+      .select('*')
+      .neq('status', 'deleted')
+      .order('created_at', { ascending: true });
+
     if (error) { console.error('Supabase fetch error:', error); return false; }
     if (!data) return false;
 
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-    const localIds = new Set(local.map(r => r.id));
 
-    let added = 0;
+    // Quitar del local las que Supabase ya no tiene (fueron eliminadas desde otro dispositivo)
+    const remoteIds = new Set(data.map(r => r.id));
+    local = local.filter(r => r.status === 'deleted' || remoteIds.has(r.id));
+
+    const byId = new Map(local.map(r => [r.id, r]));
+    let changed = false;
+
     data.forEach(remote => {
-      if (!localIds.has(remote.id)) {
-        // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
-        local.push({
-          id:            remote.id,
-          numero:        remote.numero || null,
-          nombre:        remote.nombre,
-          tel:           remote.tel,
-          email:         remote.email,
-          plan:          remote.plan,
-          notas:         remote.notas,
-          fecha:         remote.fecha,
-          fechaLabel:    remote.fechaLabel,
-          hora:          remote.hora,
-          horaVal:       remote.horaVal,
-          status:        remote.status || 'pending',
-          abono:         remote.abono || 0,
-          totalManual:   remote.totalManual,
-          extras:        remote.extras || [],
-          clientId:      remote.clientId,
-          clientType:    remote.clientType,
-          razonSocial:   remote.razonSocial,
-          repLegal:      remote.repLegal,
-          address:       remote.address,
-          origin:        remote.origin || 'web',
-          facturaNumero: remote.facturaNumero,
-          createdAt:     remote.createdAt,
-        });
-        added++;
+      const normalized = {
+        id:              remote.id,
+        numero:          remote.numero || null,
+        nombre:          remote.nombre,
+        tel:             remote.tel,
+        email:           remote.email,
+        plan:            remote.plan,
+        notas:           remote.notas,
+        fecha:           remote.fecha,
+        fechaLabel:      remote.fechaLabel || remote.fecha,
+        hora:            remote.hora,
+        horaVal:         remote.horaVal,
+        status:          remote.status || 'pending',
+        abono:           remote.abono || 0,
+        cancelado:       remote.cancelado || 0,
+        totalManual:     remote.totalManual,
+        extras:          remote.extras || [],
+        clientId:        remote.clientId,
+        clientType:      remote.clientType,
+        razonSocial:     remote.razonSocial,
+        repLegal:        remote.repLegal,
+        address:         remote.address,
+        origin:          remote.origin || 'web',
+        facturaNumero:   remote.facturaNumero,
+        createdAt:       remote.createdAt,
+        cumpleanos:      remote.cumpleanos,
+        personasExtra:   remote.personasExtra || 0,
+        costoPersonasExtra: remote.costoPersonasExtra || 0,
+        quiereExterior:  remote.quiereExterior || false,
+        lugarExterior:   remote.lugarExterior || '',
+        costoExterior:   remote.costoExterior || 0,
+        fechaOriginal:   remote.fechaOriginal,
+        fechaNueva:      remote.fechaNueva,
+        horaNueva:       remote.horaNueva,
+      };
+
+      if (!byId.has(remote.id)) {
+        // Nueva reserva — agregar
+        byId.set(remote.id, normalized);
+        changed = true;
+      } else {
+        // Existente — actualizar campos del servidor (preservar cambios locales de abono/cancelado si son más recientes)
+        const existing = byId.get(remote.id);
+        // Solo actualizar status si viene del servidor y no es 'pending' (el servidor es fuente de verdad para estado)
+        const updated = { ...existing, ...normalized };
+        byId.set(remote.id, updated);
+        changed = true;
       }
     });
 
-    if (added > 0) {
-      localStorage.setItem('jans_reservas', JSON.stringify(local));
-    }
-    return added > 0;
+    const merged = Array.from(byId.values()).filter(r => r.status !== 'deleted');
+    localStorage.setItem('jans_reservas', JSON.stringify(merged));
+    return changed;
   } catch(e) {
     console.error('Supabase sync exception:', e);
     return false;
@@ -4396,10 +4450,29 @@ async function pushReservaToSupabase(r) {
   if (!sbClient) return;
   try {
     const { error } = await sbClient.from('reservas').update({
-      numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
-      extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
-      nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
-      fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
+      numero:          r.numero,
+      status:          r.status,
+      abono:           r.abono || 0,
+      cancelado:       r.cancelado || 0,
+      totalManual:     r.totalManual,
+      extras:          r.extras || [],
+      facturaNumero:   r.facturaNumero,
+      notas:           r.notas,
+      nombre:          r.nombre,
+      tel:             r.tel,
+      email:           r.email,
+      plan:            r.plan,
+      fecha:           r.fecha,
+      fechaLabel:      r.fechaLabel,
+      hora:            r.hora,
+      horaVal:         r.horaVal,
+      costoExterior:   r.costoExterior || 0,
+      personasExtra:   r.personasExtra || 0,
+      costoPersonasExtra: r.costoPersonasExtra || 0,
+      quiereExterior:  r.quiereExterior || false,
+      lugarExterior:   r.lugarExterior || '',
+      fechaOriginal:   r.fechaOriginal,
+      fechaNueva:      r.fechaNueva,
     }).eq('id', r.id);
     if (error) console.error('Supabase update error:', error);
   } catch(e) {
@@ -4502,12 +4575,13 @@ function resExtrasTotal(r) {
   return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
 }
 function resTotal(r) {
-  // Base: either the manual override (used for manual quotes where plan price
-  // isn't resolvable from the public catalog) or the resolved plan price.
   const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
     ? (parseFloat(r.totalManual) || 0)
     : resPlanPrice(r);
-  return base + resExtrasTotal(r);
+  const extras        = resExtrasTotal(r);
+  const personasExtra = parseFloat(r.costoPersonasExtra) || 0;
+  const exterior      = parseFloat(r.costoExterior)      || 0;
+  return base + extras + personasExtra + exterior;
 }
 function resAbono(r)     { return parseFloat(r.abono)     || 0; }
 function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
@@ -4547,9 +4621,11 @@ function renderReservasTable(highlightId) {
   loadReservasLocal();
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
+  // Excluir siempre las eliminadas
   let list = [...allReservas].reverse().filter(r => {
+    if(r.status === 'deleted') return false;
     if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
 
@@ -4631,10 +4707,13 @@ function viewReserva(id) {
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
+      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Recibida</div><div>${r.createdAt||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Fecha sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Hora sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
       <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
+      ${r.personasExtra > 0 ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Personas adicionales</div><div style="font-weight:600;color:#fbbf24">+${r.personasExtra} persona(s)</div></div>` : ''}
+      ${r.quiereExterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Solicita exterior</div><div style="font-weight:600;color:#86efac">✓ Sí — ${r.lugarExterior||'Lugar por confirmar'}</div></div>` : ''}
     </div>
     ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
 
@@ -4645,15 +4724,33 @@ function viewReserva(id) {
         <span>${r.plan || 'Sin plan principal'}</span>
         <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>
       </div>
+      ${r.personasExtra > 0 ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
+        <span>+${r.personasExtra} persona(s) adicional(es)</span>
+        <span style="font-weight:700;color:#fbbf24">$${(r.costoPersonasExtra||0).toFixed(2)}</span>
+      </div>` : ''}
+      ${r.quiereExterior && r.costoExterior > 0 ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
+        <span>Sesión exterior — ${r.lugarExterior||''}</span>
+        <span style="font-weight:700;color:#86efac">$${(r.costoExterior||0).toFixed(2)}</span>
+      </div>` : ''}
+      ${r.quiereExterior && !r.costoExterior ? `
+      <div style="font-size:0.78rem;color:#fbbf24;margin-top:4px">⚠ Costo de exterior pendiente — edita la reserva para asignarlo</div>
+      ` : ''}
       <div id="resExtrasList">${renderResExtrasList(r)}</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap">
       <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
         <label>Añadir plan o servicio adicional</label>
         <select id="resExtraSelect">${renderExtrasOptions()}</select>
       </div>
       <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
     </div>
+    ${r.quiereExterior ? `
+    <div class="field" style="margin-bottom:16px">
+      <label>Costo exterior ($) <span style="color:var(--gray);font-weight:400">(asignar valor)</span></label>
+      <input type="number" id="resCostoExterior" min="0" step="0.01" value="${r.costoExterior||0}" style="max-width:180px" />
+    </div>` : ''}
 
     <hr class="section-divider" />
     <span class="section-label-sm">Control Financiero</span>
@@ -4716,23 +4813,7 @@ function viewReserva(id) {
             Guardar nueva fecha
           </button>
         </div>
-
-    <hr class="section-divider" />
-    <span class="section-label-sm">Documentos</span>
-    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        PDF Confirmación
-      </button>
-      <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Generar Factura
-      </button>
-      <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
-        Escanear insumos usados
-      </button>
-    </div>`;
+`;
 
   // Botones fijos en el footer del modal
   document.getElementById('reservaModalFooter').innerHTML = `
@@ -4740,9 +4821,21 @@ function viewReserva(id) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
       Guardar
     </button>
-    <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar datos</button>
+    <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      PDF
+    </button>
+    <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Factura
+    </button>
+    <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
+      Insumos
+    </button>
+    <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>
     <button class="btn btn-ghost" onclick="closeModal('reservaModal')">Cancelar</button>
-    <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑 Eliminar</button>`;
+    <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑</button>`;
 
   openModal('reservaModal');
 }
@@ -4853,10 +4946,12 @@ function updateResFinancials(id) {
 async function saveReservaChanges(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   const r = allReservas[idx];
-  const abonoEl     = document.getElementById('resAbonoInput');
-  const canceladoEl = document.getElementById('resCanceladoInput');
-  if (abonoEl)     r.abono     = parseFloat(abonoEl.value)     || 0;
-  if (canceladoEl) r.cancelado = parseFloat(canceladoEl.value) || 0;
+  const abonoEl      = document.getElementById('resAbonoInput');
+  const canceladoEl  = document.getElementById('resCanceladoInput');
+  const exteriorEl   = document.getElementById('resCostoExterior');
+  if (abonoEl)     r.abono        = parseFloat(abonoEl.value)     || 0;
+  if (canceladoEl) r.cancelado    = parseFloat(canceladoEl.value) || 0;
+  if (exteriorEl)  r.costoExterior = parseFloat(exteriorEl.value) || 0;
   if (r.status === 'postponed') {
     const nf = document.getElementById('resNewFecha')?.value;
     const nh = document.getElementById('resNewHora')?.value;
@@ -5031,7 +5126,17 @@ function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  if (sbClient) sbClient.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
+  if (sbClient) {
+    // Marcar como deleted en Supabase para que no reaparezca al sincronizar
+    sbClient.from('reservas').update({ status: 'deleted' }).eq('id', id)
+      .then(({error}) => {
+        if (error) {
+          // Si falla el update, intentar delete físico
+          sbClient.from('reservas').delete().eq('id', id)
+            .then(({error: e2}) => { if (e2) console.error('Supabase delete error:', e2); });
+        }
+      });
+  }
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();
@@ -6774,7 +6879,12 @@ function updatePanelAdministrativo() {
   }).join('');
 }
 
-function initPanel() {
+async function initPanel() {
+  loadReservasLocal();
+  if (!allReservas.length) {
+    await syncReservasFromSupabase();
+    loadReservasLocal();
+  }
   updatePanelAdministrativo();
 }
 
@@ -7799,7 +7909,7 @@ ${galleryItems}
             <ul class="pc-includes">
               \${(p.incluye || []).map(i => \`<li>\${i}</li>\`).join('')}
             </ul>
-            <a href="../quotes/reservas.html?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}"
+            <a href="../quotes/reservas.html?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}&personasIncluidas=\${p.personasIncluidas||1}&maxPersonasExtra=\${p.maxPersonasExtra||0}&precioPersonaExtra=\${p.precioPersonaExtra||0}&tipoUbicacion=\${encodeURIComponent(p.tipoUbicacion||'estudio')}"
               class="btn-agendar">Agendar</a>
           </div>\`;
         }).join('');
