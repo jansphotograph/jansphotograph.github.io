@@ -105,8 +105,6 @@
         <button class="sidebar-item" onclick="switchView('inventario',this)">Inventario</button>
         <button class="sidebar-item" onclick="switchView('blog',this)">Blog</button>
         <button class="sidebar-item" onclick="switchView('faqs',this)">Preguntas Frecuentes</button>
-        <button class="sidebar-item" onclick="switchView('services',this)">Servicios (Cotización)</button>
-        <button class="sidebar-item" onclick="switchView('plans',this)">Planes (Cotización)</button>
         <button class="sidebar-item" onclick="switchView('team',this)">Equipo</button>
       </div>
     </div>
@@ -402,15 +400,52 @@
 
           <!-- BLOQUE: Plan Fotográfico -->
           <div id="qBloqueFoto">
-            <div class="form-row">
-              <div class="field" style="flex:2">
-                <label>Plan Fotográfico</label>
-                <select id="qPlan" onchange="updateTotal()">
-                  <option value="">— Seleccionar —</option>
-                </select>
+            <div class="field">
+              <label>Plan Fotográfico</label>
+              <select id="qPlan" onchange="onQPlanChange()">
+                <option value="">— Seleccionar plan —</option>
+              </select>
+            </div>
+
+            <!-- Descripción del plan seleccionado -->
+            <div id="qPlanInfo" style="display:none;background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.85rem;color:var(--gray-l)"></div>
+
+            <!-- Exterior -->
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+                <input type="checkbox" id="qFotoExterior" onchange="onQFotoExteriorChange()" style="accent-color:var(--pink);width:15px;height:15px" />
+                ¿Sesión en exterior?
+              </label>
+            </div>
+            <div id="qFotoExteriorBlock" style="display:none">
+              <div class="form-row">
+                <div class="field">
+                  <label>Lugar del exterior</label>
+                  <input type="text" id="qFotoLugar" placeholder="Ej. Parque Omar, Casco Viejo..." />
+                </div>
+                <div class="field">
+                  <label>Costo de transporte ($)</label>
+                  <input type="number" id="qFotoTransporte" min="0" step="0.01" value="0" oninput="updateTotal()" />
+                </div>
               </div>
             </div>
-            <span class="section-label-sm" style="margin-top:8px">Servicios Adicionales</span>
+
+            <!-- Personas adicionales -->
+            <div id="qFotoPersonasBlock" style="display:none">
+              <div class="form-row">
+                <div class="field">
+                  <label id="qFotoPersonasLabel">Personas adicionales</label>
+                  <input type="number" id="qFotoPersonas" min="0" step="1" value="0" oninput="updateTotal()" />
+                </div>
+                <div class="field">
+                  <label>Costo por persona adicional ($)</label>
+                  <input type="number" id="qFotoPrecioPersona" min="0" step="0.01" value="0" oninput="updateTotal()" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Servicios adicionales -->
+            <span class="section-label-sm" style="margin-top:4px">Servicios Adicionales</span>
             <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px"></div>
           </div>
 
@@ -425,8 +460,14 @@
                 <label>Precio por hora ($)</label>
                 <input type="number" id="qEventoPrecioHora" value="50" min="0" step="0.01" oninput="updateTotal()" />
               </div>
+            </div>
+            <div class="form-row">
               <div class="field">
-                <label>Costo transporte ($) <span style="font-weight:400;color:var(--gray)">(si aplica)</span></label>
+                <label>Lugar del evento</label>
+                <input type="text" id="qEventoLugar" placeholder="Ej. Hotel Marriott, Salón XYZ..." oninput="updateTotal()" />
+              </div>
+              <div class="field">
+                <label>Costo de transporte ($) <span style="font-weight:400;color:var(--gray)">(si aplica)</span></label>
                 <input type="number" id="qEventoTransporte" value="0" min="0" step="0.01" oninput="updateTotal()" />
               </div>
             </div>
@@ -436,7 +477,7 @@
                 <div>📸 Todas las fotos tomadas durante el tiempo de cobertura</div>
                 <div>🖼️ Entrega en alta calidad mediante correo electrónico</div>
                 <div>🎬 Video recopilatorio de aprox. 1 minuto</div>
-                <div id="qEventoTransporteInfo" style="display:none;color:#fbbf24">🚗 Costo de transporte adicional según lugar indicado</div>
+                <div id="qEventoTransporteInfo" style="display:none;color:#fbbf24">🚗 Costo de transporte incluido según lugar indicado</div>
               </div>
             </div>
           </div>
@@ -2444,7 +2485,7 @@ function toggleHnavGroup(id) { toggleSidebarGroup(id); }
 // Map view name → group id, so the right group auto-opens when navigating
 const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones', eventoForm:'cotizaciones',
-  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo', inventario:'catalogo', team:'catalogo',
+  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', inventario:'catalogo', team:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
   config:'cuenta', company:'cuenta'
 };
@@ -3221,25 +3262,71 @@ function selectClientType(type) {
 
 function updateQPlanSelect() {
   const sel = document.getElementById('qPlan');
+  if (!sel) return;
   const current = sel.value;
+  loadPublicPlans();
 
-  const fotograficos = state.plans.filter(p => (p.categoria||'fotografico') === 'fotografico');
-  const eventos      = state.plans.filter(p => p.categoria === 'evento');
+  // Agrupar por categoría
+  const cats = {};
+  publicPlans.forEach(p => {
+    const cat = p.categoria || p.category || 'sin-categoria';
+    if (!cats[cat]) cats[cat] = [];
+    cats[cat].push(p);
+  });
 
-  let html = '<option value="">— Seleccionar —</option>';
-  if (fotograficos.length) {
-    html += `<optgroup label="📷 Planes Fotográficos">`;
-    html += fotograficos.map(p => `<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
+  let html = '<option value="">— Seleccionar plan —</option>';
+  Object.entries(cats).forEach(([cat, planes]) => {
+    const label = (CAT_LABELS && CAT_LABELS[cat]) ? CAT_LABELS[cat] : cat;
+    html += `<optgroup label="${label}">`;
+    planes.forEach(p => {
+      const desc = (p.descripcion||'').replace(/"/g, '&quot;');
+      html += `<option value="${p.nombre}" data-price="${p.precio}" data-desc="${desc}" data-max-extra="${p.personasExtra||0}" data-precio-extra="${p.precioPersonaExtra||0}">${p.nombre} — $${parseFloat(p.precio).toFixed(2)}</option>`;
+    });
     html += `</optgroup>`;
-  }
-  if (eventos.length) {
-    html += `<optgroup label="🎬 Cobertura de Evento">`;
-    html += eventos.map(p => `<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
-    html += `</optgroup>`;
-  }
+  });
   sel.innerHTML = html;
   sel.value = current;
+  onQPlanChange();
   renderServiceChecks();
+}
+
+function onQPlanChange() {
+  const sel = document.getElementById('qPlan');
+  const opt = sel?.options[sel.selectedIndex];
+  const infoEl        = document.getElementById('qPlanInfo');
+  const personasBlock = document.getElementById('qFotoPersonasBlock');
+  const personasLabel = document.getElementById('qFotoPersonasLabel');
+
+  if (opt && opt.value) {
+    const desc      = opt.dataset.desc || '';
+    const maxExtra  = parseInt(opt.dataset.maxExtra) || 0;
+    const precioExt = parseFloat(opt.dataset.precioExtra) || 0;
+
+    if (infoEl) { infoEl.style.display = desc ? '' : 'none'; infoEl.textContent = desc; }
+    if (personasBlock) {
+      personasBlock.style.display = maxExtra > 0 ? '' : 'none';
+      if (personasLabel) personasLabel.textContent = `Personas adicionales (máx. ${maxExtra} — $${precioExt.toFixed(2)} c/u)`;
+      const precioEl = document.getElementById('qFotoPrecioPersona');
+      if (precioEl) precioEl.value = precioExt;
+      const personasEl = document.getElementById('qFotoPersonas');
+      if (personasEl) { personasEl.max = maxExtra; personasEl.value = 0; }
+    }
+  } else {
+    if (infoEl) infoEl.style.display = 'none';
+    if (personasBlock) personasBlock.style.display = 'none';
+  }
+  updateTotal();
+}
+
+function onQFotoExteriorChange() {
+  const checked = document.getElementById('qFotoExterior')?.checked;
+  const block   = document.getElementById('qFotoExteriorBlock');
+  if (block) block.style.display = checked ? '' : 'none';
+  if (!checked) {
+    const t = document.getElementById('qFotoTransporte'); if(t) t.value = 0;
+    const l = document.getElementById('qFotoLugar'); if(l) l.value = '';
+  }
+  updateTotal();
 }
 
 function renderServiceChecks() {
@@ -3280,19 +3367,21 @@ function updateTotal() {
   let summaryHTML = '';
 
   if (quoteTipo === 'evento') {
-    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)         || 0;
-    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value)     || 50;
-    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value)     || 0;
+    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)      || 0;
+    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value)  || 50;
+    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value)  || 0;
+    const lugar      = document.getElementById('qEventoLugar')?.value.trim() || '';
     const subtotal   = horas * precioHora;
     total = subtotal + transporte;
 
-    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Cobertura de Evento (${horas}h × $${precioHora})</span><span>$${subtotal.toFixed(2)}</span></div>`;
+    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Cobertura de Evento (${horas}h × $${precioHora}/h)</span><span>$${subtotal.toFixed(2)}</span></div>`;
+    if (lugar) summaryHTML += `<div style="margin-bottom:6px;font-size:0.82rem;color:var(--gray-l)">📍 ${lugar}</div>`;
     summaryHTML += `<div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:0.82rem;color:var(--gray-l)">
       <span>📸 Todas las fotos en alta calidad por correo</span>
       <span>🎬 Video recopilatorio ~1 min</span>
     </div>`;
     if (transporte > 0) {
-      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Costo de transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
+      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
     }
     const infoEl = document.getElementById('qEventoTransporteInfo');
     if (infoEl) infoEl.style.display = transporte > 0 ? '' : 'none';
@@ -3302,16 +3391,26 @@ function updateTotal() {
     const opt       = planSel?.options[planSel.selectedIndex];
     const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
     const planName  = opt ? opt.value : '';
+    const transporte  = document.getElementById('qFotoExterior')?.checked
+      ? (parseFloat(document.getElementById('qFotoTransporte')?.value) || 0) : 0;
+    const lugar       = document.getElementById('qFotoExterior')?.checked
+      ? (document.getElementById('qFotoLugar')?.value.trim() || '') : '';
+    const personas    = parseInt(document.getElementById('qFotoPersonas')?.value) || 0;
+    const precioPersona = parseFloat(document.getElementById('qFotoPrecioPersona')?.value) || 0;
+    const costoPersonas = personas * precioPersona;
     const checks    = document.querySelectorAll('#qServicesCheck input:checked');
     let addonsTotal = 0;
 
     if (planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
+    if (lugar) summaryHTML += `<div style="margin-bottom:6px;font-size:0.82rem;color:var(--gray-l)">📍 Exterior: ${lugar}</div>`;
+    if (transporte > 0) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
+    if (costoPersonas > 0) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>👥 +${personas} persona(s) adicional(es)</span><span>$${costoPersonas.toFixed(2)}</span></div>`;
     checks.forEach(c => {
       const [name, price] = c.value.split('||');
       addonsTotal += parseFloat(price);
       summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
     });
-    total = planPrice + addonsTotal;
+    total = planPrice + transporte + costoPersonas + addonsTotal;
   }
 
   document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan o tipo de cobertura para ver el resumen.</span>';
@@ -3332,18 +3431,27 @@ async function saveQuote() {
     const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)      || 0;
     const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value) || 50;
     const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value) || 0;
+    const lugar      = document.getElementById('qEventoLugar')?.value.trim() || '';
     planName   = `Cobertura de Evento (${horas}h)`;
     planPrice  = horas * precioHora;
     total      = planPrice + transporte;
-    eventoData = { horas, precioHora, transporte };
-    if (transporte > 0) addons.push({ name: 'Transporte', price: transporte });
+    eventoData = { horas, precioHora, transporte, lugar };
+    if (transporte > 0) addons.push({ name: `🚗 Transporte — ${lugar||'exterior'}`, price: transporte });
     addons.push({ name: '📸 Todas las fotos en alta calidad por correo', price: 0 });
     addons.push({ name: '🎬 Video recopilatorio (~1 min)', price: 0 });
   } else {
-    const planSel  = document.getElementById('qPlan');
-    const planOpt  = planSel.options[planSel.selectedIndex];
+    const planSel     = document.getElementById('qPlan');
+    const planOpt     = planSel.options[planSel.selectedIndex];
     planName  = planOpt ? planOpt.value : '';
     planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
+    const exterior    = document.getElementById('qFotoExterior')?.checked || false;
+    const transporte  = exterior ? (parseFloat(document.getElementById('qFotoTransporte')?.value) || 0) : 0;
+    const lugar       = exterior ? (document.getElementById('qFotoLugar')?.value.trim() || '') : '';
+    const personas    = parseInt(document.getElementById('qFotoPersonas')?.value) || 0;
+    const precioPersona = parseFloat(document.getElementById('qFotoPrecioPersona')?.value) || 0;
+    const costoPersonas = personas * precioPersona;
+    if (transporte > 0) addons.push({ name: `🚗 Transporte exterior${lugar ? ' — '+lugar : ''}`, price: transporte });
+    if (costoPersonas > 0) addons.push({ name: `👥 +${personas} persona(s) adicional(es)`, price: costoPersonas });
     const checks = document.querySelectorAll('#qServicesCheck input:checked');
     checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
     total = planPrice + addons.reduce((s,a)=>s+a.price,0);
@@ -3431,20 +3539,16 @@ async function saveQuote() {
 
 function clearQuoteForm() {
   ['qClientName','qClientId','qRazonSocial','qRepLegal','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  const planEl = document.getElementById('qPlan'); if (planEl) planEl.value = '';
+  const fields = { qPlan:'', qEventoHoras:'1', qEventoPrecioHora:'50', qEventoTransporte:'0',
+                   qEventoLugar:'', qFotoTransporte:'0', qFotoLugar:'', qFotoPersonas:'0' };
+  Object.entries(fields).forEach(([id, val]) => { const el=document.getElementById(id); if(el) el.value=val; });
+  const extEl = document.getElementById('qFotoExterior'); if(extEl) extEl.checked = false;
   document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
-  const horasEl = document.getElementById('qEventoHoras'); if(horasEl) horasEl.value = '1';
-  const transpEl = document.getElementById('qEventoTransporte'); if(transpEl) transpEl.value = '0';
+  const extBlock = document.getElementById('qFotoExteriorBlock'); if(extBlock) extBlock.style.display='none';
+  const persBlock = document.getElementById('qFotoPersonasBlock'); if(persBlock) persBlock.style.display='none';
   selectClientType('natural');
   selectQuoteTipo('fotografico');
   updateTotal();
-}
-
-function clearQuoteForm() {
-  ['qClientName','qClientId','qRazonSocial','qRepLegal','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  document.getElementById('qPlan').value = '';
-  document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
-  selectClientType('natural'); updateTotal();
 }
 
 // ── Services ──
