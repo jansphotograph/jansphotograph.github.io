@@ -5,15 +5,16 @@
     "nombre": "Brittany Camarena",
     "tel": "61643327",
     "email": "camarenabrittany36@gmail.com",
-    "plan": "Plan Zafiro ($55)",
+    "plan": "Plan Zafiro ($45)",
     "notas": "",
     "fecha": "2026-06-24",
-    "fechaLabel": "miércoles, 24 de junio de 2026",
+    "fechaLabel": "24 de Junio 2026",
     "hora": "14:00",
     "horaVal": 14,
-    "status": "confirmed",
+    "status": "completed",
     "abono": 0,
-    "totalManual": null,
+    "cancelado": 45,
+    "totalManual": 45,
     "extras": [],
     "clientId": null,
     "clientType": null,
@@ -23,6 +24,11 @@
     "origin": "web",
     "facturaNumero": "003",
     "createdAt": "06/21/2026",
+    "personasExtra": 0,
+    "costoPersonasExtra": 0,
+    "quiereExterior": false,
+    "lugarExterior": "",
+    "costoExterior": 0,
     "blockedHours": [
       12,
       13,
@@ -30,10 +36,7 @@
       15,
       16
     ],
-    "inventoryDeducted": true,
-    "fechaOriginal": "2026-06-23",
-    "fechaNueva": "2026-06-24",
-    "horaNueva": "14:00"
+    "inventoryDeducted": true
   },
   {
     "id": "r_1782320030714",
@@ -48,7 +51,8 @@
     "hora": "5:00 PM",
     "horaVal": 17,
     "status": "confirmed",
-    "abono": 0,
+    "abono": 25,
+    "cancelado": 0,
     "totalManual": null,
     "extras": [],
     "clientId": null,
@@ -59,13 +63,10 @@
     "origin": "web",
     "facturaNumero": null,
     "createdAt": "06/24/2026",
-    "blockedHours": [
-      15,
-      16,
-      17,
-      18,
-      19
-    ],
-    "inventoryDeducted": true
+    "personasExtra": 0,
+    "costoPersonasExtra": 0,
+    "quiereExterior": false,
+    "lugarExterior": "",
+    "costoExterior": 0
   }
 ]
