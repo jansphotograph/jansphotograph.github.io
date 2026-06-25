@@ -153,26 +153,48 @@
           <h2>Dashboard</h2>
           <p>Resumen general del estudio</p>
         </div>
-        <div class="stats-grid">
+        <!-- Fila 1: totales globales -->
+        <div class="stats-grid" style="margin-bottom:12px">
           <div class="stat-card pink">
-            <div class="stat-label">Reservas</div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-sub">Total registradas</div>
-          </div>
-          <div class="stat-card amber">
-            <div class="stat-label">Solicitudes Pendientes</div>
-            <div class="stat-value" id="statPending">0</div>
-            <div class="stat-sub">Esperando tu confirmación</div>
+            <div class="stat-label">Operaciones totales</div>
+            <div class="stat-value" id="statOpsTotal">0</div>
+            <div class="stat-sub">Reservas + cotizaciones</div>
           </div>
           <div class="stat-card green">
-            <div class="stat-label">Confirmadas</div>
-            <div class="stat-value" id="statApproved">0</div>
-            <div class="stat-sub">Este mes</div>
+            <div class="stat-label">Completadas</div>
+            <div class="stat-value" id="statCompleted">0</div>
+            <div class="stat-sub"><span id="statCompletedRes">0</span> res · <span id="statCompletedQ">0</span> cot</div>
           </div>
           <div class="stat-card blue">
             <div class="stat-label">Ingresos Est.</div>
             <div class="stat-value" id="statRevenue">$0</div>
-            <div class="stat-sub">Reservas confirmadas/completadas</div>
+            <div class="stat-sub">Confirmadas + completadas</div>
+          </div>
+        </div>
+        <!-- Fila 2: pendientes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card amber">
+            <div class="stat-label">Reservas pendientes</div>
+            <div class="stat-value" id="statPendingRes">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Cotizaciones pendientes</div>
+            <div class="stat-value" id="statPendingQ">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+        </div>
+        <!-- Fila 3: confirmadas este mes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card green">
+            <div class="stat-label">Reservas confirmadas</div>
+            <div class="stat-value" id="statApprovedRes">0</div>
+            <div class="stat-sub">Este mes</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Cotizaciones confirmadas</div>
+            <div class="stat-value" id="statApprovedQ">0</div>
+            <div class="stat-sub">Este mes</div>
           </div>
         </div>
 
