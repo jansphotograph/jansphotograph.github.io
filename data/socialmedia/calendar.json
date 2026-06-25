@@ -20,6 +20,11 @@
       15,
       16
     ],
-    "quoteLock": "q_1782362037880"
+    "quoteLock": "q_1782362037880",
+    "type": "event",
+    "blockType": "hours",
+    "horaInicio": 12,
+    "horaFin": 16,
+    "titulo": "Cotización COT-01 — Yanilka lisbeth Mendoza Martínez"
   }
 }
