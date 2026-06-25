@@ -209,8 +209,8 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th></tr></thead>
-              <tbody id="dashRecentQuotes"><tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody id="dashRecentQuotes"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -2511,8 +2511,8 @@ function updateDashboard() {
 
   const dashQ=el('dashRecentQuotes');
   if(dashQ)dashQ.innerHTML=activeQ.length
-    ?activeQ.slice(-6).reverse().map(q=>`<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td>${q.plan||'—'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td></tr>`).join('')
-    :'<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
+    ?activeQ.slice(-6).reverse().map(q=>`<tr><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td><td>${q.sessionDate||'—'}</td></tr>`).join('')
+    :'<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
 
 function statusLabel(s) {
