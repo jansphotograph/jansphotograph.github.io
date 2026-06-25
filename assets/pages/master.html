@@ -3415,29 +3415,31 @@ async function saveQuoteChanges(id) {
 
 async function blockCalendarForQuote(q) {
   try {
-    const [hh, mm] = (q.sessionTime||'0:0').split(':').map(Number);
+    const [hh] = (q.sessionTime||'0:0').split(':').map(Number);
     const durHoras = q.eventoData?.horas || 1;
-    // Bloquear desde 2h antes hasta 1h después del fin
     const startBlock = hh - 2;
-    const endBlock   = hh + durHoras + 1;
+    const endBlock   = hh + Math.ceil(durHoras) + 1;
     const fecha = q.sessionDate;
+    if (!fecha) return;
 
-    // Marcar horas bloqueadas en el calendario
-    if (!state.calendar[fecha]) state.calendar[fecha] = {};
-    if (typeof state.calendar[fecha] === 'string') {
-      state.calendar[fecha] = { status: state.calendar[fecha] };
+    // Guardar en el formato que reservas.html entiende:
+    // calData[fecha] = { type:'event', blockType:'hours', horaInicio: N, horaFin: N, quoteLock: id }
+    if (!state.calendar[fecha] || typeof state.calendar[fecha] === 'string') {
+      state.calendar[fecha] = {};
     }
-    // Guardar bloqueo de horas (array de horas bloqueadas)
-    const blockedHours = [];
-    for (let h = Math.max(0, startBlock); h <= Math.min(23, endBlock); h++) {
-      blockedHours.push(h);
-    }
-    state.calendar[fecha].blockedHours = blockedHours;
-    state.calendar[fecha].quoteLock    = q.id;
+    state.calendar[fecha] = {
+      ...state.calendar[fecha],
+      type:       'event',
+      blockType:  'hours',
+      horaInicio: Math.max(0, startBlock),
+      horaFin:    Math.min(23, endBlock),
+      quoteLock:  q.id,
+      titulo:     `Cotización ${q.numero||''} — ${q.clientName}`
+    };
 
     localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
     await ghPut('calendar.json', state.calendar);
-    showToast(`Calendario bloqueado: ${fecha} de ${Math.max(0,startBlock)}:00 a ${Math.min(23,endBlock)}:00`);
+    showToast(`Calendario bloqueado: ${fecha} de ${Math.max(0,startBlock)}:00 a ${Math.min(23,endBlock)}:00 ✓`);
   } catch(e) { console.warn('blockCalendar error', e); }
 }
 
