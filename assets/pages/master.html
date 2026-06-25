@@ -851,10 +851,18 @@
             </div>
           </div>
 
-          <!-- Preview -->
+          <!-- Preview con focus point -->
           <div id="igPreviewWrap" style="display:none;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:320px">
-            <img id="igPreviewImg" src="" alt="Preview"
-              style="width:100%;aspect-ratio:1;object-fit:cover;display:block" />
+            <div style="position:relative;aspect-ratio:1;cursor:crosshair;overflow:hidden;border-radius:12px" id="igFocusArea" onclick="setIgFocus(event)">
+              <img id="igPreviewImg" src="" alt="Preview"
+                style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" />
+              <!-- Punto de focus -->
+              <div id="igFocusDot" style="position:absolute;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(233,30,140,0.8),0 2px 8px rgba(0,0,0,0.5);transform:translate(-50%,-50%);pointer-events:none;display:none;transition:top 0.1s,left 0.1s"></div>
+            </div>
+            <div style="padding:8px 12px;background:var(--dark);font-size:0.75rem;color:var(--gray-l)">
+              🎯 Haz clic en la imagen para definir el centro del recorte
+              <span id="igFocusLabel" style="float:right;color:var(--pink-l);font-weight:600">Centro: 50% 50%</span>
+            </div>
           </div>
 
           <!-- Status -->
@@ -4862,6 +4870,29 @@ async function testGithubConnection() {
 // ── Social Links ──
 const LS_SOCIAL = 'jans_social_links';
 let igFileData = null;
+let igFocusX   = 50; // porcentaje, default centro
+let igFocusY   = 50;
+
+function setIgFocus(e) {
+  const area = document.getElementById('igFocusArea');
+  const rect  = area.getBoundingClientRect();
+  const x = Math.round(((e.clientX - rect.left) / rect.width)  * 100);
+  const y = Math.round(((e.clientY - rect.top)  / rect.height) * 100);
+  igFocusX = Math.max(0, Math.min(100, x));
+  igFocusY = Math.max(0, Math.min(100, y));
+
+  // Actualizar dot
+  const dot = document.getElementById('igFocusDot');
+  dot.style.left    = igFocusX + '%';
+  dot.style.top     = igFocusY + '%';
+  dot.style.display = '';
+
+  // Actualizar preview object-position
+  const img = document.getElementById('igPreviewImg');
+  img.style.objectPosition = `${igFocusX}% ${igFocusY}%`;
+
+  document.getElementById('igFocusLabel').textContent = `Centro: ${igFocusX}% ${igFocusY}%`;
+}
 
 async function loadSocialLinksUI() {
   // Pre-fill URL if saved
@@ -4916,7 +4947,13 @@ function handleIgFile(file) {
   reader.onload = function(e) {
     igFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type };
     // Show preview
-    document.getElementById('igPreviewImg').src = e.target.result;
+    igFocusX = 50; igFocusY = 50;
+    const img = document.getElementById('igPreviewImg');
+    img.src = e.target.result;
+    img.style.objectPosition = '50% 50%';
+    const dot = document.getElementById('igFocusDot');
+    dot.style.left = '50%'; dot.style.top = '50%'; dot.style.display = '';
+    document.getElementById('igFocusLabel').textContent = 'Centro: 50% 50%';
     document.getElementById('igPreviewWrap').style.display = 'block';
     igSetStatus('success', `✓ Lista: ${file.name} (${(file.size/1024).toFixed(0)}KB)`);
     enableIgSave();
@@ -5008,7 +5045,7 @@ async function saveIgLink() {
 
     if (res.ok) {
       // Also update instagram.json with the URL + correct image path/extension
-      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString() });
+      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, igFocusX, igFocusY, updatedAt: new Date().toISOString() });
       igSetStatus('success', `✓ Imagen publicada en ${imagePath}`);
       showToast('Instagram publicado ✓');
     } else {
