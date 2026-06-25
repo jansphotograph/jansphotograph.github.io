@@ -56,7 +56,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18.7 8 13 13.7l-4-4L3 16"/></svg>
       Panel
     </button>
-    <button class="sidebar-link" onclick="window.location.href='event/calltoevent.html'">
+    <button class="sidebar-link" onclick="window.location.href='../pages/event/calltoevent.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Eventos
     </button>
@@ -105,6 +105,8 @@
         <button class="sidebar-item" onclick="switchView('inventario',this)">Inventario</button>
         <button class="sidebar-item" onclick="switchView('blog',this)">Blog</button>
         <button class="sidebar-item" onclick="switchView('faqs',this)">Preguntas Frecuentes</button>
+        <button class="sidebar-item" onclick="switchView('services',this)">Servicios (Cotización)</button>
+        <button class="sidebar-item" onclick="switchView('plans',this)">Planes (Cotización)</button>
         <button class="sidebar-item" onclick="switchView('team',this)">Equipo</button>
       </div>
     </div>
@@ -158,9 +160,9 @@
             <div class="stat-sub">Total registradas</div>
           </div>
           <div class="stat-card amber">
-            <div class="stat-label">Pendientes</div>
+            <div class="stat-label">Solicitudes Pendientes</div>
             <div class="stat-value" id="statPending">0</div>
-            <div class="stat-sub">Reservas + cotizaciones</div>
+            <div class="stat-sub">Esperando tu confirmación</div>
           </div>
           <div class="stat-card green">
             <div class="stat-label">Confirmadas</div>
@@ -170,48 +172,32 @@
           <div class="stat-card blue">
             <div class="stat-label">Ingresos Est.</div>
             <div class="stat-value" id="statRevenue">$0</div>
-            <div class="stat-sub">Confirmadas/completadas</div>
+            <div class="stat-sub">Reservas confirmadas/completadas</div>
           </div>
         </div>
 
-        <!-- Solicitudes pendientes (reservas + cotizaciones) -->
         <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
           <div class="card-title" style="color:#fcd34d">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Solicitudes pendientes
+            Solicitudes de reserva pendientes
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Total</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Origen</th><th></th></tr></thead>
               <tbody id="dashPendingTable"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Últimas reservas -->
         <div class="card">
           <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
             Últimas reservas
           </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Cliente</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody id="dashRecentTable"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Últimas cotizaciones -->
-        <div class="card" style="margin-top:0">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Últimas cotizaciones
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th></tr></thead>
-              <tbody id="dashRecentQuotes"><tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -292,15 +278,14 @@
             <select id="filterStatus" onchange="renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
               <option value="">Todos</option>
               <option value="pending">Pendiente</option>
-              <option value="confirmed">Confirmada</option>
-              <option value="completed">Completada</option>
-              <option value="postponed">Aplazada</option>
-              <option value="cancelled">Cancelada</option>
+              <option value="approved">Aprobada</option>
+              <option value="booked">Reservada</option>
+              <option value="rejected">Rechazada</option>
             </select>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Pendiente</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
               <tbody id="quotesTable"></tbody>
             </table>
           </div>
@@ -373,15 +358,14 @@
       <div class="view" id="view-newquote">
         <div class="page-header">
           <h2>Nueva Cotización</h2>
-          <p>Completa los datos del cliente y selecciona el tipo de servicio</p>
+          <p>Completa los datos del cliente y selecciona los servicios</p>
         </div>
 
         <div class="card">
-          <!-- Tipo de cliente -->
           <span class="section-label-sm">Tipo de Cliente</span>
           <div class="radio-group" style="margin-bottom:20px">
-            <div class="radio-btn selected" id="rNatural"  onclick="selectClientType('natural')">👤 Persona Natural</div>
-            <div class="radio-btn"          id="rJuridica" onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
+            <div class="radio-btn selected" id="rNatural"   onclick="selectClientType('natural')">👤 Persona Natural</div>
+            <div class="radio-btn"          id="rJuridica"  onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
           </div>
 
           <span class="section-label-sm">Datos del Cliente</span>
@@ -400,109 +384,28 @@
           <div class="field"><label>Dirección</label><input type="text" id="qAddress" placeholder="Ciudad, Provincia" /></div>
 
           <hr class="section-divider"/>
-          <span class="section-label-sm">Fecha y Lugar</span>
+          <span class="section-label-sm">Sesión Fotográfica</span>
           <div class="form-row">
-            <div class="field"><label>Fecha *</label><input type="date" id="qDate" /></div>
+            <div class="field"><label>Fecha de Sesión *</label><input type="date" id="qDate" /></div>
             <div class="field"><label>Hora</label><input type="time" id="qTime" /></div>
           </div>
-          <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior / Dirección del evento" /></div>
-
-          <hr class="section-divider"/>
-          <!-- Selector de tipo de servicio -->
-          <span class="section-label-sm">Tipo de Servicio</span>
-          <div class="radio-group" style="margin-bottom:20px">
-            <div class="radio-btn selected" id="qTipoFoto"    onclick="selectQuoteTipo('fotografico')">📷 Plan Fotográfico</div>
-            <div class="radio-btn"          id="qTipoEvento"  onclick="selectQuoteTipo('evento')">🎬 Cobertura de Evento</div>
-          </div>
-
-          <!-- BLOQUE: Plan Fotográfico -->
-          <div id="qBloqueFoto">
-            <div class="field">
-              <label>Plan Fotográfico</label>
-              <select id="qPlan" onchange="onQPlanChange()">
-                <option value="">— Seleccionar plan —</option>
+          <div class="form-row">
+            <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior" /></div>
+            <div class="field"><label>Plan Fotográfico</label>
+              <select id="qPlan" onchange="updateTotal()">
+                <option value="">— Seleccionar —</option>
               </select>
             </div>
-
-            <!-- Descripción del plan seleccionado -->
-            <div id="qPlanInfo" style="display:none;background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.85rem;color:var(--gray-l)"></div>
-
-            <!-- Exterior -->
-            <div class="field">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
-                <input type="checkbox" id="qFotoExterior" onchange="onQFotoExteriorChange()" style="accent-color:var(--pink);width:15px;height:15px" />
-                ¿Sesión en exterior?
-              </label>
-            </div>
-            <div id="qFotoExteriorBlock" style="display:none">
-              <div class="form-row">
-                <div class="field">
-                  <label>Lugar del exterior</label>
-                  <input type="text" id="qFotoLugar" placeholder="Ej. Parque Omar, Casco Viejo..." />
-                </div>
-                <div class="field">
-                  <label>Costo de transporte ($)</label>
-                  <input type="number" id="qFotoTransporte" min="0" step="0.01" value="0" oninput="updateTotal()" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Personas adicionales -->
-            <div id="qFotoPersonasBlock" style="display:none">
-              <div class="form-row">
-                <div class="field">
-                  <label id="qFotoPersonasLabel">Personas adicionales</label>
-                  <input type="number" id="qFotoPersonas" min="0" step="1" value="0" oninput="updateTotal()" />
-                </div>
-                <div class="field">
-                  <label>Costo por persona adicional ($)</label>
-                  <input type="number" id="qFotoPrecioPersona" min="0" step="0.01" value="0" oninput="updateTotal()" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Servicios adicionales -->
-            <span class="section-label-sm" style="margin-top:4px">Servicios Adicionales</span>
-            <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px"></div>
           </div>
 
-          <!-- BLOQUE: Cobertura de Evento -->
-          <div id="qBloqueEvento" style="display:none">
-            <div class="form-row">
-              <div class="field">
-                <label>Horas de cobertura *</label>
-                <input type="number" id="qEventoHoras" min="1" step="0.5" value="1" oninput="updateTotal()" placeholder="Ej. 3" />
-              </div>
-              <div class="field">
-                <label>Precio por hora ($)</label>
-                <input type="number" id="qEventoPrecioHora" value="50" min="0" step="0.01" oninput="updateTotal()" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field">
-                <label>Lugar del evento</label>
-                <input type="text" id="qEventoLugar" placeholder="Ej. Hotel Marriott, Salón XYZ..." oninput="updateTotal()" />
-              </div>
-              <div class="field">
-                <label>Costo de transporte ($) <span style="font-weight:400;color:var(--gray)">(si aplica)</span></label>
-                <input type="number" id="qEventoTransporte" value="0" min="0" step="0.01" oninput="updateTotal()" />
-              </div>
-            </div>
-            <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:8px;font-size:0.85rem">
-              <div style="font-weight:700;color:var(--white);margin-bottom:8px">La cobertura incluye:</div>
-              <div style="display:flex;flex-direction:column;gap:5px;color:var(--gray-l)">
-                <div>📸 Todas las fotos tomadas durante el tiempo de cobertura</div>
-                <div>🖼️ Entrega en alta calidad mediante correo electrónico</div>
-                <div>🎬 Video recopilatorio de aprox. 1 minuto</div>
-                <div id="qEventoTransporteInfo" style="display:none;color:#fbbf24">🚗 Costo de transporte incluido según lugar indicado</div>
-              </div>
-            </div>
-          </div>
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Servicios Adicionales</span>
+          <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;"></div>
 
           <hr class="section-divider"/>
           <span class="section-label-sm">Resumen</span>
           <div style="background:var(--dark);border-radius:var(--radius);padding:20px">
-            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan o tipo de cobertura para ver el resumen.</div>
+            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan para ver el resumen.</div>
             <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
               <span style="font-weight:700;font-size:1.05rem">Total Estimado</span>
               <span style="font-weight:700;font-size:1.4rem;color:var(--pink-l)" id="qTotal">$0.00</span>
@@ -513,7 +416,7 @@
 
           <div class="btn-row">
             <button class="btn btn-pink" onclick="saveQuote()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               Guardar Cotización
             </button>
             <button class="btn btn-outline" onclick="clearQuoteForm()">Limpiar</button>
@@ -555,44 +458,18 @@
       <div class="view" id="view-plans">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <h2>Planes (Cotización)</h2>
-            <p>Administra los planes fotográficos y de cobertura de evento</p>
+            <h2>Planes Fotográficos</h2>
+            <p>Crea y administra los paquetes de sesiones</p>
           </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-outline" onclick="addPlan('fotografico')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Plan Fotográfico
-            </button>
-            <button class="btn btn-blue" onclick="addPlan('evento')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Cobertura de Evento
-            </button>
-          </div>
+          <button class="btn btn-pink" onclick="addPlan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Plan
+          </button>
         </div>
-
-        <!-- Planes Fotográficos -->
-        <div style="margin-bottom:28px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--pink-l)">📷 Planes Fotográficos</span>
-            <div style="flex:1;height:1px;background:var(--border)"></div>
-          </div>
-          <div id="plansContainerFotografico"></div>
-          <div id="plansEmptyFotografico" style="display:none;color:var(--gray);font-size:0.85rem;padding:12px 0">Sin planes fotográficos. Haz clic en "Plan Fotográfico" para añadir uno.</div>
-        </div>
-
-        <!-- Cobertura de Evento -->
-        <div style="margin-bottom:28px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <span style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:#93c5fd">🎬 Cobertura de Evento</span>
-            <div style="flex:1;height:1px;background:var(--border)"></div>
-          </div>
-          <div id="plansContainerEvento"></div>
-          <div id="plansEmptyEvento" style="display:none;color:var(--gray);font-size:0.85rem;padding:12px 0">Sin planes de cobertura. Haz clic en "Cobertura de Evento" para añadir uno.</div>
-        </div>
-
+        <div id="plansContainer"></div>
         <div class="btn-row">
           <button class="btn btn-pink" onclick="savePlans()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
             Guardar Planes
           </button>
         </div>
@@ -851,18 +728,10 @@
             </div>
           </div>
 
-          <!-- Preview con focus point -->
+          <!-- Preview -->
           <div id="igPreviewWrap" style="display:none;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:320px">
-            <div style="position:relative;aspect-ratio:1;cursor:crosshair;overflow:hidden;border-radius:12px" id="igFocusArea" onclick="setIgFocus(event)">
-              <img id="igPreviewImg" src="" alt="Preview"
-                style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" />
-              <!-- Punto de focus -->
-              <div id="igFocusDot" style="position:absolute;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(233,30,140,0.8),0 2px 8px rgba(0,0,0,0.5);transform:translate(-50%,-50%);pointer-events:none;display:none;transition:top 0.1s,left 0.1s"></div>
-            </div>
-            <div style="padding:8px 12px;background:var(--dark);font-size:0.75rem;color:var(--gray-l)">
-              🎯 Haz clic en la imagen para definir el centro del recorte
-              <span id="igFocusLabel" style="float:right;color:var(--pink-l);font-weight:600">Centro: 50% 50%</span>
-            </div>
+            <img id="igPreviewImg" src="" alt="Preview"
+              style="width:100%;aspect-ratio:1;object-fit:cover;display:block" />
           </div>
 
           <!-- Status -->
@@ -1641,7 +1510,7 @@
 
 <!-- ══ RESERVA DETAIL MODAL ══ -->
 <div class="modal-overlay" id="reservaModal">
-  <div class="modal modal-flex" style="max-width:560px">
+  <div class="modal" style="max-width:560px;display:flex;flex-direction:column;padding:0;overflow:hidden">
     <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
       <h3 id="reservaModalTitle">Detalle de Reserva</h3>
       <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
@@ -2167,8 +2036,8 @@ let state = {
   services: { makeup: [], print: [] },
   plans:    [],
   calendar: {},    // { 'YYYY-MM-DD': 'available' | 'booked' }
-  calYear:  todayPanama().getFullYear(),
-  calMonth: todayPanama().getMonth(),
+  calYear:  new Date().getFullYear(),
+  calMonth: new Date().getMonth(),
   selectedDay: null,
   currentPDFQuote: null,
   fileSHAs: {},    // store GitHub file SHAs for updates
@@ -2510,7 +2379,7 @@ function toggleHnavGroup(id) { toggleSidebarGroup(id); }
 // Map view name → group id, so the right group auto-opens when navigating
 const VIEW_GROUP_MAP = {
   reservas:'cotizaciones', quotes:'cotizaciones', newquote:'cotizaciones', eventoForm:'cotizaciones',
-  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', inventario:'catalogo', team:'catalogo',
+  planesPublicos:'catalogo', servAdicionales:'catalogo', blog:'catalogo', faqs:'catalogo', services:'catalogo', plans:'catalogo', inventario:'catalogo', team:'catalogo',
   social:'contenido', notas:'contenido', recargar:'contenido',
   config:'cuenta', company:'cuenta'
 };
@@ -2553,7 +2422,6 @@ function switchView(name, btn) {
   if (name === 'panel')           initPanel();
   if (name === 'faqs')            initFaqs();
   if (name === 'eventoForm')      initEventoForm();
-  if (name === 'newquote')        { loadPublicPlans(); updateQPlanSelect(); renderServiceChecks(); }
   if (name === 'company')         loadCompanyUI();
   if (name === 'config')          loadFacturaCounterUI();
   if (name === 'team')            initTeam();
@@ -2563,19 +2431,16 @@ function switchView(name, btn) {
 function updateDashboard() {
   loadReservasLocal();
   const activeReservas = allReservas.filter(r => r.status !== 'deleted');
-  const activeQuotes   = state.quotes || [];
-
+  const activeQuotes   = (state.quotes || []);
   const now = todayPanama();
-  const thisMonth = now.getMonth();
-  const thisYear  = now.getFullYear();
+  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
-  // ── Stats cards ──
-  const totalReservas  = activeReservas.length;
-  const pendingReservas = activeReservas.filter(r => r.status === 'pending');
-  const pendingQuotes  = activeQuotes.filter(q => q.status === 'pending');
-  const totalPending   = pendingReservas.length + pendingQuotes.length;
+  // ── Métricas ──
+  const pendingR = activeReservas.filter(r => r.status === 'pending');
+  const pendingQ = activeQuotes.filter(q => q.status === 'pending');
+  const totalPending = pendingR.length + pendingQ.length;
 
-  const approvedRes = activeReservas.filter(r => {
+  const approvedR = activeReservas.filter(r => {
     if (r.status !== 'confirmed' && r.status !== 'completed') return false;
     if (!r.fecha) return false;
     const d = new Date(r.fecha + 'T00:00:00');
@@ -2588,105 +2453,98 @@ function updateDashboard() {
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   }).length;
 
-  const revenueRes = activeReservas
+  const revenueR = activeReservas
     .filter(r => r.status === 'confirmed' || r.status === 'completed')
     .reduce((s, r) => s + resTotal(r), 0);
   const revenueQ = activeQuotes
     .filter(q => q.status === 'confirmed' || q.status === 'completed')
-    .reduce((s, q) => s + (parseFloat(q.total)||0), 0);
+    .reduce((s, q) => s + (parseFloat(q.total) || 0), 0);
 
-  document.getElementById('statTotal').textContent    = totalReservas;
+  document.getElementById('statTotal').textContent    = activeReservas.length;
   document.getElementById('statPending').textContent  = totalPending;
-  document.getElementById('statApproved').textContent = approvedRes + approvedQ;
-  document.getElementById('statRevenue').textContent  = `$${(revenueRes+revenueQ).toFixed(2)}`;
+  document.getElementById('statApproved').textContent = approvedR + approvedQ;
+  document.getElementById('statRevenue').textContent  = `$${(revenueR + revenueQ).toFixed(2)}`;
 
-  // ── Badges sidebar ──
-  const pendingQCount = pendingQuotes.length;
+  // ── Badges ──
   const pb  = document.getElementById('pendingBadge');
-  if (pb) { pb.textContent = pendingQCount; pb.style.display = pendingQCount > 0 ? '' : 'none'; }
+  if (pb) { pb.textContent = pendingQ.length; pb.style.display = pendingQ.length > 0 ? '' : 'none'; }
   const rb  = document.getElementById('reservasBadge');
   const rb2 = document.getElementById('reservasBadge2');
-  const pR  = pendingReservas.length;
-  if (rb)  { rb.textContent  = pR; rb.style.display  = pR > 0 ? '' : 'none'; }
-  if (rb2) { rb2.textContent = pR; rb2.style.display = pR > 0 ? '' : 'none'; }
+  if (rb)  { rb.textContent  = pendingR.length; rb.style.display  = pendingR.length > 0 ? '' : 'none'; }
+  if (rb2) { rb2.textContent = pendingR.length; rb2.style.display = pendingR.length > 0 ? '' : 'none'; }
 
-  // ── Card pendientes (reservas + cotizaciones) ──
+  // ── Tabla pendientes (reservas + cotizaciones) ──
   const pendingCard  = document.getElementById('dashPendingCard');
   const pendingTable = document.getElementById('dashPendingTable');
-  const allPending   = [
-    ...pendingReservas.map(r => ({
-      id: r.id, numero: r.numero||'—', cliente: r.nombre, tipo: 'Reserva',
+  const allPending = [
+    ...pendingR.map(r => ({
+      numero: r.numero||'—', cliente: r.nombre, tipo: 'Reserva',
       plan: r.plan||'—', fecha: r.fechaLabel||r.fecha||'—', hora: r.hora||'—',
-      total: resTotal(r), isReserva: true
+      total: resTotal(r), isReserva: true, id: r.id
     })),
-    ...pendingQuotes.map(q => ({
-      id: q.id, numero: q.numero||'—', cliente: q.clientName, tipo: q.tipo==='evento'?'Evento':'Foto',
+    ...pendingQ.map(q => ({
+      numero: q.numero||'—', cliente: q.clientName, tipo: q.tipo==='evento'?'Evento':'Foto',
       plan: q.plan||'—', fecha: q.sessionDate||'—', hora: q.sessionTime||'—',
-      total: parseFloat(q.total)||0, isReserva: false
+      total: parseFloat(q.total)||0, isReserva: false, id: q.id
     }))
-  ].reverse();
+  ];
 
   if (allPending.length > 0) {
-    pendingCard.style.display = '';
-    pendingTable.innerHTML = allPending.map(item => `
+    if (pendingCard) pendingCard.style.display = '';
+    if (pendingTable) pendingTable.innerHTML = allPending.map(item => `
       <tr>
         <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${item.numero}</span></td>
         <td style="font-weight:600">${item.cliente}</td>
-        <td><span class="badge-status ${item.isReserva?'status-pending':'status-pending'}" style="font-size:0.72rem">${item.tipo}</span></td>
+        <td><span class="badge-status status-pending" style="font-size:0.72rem">${item.tipo}</span></td>
         <td>${item.plan}</td>
         <td style="font-size:0.82rem">${item.fecha}</td>
         <td style="font-size:0.82rem">${item.hora}</td>
         <td style="font-weight:700">$${item.total.toFixed(2)}</td>
-        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\\"quotes\\"]'));viewQuote('${item.id}')`}">Ver</button></td>
+        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva
+          ? `goToReservaInTable('${item.id}')`
+          : `switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`
+        }">Ver</button></td>
       </tr>`).join('');
   } else {
-    pendingCard.style.display = 'none';
+    if (pendingCard) pendingCard.style.display = 'none';
   }
 
-  // ── Últimas reservas ──
-  const rows = activeReservas.slice(-6).reverse().map(r => `
-    <tr>
-      <td>${r.nombre}</td>
-      <td>${r.plan||'—'}</td>
-      <td>$${resTotal(r).toFixed(2)}</td>
-      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
-      <td>${r.fechaLabel||r.fecha||'—'}</td>
-    </tr>`).join('');
-  document.getElementById('dashRecentTable').innerHTML = rows || '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
+  // ── Tabla últimas reservas ──
+  const recentRes = activeReservas.slice(-6).reverse();
+  const dashRecent = document.getElementById('dashRecentTable');
+  if (dashRecent) dashRecent.innerHTML = recentRes.length
+    ? recentRes.map(r => `
+      <tr>
+        <td>${r.nombre}</td>
+        <td>${r.plan||'—'}</td>
+        <td>$${resTotal(r).toFixed(2)}</td>
+        <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
+        <td>${r.fechaLabel||r.fecha||'—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
 
-  // ── Últimas cotizaciones ──
-  const qRows = activeQuotes.slice(-6).reverse().map(q => `
-    <tr>
-      <td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td>
-      <td style="font-weight:600">${q.clientName}</td>
-      <td>${q.tipo==='evento'?'Evento':'Foto'}</td>
-      <td>${q.plan||'—'}</td>
-      <td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td>
-      <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
-    </tr>`).join('');
-  document.getElementById('dashRecentQuotes').innerHTML = qRows || '<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
+  // ── Tabla últimas cotizaciones ──
+  const recentQ = activeQuotes.slice(-6).reverse();
+  const dashQuotes = document.getElementById('dashRecentQuotes');
+  if (dashQuotes) dashQuotes.innerHTML = recentQ.length
+    ? recentQ.map(q => `
+      <tr>
+        <td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td>
+        <td style="font-weight:600">${q.clientName}</td>
+        <td>${q.tipo==='evento'?'Evento':'Foto'}</td>
+        <td>${q.plan||'—'}</td>
+        <td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td>
+        <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
+
 
 function statusLabel(s) {
-  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', postponed:'Aplazada', cancelled:'Cancelada', approved:'Confirmada', booked:'Confirmada', rejected:'Cancelada' }[s] || s;
-}
-function statusClassQ(s) {
-  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', postponed:'status-postponed', cancelled:'status-rejected', approved:'status-approved', booked:'status-approved', rejected:'status-rejected' }[s] || '';
+  return {pending:'Pendiente',approved:'Aprobada',booked:'Reservada',rejected:'Rechazada'}[s]||s;
 }
 
 // ── Calendar ──
-// ── Fecha actual en zona horaria de Panamá (UTC-5) ──
-function todayPanama() {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Panama' }));
-}
-function todayStrPanama() {
-  const d = todayPanama();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
-}
-
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const HOURS_CAL = [8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -2740,7 +2598,7 @@ function calPrev() {
   if(calView==='month') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
   else if(calView==='week') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
   else if(calView==='day' && calViewDay) {
-    const d = new Date(calViewDay + 'T12:00:00'); d.setDate(d.getDate()-1);
+    const d = new Date(calViewDay); d.setDate(d.getDate()-1);
     calViewDay = d.toISOString().split('T')[0];
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
@@ -2751,7 +2609,7 @@ function calNext() {
   if(calView==='month') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
   else if(calView==='week') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
   else if(calView==='day' && calViewDay) {
-    const d = new Date(calViewDay + 'T12:00:00'); d.setDate(d.getDate()+1);
+    const d = new Date(calViewDay); d.setDate(d.getDate()+1);
     calViewDay = d.toISOString().split('T')[0];
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
@@ -2760,7 +2618,7 @@ function calNext() {
 }
 
 function renderCalendar() {
-  const todayStr = todayStrPanama();
+  const todayStr = new Date().toISOString().split('T')[0];
   if(calView==='month')  renderMonthView(todayStr);
   else if(calView==='week') renderWeekView(todayStr);
   else if(calView==='day')  renderDayView(todayStr);
@@ -3238,217 +3096,69 @@ async function deleteCalEvent(ds) {
 }
 
 function renderQuotesTable() {
-  const search = (document.getElementById('searchQuotes')?.value||'').toLowerCase();
-  const filter = document.getElementById('filterStatus')?.value || '';
+  const search = (document.getElementById('searchQuotes').value||'').toLowerCase();
+  const filter = document.getElementById('filterStatus').value;
   let quotes = state.quotes.filter(q => {
-    const matchSearch = !search || (q.clientName||'').toLowerCase().includes(search);
+    const matchSearch = !search || q.clientName.toLowerCase().includes(search);
     const matchStatus = !filter || q.status===filter;
     return matchSearch && matchStatus;
   }).reverse();
   const tbody = document.getElementById('quotesTable');
-  if(!tbody) return;
   if(!quotes.length){tbody.innerHTML='<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';return;}
-  tbody.innerHTML = quotes.map(q => {
-    const abono     = parseFloat(q.abono)    || 0;
-    const pagado    = parseFloat(q.pagado)   || 0;
-    const total     = parseFloat(q.total)    || 0;
-    const pendiente = Math.max(0, total - abono - pagado);
-    return `
+  tbody.innerHTML = quotes.map((q,i)=>`
     <tr>
-      <td style="color:var(--gray-l);font-size:0.78rem;font-family:monospace">${q.numero||'—'}</td>
+      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3,'0')}</td>
       <td><div style="font-weight:600">${q.clientName}</div><div style="font-size:0.75rem;color:var(--gray-l)">${q.email||''}</div></td>
-      <td>${q.tipo==='evento'?'🎬 Evento':'📷 Foto'}</td>
+      <td>${q.clientType==='juridica'?'Jurídica':'Natural'}</td>
       <td>${q.plan||'—'}</td>
-      <td style="font-weight:700">$${total.toFixed(2)}</td>
-      <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
-      <td style="font-size:0.8rem;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</td>
+      <td style="font-weight:700">$${(q.total||0).toFixed(2)}</td>
+      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
+      <td style="font-size:0.8rem;color:var(--gray-l)">${q.createdAt||'—'}</td>
       <td>
-        <button class="btn btn-sm btn-outline" data-qid="${q.id}" onclick="viewQuote(this.dataset.qid)">Ver</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
+          <button class="btn btn-sm btn-blue"    onclick="showPDF('${q.id}')">PDF</button>
+          <button class="btn btn-sm btn-green"   onclick="changeStatus('${q.id}','approved')">✓</button>
+          <button class="btn btn-sm btn-red"     onclick="changeStatus('${q.id}','rejected')">✗</button>
+        </div>
       </td>
-    </tr>`;
-  }).join('');
+    </tr>`).join('');
 }
 
 function viewQuote(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  const abono    = parseFloat(q.abono)  || 0;
-  const pagado   = parseFloat(q.pagado) || 0;
-  const total    = parseFloat(q.total)  || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-
-  document.getElementById('quoteModalTitle').textContent = `${q.numero||'Cotización'} — ${q.clientName}`;
+  document.getElementById('quoteModalTitle').textContent = `Cotización — ${q.clientName}`;
   document.getElementById('quoteModalBody').innerHTML = `
-    <!-- Info cliente -->
     <div class="form-row" style="margin-bottom:12px">
-      <div>
-        <span class="section-label-sm">Cliente</span>
-        <div style="font-weight:700;font-size:1.05rem">${q.clientName}</div>
-        <div style="color:var(--gray-l);font-size:0.85rem">${q.clientType==='juridica'?'Persona Jurídica':'Persona Natural'} · ${q.clientId||''}</div>
-      </div>
-      <div><span class="section-label-sm">Estado</span><span id="qStatusBadge" class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></div>
+      <div><span class="section-label-sm">Cliente</span><div style="font-weight:700;font-size:1.05rem">${q.clientName}</div><div style="color:var(--gray-l);font-size:0.85rem">${q.clientType==='juridica'?'Persona Jurídica':'Persona Natural'} · ${q.clientId||''}</div></div>
+      <div><span class="section-label-sm">Estado</span><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;font-size:0.85rem">
-      <div><div style="color:var(--gray);font-size:0.75rem">Teléfono</div><div>${q.phone||'—'}</div></div>
-      <div><div style="color:var(--gray);font-size:0.75rem">Email</div><div>${q.email||'—'}</div></div>
-      <div><div style="color:var(--gray);font-size:0.75rem">Fecha</div><div>${q.sessionDate||'—'} ${q.sessionTime||''}</div></div>
+    <div class="form-row" style="gap:12px;margin-bottom:16px">
+      <div><div style="font-size:0.75rem;color:var(--gray)">Teléfono</div><div>${q.phone||'—'}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--gray)">Email</div><div>${q.email||'—'}</div></div>
+      <div><div style="font-size:0.75rem;color:var(--gray)">Fecha sesión</div><div>${q.sessionDate||'—'} ${q.sessionTime||''}</div></div>
     </div>
-
     <hr class="section-divider"/>
-    <!-- Plan & servicios -->
     <span class="section-label-sm">Plan &amp; Servicios</span>
-    <div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px">
-        <span>${q.plan||'Sin plan'}</span><span>$${(q.planPrice||0).toFixed(2)}</span>
-      </div>
-      ${(q.addons||[]).filter(a=>a.price>0).map(a=>`
-        <div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:3px 0">
-          <span>+ ${a.name}</span><span>$${parseFloat(a.price).toFixed(2)}</span>
-        </div>`).join('')}
-      ${(q.addons||[]).filter(a=>a.price===0).map(a=>`
-        <div style="color:var(--gray-l);font-size:0.82rem;padding:2px 0">${a.name}</div>`).join('')}
-      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700">
-        <span>Total</span><span style="color:var(--pink-l)">$${total.toFixed(2)}</span>
-      </div>
+    <div style="margin-bottom:12px"><b>${q.plan||'Sin plan'}</b> — $${(q.planPrice||0).toFixed(2)}</div>
+    ${(q.addons||[]).map(a=>`<div style="color:var(--gray-l);font-size:0.85rem">+ ${a.name} — $${a.price.toFixed(2)}</div>`).join('')}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
+      <span style="font-weight:700">Total</span>
+      <span style="font-weight:700;color:var(--pink-l);font-size:1.1rem">$${(q.total||0).toFixed(2)}</span>
     </div>
-
-    <hr class="section-divider"/>
-    <!-- Control financiero -->
-    <span class="section-label-sm">Control Financiero</span>
-    <div class="form-row" style="margin-bottom:8px">
-      <div class="field">
-        <label>Abono recibido ($)</label>
-        <input type="number" id="qAbonoInput" min="0" step="0.01" value="${abono}" oninput="updateQuoteFinancials('${q.id}')" />
-      </div>
-      <div class="field">
-        <label>Pago total recibido ($)</label>
-        <input type="number" id="qPagadoInput" min="0" step="0.01" value="${pagado}" oninput="updateQuoteFinancials('${q.id}')" />
-      </div>
-    </div>
-    <div style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px" id="qFinancialSummary">
-      ${renderQuoteFinancialSummary(total, abono, pagado, pendiente)}
-    </div>
-
-    <hr class="section-divider"/>
-    <!-- Cambiar estado -->
-    <span class="section-label-sm">Estado</span>
-    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-sm ${q.status==='pending'   ?'btn-pink'  :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','pending')">Pendiente</button>
-      <button class="btn btn-sm ${q.status==='confirmed' ?'btn-green' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','confirmed')">Confirmada</button>
-      <button class="btn btn-sm ${q.status==='completed' ?'btn-green' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','completed')">Completada</button>
-      <button class="btn btn-sm ${q.status==='postponed' ?'btn-amber' :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','postponed')">Aplazada</button>
-      <button class="btn btn-sm ${q.status==='cancelled' ?'btn-red'   :'btn-outline'}" onclick="changeQuoteStatus('${q.id}','cancelled')">Cancelada</button>
-    </div>
-
     ${q.notes?`<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">${q.notes}</p>`:''}
-
-    <div class="btn-row" style="flex-wrap:wrap;margin-top:8px">
-      <button class="btn btn-pink" onclick="saveQuoteChanges('${q.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-        Guardar
-      </button>
-      <button class="btn btn-outline" onclick="generateQuotePDF('${q.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        PDF
-      </button>
-      <button class="btn btn-outline" onclick="generateQuoteInvoicePDF('${q.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Factura
-      </button>
-      <button class="btn btn-ghost" onclick="closeModal('quoteModal')">Cancelar</button>
-      <button class="btn btn-red"  onclick="deleteQuote('${q.id}')">🗑</button>
+    <div class="btn-row">
+      <select onchange="changeStatus('${q.id}',this.value)" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;flex:1">
+        <option value="">Cambiar estado…</option>
+        <option value="pending">Pendiente</option>
+        <option value="approved">Aprobada</option>
+        <option value="booked">Reservada</option>
+        <option value="rejected">Rechazada</option>
+      </select>
+      <button class="btn btn-blue" onclick="showPDF('${q.id}');closeModal('quoteModal')">Ver PDF</button>
+      <button class="btn btn-red"  onclick="deleteQuote('${q.id}')">Eliminar</button>
     </div>`;
   openModal('quoteModal');
-}
-
-function renderQuoteFinancialSummary(total, abono, pagado, pendiente) {
-  const prog = total > 0 ? Math.min(100, Math.round(((abono+pagado)/total)*100)) : 0;
-  return `
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
-      <span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$${total.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px">
-      <span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$${abono.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px">
-      <span style="color:var(--gray-l)">Pendiente</span>
-      <span style="font-weight:700;color:${pendiente>0?'#fca5a5':'#86efac'}">$${pendiente.toFixed(2)}</span>
-    </div>
-    <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
-      <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div>
-    </div>
-    <div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">${prog}% pagado</div>`;
-}
-
-function updateQuoteFinancials(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  const abono   = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
-  const pagado  = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
-  const total   = parseFloat(q.total) || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-  const el = document.getElementById('qFinancialSummary');
-  if (el) el.innerHTML = renderQuoteFinancialSummary(total, abono, pagado, pendiente);
-}
-
-function changeQuoteStatus(id, status) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  q.status = status;
-  // Actualizar badge en el modal
-  const badge = document.getElementById('qStatusBadge');
-  if (badge) { badge.className = `badge-status ${statusClassQ(status)}`; badge.textContent = statusLabel(status); }
-  // Actualizar botones
-  const statuses = ['pending','confirmed','completed','postponed','cancelled'];
-  const classes  = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', cancelled:'btn-red' };
-  statuses.forEach(s => {
-    const btn = document.querySelector(`.btn[onclick*="changeQuoteStatus('${id}','${s}')"]`);
-    if (btn) btn.className = `btn btn-sm ${s===status ? classes[s] : 'btn-outline'}`;
-  });
-}
-
-async function saveQuoteChanges(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  q.abono  = parseFloat(document.getElementById('qAbonoInput')?.value)  || 0;
-  q.pagado = parseFloat(document.getElementById('qPagadoInput')?.value) || 0;
-  // status ya fue actualizado por changeQuoteStatus
-
-  // Si confirmada: bloquear calendario (2h antes, duración + 1h)
-  if (q.status === 'confirmed' && q.sessionDate && q.sessionTime) {
-    await blockCalendarForQuote(q);
-  }
-
-  await ghPut('quotes.json', state.quotes);
-  updateDashboard(); renderQuotesTable();
-  closeModal('quoteModal');
-  showToast(`Cotización ${q.numero||''} guardada ✓`);
-}
-
-async function blockCalendarForQuote(q) {
-  try {
-    const [hh] = (q.sessionTime||'0:0').split(':').map(Number);
-    const durHoras = q.eventoData?.horas || 1;
-    const startBlock = hh - 2;
-    const endBlock   = hh + Math.ceil(durHoras) + 1;
-    const fecha = q.sessionDate;
-    if (!fecha) return;
-
-    // Guardar en el formato que reservas.html entiende:
-    // calData[fecha] = { type:'event', blockType:'hours', horaInicio: N, horaFin: N, quoteLock: id }
-    if (!state.calendar[fecha] || typeof state.calendar[fecha] === 'string') {
-      state.calendar[fecha] = {};
-    }
-    state.calendar[fecha] = {
-      ...state.calendar[fecha],
-      type:       'event',
-      blockType:  'hours',
-      horaInicio: Math.max(0, startBlock),
-      horaFin:    Math.min(23, endBlock),
-      quoteLock:  q.id,
-      titulo:     `Cotización ${q.numero||''} — ${q.clientName}`
-    };
-
-    localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
-    await ghPut('calendar.json', state.calendar);
-    showToast(`Calendario bloqueado: ${fecha} de ${Math.max(0,startBlock)}:00 a ${Math.min(23,endBlock)}:00 ✓`);
-  } catch(e) { console.warn('blockCalendar error', e); }
 }
 
 async function changeStatus(id, status) {
@@ -3478,289 +3188,121 @@ function selectClientType(type) {
 
 function updateQPlanSelect() {
   const sel = document.getElementById('qPlan');
-  if (!sel) return;
   const current = sel.value;
-  loadPublicPlans();
-
-  // Si no hay planes en localStorage, intentar cargar desde GitHub
-  if (!publicPlans.length) {
-    const owner = localStorage.getItem('jans_public_owner') || 'jansphotograph';
-    const repo  = localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io';
-    fetch(`https://raw.githubusercontent.com/${owner}/${repo}/main/data/socialmedia/planes.json?t=${Date.now()}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data && data.length) {
-          localStorage.setItem('jans_planes', JSON.stringify(data));
-          publicPlans = data;
-          _renderQPlanOptions(sel, current);
-        }
-      }).catch(() => {});
-    sel.innerHTML = '<option value="">Cargando planes...</option>';
-    return;
-  }
-  _renderQPlanOptions(sel, current);
-}
-
-function _renderQPlanOptions(sel, current) {
-  // Agrupar por categoría
-  const cats = {};
-  publicPlans.forEach(p => {
-    const cat = p.categoria || p.category || 'sin-categoria';
-    if (!cats[cat]) cats[cat] = [];
-    cats[cat].push(p);
-  });
-
-  let html = '<option value="">— Seleccionar plan —</option>';
-  if (!Object.keys(cats).length) {
-    html = '<option value="">Sin planes disponibles — ve a Planes Públicos para añadir</option>';
-  } else {
-    Object.entries(cats).forEach(([cat, planes]) => {
-      const label = (typeof CAT_LABELS !== 'undefined' && CAT_LABELS[cat]) ? CAT_LABELS[cat] : cat;
-      html += `<optgroup label="${label}">`;
-      planes.forEach(p => {
-        const desc = (p.descripcion||'').replace(/"/g, '&quot;');
-        html += `<option value="${p.nombre}" data-price="${p.precio}" data-desc="${desc}" data-max-extra="${p.personasExtra||0}" data-precio-extra="${p.precioPersonaExtra||0}">${p.nombre} — $${parseFloat(p.precio||0).toFixed(2)}</option>`;
-      });
-      html += `</optgroup>`;
-    });
-  }
-  sel.innerHTML = html;
+  sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+    state.plans.map(p=>`<option value="${p.name}" data-price="${p.price}">${p.name} — $${p.price}</option>`).join('');
   sel.value = current;
-  onQPlanChange();
   renderServiceChecks();
 }
 
-function onQPlanChange() {
-  const sel = document.getElementById('qPlan');
-  const opt = sel?.options[sel.selectedIndex];
-  const infoEl        = document.getElementById('qPlanInfo');
-  const personasBlock = document.getElementById('qFotoPersonasBlock');
-  const personasLabel = document.getElementById('qFotoPersonasLabel');
-
-  if (opt && opt.value) {
-    const desc      = opt.dataset.desc || '';
-    const maxExtra  = parseInt(opt.dataset.maxExtra) || 0;
-    const precioExt = parseFloat(opt.dataset.precioExtra) || 0;
-
-    if (infoEl) { infoEl.style.display = desc ? '' : 'none'; infoEl.textContent = desc; }
-    if (personasBlock) {
-      personasBlock.style.display = maxExtra > 0 ? '' : 'none';
-      if (personasLabel) personasLabel.textContent = `Personas adicionales (máx. ${maxExtra} — $${precioExt.toFixed(2)} c/u)`;
-      const precioEl = document.getElementById('qFotoPrecioPersona');
-      if (precioEl) precioEl.value = precioExt;
-      const personasEl = document.getElementById('qFotoPersonas');
-      if (personasEl) { personasEl.max = maxExtra; personasEl.value = 0; }
-    }
-  } else {
-    if (infoEl) infoEl.style.display = 'none';
-    if (personasBlock) personasBlock.style.display = 'none';
-  }
-  updateTotal();
-}
-
-function onQFotoExteriorChange() {
-  const checked = document.getElementById('qFotoExterior')?.checked;
-  const block   = document.getElementById('qFotoExteriorBlock');
-  if (block) block.style.display = checked ? '' : 'none';
-  if (!checked) {
-    const t = document.getElementById('qFotoTransporte'); if(t) t.value = 0;
-    const l = document.getElementById('qFotoLugar'); if(l) l.value = '';
-  }
-  updateTotal();
-}
-
 function renderServiceChecks() {
-  // Usar servData (nuevo sistema) con fallback al sistema legacy
-  loadServAdicionales();
-  const items = servData.items || [];
-  const legacy = [...(state.services?.makeup||[]), ...(state.services?.print||[])];
-  const all = items.length
-    ? items.map(s => ({ name: s.nombre, price: parseFloat(s.precio)||0 }))
-    : legacy.map(s => ({ name: s.name, price: parseFloat(s.price)||0 }));
-
-  const el = document.getElementById('qServicesCheck');
-  if (!el) return;
-  if (!all.length) {
-    el.innerHTML = '<div style="color:var(--gray);font-size:0.85rem">Sin servicios adicionales. Agrégalos en la pestaña "Servicios Adicionales".</div>';
-    return;
-  }
-  el.innerHTML = all.map(s=>`
+  const all = [...state.services.makeup, ...state.services.print];
+  document.getElementById('qServicesCheck').innerHTML = all.map(s=>`
     <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">
       <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />
-      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${parseFloat(s.price).toFixed(2)}</span>
+      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>
     </label>`).join('');
 }
 
-let quoteTipo = 'fotografico'; // 'fotografico' | 'evento'
-
-function selectQuoteTipo(tipo) {
-  quoteTipo = tipo;
-  document.getElementById('qTipoFoto').classList.toggle('selected',   tipo === 'fotografico');
-  document.getElementById('qTipoEvento').classList.toggle('selected', tipo === 'evento');
-  document.getElementById('qBloqueFoto').style.display   = tipo === 'fotografico' ? '' : 'none';
-  document.getElementById('qBloqueEvento').style.display = tipo === 'evento'       ? '' : 'none';
-  updateTotal();
-}
-
 function updateTotal() {
-  let total = 0;
+  const planSel = document.getElementById('qPlan');
+  const opt = planSel.options[planSel.selectedIndex];
+  const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
+  const planName  = opt ? opt.value : '';
+  const checks = document.querySelectorAll('#qServicesCheck input:checked');
+  let addonsTotal = 0;
   let summaryHTML = '';
-
-  if (quoteTipo === 'evento') {
-    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)      || 0;
-    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value)  || 50;
-    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value)  || 0;
-    const lugar      = document.getElementById('qEventoLugar')?.value.trim() || '';
-    const subtotal   = horas * precioHora;
-    total = subtotal + transporte;
-
-    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Cobertura de Evento (${horas}h × $${precioHora}/h)</span><span>$${subtotal.toFixed(2)}</span></div>`;
-    if (lugar) summaryHTML += `<div style="margin-bottom:6px;font-size:0.82rem;color:var(--gray-l)">📍 ${lugar}</div>`;
-    summaryHTML += `<div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:0.82rem;color:var(--gray-l)">
-      <span>📸 Todas las fotos en alta calidad por correo</span>
-      <span>🎬 Video recopilatorio ~1 min</span>
-    </div>`;
-    if (transporte > 0) {
-      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
-    }
-    const infoEl = document.getElementById('qEventoTransporteInfo');
-    if (infoEl) infoEl.style.display = transporte > 0 ? '' : 'none';
-
-  } else {
-    const planSel   = document.getElementById('qPlan');
-    const opt       = planSel?.options[planSel.selectedIndex];
-    const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
-    const planName  = opt ? opt.value : '';
-    const transporte  = document.getElementById('qFotoExterior')?.checked
-      ? (parseFloat(document.getElementById('qFotoTransporte')?.value) || 0) : 0;
-    const lugar       = document.getElementById('qFotoExterior')?.checked
-      ? (document.getElementById('qFotoLugar')?.value.trim() || '') : '';
-    const personas    = parseInt(document.getElementById('qFotoPersonas')?.value) || 0;
-    const precioPersona = parseFloat(document.getElementById('qFotoPrecioPersona')?.value) || 0;
-    const costoPersonas = personas * precioPersona;
-    const checks    = document.querySelectorAll('#qServicesCheck input:checked');
-    let addonsTotal = 0;
-
-    if (planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
-    if (lugar) summaryHTML += `<div style="margin-bottom:6px;font-size:0.82rem;color:var(--gray-l)">📍 Exterior: ${lugar}</div>`;
-    if (transporte > 0) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>🚗 Transporte</span><span>$${transporte.toFixed(2)}</span></div>`;
-    if (costoPersonas > 0) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px;color:#fbbf24"><span>👥 +${personas} persona(s) adicional(es)</span><span>$${costoPersonas.toFixed(2)}</span></div>`;
-    checks.forEach(c => {
-      const [name, price] = c.value.split('||');
-      addonsTotal += parseFloat(price);
-      summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
-    });
-    total = planPrice + transporte + costoPersonas + addonsTotal;
-  }
-
-  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan o tipo de cobertura para ver el resumen.</span>';
+  if(planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
+  checks.forEach(c => {
+    const [name, price] = c.value.split('||');
+    addonsTotal += parseFloat(price);
+    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
+  });
+  const total = planPrice + addonsTotal;
+  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
   document.getElementById('qTotal').textContent = `$${total.toFixed(2)}`;
 }
 
 async function saveQuote() {
-  const name  = document.getElementById('qClientName').value.trim();
-  const cid   = document.getElementById('qClientId').value.trim();
-  const phone = document.getElementById('qPhone').value.trim();
+  const name = document.getElementById('qClientName').value.trim();
+  const cid  = document.getElementById('qClientId').value.trim();
+  const phone= document.getElementById('qPhone').value.trim();
   if(!name||!cid||!phone){showToast('Completa los campos obligatorios (*)','error');return;}
 
-  const numero = nextNumero('COT');
-  let planName = '', planPrice = 0, addons = [], total = 0;
-  let eventoData = null;
+  const planSel   = document.getElementById('qPlan');
+  const planOpt   = planSel.options[planSel.selectedIndex];
+  const planName  = planOpt ? planOpt.value : '';
+  const planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
+  const checks    = document.querySelectorAll('#qServicesCheck input:checked');
+  const addons    = [];
+  checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
+  const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
+  const total = planPrice + addonsTotal;
 
-  if (quoteTipo === 'evento') {
-    const horas      = parseFloat(document.getElementById('qEventoHoras')?.value)      || 0;
-    const precioHora = parseFloat(document.getElementById('qEventoPrecioHora')?.value) || 50;
-    const transporte = parseFloat(document.getElementById('qEventoTransporte')?.value) || 0;
-    const lugar      = document.getElementById('qEventoLugar')?.value.trim() || '';
-    planName   = `Cobertura de Evento (${horas}h)`;
-    planPrice  = horas * precioHora;
-    total      = planPrice + transporte;
-    eventoData = { horas, precioHora, transporte, lugar };
-    if (transporte > 0) addons.push({ name: `Transporte — ${lugar||'exterior'}`, price: transporte });
-    addons.push({ name: 'Todas las fotos en alta calidad por correo', price: 0 });
-    addons.push({ name: 'Video recopilatorio (~1 min)', price: 0 });
-  } else {
-    const planSel     = document.getElementById('qPlan');
-    const planOpt     = planSel.options[planSel.selectedIndex];
-    planName  = planOpt ? planOpt.value : '';
-    planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
-    const exterior    = document.getElementById('qFotoExterior')?.checked || false;
-    const transporte  = exterior ? (parseFloat(document.getElementById('qFotoTransporte')?.value) || 0) : 0;
-    const lugar       = exterior ? (document.getElementById('qFotoLugar')?.value.trim() || '') : '';
-    const personas    = parseInt(document.getElementById('qFotoPersonas')?.value) || 0;
-    const precioPersona = parseFloat(document.getElementById('qFotoPrecioPersona')?.value) || 0;
-    const costoPersonas = personas * precioPersona;
-    if (transporte > 0) addons.push({ name: `Transporte exterior${lugar ? ' — '+lugar : ''}`, price: transporte });
-    if (costoPersonas > 0) addons.push({ name: `+${personas} persona(s) adicional(es)`, price: costoPersonas });
-    const checks = document.querySelectorAll('#qServicesCheck input:checked');
-    checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
-    total = planPrice + addons.reduce((s,a)=>s+a.price,0);
-  }
+  const numero = nextNumero('COT');
 
   const quote = {
-    id:          `q_${Date.now()}`,
+    id:         `q_${Date.now()}`,
     numero,
-    tipo:        quoteTipo,
     clientType,
-    clientName:  name,
-    clientId:    cid,
-    razonSocial: document.getElementById('qRazonSocial').value,
-    repLegal:    document.getElementById('qRepLegal').value,
+    clientName: name,
+    clientId:   cid,
+    razonSocial:document.getElementById('qRazonSocial').value,
+    repLegal:   document.getElementById('qRepLegal').value,
     phone,
-    email:       document.getElementById('qEmail').value,
-    address:     document.getElementById('qAddress').value,
-    sessionDate: document.getElementById('qDate').value,
-    sessionTime: document.getElementById('qTime').value,
-    location:    document.getElementById('qLocation').value,
-    plan:        planName,
+    email:      document.getElementById('qEmail').value,
+    address:    document.getElementById('qAddress').value,
+    sessionDate:document.getElementById('qDate').value,
+    sessionTime:document.getElementById('qTime').value,
+    location:   document.getElementById('qLocation').value,
+    plan:       planName,
     planPrice,
     addons,
-    eventoData,
     total,
-    notes:       document.getElementById('qNotes').value,
-    status:      'pending',
-    createdAt:   new Date().toLocaleDateString('es-PA'),
+    notes:      document.getElementById('qNotes').value,
+    status:     'pending',
+    createdAt:  new Date().toLocaleDateString('es-PA'),
   };
 
   state.quotes.push(quote);
   const ok = await ghPut('quotes.json', state.quotes);
 
-  // Agregar al sistema de reservas
+  // Also feed into the unified reservas system so it appears in Reservas
+  // with the same control module (status, abono, PDFs)
   try {
     const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
     const [y,m,d] = (quote.sessionDate || '').split('-');
     const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
     const reservaRecord = {
-      id:          quote.id,
+      id:         quote.id,
       numero,
-      nombre:      name,
-      tel:         phone,
-      email:       quote.email,
-      plan:        planName,
-      notas:       quote.notes,
-      fecha:       quote.sessionDate || '',
+      nombre:     name,
+      tel:        phone,
+      email:      quote.email,
+      plan:       planName,
+      notas:      quote.notes,
+      fecha:      quote.sessionDate || '',
       fechaLabel,
-      hora:        quote.sessionTime || '',
-      horaVal:     quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
-      status:      'pending',
-      abono:       0,
+      hora:       quote.sessionTime || '',
+      horaVal:    quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
+      status:     'pending',
+      abono:      0,
       totalManual: total,
-      clientId:    cid,
+      clientId:   cid,
       clientType,
       razonSocial: quote.razonSocial,
       repLegal:    quote.repLegal,
       address:     quote.address,
-      extras:      addons.filter(a=>a.price>0).map(a => ({ nombre: a.name, precio: a.price })),
-      origin:      'manual',
-      tipo:        quoteTipo,
-      eventoData,
-      createdAt:   quote.createdAt,
+      extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
+      origin:     'manual',
+      createdAt:  quote.createdAt,
     };
     reservas.push(reservaRecord);
     localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+    // Mirror to Supabase so it's visible from any device too
     if (sbClient) {
       sbClient.from('reservas').insert([reservaRecord]).then(({error}) => {
-        if (error) console.error('Supabase insert error:', error);
+        if (error) console.error('Supabase insert (manual quote) error:', error);
       });
     }
   } catch(e) {}
@@ -3771,24 +3313,17 @@ async function saveQuote() {
     updateDashboard(); renderQuotesTable();
     switchView('quotes', document.querySelector('.sidebar-item[onclick*="\'quotes\'"]'));
   } else {
-    showToast('Guardada localmente — verifica GitHub','error');
-    clearQuoteForm(); updateDashboard();
+    showToast('Guardada localmente — verifica GitHub para publicar','error');
+    clearQuoteForm();
+    updateDashboard();
   }
 }
 
-
 function clearQuoteForm() {
   ['qClientName','qClientId','qRazonSocial','qRepLegal','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  const fields = { qPlan:'', qEventoHoras:'1', qEventoPrecioHora:'50', qEventoTransporte:'0',
-                   qEventoLugar:'', qFotoTransporte:'0', qFotoLugar:'', qFotoPersonas:'0' };
-  Object.entries(fields).forEach(([id, val]) => { const el=document.getElementById(id); if(el) el.value=val; });
-  const extEl = document.getElementById('qFotoExterior'); if(extEl) extEl.checked = false;
+  document.getElementById('qPlan').value = '';
   document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
-  const extBlock = document.getElementById('qFotoExteriorBlock'); if(extBlock) extBlock.style.display='none';
-  const persBlock = document.getElementById('qFotoPersonasBlock'); if(persBlock) persBlock.style.display='none';
-  selectClientType('natural');
-  selectQuoteTipo('fotografico');
-  updateTotal();
+  selectClientType('natural'); updateTotal();
 }
 
 // ── Services ──
@@ -3815,20 +3350,13 @@ async function saveServices() {
 
 // ── Plans ──
 function renderPlans() {
-  const fotCont  = document.getElementById('plansContainerFotografico');
-  const evCont   = document.getElementById('plansContainerEvento');
-  const fotEmpty = document.getElementById('plansEmptyFotografico');
-  const evEmpty  = document.getElementById('plansEmptyEvento');
-  if (!fotCont) return;
-
-  const fotograficos = state.plans.map((p,i) => ({p,i})).filter(({p}) => (p.categoria||'fotografico') === 'fotografico');
-  const eventos      = state.plans.map((p,i) => ({p,i})).filter(({p}) => p.categoria === 'evento');
-
-  const renderCard = ({p,i}) => `
+  const c = document.getElementById('plansContainer');
+  if(!state.plans.length){c.innerHTML='<div class="card" style="text-align:center;color:var(--gray);padding:32px">Sin planes. Haz clic en "Nuevo Plan".</div>';return;}
+  c.innerHTML = state.plans.map((p,i)=>`
     <div class="plan-card">
       <div class="plan-card-header">
         <input type="text" value="${p.name}" placeholder="Nombre del plan" onchange="state.plans[${i}].name=this.value" style="background:transparent;border:none;color:var(--white);font-weight:700;font-size:0.95rem;font-family:var(--font);outline:none;flex:1" />
-        <button class="btn btn-sm btn-red" onclick="state.plans.splice(${i},1);renderPlans();updateQPlanSelect()">✕</button>
+        <button class="btn btn-sm btn-red" onclick="state.plans.splice(${i},1);renderPlans()">✕</button>
       </div>
       <div class="form-row">
         <div class="field"><label>Precio ($)</label><input type="number" value="${p.price}" min="0" step="0.01" onchange="state.plans[${i}].price=parseFloat(this.value)||0" /></div>
@@ -3836,8 +3364,8 @@ function renderPlans() {
       </div>
       <div class="form-row">
         <div class="field"><label>Personas incluidas</label><input type="number" value="${p.personasIncluidas||1}" min="1" step="1" onchange="state.plans[${i}].personasIncluidas=parseInt(this.value)||1" /></div>
-        <div class="field"><label>Máx. personas extra</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
-        <div class="field"><label>Precio persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
+        <div class="field"><label>Máx. personas extra permitidas</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
+        <div class="field"><label>Precio por persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
       </div>
       <div class="form-row">
         <div class="field">
@@ -3850,18 +3378,9 @@ function renderPlans() {
         </div>
       </div>
       <div class="field"><label>Descripción / Incluye</label><textarea onchange="state.plans[${i}].description=this.value" placeholder="Ej. 30 fotos editadas, entrega digital...">${p.description||''}</textarea></div>
-    </div>`;
-
-  fotCont.innerHTML = fotograficos.map(renderCard).join('');
-  evCont.innerHTML  = eventos.map(renderCard).join('');
-  if (fotEmpty) fotEmpty.style.display = fotograficos.length ? 'none' : '';
-  if (evEmpty)  evEmpty.style.display  = eventos.length      ? 'none' : '';
+    </div>`).join('');
 }
-
-function addPlan(categoria = 'fotografico') {
-  state.plans.push({ name: categoria === 'evento' ? 'Nueva Cobertura' : 'Nuevo Plan', price: 0, duration: '', description: '', categoria, personasIncluidas: 1, maxPersonasExtra: 0, precioPersonaExtra: 0, tipoUbicacion: 'estudio' });
-  renderPlans(); updateQPlanSelect();
-}
+function addPlan() { state.plans.push({name:'Nuevo Plan',price:0,duration:'',description:'',personasIncluidas:1,maxPersonasExtra:0,precioPersonaExtra:0,tipoUbicacion:'estudio'}); renderPlans(); }
 async function savePlans() {
   const ok = await ghPut('plans.json', state.plans);
   if(ok){showToast('Planes guardados ✓'); updateQPlanSelect();}
@@ -3869,406 +3388,121 @@ async function savePlans() {
 }
 
 // ── PDF ──
-async function showPDF(id) {
-  // Ahora genera el PDF directamente con jsPDF (mismo estilo que reservas)
-  await generateQuotePDF(id);
-}
-
-// Elimina emojis y caracteres no soportados por jsPDF
-function sanitizeText(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')  // emojis
-    .replace(/[^\x00-\xFF]/g, '')              // caracteres fuera de Latin-1
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-async function generateQuotePDF(id) {
+function showPDF(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  state.currentPDFQuote = q;
+  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
+  document.getElementById('pdfPreview').innerHTML = `
+    <div class="pdf-header">
+      <div class="pdf-company">
+        <h1>${CONFIG.COMPANY_NAME}</h1>
+        <p>${CONFIG.COMPANY_PHONE}</p>
+        <p>${CONFIG.COMPANY_EMAIL}</p>
+        <p>${CONFIG.COMPANY_WEB}</p>
+      </div>
+      <div class="pdf-quote-info">
+        <h2>COTIZACIÓN</h2>
+        <p><strong>#${qNum}</strong></p>
+        <p>Fecha: ${q.createdAt}</p>
+        <p>Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}</p>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h3>Datos del Cliente</h3>
+      <div class="pdf-grid">
+        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${q.clientName}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${q.clientId||'—'}</div></div>
+        ${q.clientType==='juridica'?`
+        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${q.razonSocial||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Rep. Legal</div><div class="pdf-value">${q.repLegal||'—'}</div></div>`:''}
+        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${q.phone||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${q.email||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${q.address||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${q.location||'—'}</div></div>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h3>Detalle de Servicios</h3>
+      <table class="pdf-table">
+        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>
+        <tbody>
+          ${q.plan?`<tr><td><strong>${q.plan}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
+          ${(q.addons||[]).map(a=>`<tr><td>${a.name}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
+          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total||0).toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${q.notes}</p></div>`:''}
+    <div class="pdf-footer">
+      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>
+      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}
+    </div>`;
+  openModal('pdfModal');
+}
+
+function downloadPDF() {
+  const q = state.currentPDFQuote; if(!q) return;
   const { jsPDF } = window.jspdf;
-  const doc     = new jsPDF({ unit:'mm', format:'a4' });
-  const company = pdfCompanyInfo();
-  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
-  const margin  = 18;
-  const pageW   = 210;
-  const colW    = (pageW - margin*2 - 8) / 2;
-  const col1X   = margin;
-  const col2X   = margin + colW + 8;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
+  const margin = 18; let y = 20;
 
-  // ── Header negro con logo ──
-  const headerH = 38;
-  doc.setFillColor(20,20,20); doc.rect(0,0,pageW,headerH,'F');
-  let logoTextX = margin;
-  if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl,'PNG',margin,8,22,22,undefined,'FAST'); logoTextX=margin+28; } catch(e){}
-  }
-  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(company.nombre, logoTextX, 16);
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
-  let cy = 22;
-  if(company.telefono){ doc.text(`Tel: ${company.telefono}`, logoTextX, cy); cy+=4.5; }
-  if(company.email)   { doc.text(company.email, logoTextX, cy); cy+=4.5; }
-  if(company.ubicacion){ const ls=doc.splitTextToSize(company.ubicacion,95); doc.text(ls,logoTextX,cy); }
-  if(company.ruc){ doc.setFontSize(7.5); doc.setTextColor(180,180,180); doc.text(`RUC: ${company.ruc}${company.dv?' DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'}); }
-  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(q.numero||'COTIZACIÓN', pageW-margin, 22, {align:'right'});
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text(`Emitido: ${q.createdAt||new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
+  // Header
+  doc.setFillColor(199,30,95); doc.rect(0,0,210,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`COTIZACIÓN #${qNum}`, 210-margin, 9.5, {align:'right'});
 
-  let y = headerH + 12;
+  y = 24;
+  // Company info
+  doc.setTextColor(120,120,120); doc.setFontSize(8);
+  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y); y+=5;
+  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}`, margin, y); y+=8;
 
-  // ── Banner "COTIZACIÓN" ──
-  doc.setFillColor(199,30,95); doc.roundedRect(margin,y,pageW-(margin*2),14,2,2,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text('COTIZACIÓN DE SERVICIOS', pageW/2, y+9, {align:'center'});
-  y += 24;
-
-  // ── Datos del cliente y sesión en 2 columnas ──
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2,y-5,pageW-(margin*2)+4,7,1,1,'F');
+  // Section: Client
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
   doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DE LA COTIZACIÓN', margin, y); y+=9;
-
-  const leftRows = [
-    ['Cliente:', sanitizeText(q.clientName)],
-    ['Cédula/RUC:', sanitizeText(q.clientId)||'—'],
+  doc.text('DATOS DEL CLIENTE', margin, y); y+=6;
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  const clientData = [
+    ['Nombre:', q.clientName], ['Cédula/RUC:', q.clientId||'—'],
     ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['Rep. Legal:', q.repLegal||'—']]:[]),
-    ['Teléfono:', q.phone||'—'],
-    ['Email:', q.email||'—'],
+    ['Teléfono:', q.phone||'—'], ['Email:', q.email||'—'],
+    ['Dirección:', q.address||'—'], ['Lugar:', q.location||'—'],
   ];
-  const rightRows = [
-    ['Tipo:', q.tipo==='evento'?'Cobertura de Evento':'Plan Fotográfico'],
-    ['Fecha:', q.sessionDate||'Por confirmar'],
-    ['Hora:', q.sessionTime||'—'],
-    ['Lugar:', sanitizeText(q.location)||'—'],
-    ['Estado:', statusLabel(q.status)],
-    ['# Cotizacion:', sanitizeText(q.numero)||'—'],
-  ];
-
-  const startY = y; let yL=startY, yR=startY;
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  leftRows.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l,col1X,yL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines=doc.splitTextToSize(String(v),colW-32); doc.text(lines,col1X+32,yL);
-    doc.setFont('helvetica','normal'); yL+=Math.max(6,lines.length*5);
+  clientData.forEach(([l,v],i) => {
+    const col = i%2===0?margin:110;
+    if(i%2===0) { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); }
+    else        { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); y+=5; }
   });
-  rightRows.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l,col2X,yR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines=doc.splitTextToSize(String(v),colW-30); doc.text(lines,col2X+30,yR);
-    doc.setFont('helvetica','normal'); yR+=Math.max(6,lines.length*5);
-  });
-  if(q.clientType==='juridica'){ yL+=0; }
-  y = Math.max(yL,yR)+6;
+  if(clientData.length%2!==0) y+=5; y+=6;
 
-  // ── Tabla de servicios ──
-  const total    = parseFloat(q.total)    || 0;
-  const abono    = parseFloat(q.abono)    || 0;
-  const pagado   = parseFloat(q.pagado)   || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-
-  const items = [];
-  if(q.plan) items.push([sanitizeText(q.plan), parseFloat(q.planPrice)||0, true]);
-  (q.addons||[]).forEach(a=>items.push([sanitizeText(a.name), parseFloat(a.price)||0, false]));
-
-  const rowH=6.5, boxPadY=8;
-  const tableH = 8 + (items.length*rowH) + 4;
-  const totalsH = rowH*3 + 12;
-  const boxH = boxPadY*2 + 7 + tableH + totalsH;
-
-  doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
-  doc.roundedRect(margin,y,pageW-(margin*2),boxH,2,2,'S');
-
-  let by = y + boxPadY;
-  doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('DETALLE DE SERVICIOS', margin+6, by); by+=8;
-
+  // Section: Services
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DETALLE DE SERVICIOS', margin, y); y+=7;
   doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by+=3;
-  doc.line(margin+6,by,pageW-margin-6,by); by+=5;
-
+  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y+=4;
+  doc.line(margin, y, 210-margin, y); y+=4;
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
-  items.forEach(([name,price,isBold])=>{
-    if(isBold) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
-    doc.text(name, margin+6, by);
-    if(price>0) doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
-    else { doc.setTextColor(120,120,120); doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.text('incluido', pageW-margin-6, by, {align:'right'}); doc.setFontSize(9); doc.setTextColor(30,30,30); }
-    by+=rowH;
-  });
+  if(q.plan){ doc.setFont('helvetica','bold'); doc.text(q.plan, margin, y); doc.text(`$${(q.planPrice||0).toFixed(2)}`, 210-margin, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=5; }
+  (q.addons||[]).forEach(a => { doc.text(a.name, margin+4, y); doc.text(`$${a.price.toFixed(2)}`, 210-margin, y, {align:'right'}); y+=5; });
+  y+=2; doc.line(margin, y, 210-margin, y); y+=6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(199,30,95);
+  doc.text('TOTAL ESTIMADO', margin, y); doc.text(`$${(q.total||0).toFixed(2)}`, 210-margin, y, {align:'right'}); y+=10;
 
-  by+=2; doc.setDrawColor(230,230,230); doc.line(margin+6,by,pageW-margin-6,by); by+=7;
+  if(q.notes) { doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.text('NOTAS:', margin, y); y+=4; doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); const lines=doc.splitTextToSize(q.notes,170); doc.text(lines,margin,y); y+=lines.length*4+4; }
 
-  // Totales
-  doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Total:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
+  // Footer
+  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {align:'center'});
 
-  if(abono>0){
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    doc.text('Abono recibido:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
-  }
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
-  doc.text('Saldo pendiente:', margin+6, by);
-  doc.text(`$${pendiente.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
-
-  y += boxH + 10;
-
-  if(q.notes){
-    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
-    doc.text('NOTAS:', margin, y); y+=4;
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    const lines=doc.splitTextToSize(sanitizeText(q.notes),pageW-(margin*2)); doc.text(lines,margin,y); y+=lines.length*4+4;
-  }
-
-  // Validez
-  doc.setFontSize(8); doc.setTextColor(140,140,140); doc.setFont('helvetica','italic');
-  doc.text('Esta cotización es válida por 15 días a partir de la fecha de emisión.', margin, y);
-
-  // ── Footer ──
-  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
-  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
-
-  const slug = (q.clientName||'cliente').replace(/\s/g,'_');
-  doc.save(`Cotizacion_${slug}_${q.numero||''}.pdf`);
-  showToast('PDF de cotización descargado ✓');
+  doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
+  showToast('PDF descargado ✓');
 }
-
-// Stub para compatibilidad
-function downloadPDF() { if(state.currentPDFQuote) generateQuotePDF(state.currentPDFQuote.id); }
-
-// ── Factura de Cotización ──
-async function generateQuoteInvoicePDF(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
-
-  // Asignar número de factura compartido (mismo contador que reservas)
-  if (!q.facturaNumero) {
-    q.facturaNumero = nextFacturaNumero();
-    // Guardar en quotes.json
-    await ghPut('quotes.json', state.quotes);
-  }
-  const facturaNum = q.facturaNumero;
-  const { jsPDF } = window.jspdf;
-  const doc     = new jsPDF({ unit:'mm', format:'a4' });
-  const company = pdfCompanyInfo();
-  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
-  const margin  = 18, pageW = 210;
-  const colW    = (pageW - margin*2 - 8) / 2;
-  const col1X   = margin, col2X = margin + colW + 8;
-
-  // Header negro
-  const headerH = 38;
-  doc.setFillColor(20,20,20); doc.rect(0,0,pageW,headerH,'F');
-  let logoTextX = margin;
-  if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl,'PNG',margin,8,22,22,undefined,'FAST'); logoTextX=margin+28; } catch(e){}
-  }
-  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(company.nombre, logoTextX, 16);
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
-  let cy=22;
-  if(company.telefono){ doc.text(`Tel: ${company.telefono}`, logoTextX, cy); cy+=4.5; }
-  if(company.email)   { doc.text(company.email, logoTextX, cy); cy+=4.5; }
-  if(company.ubicacion){ const ls=doc.splitTextToSize(company.ubicacion,95); doc.text(ls,logoTextX,cy); }
-  if(company.ruc){ doc.setFontSize(7.5); doc.setTextColor(180,180,180); doc.text(`RUC: ${company.ruc}${company.dv?' DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'}); }
-  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(`FACT-${facturaNum}`, pageW-margin, 22, {align:'right'});
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text(`Emitido: ${q.createdAt||new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
-
-  let y = headerH + 12;
-
-  // Banner verde "FACTURA"
-  doc.setFillColor(22,163,74); doc.roundedRect(margin,y,pageW-(margin*2),14,2,2,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text(`FACTURA #${facturaNum}`, pageW/2, y+9, {align:'center'});
-  y += 24;
-
-  // Datos cliente + sesión
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2,y-5,pageW-(margin*2)+4,7,1,1,'F');
-  doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DE FACTURACIÓN', margin, y); y+=9;
-
-  const leftRows = [
-    ['Cliente:', sanitizeText(q.clientName)],
-    ['Cedula/RUC:', sanitizeText(q.clientId)||'—'],
-    ...(q.clientType==='juridica'?[['Razon Social:', sanitizeText(q.razonSocial)||'—'],['Rep. Legal:', sanitizeText(q.repLegal)||'—']]:[]),
-    ['Telefono:', sanitizeText(q.phone)||'—'],
-    ['Email:', sanitizeText(q.email)||'—'],
-  ];
-  const rightRows = [
-    ['# Factura:', `FACT-${facturaNum}`],
-    ['Origen:', sanitizeText(q.numero)||'—'],
-    ['Tipo:', q.tipo==='evento'?'Cobertura de Evento':'Plan Fotografico'],
-    ['Fecha:', q.sessionDate||'—'],
-    ['Hora:', q.sessionTime||'—'],
-    ['Estado:', statusLabel(q.status)],
-  ];
-
-  const startY=y; let yL=startY, yR=startY;
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  leftRows.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l,col1X,yL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines=doc.splitTextToSize(String(v),colW-32); doc.text(lines,col1X+32,yL);
-    doc.setFont('helvetica','normal'); yL+=Math.max(6,lines.length*5);
-  });
-  rightRows.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l,col2X,yR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines=doc.splitTextToSize(String(v),colW-30); doc.text(lines,col2X+30,yR);
-    doc.setFont('helvetica','normal'); yR+=Math.max(6,lines.length*5);
-  });
-  y = Math.max(yL,yR)+6;
-
-  // Tabla de ítems
-  const total    = parseFloat(q.total)    || 0;
-  const abono    = parseFloat(q.abono)    || 0;
-  const pagado   = parseFloat(q.pagado)   || 0;
-  const pendiente = Math.max(0, total - abono - pagado);
-
-  const items = [];
-  if(q.plan) items.push([sanitizeText(q.plan), parseFloat(q.planPrice)||0, true]);
-  (q.addons||[]).filter(a=>a.price>0).forEach(a=>items.push([sanitizeText(a.name), parseFloat(a.price)||0, false]));
-  const incluidos = (q.addons||[]).filter(a=>!a.price||a.price===0).map(a=>sanitizeText(a.name));
-
-  const rowH=6.5, boxPadY=8;
-  const inclH  = incluidos.length ? incluidos.length*5+6 : 0;
-  const tableH = 8 + (items.length*rowH) + 4 + inclH;
-  const totalsH = rowH*4 + 12;
-  const boxH = boxPadY*2 + 7 + tableH + totalsH;
-
-  doc.setDrawColor(22,163,74); doc.setLineWidth(0.6);
-  doc.roundedRect(margin,y,pageW-(margin*2),boxH,2,2,'S');
-
-  let by = y+boxPadY;
-  doc.setTextColor(22,163,74); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('DETALLE DE SERVICIOS', margin+6, by); by+=8;
-
-  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by+=3;
-  doc.line(margin+6,by,pageW-margin-6,by); by+=5;
-
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
-  items.forEach(([name,price,bold])=>{
-    if(bold) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
-    doc.text(name, margin+6, by);
-    doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
-    by+=rowH;
-  });
-
-  if(incluidos.length) {
-    by+=2;
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(120,120,120);
-    doc.text('Incluido en el servicio:', margin+6, by); by+=5;
-    doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    incluidos.forEach(txt=>{ doc.text(`• ${txt}`, margin+10, by); by+=5; });
-  }
-
-  by+=2; doc.setDrawColor(230,230,230); doc.line(margin+6,by,pageW-margin-6,by); by+=7;
-
-  // Totales
-  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Subtotal:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
-
-  if(abono>0){
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    doc.text('Abono recibido:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text(`-$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
-  }
-  if(pagado>0){
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    doc.text('Pago recibido:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text(`-$${pagado.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
-  }
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(pendiente<=0?22:199, pendiente<=0?163:30, pendiente<=0?74:95);
-  doc.text(pendiente<=0 ? 'PAGADO EN TOTALIDAD' : 'Saldo pendiente:', margin+6, by);
-  if(pendiente>0) doc.text(`$${pendiente.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
-
-  y += boxH + 10;
-
-  if(q.notes){
-    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
-    doc.text('NOTAS:', margin, y); y+=4;
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    const lines=doc.splitTextToSize(sanitizeText(q.notes),pageW-(margin*2)); doc.text(lines,margin,y);
-    y += lines.length*4 + 4;
-  }
-
-  // ── Sello ──
-  const spaceLeft = 292 - y;
-  const sealH = spaceLeft < 70 ? 22 : 28;
-  doc.setDrawColor(22,163,74); doc.setLineWidth(0.5);
-  doc.roundedRect(margin, y, pageW-(margin*2), sealH, 2, 2, 'S');
-  doc.setGState(new doc.GState({ opacity: 0.22 }));
-  doc.setTextColor(120,120,120); doc.setFontSize(8.5); doc.setFont('helvetica','bolditalic');
-  doc.text('Factura que no presente sello es nula', pageW/2, y + sealH/2 + 1, { align: 'center' });
-  doc.setGState(new doc.GState({ opacity: 1 }));
-  y += sealH + (spaceLeft < 70 ? 3 : 6);
-
-  // ── Banner gracias ──
-  const thanksH = (292-y) > 55 ? 14 : 11;
-  doc.setFillColor(20,20,20); doc.roundedRect(margin, y, pageW-(margin*2), thanksH, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, y+thanksH/2+1, {align:'center'});
-  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
-  doc.text(pdfCompanyFooterLine(company), pageW/2, y+thanksH-2, {align:'center'});
-  y += thanksH + ((292-y-thanksH) > 25 ? 5 : 3);
-
-  // ── Línea de corte ──
-  y += (292-y) > 25 ? 4 : 2;
-  doc.setDrawColor(160,160,160); doc.setLineWidth(0.3);
-  doc.setLineDashPattern([2,2], 0);
-  doc.line(margin, y, pageW-margin, y);
-  doc.setLineDashPattern([], 0);
-  y += 4;
-  doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(150,150,150);
-  doc.text('✂  Constancia — recortar y conservar', pageW/2, y, {align:'center'});
-  y += (292-y) > 20 ? 5 : 3;
-
-  // ── Constancia ──
-  doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('CONSTANCIA DE FACTURACIÓN', margin, y); y += (292-y) > 40 ? 6 : 4;
-
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  const stubLineH = (292-y) > 24 ? 5.5 : 4.5;
-  const stubLeft = [['Factura:', `FACT-${facturaNum}`], ['Origen:', sanitizeText(q.numero)||'—']];
-  const stubRight = [['Cliente:', sanitizeText(q.clientName)], ['Plan:', sanitizeText(q.plan)||'—']];
-  let syL=y, syR=y;
-  stubLeft.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l, col1X, syL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    doc.text(String(v), col1X+22, syL);
-    doc.setFont('helvetica','normal'); syL+=stubLineH;
-  });
-  stubRight.forEach(([l,v])=>{
-    doc.setTextColor(120,120,120); doc.text(l, col2X, syR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const ls=doc.splitTextToSize(String(v), colW-22); doc.text(ls, col2X+22, syR);
-    doc.setFont('helvetica','normal'); syR+=Math.max(stubLineH, ls.length*5);
-  });
-  y = Math.max(syL, syR) + ((292-Math.max(syL,syR)) > 14 ? 6 : 4);
-
-  doc.setDrawColor(180,180,180); doc.setLineWidth(0.3);
-  doc.line(margin, y, margin+80, y);
-  doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
-  doc.text('Firma del cliente', margin, y+4.5);
-
-  const slug = sanitizeText(q.clientName||'cliente').replace(/\s/g,'_');
-  doc.save(`Factura_${facturaNum}_${slug}.pdf`);
-  showToast('Factura descargada ✓');
-}
-
-
 
 // ═══════════════════════════════════════
 //  PDF — Confirmación de Reserva (banner verde)
@@ -4870,29 +4104,6 @@ async function testGithubConnection() {
 // ── Social Links ──
 const LS_SOCIAL = 'jans_social_links';
 let igFileData = null;
-let igFocusX   = 50; // porcentaje, default centro
-let igFocusY   = 50;
-
-function setIgFocus(e) {
-  const area = document.getElementById('igFocusArea');
-  const rect  = area.getBoundingClientRect();
-  const x = Math.round(((e.clientX - rect.left) / rect.width)  * 100);
-  const y = Math.round(((e.clientY - rect.top)  / rect.height) * 100);
-  igFocusX = Math.max(0, Math.min(100, x));
-  igFocusY = Math.max(0, Math.min(100, y));
-
-  // Actualizar dot
-  const dot = document.getElementById('igFocusDot');
-  dot.style.left    = igFocusX + '%';
-  dot.style.top     = igFocusY + '%';
-  dot.style.display = '';
-
-  // Actualizar preview object-position
-  const img = document.getElementById('igPreviewImg');
-  img.style.objectPosition = `${igFocusX}% ${igFocusY}%`;
-
-  document.getElementById('igFocusLabel').textContent = `Centro: ${igFocusX}% ${igFocusY}%`;
-}
 
 async function loadSocialLinksUI() {
   // Pre-fill URL if saved
@@ -4947,13 +4158,7 @@ function handleIgFile(file) {
   reader.onload = function(e) {
     igFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type };
     // Show preview
-    igFocusX = 50; igFocusY = 50;
-    const img = document.getElementById('igPreviewImg');
-    img.src = e.target.result;
-    img.style.objectPosition = '50% 50%';
-    const dot = document.getElementById('igFocusDot');
-    dot.style.left = '50%'; dot.style.top = '50%'; dot.style.display = '';
-    document.getElementById('igFocusLabel').textContent = 'Centro: 50% 50%';
+    document.getElementById('igPreviewImg').src = e.target.result;
     document.getElementById('igPreviewWrap').style.display = 'block';
     igSetStatus('success', `✓ Lista: ${file.name} (${(file.size/1024).toFixed(0)}KB)`);
     enableIgSave();
@@ -5045,7 +4250,7 @@ async function saveIgLink() {
 
     if (res.ok) {
       // Also update instagram.json with the URL + correct image path/extension
-      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, igFocusX, igFocusY, updatedAt: new Date().toISOString() });
+      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString() });
       igSetStatus('success', `✓ Imagen publicada en ${imagePath}`);
       showToast('Instagram publicado ✓');
     } else {
@@ -5203,80 +4408,51 @@ try {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    // Solo traer reservas que NO estén eliminadas
-    const { data, error } = await sbClient
-      .from('reservas')
-      .select('*')
-      .neq('status', 'deleted')
-      .order('created_at', { ascending: true });
-
+    const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
     if (error) { console.error('Supabase fetch error:', error); return false; }
     if (!data) return false;
 
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+    const localIds = new Set(local.map(r => r.id));
 
-    // Quitar del local las que Supabase ya no tiene (fueron eliminadas desde otro dispositivo)
-    const remoteIds = new Set(data.map(r => r.id));
-    local = local.filter(r => r.status === 'deleted' || remoteIds.has(r.id));
-
-    const byId = new Map(local.map(r => [r.id, r]));
-    let changed = false;
-
+    let added = 0;
     data.forEach(remote => {
-      const normalized = {
-        id:              remote.id,
-        numero:          remote.numero || null,
-        nombre:          remote.nombre,
-        tel:             remote.tel,
-        email:           remote.email,
-        plan:            remote.plan,
-        notas:           remote.notas,
-        fecha:           remote.fecha,
-        fechaLabel:      remote.fechaLabel || remote.fecha,
-        hora:            remote.hora,
-        horaVal:         remote.horaVal,
-        status:          remote.status || 'pending',
-        abono:           remote.abono || 0,
-        cancelado:       remote.cancelado || 0,
-        totalManual:     remote.totalManual,
-        extras:          remote.extras || [],
-        clientId:        remote.clientId,
-        clientType:      remote.clientType,
-        razonSocial:     remote.razonSocial,
-        repLegal:        remote.repLegal,
-        address:         remote.address,
-        origin:          remote.origin || 'web',
-        facturaNumero:   remote.facturaNumero,
-        createdAt:       remote.createdAt,
-        cumpleanos:      remote.cumpleanos,
-        personasExtra:   remote.personasExtra || 0,
-        costoPersonasExtra: remote.costoPersonasExtra || 0,
-        quiereExterior:  remote.quiereExterior || false,
-        lugarExterior:   remote.lugarExterior || '',
-        costoExterior:   remote.costoExterior || 0,
-        fechaOriginal:   remote.fechaOriginal,
-        fechaNueva:      remote.fechaNueva,
-        horaNueva:       remote.horaNueva,
-      };
-
-      if (!byId.has(remote.id)) {
-        // Nueva reserva — agregar
-        byId.set(remote.id, normalized);
-        changed = true;
-      } else {
-        // Existente — actualizar campos del servidor (preservar cambios locales de abono/cancelado si son más recientes)
-        const existing = byId.get(remote.id);
-        // Solo actualizar status si viene del servidor y no es 'pending' (el servidor es fuente de verdad para estado)
-        const updated = { ...existing, ...normalized };
-        byId.set(remote.id, updated);
-        changed = true;
+      if (!localIds.has(remote.id)) {
+        // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
+        local.push({
+          id:            remote.id,
+          numero:        remote.numero || null,
+          nombre:        remote.nombre,
+          tel:           remote.tel,
+          email:         remote.email,
+          plan:          remote.plan,
+          notas:         remote.notas,
+          fecha:         remote.fecha,
+          fechaLabel:    remote.fechaLabel,
+          hora:          remote.hora,
+          horaVal:       remote.horaVal,
+          status:        remote.status || 'pending',
+          abono:         remote.abono || 0,
+          totalManual:   remote.totalManual,
+          extras:        remote.extras || [],
+          clientId:      remote.clientId,
+          clientType:    remote.clientType,
+          razonSocial:   remote.razonSocial,
+          repLegal:      remote.repLegal,
+          address:       remote.address,
+          origin:        remote.origin || 'web',
+          facturaNumero: remote.facturaNumero,
+          createdAt:     remote.createdAt,
+        });
+        added++;
       }
     });
 
-    const merged = Array.from(byId.values()).filter(r => r.status !== 'deleted');
-    localStorage.setItem('jans_reservas', JSON.stringify(merged));
-    return changed;
+    if (added > 0) {
+      localStorage.setItem('jans_reservas', JSON.stringify(local));
+    }
+    return added > 0;
   } catch(e) {
     console.error('Supabase sync exception:', e);
     return false;
@@ -5289,29 +4465,10 @@ async function pushReservaToSupabase(r) {
   if (!sbClient) return;
   try {
     const { error } = await sbClient.from('reservas').update({
-      numero:          r.numero,
-      status:          r.status,
-      abono:           r.abono || 0,
-      cancelado:       r.cancelado || 0,
-      totalManual:     r.totalManual,
-      extras:          r.extras || [],
-      facturaNumero:   r.facturaNumero,
-      notas:           r.notas,
-      nombre:          r.nombre,
-      tel:             r.tel,
-      email:           r.email,
-      plan:            r.plan,
-      fecha:           r.fecha,
-      fechaLabel:      r.fechaLabel,
-      hora:            r.hora,
-      horaVal:         r.horaVal,
-      costoExterior:   r.costoExterior || 0,
-      personasExtra:   r.personasExtra || 0,
-      costoPersonasExtra: r.costoPersonasExtra || 0,
-      quiereExterior:  r.quiereExterior || false,
-      lugarExterior:   r.lugarExterior || '',
-      fechaOriginal:   r.fechaOriginal,
-      fechaNueva:      r.fechaNueva,
+      numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
+      extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
+      nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
+      fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
     }).eq('id', r.id);
     if (error) console.error('Supabase update error:', error);
   } catch(e) {
@@ -5460,11 +4617,9 @@ function renderReservasTable(highlightId) {
   loadReservasLocal();
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
-  // Excluir siempre las eliminadas
   let list = [...allReservas].reverse().filter(r => {
-    if(r.status === 'deleted') return false;
     if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
     return true;
   });
 
@@ -5965,17 +5120,7 @@ function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  if (sbClient) {
-    // Marcar como deleted en Supabase para que no reaparezca al sincronizar
-    sbClient.from('reservas').update({ status: 'deleted' }).eq('id', id)
-      .then(({error}) => {
-        if (error) {
-          // Si falla el update, intentar delete físico
-          sbClient.from('reservas').delete().eq('id', id)
-            .then(({error: e2}) => { if (e2) console.error('Supabase delete error:', e2); });
-        }
-      });
-  }
+  if (sbClient) sbClient.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();
@@ -6111,7 +5256,7 @@ async function cleanupStaleCalendarDays() {
   // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
   //       computed live from confirmed/completed reservas — so you can visually
   //       confirm everything is correct, not just trust that cleanup ran. ──
-  const todayStr = todayStrPanama();
+  const todayStr = new Date().toISOString().split('T')[0];
   const activeBlocks = {};
   allReservas
     .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
@@ -7599,68 +6744,101 @@ function updatePanelAdministrativo() {
   loadReservasLocal();
   loadPaperTypes();
 
-  const billable = allReservas.filter(r => r.status === 'confirmed' || r.status === 'completed');
+  const activeReservas = allReservas.filter(r => r.status !== 'deleted');
+  const activeQuotes   = (state.quotes || []);
   const now = todayPanama();
   const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
-  // ── Revenue cards ──
-  const billableThisMonth = billable.filter(r => {
+  // Billable = confirmadas + completadas (reservas + cotizaciones)
+  const billableR = activeReservas.filter(r => r.status === 'confirmed' || r.status === 'completed');
+  const billableQ = activeQuotes.filter(q => q.status === 'confirmed' || q.status === 'completed');
+
+  const billableRMonth = billableR.filter(r => {
     if (!r.fecha) return false;
     const d = new Date(r.fecha + 'T00:00:00');
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   });
-  const revMonth   = billableThisMonth.reduce((s, r) => s + resTotal(r), 0);
-  const revTotal   = billable.reduce((s, r) => s + resTotal(r), 0);
-  const revPending = billable.reduce((s, r) => s + resPendiente(r), 0);
-  const avgTicket  = billable.length ? revTotal / billable.length : 0;
+  const billableQMonth = billableQ.filter(q => {
+    if (!q.sessionDate) return false;
+    const d = new Date(q.sessionDate + 'T00:00:00');
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  });
 
-  document.getElementById('panelRevMonth').textContent   = `$${revMonth.toFixed(2)}`;
-  document.getElementById('panelRevMonthSub').textContent = `${billableThisMonth.length} reserva(s) este mes`;
-  document.getElementById('panelRevTotal').textContent   = `$${revTotal.toFixed(2)}`;
-  document.getElementById('panelRevPending').textContent = `$${revPending.toFixed(2)}`;
-  document.getElementById('panelRevPendingSub').textContent = `De ${billable.filter(r=>resPendiente(r)>0).length} reserva(s)`;
-  document.getElementById('panelAvgTicket').textContent  = `$${avgTicket.toFixed(2)}`;
+  const revMonthR  = billableRMonth.reduce((s, r) => s + resTotal(r), 0);
+  const revMonthQ  = billableQMonth.reduce((s, q) => s + (parseFloat(q.total)||0), 0);
+  const revMonth   = revMonthR + revMonthQ;
 
-  // ── Most requested plans (donut) ──
+  const revTotalR  = billableR.reduce((s, r) => s + resTotal(r), 0);
+  const revTotalQ  = billableQ.reduce((s, q) => s + (parseFloat(q.total)||0), 0);
+  const revTotal   = revTotalR + revTotalQ;
+
+  const revPendingR = billableR.reduce((s, r) => s + resPendiente(r), 0);
+  const revPendingQ = billableQ.reduce((s, q) => s + Math.max(0, (parseFloat(q.total)||0) - (parseFloat(q.abono)||0) - (parseFloat(q.pagado)||0)), 0);
+  const revPending  = revPendingR + revPendingQ;
+
+  const totalBillable = billableR.length + billableQ.length;
+  const avgTicket  = totalBillable ? revTotal / totalBillable : 0;
+
+  const pendingWithBalR = billableR.filter(r => resPendiente(r) > 0).length;
+  const pendingWithBalQ = billableQ.filter(q => Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)) > 0).length;
+
+  document.getElementById('panelRevMonth').textContent    = `$${revMonth.toFixed(2)}`;
+  document.getElementById('panelRevMonthSub').textContent = `${billableRMonth.length + billableQMonth.length} sesión(es) este mes`;
+  document.getElementById('panelRevTotal').textContent    = `$${revTotal.toFixed(2)}`;
+  document.getElementById('panelRevPending').textContent  = `$${revPending.toFixed(2)}`;
+  document.getElementById('panelRevPendingSub').textContent = `De ${pendingWithBalR + pendingWithBalQ} sesión(es)`;
+  document.getElementById('panelAvgTicket').textContent   = `$${avgTicket.toFixed(2)}`;
+
+  // ── Planes más solicitados (reservas + cotizaciones) ──
   const planCounts = {};
-  billable.forEach(r => {
+  [...billableR, ...activeReservas].forEach(r => {
     if (!r.plan) return;
     const clean = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
     planCounts[clean] = (planCounts[clean] || 0) + 1;
   });
+  billableQ.forEach(q => {
+    if (!q.plan) return;
+    const clean = q.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    planCounts[clean] = (planCounts[clean] || 0) + 1;
+  });
   const planData = Object.entries(planCounts)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0, 8)
+    .sort((a,b) => b[1]-a[1]).slice(0, 8)
     .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
   document.getElementById('panelPlansChart').innerHTML = buildDonutChart(planData);
 
-  // ── Most sold extras/additional services (donut) ──
+  // ── Servicios adicionales más vendidos ──
   const extraCounts = {};
-  billable.forEach(r => {
+  activeReservas.forEach(r => {
     (r.extras || []).forEach(e => {
       if (!e.nombre) return;
       extraCounts[e.nombre] = (extraCounts[e.nombre] || 0) + 1;
     });
   });
+  activeQuotes.forEach(q => {
+    (q.addons || []).filter(a => a.price > 0).forEach(a => {
+      if (!a.name) return;
+      extraCounts[a.name] = (extraCounts[a.name] || 0) + 1;
+    });
+  });
   const extraData = Object.entries(extraCounts)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0, 8)
+    .sort((a,b) => b[1]-a[1]).slice(0, 8)
     .map(([label, value], i) => ({ label, value, color: CHART_COLORS[i % CHART_COLORS.length] }));
   document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(extraData);
 
-  // ── Inventory status ──
+  // ── Inventario ──
   const invEl = document.getElementById('panelInventoryStatus');
   if (!paperTypes.length) {
-    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún — ve a <a href="#" onclick="switchView('inventario', document.querySelector('.sidebar-item[onclick*=\\'inventario\\']'));return false" style="color:var(--pink-l);text-decoration:underline">Inventario</a> para empezar.</div>`;
+    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún.</div>`;
   } else {
     invEl.innerHTML = paperTypes.map(p => {
       const isLow = p.stock <= p.minStock;
       const pct = p.minStock > 0 ? Math.min(100, Math.round((p.stock / Math.max(p.minStock * 3, 1)) * 100)) : 100;
-      return `
-      <div>
+      return `<div>
         <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
           <span>${p.nombre}</span>
-          <span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} hojas ${isLow?'⚠':''}</span>
+          <span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">
+            ${p.stock} hojas ${isLow?'⚠':''}
+          </span>
         </div>
         <div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden">
           <div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div>
@@ -7669,16 +6847,21 @@ function updatePanelAdministrativo() {
     }).join('');
   }
 
-  // ── Top clients (by phone number, since that's the most reliable unique key) ──
+  // ── Top clientes (reservas + cotizaciones) ──
   const clientMap = {};
-  billable.forEach(r => {
+  activeReservas.filter(r=>r.status!=='deleted').forEach(r => {
     const key = r.tel || r.nombre;
     if (!clientMap[key]) clientMap[key] = { nombre: r.nombre, count: 0, total: 0, lastDate: '' };
     clientMap[key].count++;
     clientMap[key].total += resTotal(r);
-    if (!clientMap[key].lastDate || (r.fecha && r.fecha > clientMap[key].lastDate)) {
-      clientMap[key].lastDate = r.fecha || clientMap[key].lastDate;
-    }
+    if (r.fecha > (clientMap[key].lastDate||'')) clientMap[key].lastDate = r.fecha;
+  });
+  activeQuotes.forEach(q => {
+    const key = q.phone || q.clientName;
+    if (!clientMap[key]) clientMap[key] = { nombre: q.clientName, count: 0, total: 0, lastDate: '' };
+    clientMap[key].count++;
+    clientMap[key].total += parseFloat(q.total)||0;
+    if ((q.sessionDate||'') > (clientMap[key].lastDate||'')) clientMap[key].lastDate = q.sessionDate;
   });
   const topClients = Object.values(clientMap).sort((a,b) => b.count - a.count).slice(0, 8);
   const clientsTbody = document.getElementById('panelTopClients');
@@ -7688,22 +6871,28 @@ function updatePanelAdministrativo() {
         <td style="font-weight:600">${c.nombre}</td>
         <td>${c.count}</td>
         <td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td>
-        <td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate || '—'}</td>
+        <td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td>
       </tr>`).join('')
     : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
 
-  // ── Monthly trend (last 6 months, simple bar chart) ──
+  // ── Gráfico mensual (últimos 6 meses, reservas + cotizaciones) ──
   const months = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(thisYear, thisMonth - i, 1);
     months.push({ year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString('es-PA', { month: 'short' }) });
   }
   const monthCounts = months.map(m => {
-    return allReservas.filter(r => {
-      if (!r.fecha) return false;
+    const countR = activeReservas.filter(r => {
+      if (!r.fecha || r.status === 'deleted') return false;
       const d = new Date(r.fecha + 'T00:00:00');
       return d.getFullYear() === m.year && d.getMonth() === m.month;
     }).length;
+    const countQ = activeQuotes.filter(q => {
+      if (!q.sessionDate) return false;
+      const d = new Date(q.sessionDate + 'T00:00:00');
+      return d.getFullYear() === m.year && d.getMonth() === m.month;
+    }).length;
+    return countR + countQ;
   });
   const maxCount = Math.max(1, ...monthCounts);
   const barsEl = document.getElementById('panelMonthlyChart');
@@ -7718,12 +6907,7 @@ function updatePanelAdministrativo() {
   }).join('');
 }
 
-async function initPanel() {
-  loadReservasLocal();
-  if (!allReservas.length) {
-    await syncReservasFromSupabase();
-    loadReservasLocal();
-  }
+function initPanel() {
   updatePanelAdministrativo();
 }
 
