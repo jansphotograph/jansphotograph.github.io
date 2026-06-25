@@ -221,24 +221,21 @@
   </div>
 
   <script>
-    // ── Auth guard ──
-    // Verificar sesión (soporta formato legacy 'true' y nuevo formato JSON con token)
-    (async () => {
+    // ── Auth guard ── (soporta formato legacy 'true' y nuevo JSON con token)
+    (function() {
       const raw = sessionStorage.getItem('jans_master_auth');
-      let valid = false;
-      if (raw === 'true') {
-        valid = true; // formato legacy
-      } else if (raw) {
-        try {
-          const s = JSON.parse(raw);
-          if (s && s.expiry && s.expiry > Date.now()) {
-            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(navigator.userAgent + screen.width + screen.colorDepth));
-            const fp  = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-            valid = (s.fp === fp);
-          }
-        } catch(e) {}
+      if (!raw) { window.location.replace('../auth/auth.html'); return; }
+      if (raw === 'true') return; // legacy
+      try {
+        const s = JSON.parse(raw);
+        if (!s || !s.expiry || s.expiry < Date.now()) {
+          sessionStorage.removeItem('jans_master_auth');
+          window.location.replace('../auth/auth.html');
+        }
+        // Sesión válida — continuar (no verificamos fingerprint aquí para evitar falsos positivos)
+      } catch(e) {
+        window.location.replace('../auth/auth.html');
       }
-      if (!valid) window.location.replace('../auth/auth.html');
     })();
 
     // ── Config (inherited from localStorage set by the Master) ──

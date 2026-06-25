@@ -2036,8 +2036,8 @@ let state = {
   services: { makeup: [], print: [] },
   plans:    [],
   calendar: {},    // { 'YYYY-MM-DD': 'available' | 'booked' }
-  calYear:  new Date().getFullYear(),
-  calMonth: new Date().getMonth(),
+  calYear:  todayPanama().getFullYear(),
+  calMonth: todayPanama().getMonth(),
   selectedDay: null,
   currentPDFQuote: null,
   fileSHAs: {},    // store GitHub file SHAs for updates
@@ -2436,7 +2436,7 @@ function updateDashboard() {
   const total    = activeReservas.length;
   const pendingList = activeReservas.filter(r => r.status === 'pending');
   const pending  = pendingList.length;
-  const now      = new Date();
+  const now      = todayPanama();
   const thisMonth = now.getMonth();
   const thisYear  = now.getFullYear();
   const approved = activeReservas.filter(r => {
@@ -2501,6 +2501,18 @@ function statusLabel(s) {
 }
 
 // ── Calendar ──
+// ── Fecha actual en zona horaria de Panamá (UTC-5) ──
+function todayPanama() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Panama' }));
+}
+function todayStrPanama() {
+  const d = todayPanama();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 const HOURS_CAL = [8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -2554,7 +2566,7 @@ function calPrev() {
   if(calView==='month') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
   else if(calView==='week') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
   else if(calView==='day' && calViewDay) {
-    const d = new Date(calViewDay); d.setDate(d.getDate()-1);
+    const d = new Date(calViewDay + 'T12:00:00'); d.setDate(d.getDate()-1);
     calViewDay = d.toISOString().split('T')[0];
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
@@ -2565,7 +2577,7 @@ function calNext() {
   if(calView==='month') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
   else if(calView==='week') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
   else if(calView==='day' && calViewDay) {
-    const d = new Date(calViewDay); d.setDate(d.getDate()+1);
+    const d = new Date(calViewDay + 'T12:00:00'); d.setDate(d.getDate()+1);
     calViewDay = d.toISOString().split('T')[0];
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
@@ -2574,7 +2586,7 @@ function calNext() {
 }
 
 function renderCalendar() {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayStrPanama();
   if(calView==='month')  renderMonthView(todayStr);
   else if(calView==='week') renderWeekView(todayStr);
   else if(calView==='day')  renderDayView(todayStr);
@@ -5272,7 +5284,7 @@ async function cleanupStaleCalendarDays() {
   // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
   //       computed live from confirmed/completed reservas — so you can visually
   //       confirm everything is correct, not just trust that cleanup ran. ──
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayStrPanama();
   const activeBlocks = {};
   allReservas
     .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
@@ -6761,7 +6773,7 @@ function updatePanelAdministrativo() {
   loadPaperTypes();
 
   const billable = allReservas.filter(r => r.status === 'confirmed' || r.status === 'completed');
-  const now = new Date();
+  const now = todayPanama();
   const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
   // ── Revenue cards ──
