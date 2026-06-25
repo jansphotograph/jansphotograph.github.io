@@ -163,9 +163,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         <span>Regresar</span>
       </button>
-      <a href="../../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" height="48" style="width:auto;max-height:48px" /></a>
+      <a href="../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Logo" height="48" style="width:auto;max-height:48px" /></a>
     </div>
-    <a href="../../../../index.html" class="header-title">Jans <span>Photograph</span></a>
+    <a href="../../index.html" class="header-title">Jans <span>Photograph</span></a>
     <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -173,7 +173,7 @@
   <div class="nav-overlay" id="navOverlay"></div>
   <nav class="nav-drawer" id="navDrawer">
     <ul>
-      <li><a href="../../../../index.html">Home</a></li>
+      <li><a href="../../index.html">Home</a></li>
       <li><a href="../servicios.html">Servicios</a></li>
       <li><a href="../nosotros.html">Sobre Nosotros</a></li>
       <li><a href="../blogs.html">Blogs</a></li>
@@ -241,57 +241,16 @@
             <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" placeholder="+507 6000-0000" /></div>
           </div>
           <div class="res-field"><label>Correo</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
-          <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" readonly style="cursor:default;background:rgba(255,255,255,0.04)" /></div>
-
-          <!-- Personas adicionales -->
-          <div class="res-field" id="personasExtraField" style="display:none">
-            <label>Personas adicionales <span id="personasExtraHint" style="font-weight:400;color:#888"></span></label>
-            <div style="display:flex;align-items:center;gap:12px">
-              <input type="number" id="rPersonasExtra" min="0" step="1" value="0" oninput="onPersonasExtraChange()" style="width:90px" />
-              <div id="personasExtraMsg" style="font-size:0.82rem;color:#fbbf24;display:none"></div>
-            </div>
-            <div id="personasExtraCosto" style="display:none;margin-top:6px;font-size:0.85rem;color:#86efac"></div>
-          </div>
-
-          <!-- Sesión en exterior -->
-          <div class="res-field" id="exteriorField" style="display:none">
-            <label>¿Te interesa realizar la sesión en exterior?</label>
-            <div style="margin-bottom:8px">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;font-weight:400">
-                <input type="checkbox" id="rQuiereExterior" onchange="onExteriorChange()" style="width:16px;height:16px;accent-color:#e91e8c" />
-                Sí, me interesa el exterior
-              </label>
-            </div>
-            <div id="exteriorLugarBlock" style="display:none">
-              <input type="text" id="rLugarExterior" placeholder="¿Qué lugar tienes en mente?" />
-              <div style="font-size:0.75rem;color:#888;margin-top:4px">El costo del exterior será determinado por nosotros según el lugar.</div>
-            </div>
-          </div>
-
-          <!-- Resumen de precio -->
-          <div id="resumenPrecio" style="display:none;background:rgba(233,30,140,0.08);border:1px solid rgba(233,30,140,0.2);border-radius:10px;padding:14px 16px;font-size:0.85rem;margin-top:4px">
-            <div style="font-weight:700;margin-bottom:8px">Resumen de tu reserva</div>
-            <div id="resumenLineas" style="display:flex;flex-direction:column;gap:4px;color:#ccc"></div>
-            <div style="border-top:1px solid rgba(255,255,255,0.12);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-weight:700">
-              <span>Total estimado</span>
-              <span id="resumenTotal" style="color:#e91e8c"></span>
-            </div>
-          </div>
-
+          <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
-              <label>Fecha de sesión</label>
+              <label>Fecha</label>
               <input type="date" id="rFecha" onchange="onDateInputChange()" />
             </div>
             <div class="res-field">
               <label>Hora</label>
               <input type="text" id="rHora" placeholder="Selecciona en el calendario" readonly style="cursor:default;color:#888" />
             </div>
-          </div>
-          <div class="res-field">
-            <label>Fecha de cumpleaños 🎂 <span style="font-weight:400;color:#888">(opcional)</span></label>
-            <input type="date" id="rCumple" onchange="onCumpleChange()" />
-            <div id="cumpleMsg" style="display:none;margin-top:6px;padding:10px 14px;border-radius:8px;font-size:0.83rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5"></div>
           </div>
           <div class="res-field"><label>Notas</label><textarea id="rNotas" placeholder="Locación, requerimientos especiales..."></textarea></div>
           <button class="btn-reservar" id="btnReservar" onclick="submitReserva()" disabled>
@@ -409,13 +368,6 @@
     let selectedDate = null;
     let selectedHour = null;
 
-    // Variables del plan (se llenan desde URL params en DOMContentLoaded)
-    let planPersonasIncluidas  = 1;
-    let planMaxPersonasExtra   = 0;
-    let planPrecioPersonaExtra = 0;
-    let planTipoUbicacion      = 'estudio';
-    let planPrecioBase         = 0;
-
     // ── Config — mismo repo público ──
     const OWNER = 'jansphotograph';
     const REPO  = 'jansphotograph.github.io';
@@ -473,36 +425,13 @@
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async function() {
 
-      // URL params — leer datos completos del plan
+      // URL params
       const p = new URLSearchParams(window.location.search);
-
       if (p.get('plan')) {
         const badge = document.getElementById('planBadge');
         badge.textContent = 'Plan: ' + p.get('plan') + (p.get('precio') ? ' — $' + p.get('precio') : '');
         badge.style.display = 'inline-flex';
         document.getElementById('rPlan').value = p.get('plan') + (p.get('precio') ? ' ($' + p.get('precio') + ')' : '');
-
-        planPersonasIncluidas  = parseInt(p.get('personasIncluidas'))  || 1;
-        planMaxPersonasExtra   = parseInt(p.get('maxPersonasExtra'))   || 0;
-        planPrecioPersonaExtra = parseFloat(p.get('precioPersonaExtra')) || 0;
-        planTipoUbicacion      = p.get('tipoUbicacion') || 'estudio';
-        planPrecioBase         = parseFloat(p.get('precio')) || 0;
-
-        // Mostrar campo de personas adicionales si el plan lo permite
-        if (planMaxPersonasExtra > 0) {
-          const field = document.getElementById('personasExtraField');
-          if (field) field.style.display = '';
-          const hint = document.getElementById('personasExtraHint');
-          if (hint) hint.textContent = `(máx. ${planMaxPersonasExtra} — $${planPrecioPersonaExtra.toFixed(2)} c/u)`;
-        }
-
-        // Mostrar campo exterior según tipo de plan
-        if (planTipoUbicacion === 'estudio' || planTipoUbicacion === 'ambos') {
-          const field = document.getElementById('exteriorField');
-          if (field) field.style.display = '';
-        }
-
-        actualizarResumen();
       }
       document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
 
@@ -686,74 +615,6 @@
     }
 
     // ── Date input change (manual typing) ──
-    // ── Personas adicionales ──
-    function onPersonasExtraChange() {
-      const val     = parseInt(document.getElementById('rPersonasExtra')?.value) || 0;
-      const msgEl   = document.getElementById('personasExtraMsg');
-      const costoEl = document.getElementById('personasExtraCosto');
-      if (val > planMaxPersonasExtra) {
-        if (msgEl) { msgEl.style.display=''; msgEl.textContent=`Máximo ${planMaxPersonasExtra} persona(s) adicional(es) permitidas.`; }
-        if (costoEl) costoEl.style.display = 'none';
-        document.getElementById('rPersonasExtra').value = planMaxPersonasExtra;
-      } else {
-        if (msgEl) msgEl.style.display = 'none';
-        const costo = val * planPrecioPersonaExtra;
-        if (costoEl && costo > 0) { costoEl.style.display=''; costoEl.textContent=`+$${costo.toFixed(2)} por ${val} persona(s) adicional(es)`; }
-        else if (costoEl) costoEl.style.display = 'none';
-      }
-      actualizarResumen();
-    }
-
-    // ── Exterior ──
-    function onExteriorChange() {
-      const checked = document.getElementById('rQuiereExterior')?.checked;
-      const block   = document.getElementById('exteriorLugarBlock');
-      if (block) block.style.display = checked ? '' : 'none';
-      actualizarResumen();
-    }
-
-    // ── Resumen de precio ──
-    function actualizarResumen() {
-      const resumenEl = document.getElementById('resumenPrecio');
-      const lineasEl  = document.getElementById('resumenLineas');
-      const totalEl   = document.getElementById('resumenTotal');
-      if (!resumenEl || !planPrecioBase) return;
-      const personasExtra  = Math.min(parseInt(document.getElementById('rPersonasExtra')?.value)||0, planMaxPersonasExtra);
-      const costoPersonas  = personasExtra * planPrecioPersonaExtra;
-      const quiereExterior = document.getElementById('rQuiereExterior')?.checked;
-      let lineas = [], total = planPrecioBase;
-      lineas.push(`<div style="display:flex;justify-content:space-between"><span>${document.getElementById('rPlan').value||'Plan'}</span><span>$${planPrecioBase.toFixed(2)}</span></div>`);
-      if (costoPersonas > 0) {
-        total += costoPersonas;
-        lineas.push(`<div style="display:flex;justify-content:space-between"><span>+${personasExtra} persona(s) adicional(es)</span><span style="color:#fbbf24">$${costoPersonas.toFixed(2)}</span></div>`);
-      }
-      if (quiereExterior) lineas.push(`<div style="display:flex;justify-content:space-between"><span>Sesión exterior</span><span style="color:#93c5fd">Por cotizar</span></div>`);
-      resumenEl.style.display = '';
-      lineasEl.innerHTML = lineas.join('');
-      totalEl.textContent = `$${total.toFixed(2)}${quiereExterior?' + exterior':''}`;
-    }
-
-    // ── Validación cumpleaños ──
-    function onCumpleChange() {
-      const cumple  = document.getElementById('rCumple').value;
-      const msgEl   = document.getElementById('cumpleMsg');
-      const btnEl   = document.getElementById('btnReservar');
-      if (!cumple || !selectedDate) { if(msgEl) msgEl.style.display='none'; return; }
-      const sesionDate     = new Date(selectedDate + 'T00:00:00');
-      const cumpleDate     = new Date(cumple + 'T00:00:00');
-      const cumpleEsteAnio = new Date(sesionDate.getFullYear(), cumpleDate.getMonth(), cumpleDate.getDate());
-      const diffDias       = Math.round((cumpleEsteAnio - sesionDate) / (1000*60*60*24));
-      if (diffDias === 1) {
-        msgEl.style.display = '';
-        msgEl.textContent   = '⚠ No realizamos sesiones el día anterior al cumpleaños. Por favor elige otra fecha.';
-        if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Fecha no disponible'; }
-      } else {
-        msgEl.style.display = 'none';
-        if (btnEl && selectedDate && selectedHour) { btnEl.disabled = false; btnEl.textContent = 'Solicitar sesión'; }
-      }
-    }
-
-    // ── Date input change (manual typing) ──
     function onDateInputChange() {
       const ds = document.getElementById('rFecha').value;
       if(!ds) return;
@@ -818,47 +679,20 @@
       if(!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
       if(!selectedDate || !selectedHour) { alert('Selecciona fecha y hora.'); return; }
 
-      // Validar cumpleaños
-      const cumple = document.getElementById('rCumple').value;
-      if (cumple) {
-        const sesionDate     = new Date(selectedDate + 'T00:00:00');
-        const cumpleDate     = new Date(cumple + 'T00:00:00');
-        const cumpleEsteAnio = new Date(sesionDate.getFullYear(), cumpleDate.getMonth(), cumpleDate.getDate());
-        const diffDias       = Math.round((cumpleEsteAnio - sesionDate) / (1000*60*60*24));
-        if (diffDias === 1) {
-          alert('Lo sentimos, no realizamos sesiones el día anterior al cumpleaños. Por favor elige otra fecha.');
-          return;
-        }
-      }
-
       const btn = document.getElementById('btnReservar');
       if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
       const [y,m,d] = selectedDate.split('-');
-      const hora    = document.getElementById('rHora').value;
-      const plan    = document.getElementById('rPlan').value;
-      const email   = document.getElementById('rEmail').value;
-      const notas   = document.getElementById('rNotas').value;
+      const hora  = document.getElementById('rHora').value;
+      const plan  = document.getElementById('rPlan').value;
+      const email = document.getElementById('rEmail').value;
+      const notas = document.getElementById('rNotas').value;
       const fechaLabel = parseInt(d) + ' de ' + MONTHS[parseInt(m)-1] + ' ' + y;
-
-      // Personas extra
-      const personasExtra     = Math.min(parseInt(document.getElementById('rPersonasExtra')?.value)||0, planMaxPersonasExtra);
-      const costoPersonasExtra = personasExtra * planPrecioPersonaExtra;
-
-      // Exterior
-      const quiereExterior = document.getElementById('rQuiereExterior')?.checked || false;
-      const lugarExterior  = document.getElementById('rLugarExterior')?.value.trim() || '';
 
       const reserva = {
         id:          'r_' + Date.now(),
-        numero:      null,
+        numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
         nombre, tel, email, plan, notas,
-        cumpleanos:  cumple || null,
-        personasExtra,
-        costoPersonasExtra,
-        quiereExterior,
-        lugarExterior,
-        costoExterior: 0,
         fecha:       selectedDate,
         fechaLabel,
         hora,
