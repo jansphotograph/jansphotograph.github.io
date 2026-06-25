@@ -197,7 +197,7 @@
           <div class="stat-card green">
             <div class="stat-label">Cotizaciones confirmadas</div>
             <div class="stat-value" id="statApprovedQ">0</div>
-            <div class="stat-sub">Este mes</div>
+            <div class="stat-sub">Total confirmadas</div>
           </div>
         </div>
 
@@ -2481,7 +2481,8 @@ function updateDashboard() {
   const completedQ = activeQ.filter(q => q.status === 'completed');
 
   const approvedRMonth = confirmedR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
-  const approvedQMonth = confirmedQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+  // Cotizaciones: mostrar TOTAL confirmadas (no solo este mes, ya que pueden no tener fecha de sesión)
+  const approvedQMonth = confirmedQ.length;
 
   // Ingresos = suma de TODOS los totales de reservas + cotizaciones (confirmadas + completadas)
   const revenueR = [...confirmedR,...completedR].reduce((s,r)=>s+resTotal(r),0);
