@@ -3797,121 +3797,170 @@ async function savePlans() {
 }
 
 // ── PDF ──
-function showPDF(id) {
+async function showPDF(id) {
+  // Ahora genera el PDF directamente con jsPDF (mismo estilo que reservas)
+  await generateQuotePDF(id);
+}
+
+async function generateQuotePDF(id) {
   const q = state.quotes.find(x=>x.id===id); if(!q) return;
-  state.currentPDFQuote = q;
-  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
-  document.getElementById('pdfPreview').innerHTML = `
-    <div class="pdf-header">
-      <div class="pdf-company">
-        <h1>${CONFIG.COMPANY_NAME}</h1>
-        <p>${CONFIG.COMPANY_PHONE}</p>
-        <p>${CONFIG.COMPANY_EMAIL}</p>
-        <p>${CONFIG.COMPANY_WEB}</p>
-      </div>
-      <div class="pdf-quote-info">
-        <h2>COTIZACIÓN</h2>
-        <p><strong>#${qNum}</strong></p>
-        <p>Fecha: ${q.createdAt}</p>
-        <p>Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}</p>
-      </div>
-    </div>
-    <div class="pdf-section">
-      <h3>Datos del Cliente</h3>
-      <div class="pdf-grid">
-        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${q.clientName}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${q.clientId||'—'}</div></div>
-        ${q.clientType==='juridica'?`
-        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${q.razonSocial||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Rep. Legal</div><div class="pdf-value">${q.repLegal||'—'}</div></div>`:''}
-        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${q.phone||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${q.email||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${q.address||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${q.location||'—'}</div></div>
-      </div>
-    </div>
-    <div class="pdf-section">
-      <h3>Detalle de Servicios</h3>
-      <table class="pdf-table">
-        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>
-        <tbody>
-          ${q.plan?`<tr><td><strong>${q.plan}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
-          ${(q.addons||[]).map(a=>`<tr><td>${a.name}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
-          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total||0).toFixed(2)}</td></tr>
-        </tbody>
-      </table>
-    </div>
-    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${q.notes}</p></div>`:''}
-    <div class="pdf-footer">
-      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>
-      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}
-    </div>`;
-  openModal('pdfModal');
-}
-
-function downloadPDF() {
-  const q = state.currentPDFQuote; if(!q) return;
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
-  const margin = 18; let y = 20;
+  const doc     = new jsPDF({ unit:'mm', format:'a4' });
+  const company = pdfCompanyInfo();
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
+  const margin  = 18;
+  const pageW   = 210;
+  const colW    = (pageW - margin*2 - 8) / 2;
+  const col1X   = margin;
+  const col2X   = margin + colW + 8;
 
-  // Header
-  doc.setFillColor(199,30,95); doc.rect(0,0,210,14,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
-  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(`COTIZACIÓN #${qNum}`, 210-margin, 9.5, {align:'right'});
+  // ── Header negro con logo ──
+  const headerH = 38;
+  doc.setFillColor(20,20,20); doc.rect(0,0,pageW,headerH,'F');
+  let logoTextX = margin;
+  if (logoDataUrl) {
+    try { doc.addImage(logoDataUrl,'PNG',margin,8,22,22,undefined,'FAST'); logoTextX=margin+28; } catch(e){}
+  }
+  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, logoTextX, 16);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  let cy = 22;
+  if(company.telefono){ doc.text(`Tel: ${company.telefono}`, logoTextX, cy); cy+=4.5; }
+  if(company.email)   { doc.text(company.email, logoTextX, cy); cy+=4.5; }
+  if(company.ubicacion){ const ls=doc.splitTextToSize(company.ubicacion,95); doc.text(ls,logoTextX,cy); }
+  if(company.ruc){ doc.setFontSize(7.5); doc.setTextColor(180,180,180); doc.text(`RUC: ${company.ruc}${company.dv?' DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'}); }
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text(q.numero||'COTIZACIÓN', pageW-margin, 22, {align:'right'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Emitido: ${q.createdAt||new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
 
-  y = 24;
-  // Company info
-  doc.setTextColor(120,120,120); doc.setFontSize(8);
-  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y); y+=5;
-  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}`, margin, y); y+=8;
+  let y = headerH + 12;
 
-  // Section: Client
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  // ── Banner "COTIZACIÓN" ──
+  doc.setFillColor(199,30,95); doc.roundedRect(margin,y,pageW-(margin*2),14,2,2,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('COTIZACIÓN DE SERVICIOS', pageW/2, y+9, {align:'center'});
+  y += 24;
+
+  // ── Datos del cliente y sesión en 2 columnas ──
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2,y-5,pageW-(margin*2)+4,7,1,1,'F');
   doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE', margin, y); y+=6;
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-  const clientData = [
-    ['Nombre:', q.clientName], ['Cédula/RUC:', q.clientId||'—'],
+  doc.text('DATOS DE LA COTIZACIÓN', margin, y); y+=9;
+
+  const leftRows = [
+    ['Cliente:', q.clientName],
+    ['Cédula/RUC:', q.clientId||'—'],
     ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['Rep. Legal:', q.repLegal||'—']]:[]),
-    ['Teléfono:', q.phone||'—'], ['Email:', q.email||'—'],
-    ['Dirección:', q.address||'—'], ['Lugar:', q.location||'—'],
+    ['Teléfono:', q.phone||'—'],
+    ['Email:', q.email||'—'],
   ];
-  clientData.forEach(([l,v],i) => {
-    const col = i%2===0?margin:110;
-    if(i%2===0) { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); }
-    else        { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); y+=5; }
+  const rightRows = [
+    ['Tipo:', q.tipo==='evento'?'Cobertura de Evento':'Plan Fotográfico'],
+    ['Fecha:', q.sessionDate||'Por confirmar'],
+    ['Hora:', q.sessionTime||'—'],
+    ['Lugar:', q.location||'—'],
+    ['Estado:', statusLabel(q.status)],
+    ['# Cotización:', q.numero||'—'],
+  ];
+
+  const startY = y; let yL=startY, yR=startY;
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  leftRows.forEach(([l,v])=>{
+    doc.setTextColor(120,120,120); doc.text(l,col1X,yL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines=doc.splitTextToSize(String(v),colW-32); doc.text(lines,col1X+32,yL);
+    doc.setFont('helvetica','normal'); yL+=Math.max(6,lines.length*5);
   });
-  if(clientData.length%2!==0) y+=5; y+=6;
+  rightRows.forEach(([l,v])=>{
+    doc.setTextColor(120,120,120); doc.text(l,col2X,yR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines=doc.splitTextToSize(String(v),colW-30); doc.text(lines,col2X+30,yR);
+    doc.setFont('helvetica','normal'); yR+=Math.max(6,lines.length*5);
+  });
+  if(q.clientType==='juridica'){ yL+=0; }
+  y = Math.max(yL,yR)+6;
 
-  // Section: Services
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DETALLE DE SERVICIOS', margin, y); y+=7;
+  // ── Tabla de servicios ──
+  const total    = parseFloat(q.total)    || 0;
+  const abono    = parseFloat(q.abono)    || 0;
+  const pagado   = parseFloat(q.pagado)   || 0;
+  const pendiente = Math.max(0, total - abono - pagado);
+
+  const items = [];
+  if(q.plan) items.push([q.plan, parseFloat(q.planPrice)||0, true]);
+  (q.addons||[]).forEach(a=>items.push([a.name, parseFloat(a.price)||0, false]));
+
+  const rowH=6.5, boxPadY=8;
+  const tableH = 8 + (items.length*rowH) + 4;
+  const totalsH = rowH*3 + 12;
+  const boxH = boxPadY*2 + 7 + tableH + totalsH;
+
+  doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
+  doc.roundedRect(margin,y,pageW-(margin*2),boxH,2,2,'S');
+
+  let by = y + boxPadY;
+  doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('DETALLE DE SERVICIOS', margin+6, by); by+=8;
+
   doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y+=4;
-  doc.line(margin, y, 210-margin, y); y+=4;
+  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by+=3;
+  doc.line(margin+6,by,pageW-margin-6,by); by+=5;
+
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
-  if(q.plan){ doc.setFont('helvetica','bold'); doc.text(q.plan, margin, y); doc.text(`$${(q.planPrice||0).toFixed(2)}`, 210-margin, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=5; }
-  (q.addons||[]).forEach(a => { doc.text(a.name, margin+4, y); doc.text(`$${a.price.toFixed(2)}`, 210-margin, y, {align:'right'}); y+=5; });
-  y+=2; doc.line(margin, y, 210-margin, y); y+=6;
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(199,30,95);
-  doc.text('TOTAL ESTIMADO', margin, y); doc.text(`$${(q.total||0).toFixed(2)}`, 210-margin, y, {align:'right'}); y+=10;
+  items.forEach(([name,price,isBold])=>{
+    if(isBold) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
+    doc.text(name, margin+6, by);
+    if(price>0) doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+    else { doc.setTextColor(120,120,120); doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.text('incluido', pageW-margin-6, by, {align:'right'}); doc.setFontSize(9); doc.setTextColor(30,30,30); }
+    by+=rowH;
+  });
 
-  if(q.notes) { doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.text('NOTAS:', margin, y); y+=4; doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); const lines=doc.splitTextToSize(q.notes,170); doc.text(lines,margin,y); y+=lines.length*4+4; }
+  by+=2; doc.setDrawColor(230,230,230); doc.line(margin+6,by,pageW-margin-6,by); by+=7;
 
-  // Footer
-  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {align:'center'});
+  // Totales
+  doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
 
-  doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
-  showToast('PDF descargado ✓');
+  if(abono>0){
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    doc.text('Abono recibido:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by+=rowH;
+  }
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
+  doc.text('Saldo pendiente:', margin+6, by);
+  doc.text(`$${pendiente.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+
+  y += boxH + 10;
+
+  if(q.notes){
+    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
+    doc.text('NOTAS:', margin, y); y+=4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    const lines=doc.splitTextToSize(q.notes,pageW-(margin*2)); doc.text(lines,margin,y); y+=lines.length*4+4;
+  }
+
+  // Validez
+  doc.setFontSize(8); doc.setTextColor(140,140,140); doc.setFont('helvetica','italic');
+  doc.text('Esta cotización es válida por 15 días a partir de la fecha de emisión.', margin, y);
+
+  // ── Footer ──
+  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
+  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
+
+  const slug = (q.clientName||'cliente').replace(/\s/g,'_');
+  doc.save(`Cotizacion_${slug}_${q.numero||''}.pdf`);
+  showToast('PDF de cotización descargado ✓');
 }
+
+// Stub para compatibilidad
+function downloadPDF() { if(state.currentPDFQuote) generateQuotePDF(state.currentPDFQuote.id); }
+
 
 // ═══════════════════════════════════════
 //  PDF — Confirmación de Reserva (banner verde)
