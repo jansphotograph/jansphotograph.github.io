@@ -822,6 +822,9 @@
             <option value="cancelled">Cancelada</option>
           </select>
           <input type="month" id="filterResMonth" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
+          <button class="btn btn-outline btn-sm" onclick="hardSyncReservas()" style="white-space:nowrap" title="Borra el caché local y recarga desde Supabase">
+            🔄 Limpiar y sincronizar
+          </button>
         </div>
 
         <div class="card">
@@ -4359,72 +4362,80 @@ try {
 
 // Pull any reservas from Supabase that the Master doesn't have locally yet
 // (this is what makes reservas submitted from ANY device reach this Master).
+// ── Hard sync: borra localStorage y recarga desde Supabase ──
+async function hardSyncReservas() {
+  if (!sbClient) { showToast('Sin conexión a Supabase', 'error'); return; }
+  showToast('Sincronizando...');
+  // Borrar completamente el caché local
+  localStorage.removeItem('jans_reservas');
+  allReservas = [];
+  // Recargar desde Supabase
+  const ok = await syncReservasFromSupabase();
+  loadReservasLocal();
+  renderReservasTable();
+  updateDashboard();
+  showToast(ok ? `✓ Sincronizado — ${allReservas.length} reserva(s)` : 'Error al sincronizar', ok ? '' : 'error');
+}
+
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    // Traer SOLO las que existen en Supabase (las borradas ya no estarán aquí)
     const { data, error } = await sbClient
       .from('reservas').select('*')
       .order('created_at', { ascending: true });
-    if (error || !data) return false;
+    if (error) { console.error('Supabase fetch error:', error); return false; }
+    if (!data)  return false;
 
-    // IDs que existen en Supabase
+    // Supabase es la fuente de verdad.
+    // Solo conservar del local lo que también existe en Supabase.
     const remoteIds = new Set(data.map(r => r.id));
-
-    // Leer local
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
 
-    // Quitar del local las que YA NO existen en Supabase (fueron eliminadas)
-    local = local.filter(r => remoteIds.has(r.id));
+    // Mapa de datos locales para preservar campos editados localmente
+    // (abono, cancelado, totalManual) que pueden no estar en Supabase aún
+    const localMap = new Map(local.map(r => [r.id, r]));
 
-    // Construir mapa para actualizar existentes
-    const byId = new Map(local.map(r => [r.id, r]));
-
-    data.forEach(remote => {
-      const norm = {
+    // Construir lista final: solo lo que existe en Supabase, mezclado con datos locales
+    const merged = data.map(remote => {
+      const loc = localMap.get(remote.id) || {};
+      return {
         id:              remote.id,
-        numero:          remote.numero          || null,
-        nombre:          remote.nombre          || '',
-        tel:             remote.tel             || '',
-        email:           remote.email           || '',
-        plan:            remote.plan            || '',
-        notas:           remote.notas           || '',
-        fecha:           remote.fecha           || '',
-        fechaLabel:      remote.fechaLabel      || remote.fecha || '',
-        hora:            remote.hora            || '',
-        horaVal:         remote.horaVal         || 0,
+        numero:          remote.numero          ?? loc.numero ?? null,
+        nombre:          remote.nombre          || loc.nombre || '',
+        tel:             remote.tel             || loc.tel    || '',
+        email:           remote.email           || loc.email  || '',
+        plan:            remote.plan            || loc.plan   || '',
+        notas:           remote.notas           ?? loc.notas  ?? '',
+        fecha:           remote.fecha           || loc.fecha  || '',
+        fechaLabel:      remote.fechaLabel      || remote.fecha || loc.fechaLabel || '',
+        hora:            remote.hora            || loc.hora   || '',
+        horaVal:         remote.horaVal         ?? loc.horaVal ?? 0,
         status:          remote.status          || 'pending',
-        abono:           parseFloat(remote.abono)    || 0,
-        cancelado:       parseFloat(remote.cancelado) || 0,
-        totalManual:     remote.totalManual     != null ? remote.totalManual : null,
-        extras:          remote.extras          || [],
-        clientId:        remote.clientId        || '',
-        clientType:      remote.clientType      || '',
-        razonSocial:     remote.razonSocial     || '',
-        repLegal:        remote.repLegal        || '',
-        address:         remote.address         || '',
-        origin:          remote.origin          || 'web',
-        facturaNumero:   remote.facturaNumero   || null,
-        createdAt:       remote.createdAt       || '',
-        cumpleanos:      remote.cumpleanos      || null,
-        personasExtra:   remote.personasExtra   || 0,
-        costoPersonasExtra: remote.costoPersonasExtra || 0,
-        quiereExterior:  remote.quiereExterior  || false,
-        lugarExterior:   remote.lugarExterior   || '',
-        costoExterior:   parseFloat(remote.costoExterior) || 0,
-        fechaOriginal:   remote.fechaOriginal   || null,
-        fechaNueva:      remote.fechaNueva      || null,
+        abono:           parseFloat(remote.abono    ?? loc.abono)    || 0,
+        cancelado:       parseFloat(remote.cancelado ?? loc.cancelado) || 0,
+        totalManual:     remote.totalManual     ?? loc.totalManual ?? null,
+        extras:          remote.extras          || loc.extras || [],
+        clientId:        remote.clientId        || loc.clientId || '',
+        clientType:      remote.clientType      || loc.clientType || '',
+        razonSocial:     remote.razonSocial     || loc.razonSocial || '',
+        repLegal:        remote.repLegal        || loc.repLegal || '',
+        address:         remote.address         || loc.address || '',
+        origin:          remote.origin          || loc.origin  || 'web',
+        facturaNumero:   remote.facturaNumero   ?? loc.facturaNumero ?? null,
+        createdAt:       remote.createdAt       || loc.createdAt || '',
+        cumpleanos:      remote.cumpleanos      || loc.cumpleanos || null,
+        personasExtra:   remote.personasExtra   || loc.personasExtra || 0,
+        costoPersonasExtra: remote.costoPersonasExtra || loc.costoPersonasExtra || 0,
+        quiereExterior:  remote.quiereExterior  ?? loc.quiereExterior ?? false,
+        lugarExterior:   remote.lugarExterior   || loc.lugarExterior || '',
+        costoExterior:   parseFloat(remote.costoExterior ?? loc.costoExterior) || 0,
+        fechaOriginal:   remote.fechaOriginal   || loc.fechaOriginal || null,
+        fechaNueva:      remote.fechaNueva      || loc.fechaNueva || null,
       };
-      // Si existe localmente: mezclar (remoto gana en campos de servidor)
-      // Si es nueva: agregar
-      byId.set(remote.id, byId.has(remote.id)
-        ? { ...byId.get(remote.id), ...norm }
-        : norm
-      );
     });
 
-    const merged = Array.from(byId.values());
+    // Guardar — reemplaza completamente el localStorage con lo que hay en Supabase
     localStorage.setItem('jans_reservas', JSON.stringify(merged));
     return true;
   } catch(e) {
@@ -4590,9 +4601,8 @@ function renderReservasTable(highlightId) {
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
-    if (!r.nombre && !r.nombre) return false; // skip malformed
-    if (filterStatus && r.status !== filterStatus) return false;
-    if (filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
+    if(filterStatus && r.status !== filterStatus) return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
     return true;
   });
 
@@ -5091,14 +5101,14 @@ function saveEditReserva() {
 
 function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
-  // 1. Quitar del array local inmediatamente
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  // 2. Borrar físicamente de Supabase (DELETE real, no mark-as-deleted)
-  //    Si falla el delete, al menos ya no está en localStorage
   if (sbClient) {
     sbClient.from('reservas').delete().eq('id', id)
-      .then(({error}) => { if (error) console.warn('Supabase delete error (no crítico):', error); });
+      .then(({error}) => {
+        if (error) console.error('Supabase delete failed:', error);
+        else console.log('Deleted from Supabase:', id);
+      });
   }
   closeModal('reservaModal');
   renderReservasTable();
