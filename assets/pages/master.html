@@ -284,7 +284,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Pendiente</th><th>Acciones</th></tr></thead>
               <tbody id="quotesTable"></tbody>
             </table>
           </div>
@@ -3604,9 +3604,9 @@ async function saveQuote() {
     planPrice  = horas * precioHora;
     total      = planPrice + transporte;
     eventoData = { horas, precioHora, transporte, lugar };
-    if (transporte > 0) addons.push({ name: `🚗 Transporte — ${lugar||'exterior'}`, price: transporte });
-    addons.push({ name: '📸 Todas las fotos en alta calidad por correo', price: 0 });
-    addons.push({ name: '🎬 Video recopilatorio (~1 min)', price: 0 });
+    if (transporte > 0) addons.push({ name: `Transporte — ${lugar||'exterior'}`, price: transporte });
+    addons.push({ name: 'Todas las fotos en alta calidad por correo', price: 0 });
+    addons.push({ name: 'Video recopilatorio (~1 min)', price: 0 });
   } else {
     const planSel     = document.getElementById('qPlan');
     const planOpt     = planSel.options[planSel.selectedIndex];
@@ -3618,8 +3618,8 @@ async function saveQuote() {
     const personas    = parseInt(document.getElementById('qFotoPersonas')?.value) || 0;
     const precioPersona = parseFloat(document.getElementById('qFotoPrecioPersona')?.value) || 0;
     const costoPersonas = personas * precioPersona;
-    if (transporte > 0) addons.push({ name: `🚗 Transporte exterior${lugar ? ' — '+lugar : ''}`, price: transporte });
-    if (costoPersonas > 0) addons.push({ name: `👥 +${personas} persona(s) adicional(es)`, price: costoPersonas });
+    if (transporte > 0) addons.push({ name: `Transporte exterior${lugar ? ' — '+lugar : ''}`, price: transporte });
+    if (costoPersonas > 0) addons.push({ name: `+${personas} persona(s) adicional(es)`, price: costoPersonas });
     const checks = document.querySelectorAll('#qServicesCheck input:checked');
     checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
     total = planPrice + addons.reduce((s,a)=>s+a.price,0);
