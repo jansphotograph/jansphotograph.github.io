@@ -2606,17 +2606,15 @@ function renderMonthView(todayStr) {
     } else if(st==='booked')    { el.classList.add('booked'); }
       else if(st==='available') { el.classList.add('available'); }
 
-    // Reserva event pills (max 3) — solo primer nombre para no estirar la celda
-    const pills = evs.slice(0,3).map(e => {
-      const firstName = (e.name||'').split(' ')[0];
-      return `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${firstName}</div>`;
-    }).join('');
+    // Reserva event pills (max 3)
+    const pills = evs.slice(0,3).map(e =>
+      `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
+    ).join('');
     const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
 
-    // Calendar event label — truncado a 1 línea
-    const evTitle = (st && typeof st === 'object' && st.type === 'event') ? (st.titulo||'Evento') : '';
-    const evLabel = evTitle
-      ? `<div style="font-size:0.6rem;color:var(--ev-color,var(--pink));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;line-height:1.2;margin-top:1px" title="${evTitle}">${evTitle}</div>`
+    // Calendar event label (if it's an event object, show the title below the day number)
+    const evLabel = (st && typeof st === 'object' && st.type === 'event')
+      ? `<div style="font-size:0.6rem;color:var(--ev-color,var(--pink));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;line-height:1.1;margin-top:1px">${st.titulo||'Evento'}</div>`
       : '';
 
     el.innerHTML = `<span class="day-num">${d}</span>${evLabel}<div class="day-events">${pills}${more}</div>`;
@@ -4364,59 +4362,77 @@ try {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
-    if (error) { console.error('Supabase fetch error:', error); return false; }
-    if (!data) return false;
+    // Traer SOLO las que existen en Supabase (las borradas ya no estarán aquí)
+    const { data, error } = await sbClient
+      .from('reservas').select('*')
+      .order('created_at', { ascending: true });
+    if (error || !data) return false;
 
+    // IDs que existen en Supabase
+    const remoteIds = new Set(data.map(r => r.id));
+
+    // Leer local
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-    const localIds = new Set(local.map(r => r.id));
 
-    let added = 0;
+    // Quitar del local las que YA NO existen en Supabase (fueron eliminadas)
+    local = local.filter(r => remoteIds.has(r.id));
+
+    // Construir mapa para actualizar existentes
+    const byId = new Map(local.map(r => [r.id, r]));
+
     data.forEach(remote => {
-      if (!localIds.has(remote.id)) {
-        // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
-        local.push({
-          id:            remote.id,
-          numero:        remote.numero || null,
-          nombre:        remote.nombre,
-          tel:           remote.tel,
-          email:         remote.email,
-          plan:          remote.plan,
-          notas:         remote.notas,
-          fecha:         remote.fecha,
-          fechaLabel:    remote.fechaLabel,
-          hora:          remote.hora,
-          horaVal:       remote.horaVal,
-          status:        remote.status || 'pending',
-          abono:         remote.abono || 0,
-          totalManual:   remote.totalManual,
-          extras:        remote.extras || [],
-          clientId:      remote.clientId,
-          clientType:    remote.clientType,
-          razonSocial:   remote.razonSocial,
-          repLegal:      remote.repLegal,
-          address:       remote.address,
-          origin:        remote.origin || 'web',
-          facturaNumero: remote.facturaNumero,
-          createdAt:     remote.createdAt,
-        });
-        added++;
-      }
+      const norm = {
+        id:              remote.id,
+        numero:          remote.numero          || null,
+        nombre:          remote.nombre          || '',
+        tel:             remote.tel             || '',
+        email:           remote.email           || '',
+        plan:            remote.plan            || '',
+        notas:           remote.notas           || '',
+        fecha:           remote.fecha           || '',
+        fechaLabel:      remote.fechaLabel      || remote.fecha || '',
+        hora:            remote.hora            || '',
+        horaVal:         remote.horaVal         || 0,
+        status:          remote.status          || 'pending',
+        abono:           parseFloat(remote.abono)    || 0,
+        cancelado:       parseFloat(remote.cancelado) || 0,
+        totalManual:     remote.totalManual     != null ? remote.totalManual : null,
+        extras:          remote.extras          || [],
+        clientId:        remote.clientId        || '',
+        clientType:      remote.clientType      || '',
+        razonSocial:     remote.razonSocial     || '',
+        repLegal:        remote.repLegal        || '',
+        address:         remote.address         || '',
+        origin:          remote.origin          || 'web',
+        facturaNumero:   remote.facturaNumero   || null,
+        createdAt:       remote.createdAt       || '',
+        cumpleanos:      remote.cumpleanos      || null,
+        personasExtra:   remote.personasExtra   || 0,
+        costoPersonasExtra: remote.costoPersonasExtra || 0,
+        quiereExterior:  remote.quiereExterior  || false,
+        lugarExterior:   remote.lugarExterior   || '',
+        costoExterior:   parseFloat(remote.costoExterior) || 0,
+        fechaOriginal:   remote.fechaOriginal   || null,
+        fechaNueva:      remote.fechaNueva      || null,
+      };
+      // Si existe localmente: mezclar (remoto gana en campos de servidor)
+      // Si es nueva: agregar
+      byId.set(remote.id, byId.has(remote.id)
+        ? { ...byId.get(remote.id), ...norm }
+        : norm
+      );
     });
 
-    if (added > 0) {
-      localStorage.setItem('jans_reservas', JSON.stringify(local));
-    }
-    return added > 0;
+    const merged = Array.from(byId.values());
+    localStorage.setItem('jans_reservas', JSON.stringify(merged));
+    return true;
   } catch(e) {
-    console.error('Supabase sync exception:', e);
+    console.error('Supabase sync error:', e);
     return false;
   }
 }
 
-// Push a local change (status, abono, extras, etc.) back up to Supabase so it
-// stays consistent if you ever open the Master from a different device.
 async function pushReservaToSupabase(r) {
   if (!sbClient) return;
   try {
@@ -4574,8 +4590,9 @@ function renderReservasTable(highlightId) {
   const filterStatus = document.getElementById('filterResStatus')?.value || '';
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
-    if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+    if (!r.nombre && !r.nombre) return false; // skip malformed
+    if (filterStatus && r.status !== filterStatus) return false;
+    if (filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
 
@@ -5074,9 +5091,15 @@ function saveEditReserva() {
 
 function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
+  // 1. Quitar del array local inmediatamente
   allReservas = allReservas.filter(x=>x.id!==id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  if (sbClient) sbClient.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
+  // 2. Borrar físicamente de Supabase (DELETE real, no mark-as-deleted)
+  //    Si falla el delete, al menos ya no está en localStorage
+  if (sbClient) {
+    sbClient.from('reservas').delete().eq('id', id)
+      .then(({error}) => { if (error) console.warn('Supabase delete error (no crítico):', error); });
+  }
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();
