@@ -11,5 +11,15 @@
     "descripcion": "Desfile de Aniversario del Colegio",
     "color": "pink"
   },
-  "2026-06-24": "available"
+  "2026-06-24": "available",
+  "2026-06-26": {
+    "blockedHours": [
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "quoteLock": "q_1782362037880"
+  }
 }
