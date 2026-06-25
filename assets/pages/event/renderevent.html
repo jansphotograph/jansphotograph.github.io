@@ -222,9 +222,24 @@
 
   <script>
     // ── Auth guard ──
-    if (sessionStorage.getItem('jans_master_auth') !== 'true') {
-      window.location.replace('../auth/auth.html');
-    }
+    // Verificar sesión (soporta formato legacy 'true' y nuevo formato JSON con token)
+    (async () => {
+      const raw = sessionStorage.getItem('jans_master_auth');
+      let valid = false;
+      if (raw === 'true') {
+        valid = true; // formato legacy
+      } else if (raw) {
+        try {
+          const s = JSON.parse(raw);
+          if (s && s.expiry && s.expiry > Date.now()) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(navigator.userAgent + screen.width + screen.colorDepth));
+            const fp  = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+            valid = (s.fp === fp);
+          }
+        } catch(e) {}
+      }
+      if (!valid) window.location.replace('../auth/auth.html');
+    })();
 
     // ── Config ──
     const LS_CFG    = 'jans_gh_config';
