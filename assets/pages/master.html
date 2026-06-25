@@ -153,45 +153,72 @@
           <h2>Dashboard</h2>
           <p>Resumen general del estudio</p>
         </div>
-        <div class="stats-grid">
+
+        <!-- Fila 1: totales globales -->
+        <div class="stats-grid" style="margin-bottom:12px">
           <div class="stat-card pink">
-            <div class="stat-label">Reservas</div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-sub">Total registradas</div>
-          </div>
-          <div class="stat-card amber">
-            <div class="stat-label">Solicitudes Pendientes</div>
-            <div class="stat-value" id="statPending">0</div>
-            <div class="stat-sub">Esperando tu confirmación</div>
+            <div class="stat-label">Operaciones totales</div>
+            <div class="stat-value" id="statOpsTotal">0</div>
+            <div class="stat-sub">Reservas + cotizaciones</div>
           </div>
           <div class="stat-card green">
-            <div class="stat-label">Confirmadas</div>
-            <div class="stat-value" id="statApproved">0</div>
-            <div class="stat-sub">Este mes</div>
+            <div class="stat-label">Completadas</div>
+            <div class="stat-value" id="statCompleted">0</div>
+            <div class="stat-sub"><span id="statCompletedRes">0</span> res · <span id="statCompletedQ">0</span> cot</div>
           </div>
           <div class="stat-card blue">
             <div class="stat-label">Ingresos Est.</div>
             <div class="stat-value" id="statRevenue">$0</div>
-            <div class="stat-sub">Reservas confirmadas/completadas</div>
+            <div class="stat-sub">Confirmadas + completadas</div>
           </div>
         </div>
 
+        <!-- Fila 2: pendientes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card amber">
+            <div class="stat-label">Reservas pendientes</div>
+            <div class="stat-value" id="statPendingRes">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Cotizaciones pendientes</div>
+            <div class="stat-value" id="statPendingQ">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+        </div>
+
+        <!-- Fila 3: confirmadas este mes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card green">
+            <div class="stat-label">Reservas confirmadas</div>
+            <div class="stat-value" id="statApprovedRes">0</div>
+            <div class="stat-sub">Este mes</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Cotizaciones confirmadas</div>
+            <div class="stat-value" id="statApprovedQ">0</div>
+            <div class="stat-sub">Este mes</div>
+          </div>
+        </div>
+
+        <!-- Tabla pendientes -->
         <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
           <div class="card-title" style="color:#fcd34d">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Solicitudes de reserva pendientes
+            Solicitudes pendientes
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Origen</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Total</th><th></th></tr></thead>
               <tbody id="dashPendingTable"></tbody>
             </table>
           </div>
         </div>
 
+        <!-- Últimas reservas -->
         <div class="card">
           <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             Últimas reservas
           </div>
           <div class="table-wrap">
@@ -201,8 +228,19 @@
             </table>
           </div>
         </div>
-      </div>
 
+        <!-- Últimas cotizaciones -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Últimas cotizaciones
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody id="dashRecentQuotes"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
+            </table>
+          </div>
       <!-- ── CALENDAR ── -->
       <div class="view" id="view-calendar">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
