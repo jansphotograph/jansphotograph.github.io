@@ -179,11 +179,11 @@
         <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
           <div class="card-title" style="color:#fcd34d">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Solicitudes de reserva pendientes
+            Solicitudes pendientes
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Cliente</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Origen</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Total</th><th></th></tr></thead>
               <tbody id="dashPendingTable"></tbody>
             </table>
           </div>
@@ -191,13 +191,26 @@
 
         <div class="card">
           <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             Últimas reservas
           </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Cliente</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
               <tbody id="dashRecentTable"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Últimas cotizaciones
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th></tr></thead>
+              <tbody id="dashRecentQuotes"><tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -2430,12 +2443,11 @@ function switchView(name, btn) {
 // ── Dashboard ──
 function updateDashboard() {
   loadReservasLocal();
-  const activeRes  = allReservas.filter(r => r.status !== 'deleted');
-  const activeQ    = (state.quotes || []);
-  const now        = todayPanama ? todayPanama() : new Date();
-  const thisMonth  = now.getMonth(), thisYear = now.getFullYear();
+  const activeRes = allReservas.filter(r => r.status !== 'deleted');
+  const activeQ   = (state.quotes || []);
+  const now       = typeof todayPanama === 'function' ? todayPanama() : new Date();
+  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
 
-  // ── Métricas cards ──
   const pendingR = activeRes.filter(r => r.status === 'pending');
   const pendingQ = activeQ.filter(q => q.status === 'pending');
 
@@ -2450,19 +2462,14 @@ function updateDashboard() {
     return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
   }).length;
 
-  const revenueR = activeRes
-    .filter(r => r.status === 'confirmed' || r.status === 'completed')
-    .reduce((s, r) => s + resTotal(r), 0);
-  const revenueQ = activeQ
-    .filter(q => q.status === 'confirmed' || q.status === 'completed')
-    .reduce((s, q) => s + (parseFloat(q.total) || 0), 0);
+  const revenueR = activeRes.filter(r => r.status==='confirmed'||r.status==='completed').reduce((s,r)=>s+resTotal(r),0);
+  const revenueQ = activeQ.filter(q => q.status==='confirmed'||q.status==='completed').reduce((s,q)=>s+(parseFloat(q.total)||0),0);
 
   document.getElementById('statTotal').textContent    = activeRes.length;
   document.getElementById('statPending').textContent  = pendingR.length + pendingQ.length;
   document.getElementById('statApproved').textContent = approvedR + approvedQ;
-  document.getElementById('statRevenue').textContent  = `$${(revenueR + revenueQ).toFixed(2)}`;
+  document.getElementById('statRevenue').textContent  = '$' + (revenueR + revenueQ).toFixed(2);
 
-  // ── Badges ──
   const pb  = document.getElementById('pendingBadge');
   if (pb) { pb.textContent = pendingQ.length; pb.style.display = pendingQ.length > 0 ? '' : 'none'; }
   const rb  = document.getElementById('reservasBadge');
@@ -2470,17 +2477,12 @@ function updateDashboard() {
   if (rb)  { rb.textContent  = pendingR.length; rb.style.display  = pendingR.length > 0 ? '' : 'none'; }
   if (rb2) { rb2.textContent = pendingR.length; rb2.style.display = pendingR.length > 0 ? '' : 'none'; }
 
-  // ── Tabla pendientes ──
+  const allPending = [
+    ...pendingR.map(r => ({ numero:r.numero||'—', cliente:r.nombre, tipo:'Reserva', plan:r.plan||'—', fecha:r.fechaLabel||r.fecha||'—', hora:r.hora||'—', total:resTotal(r), isReserva:true, id:r.id })),
+    ...pendingQ.map(q => ({ numero:q.numero||'—', cliente:q.clientName, tipo:q.tipo==='evento'?'Evento':'Foto', plan:q.plan||'—', fecha:q.sessionDate||'—', hora:q.sessionTime||'—', total:parseFloat(q.total)||0, isReserva:false, id:q.id }))
+  ];
   const pendingCard  = document.getElementById('dashPendingCard');
   const pendingTable = document.getElementById('dashPendingTable');
-  const allPending = [
-    ...pendingR.map(r => ({ numero: r.numero||'—', cliente: r.nombre, tipo: 'Reserva',
-      plan: r.plan||'—', fecha: r.fechaLabel||r.fecha||'—', hora: r.hora||'—',
-      total: resTotal(r), isReserva: true, id: r.id })),
-    ...pendingQ.map(q => ({ numero: q.numero||'—', cliente: q.clientName, tipo: q.tipo==='evento'?'Evento':'Foto',
-      plan: q.plan||'—', fecha: q.sessionDate||'—', hora: q.sessionTime||'—',
-      total: parseFloat(q.total)||0, isReserva: false, id: q.id }))
-  ];
   if (allPending.length > 0) {
     if (pendingCard) pendingCard.style.display = '';
     if (pendingTable) pendingTable.innerHTML = allPending.map(item => `
@@ -2492,39 +2494,20 @@ function updateDashboard() {
         <td style="font-size:0.82rem">${item.fecha}</td>
         <td style="font-size:0.82rem">${item.hora}</td>
         <td style="font-weight:700">$${item.total.toFixed(2)}</td>
-        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva
-          ? `goToReservaInTable('${item.id}')`
-          : `switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`
-        }">Ver</button></td>
+        <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva ? `goToReservaInTable('${item.id}')` : `switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
       </tr>`).join('');
   } else {
     if (pendingCard) pendingCard.style.display = 'none';
   }
 
-  // ── Últimas reservas ──
   const dashRecent = document.getElementById('dashRecentTable');
   if (dashRecent) dashRecent.innerHTML = activeRes.length
-    ? activeRes.slice(-6).reverse().map(r => `
-      <tr>
-        <td>${r.nombre}</td><td>${r.plan||'—'}</td>
-        <td>$${resTotal(r).toFixed(2)}</td>
-        <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
-        <td>${r.fechaLabel||r.fecha||'—'}</td>
-      </tr>`).join('')
+    ? activeRes.slice(-6).reverse().map(r => `<tr><td>${r.nombre}</td><td>${r.plan||'—'}</td><td>$${resTotal(r).toFixed(2)}</td><td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td><td>${r.fechaLabel||r.fecha||'—'}</td></tr>`).join('')
     : '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
 
-  // ── Últimas cotizaciones ──
   const dashQ = document.getElementById('dashRecentQuotes');
   if (dashQ) dashQ.innerHTML = activeQ.length
-    ? activeQ.slice(-6).reverse().map(q => `
-      <tr>
-        <td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td>
-        <td style="font-weight:600">${q.clientName}</td>
-        <td>${q.tipo==='evento'?'Evento':'Foto'}</td>
-        <td>${q.plan||'—'}</td>
-        <td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td>
-        <td><span class="badge-status ${statusClassQ ? statusClassQ(q.status) : ''}">${statusLabel(q.status)}</span></td>
-      </tr>`).join('')
+    ? activeQ.slice(-6).reverse().map(q => `<tr><td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l)">${q.numero||'—'}</td><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td>${q.plan||'—'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${typeof statusClassQ==='function'?statusClassQ(q.status):''}">${statusLabel(q.status)}</span></td></tr>`).join('')
     : '<tr><td colspan="6" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
 }
 
@@ -4396,50 +4379,21 @@ try {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient
-      .from('reservas').select('*')
-      .neq('status', 'deleted')
-      .order('created_at', { ascending: true });
+    const { data, error } = await sbClient.from('reservas').select('*').neq('status','deleted').order('created_at',{ascending:true});
     if (error || !data) return false;
-
     let local = [];
-    try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-
-    // Quitar del local las que Supabase ya no tiene (borradas desde otro dispositivo)
-    const remoteIds = new Set(data.map(r => r.id));
-    local = local.filter(r => r.status === 'deleted' || remoteIds.has(r.id));
-
-    const byId = new Map(local.map(r => [r.id, r]));
+    try { local = JSON.parse(localStorage.getItem('jans_reservas')||'[]'); } catch(e) {}
+    const remoteIds = new Set(data.map(r=>r.id));
+    local = local.filter(r => r.status==='deleted' || remoteIds.has(r.id));
+    const byId = new Map(local.map(r=>[r.id,r]));
     data.forEach(remote => {
-      const norm = {
-        id: remote.id, numero: remote.numero||null,
-        nombre: remote.nombre, tel: remote.tel, email: remote.email,
-        plan: remote.plan, notas: remote.notas,
-        fecha: remote.fecha, fechaLabel: remote.fechaLabel||remote.fecha,
-        hora: remote.hora, horaVal: remote.horaVal,
-        status: remote.status||'pending',
-        abono: remote.abono||0, cancelado: remote.cancelado||0,
-        totalManual: remote.totalManual, extras: remote.extras||[],
-        clientId: remote.clientId, clientType: remote.clientType,
-        razonSocial: remote.razonSocial, repLegal: remote.repLegal,
-        address: remote.address, origin: remote.origin||'web',
-        facturaNumero: remote.facturaNumero, createdAt: remote.createdAt,
-        cumpleanos: remote.cumpleanos,
-        personasExtra: remote.personasExtra||0,
-        costoPersonasExtra: remote.costoPersonasExtra||0,
-        quiereExterior: remote.quiereExterior||false,
-        lugarExterior: remote.lugarExterior||'',
-        costoExterior: remote.costoExterior||0,
-        fechaOriginal: remote.fechaOriginal, fechaNueva: remote.fechaNueva,
-      };
-      const existing = byId.get(remote.id);
-      byId.set(remote.id, existing ? { ...existing, ...norm } : norm);
+      const norm = { id:remote.id, numero:remote.numero||null, nombre:remote.nombre, tel:remote.tel, email:remote.email, plan:remote.plan, notas:remote.notas, fecha:remote.fecha, fechaLabel:remote.fechaLabel||remote.fecha, hora:remote.hora, horaVal:remote.horaVal, status:remote.status||'pending', abono:remote.abono||0, cancelado:remote.cancelado||0, totalManual:remote.totalManual, extras:remote.extras||[], clientId:remote.clientId, clientType:remote.clientType, razonSocial:remote.razonSocial, repLegal:remote.repLegal, address:remote.address, origin:remote.origin||'web', facturaNumero:remote.facturaNumero, createdAt:remote.createdAt, cumpleanos:remote.cumpleanos, personasExtra:remote.personasExtra||0, costoPersonasExtra:remote.costoPersonasExtra||0, quiereExterior:remote.quiereExterior||false, lugarExterior:remote.lugarExterior||'', costoExterior:remote.costoExterior||0, fechaOriginal:remote.fechaOriginal, fechaNueva:remote.fechaNueva };
+      byId.set(remote.id, byId.has(remote.id) ? {...byId.get(remote.id),...norm} : norm);
     });
-
-    const merged = Array.from(byId.values()).filter(r => r.status !== 'deleted');
+    const merged = Array.from(byId.values()).filter(r=>r.status!=='deleted');
     localStorage.setItem('jans_reservas', JSON.stringify(merged));
     return true;
-  } catch(e) { console.error('Supabase sync error:', e); return false; }
+  } catch(e) { console.error('sync error',e); return false; }
 }
 
 async function pushReservaToSupabase(r) {
@@ -4600,14 +4554,14 @@ function renderReservasTable(highlightId) {
   const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
   let list = [...allReservas].reverse().filter(r => {
     if (r.status === 'deleted') return false;
-    if (filterStatus && r.status !== filterStatus) return false;
-    if (filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
+    if(filterStatus && r.status !== filterStatus) return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
 
   const tbody = document.getElementById('reservasTableBody');
   if(!tbody) return;
-  const pending = allReservas.filter(r=>r.status==='pending' && r.status!=='deleted').length;
+  const pending = allReservas.filter(r=>r.status==='pending').length;
   const badge   = document.getElementById('reservasBadge');
   const badge2  = document.getElementById('reservasBadge2');
   if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
@@ -6725,119 +6679,51 @@ const CHART_COLORS = ['#e91e8c', '#c2176d', '#f59e0b', '#22c55e', '#3b82f6', '#a
 function updatePanelAdministrativo() {
   loadReservasLocal();
   loadPaperTypes();
-
-  const activeRes = allReservas.filter(r => r.status !== 'deleted');
-  const activeQ   = (state.quotes || []);
-  const now       = todayPanama ? todayPanama() : new Date();
-  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
-
-  const billableR = activeRes.filter(r => r.status === 'confirmed' || r.status === 'completed');
-  const billableQ = activeQ.filter(q => q.status === 'confirmed' || q.status === 'completed');
-
-  const billableRMonth = billableR.filter(r => {
-    const d = new Date((r.fecha||'') + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  });
-  const billableQMonth = billableQ.filter(q => {
-    const d = new Date((q.sessionDate||'') + 'T00:00:00');
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-  });
-
-  const revMonth  = billableRMonth.reduce((s,r)=>s+resTotal(r),0) + billableQMonth.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
-  const revTotal  = billableR.reduce((s,r)=>s+resTotal(r),0) + billableQ.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
-  const revPend   = billableR.reduce((s,r)=>s+resPendiente(r),0) + billableQ.reduce((s,q)=>s+Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)),0);
-  const totalBill = billableR.length + billableQ.length;
-  const avgTicket = totalBill ? revTotal / totalBill : 0;
-  const pendCount = billableR.filter(r=>resPendiente(r)>0).length + billableQ.filter(q=>Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0))>0).length;
-
-  document.getElementById('panelRevMonth').textContent    = `$${revMonth.toFixed(2)}`;
-  document.getElementById('panelRevMonthSub').textContent = `${billableRMonth.length + billableQMonth.length} sesión(es) este mes`;
-  document.getElementById('panelRevTotal').textContent    = `$${revTotal.toFixed(2)}`;
-  document.getElementById('panelRevPending').textContent  = `$${revPend.toFixed(2)}`;
-  document.getElementById('panelRevPendingSub').textContent = `De ${pendCount} sesión(es)`;
-  document.getElementById('panelAvgTicket').textContent   = `$${avgTicket.toFixed(2)}`;
-
-  // ── Planes más solicitados ──
-  const planCounts = {};
-  [...activeRes, ...activeQ].forEach(x => {
-    const plan = x.plan || x.plan;
-    if (!plan) return;
-    const clean = plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
-    planCounts[clean] = (planCounts[clean] || 0) + 1;
-  });
-  const planData = Object.entries(planCounts).sort((a,b)=>b[1]-a[1]).slice(0,8)
-    .map(([label,value],i) => ({ label, value, color: CHART_COLORS[i%CHART_COLORS.length] }));
-  document.getElementById('panelPlansChart').innerHTML = buildDonutChart(planData);
-
-  // ── Servicios adicionales más vendidos ──
-  const extraCounts = {};
-  activeRes.forEach(r => (r.extras||[]).forEach(e => { if(e.nombre){ extraCounts[e.nombre]=(extraCounts[e.nombre]||0)+1; } }));
-  activeQ.forEach(q => (q.addons||[]).filter(a=>a.price>0).forEach(a => { if(a.name){ extraCounts[a.name]=(extraCounts[a.name]||0)+1; } }));
-  const extraData = Object.entries(extraCounts).sort((a,b)=>b[1]-a[1]).slice(0,8)
-    .map(([label,value],i) => ({ label, value, color: CHART_COLORS[i%CHART_COLORS.length] }));
-  document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(extraData);
-
-  // ── Inventario ──
-  const invEl = document.getElementById('panelInventoryStatus');
-  if (!paperTypes.length) {
-    invEl.innerHTML = `<div style="color:var(--gray);font-size:0.85rem">No has registrado tipos de papel aún.</div>`;
-  } else {
-    invEl.innerHTML = paperTypes.map(p => {
-      const isLow = p.stock <= p.minStock;
-      const pct = p.minStock > 0 ? Math.min(100, Math.round((p.stock/Math.max(p.minStock*3,1))*100)) : 100;
-      return `<div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-          <span>${p.nombre}</span><span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} hojas ${isLow?'⚠':''}</span>
-        </div>
-        <div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── Top clientes ──
-  const clientMap = {};
-  activeRes.forEach(r => {
-    const key = r.tel || r.nombre;
-    if (!clientMap[key]) clientMap[key] = { nombre: r.nombre, count:0, total:0, lastDate:'' };
-    clientMap[key].count++;
-    clientMap[key].total += resTotal(r);
-    if ((r.fecha||'') > clientMap[key].lastDate) clientMap[key].lastDate = r.fecha;
-  });
-  activeQ.forEach(q => {
-    const key = q.phone || q.clientName;
-    if (!clientMap[key]) clientMap[key] = { nombre: q.clientName, count:0, total:0, lastDate:'' };
-    clientMap[key].count++;
-    clientMap[key].total += parseFloat(q.total)||0;
-    if ((q.sessionDate||'') > clientMap[key].lastDate) clientMap[key].lastDate = q.sessionDate;
-  });
-  const topClients = Object.values(clientMap).sort((a,b)=>b.count-a.count).slice(0,8);
-  const clientsTbody = document.getElementById('panelTopClients');
-  clientsTbody.innerHTML = topClients.length
-    ? topClients.map(c=>`<tr><td style="font-weight:600">${c.nombre}</td><td>${c.count}</td><td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td><td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td></tr>`).join('')
-    : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
-
-  // ── Gráfico mensual ──
-  const months = [];
-  for (let i=5; i>=0; i--) {
-    const d = new Date(thisYear, thisMonth-i, 1);
-    months.push({ year:d.getFullYear(), month:d.getMonth(), label:d.toLocaleDateString('es-PA',{month:'short'}) });
-  }
-  const monthCounts = months.map(m => {
-    const cR = activeRes.filter(r=>{ const d=new Date((r.fecha||'')+'T00:00:00'); return d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
-    const cQ = activeQ.filter(q=>{ const d=new Date((q.sessionDate||'')+'T00:00:00'); return d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
+  const activeRes = allReservas.filter(r=>r.status!=='deleted');
+  const activeQ   = (state.quotes||[]);
+  const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
+  const thisMonth = now.getMonth(), thisYear=now.getFullYear();
+  const billR = activeRes.filter(r=>r.status==='confirmed'||r.status==='completed');
+  const billQ = activeQ.filter(q=>q.status==='confirmed'||q.status==='completed');
+  const billRM = billR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const billQM = billQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;});
+  const revMonth  = billRM.reduce((s,r)=>s+resTotal(r),0)+billQM.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+  const revTotal  = billR.reduce((s,r)=>s+resTotal(r),0)+billQ.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+  const revPend   = billR.reduce((s,r)=>s+resPendiente(r),0)+billQ.reduce((s,q)=>s+Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0)),0);
+  const totalBill = billR.length+billQ.length;
+  const avgTicket = totalBill ? revTotal/totalBill : 0;
+  const pendCount = billR.filter(r=>resPendiente(r)>0).length+billQ.filter(q=>Math.max(0,(parseFloat(q.total)||0)-(parseFloat(q.abono)||0)-(parseFloat(q.pagado)||0))>0).length;
+  document.getElementById('panelRevMonth').textContent    = '$'+revMonth.toFixed(2);
+  document.getElementById('panelRevMonthSub').textContent = (billRM.length+billQM.length)+' sesión(es) este mes';
+  document.getElementById('panelRevTotal').textContent    = '$'+revTotal.toFixed(2);
+  document.getElementById('panelRevPending').textContent  = '$'+revPend.toFixed(2);
+  document.getElementById('panelRevPendingSub').textContent = 'De '+pendCount+' sesión(es)';
+  document.getElementById('panelAvgTicket').textContent   = '$'+avgTicket.toFixed(2);
+  const planCounts={};
+  [...activeRes,...activeQ].forEach(x=>{const p=x.plan;if(!p)return;const c=p.replace(/\s*\(\$[\d.,]+\)\s*$/,'').trim();planCounts[c]=(planCounts[c]||0)+1;});
+  document.getElementById('panelPlansChart').innerHTML = buildDonutChart(Object.entries(planCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+  const extraCounts={};
+  activeRes.forEach(r=>(r.extras||[]).forEach(e=>{if(e.nombre)extraCounts[e.nombre]=(extraCounts[e.nombre]||0)+1;}));
+  activeQ.forEach(q=>(q.addons||[]).filter(a=>a.price>0).forEach(a=>{if(a.name)extraCounts[a.name]=(extraCounts[a.name]||0)+1;}));
+  document.getElementById('panelExtrasChart').innerHTML = buildDonutChart(Object.entries(extraCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value],i)=>({label,value,color:CHART_COLORS[i%CHART_COLORS.length]})));
+  const invEl=document.getElementById('panelInventoryStatus');
+  if(!paperTypes.length){invEl.innerHTML='<div style="color:var(--gray);font-size:0.85rem">Sin tipos de papel registrados.</div>';}
+  else{invEl.innerHTML=paperTypes.map(p=>{const isLow=p.stock<=p.minStock;const pct=p.minStock>0?Math.min(100,Math.round((p.stock/Math.max(p.minStock*3,1))*100)):100;return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px"><span>${p.nombre}</span><span style="font-weight:700;color:${isLow?'#fca5a5':'var(--white)'}">${p.stock} ${isLow?'⚠':''}</span></div><div style="height:7px;background:var(--dark);border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${isLow?'#ef4444':'linear-gradient(90deg,var(--pink),var(--pink-l))'}"></div></div></div>`;}).join('');}
+  const clientMap={};
+  activeRes.forEach(r=>{const k=r.tel||r.nombre;if(!clientMap[k])clientMap[k]={nombre:r.nombre,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=resTotal(r);if((r.fecha||'')>clientMap[k].lastDate)clientMap[k].lastDate=r.fecha;});
+  activeQ.forEach(q=>{const k=q.phone||q.clientName;if(!clientMap[k])clientMap[k]={nombre:q.clientName,count:0,total:0,lastDate:''};clientMap[k].count++;clientMap[k].total+=parseFloat(q.total)||0;if((q.sessionDate||'')>clientMap[k].lastDate)clientMap[k].lastDate=q.sessionDate;});
+  const topClients=Object.values(clientMap).sort((a,b)=>b.count-a.count).slice(0,8);
+  const clientsTbody=document.getElementById('panelTopClients');
+  clientsTbody.innerHTML=topClients.length?topClients.map(c=>`<tr><td style="font-weight:600">${c.nombre}</td><td>${c.count}</td><td style="font-weight:700;color:var(--pink-l)">$${c.total.toFixed(2)}</td><td style="color:var(--gray-l);font-size:0.85rem">${c.lastDate||'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr>';
+  const months=[];
+  for(let i=5;i>=0;i--){const d=new Date(thisYear,thisMonth-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('es-PA',{month:'short'})});}
+  const monthCounts=months.map(m=>{
+    const cR=activeRes.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;
+    const cQ=activeQ.filter(q=>{const d=new Date((q.sessionDate||'')+'T00:00:00');return d.getFullYear()===m.year&&d.getMonth()===m.month;}).length;
     return cR+cQ;
   });
-  const maxCount = Math.max(1, ...monthCounts);
-  document.getElementById('panelMonthlyChart').innerHTML = months.map((m,i)=>{
-    const h = Math.max(4, Math.round((monthCounts[i]/maxCount)*130));
-    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px">
-      <span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span>
-      <div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div>
-      <span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span>
-    </div>`;
-  }).join('');
+  const maxCount=Math.max(1,...monthCounts);
+  document.getElementById('panelMonthlyChart').innerHTML=months.map((m,i)=>{const h=Math.max(4,Math.round((monthCounts[i]/maxCount)*130));return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px"><span style="font-size:0.75rem;font-weight:700;color:var(--white)">${monthCounts[i]}</span><div style="width:100%;max-width:36px;height:${h}px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div><span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">${m.label}</span></div>`;}).join('');
 }
 
 function initPanel() {
