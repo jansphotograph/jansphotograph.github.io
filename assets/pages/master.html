@@ -2105,13 +2105,69 @@ async function ghPutPublic(file, data) {
   return res.ok;
 }
 
-// ── Session guard + init — wrapped in DOMContentLoaded ──
+// ═══════════════════════════════════════
+//  ENCRIPTACIÓN AES-256-GCM — localStorage
+// ═══════════════════════════════════════
+const LS_SALT = 'jans-ph-2025-secure';
+
+async function _lsKey() {
+  const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(LS_SALT + (sessionStorage.getItem(SESSION_KEY)||'')));
+  return crypto.subtle.importKey('raw', raw, { name:'AES-GCM' }, false, ['encrypt','decrypt']);
+}
+
+async function lsSet(key, data) {
+  try {
+    const iv  = crypto.getRandomValues(new Uint8Array(12));
+    const k   = await _lsKey();
+    const enc = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, k, new TextEncoder().encode(JSON.stringify(data)));
+    const out = btoa(String.fromCharCode(...iv) + String.fromCharCode(...new Uint8Array(enc)));
+    localStorage.setItem(key, out);
+  } catch(e) { localStorage.setItem(key, JSON.stringify(data)); } // fallback plain
+}
+
+async function lsGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    // Si está en JSON plano (migración), devolver tal cual
+    if (raw.startsWith('[') || raw.startsWith('{')) return JSON.parse(raw);
+    const bytes  = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+    const iv     = bytes.slice(0, 12);
+    const data   = bytes.slice(12);
+    const k      = await _lsKey();
+    const dec    = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, k, data);
+    return JSON.parse(new TextDecoder().decode(dec));
+  } catch(e) {
+    // Datos no encriptados (versión anterior) — leer en plano y re-encriptar
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch(_) { return null; }
+  }
+}
+
+
 const SESSION_KEY = 'jans_master_auth';
 
-// Redirect immediately if no session (before DOM paint)
-if (sessionStorage.getItem(SESSION_KEY) !== 'true') {
-  window.location.replace('auth/auth.html');
-}
+// ── Verificación de sesión con expiración y fingerprint ──
+(async () => {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) { window.location.replace('auth/auth.html'); return; }
+    const s = JSON.parse(raw);
+    if (!s || !s.expiry || s.expiry < Date.now()) {
+      sessionStorage.removeItem(SESSION_KEY);
+      window.location.replace('auth/auth.html');
+      return;
+    }
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(navigator.userAgent + screen.width + screen.colorDepth));
+    const fp  = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    if (s.fp !== fp) {
+      sessionStorage.removeItem(SESSION_KEY);
+      window.location.replace('auth/auth.html');
+    }
+  } catch(e) {
+    sessionStorage.removeItem(SESSION_KEY);
+    window.location.replace('auth/auth.html');
+  }
+})();
 
 // Once DOM is ready, initialize the app
 document.addEventListener('DOMContentLoaded', async function() {
@@ -2120,6 +2176,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.querySelectorAll('.modal-overlay').forEach(el =>
       el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); })
     );
+
+    // ── Verificador periódico de sesión (cada 5 min) ──
+    setInterval(async () => {
+      try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        if (!raw) { handleLogout(); return; }
+        const s = JSON.parse(raw);
+        if (!s || !s.expiry || s.expiry < Date.now()) { handleLogout(); }
+      } catch(e) { handleLogout(); }
+    }, 5 * 60 * 1000);
 
     // Set topbar
     const userEl = document.getElementById('topbarUser');
@@ -2156,6 +2222,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 // ── Logout — clear session and go to index ──
 function handleLogout() {
   sessionStorage.removeItem(SESSION_KEY);
+  // Limpiar datos sensibles del localStorage al cerrar sesión
+  ['jans_reservas','jans_quotes','jans_calendar','jans_inventario_insumos',
+   'jans_inventario_categorias','jans_serv_adicionales'].forEach(k => localStorage.removeItem(k));
   window.location.replace('../../index.html');
 }
 
@@ -4311,7 +4380,12 @@ function getOrAssignFacturaNumero(r) {
 
 // Local-only load (fast, synchronous) — used by renderReservasTable on every render
 function loadReservasLocal() {
-  try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
+  try {
+    const raw = localStorage.getItem('jans_reservas');
+    if (!raw) { allReservas = []; return; }
+    // Intentar parsear (puede ser JSON plano o datos encriptados)
+    try { allReservas = JSON.parse(raw); } catch(e) { allReservas = []; }
+  } catch(e) { allReservas = []; }
   let changed = false;
   allReservas.forEach(r => {
     if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
