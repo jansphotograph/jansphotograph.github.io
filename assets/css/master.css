@@ -257,6 +257,8 @@ tr.row-highlight { animation: rowHighlightPulse 1.1s ease-in-out 3; }
 .modal-overlay.open { display: flex; }
 .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.2s; box-shadow: var(--shadow); }
 .modal-overlay.open .modal { transform: translateY(0); }
+/* Modal con footer fijo */
+.modal.modal-flex { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .modal-header h3 { font-size: 1.1rem; font-weight: 700; }
 .modal-close { background: none; border: none; color: var(--gray-l); font-size: 1.4rem; line-height: 1; }
