@@ -292,7 +292,6 @@
   </div>
 </div>
 <main class="main-content" style="padding-top:110px">
-<div id="section-planes" style="">
 <div class="view" id="view-planesPublicos">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
@@ -339,95 +338,7 @@
       </div>
 
       <!-- ── DATOS DE EMPRESA ── -->
-      <div class="view" id="view-company">
-        <div class="page-header">
-          <h2>Datos de Empresa</h2>
-          <p>Esta información aparece en tus cotizaciones y facturas en PDF</p>
-        </div>
 
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
-            Información General
-          </div>
-
-          <div class="field">
-            <label>Logo de la empresa</label>
-            <div id="compLogoZone" onclick="document.getElementById('compLogoInput').click()"
-              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:24px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
-              <input type="file" id="compLogoInput" accept="image/*" style="display:none" onchange="handleCompanyLogo(this.files[0])" />
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <div style="font-size:0.82rem;color:var(--gray-l)" id="compLogoLabel">Haz clic o arrastra tu logo aquí</div>
-            </div>
-            <div id="compLogoPreview" style="display:none;margin-top:10px;max-width:160px">
-              <img id="compLogoImg" src="" style="width:100%;border-radius:8px;display:block;background:#fff;padding:8px" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field"><label>Nombre de la empresa</label><input type="text" id="compNombre" placeholder="Jans Photograph" /></div>
-            <div class="field"><label>Teléfono</label><input type="text" id="compTelefono" placeholder="+507 6862-2402" /></div>
-          </div>
-
-          <div class="form-row">
-            <div class="field"><label>RUC</label><input type="text" id="compRuc" placeholder="8-888-8888" /></div>
-            <div class="field"><label>DV</label><input type="text" id="compDv" placeholder="00" /></div>
-          </div>
-
-          <div class="field"><label>Correo electrónico</label><input type="email" id="compEmail" placeholder="contacto@empresa.com" /></div>
-
-          <hr class="section-divider" />
-          <span class="section-label-sm">Ubicación</span>
-          <div class="form-row">
-            <div class="field"><label>Corregimiento</label><input type="text" id="compCorregimiento" placeholder="Ej. San Miguelito" /></div>
-            <div class="field"><label>Distrito</label><input type="text" id="compDistrito" placeholder="Ej. Panamá" /></div>
-          </div>
-          <div class="field"><label>Calle</label><input type="text" id="compCalle" placeholder="Ej. Calle 12, Edificio Plaza, Local 3" /></div>
-
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="saveCompanyData()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              Guardar y publicar
-            </button>
-          </div>
-          <div id="compMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
-        </div>
-
-        <!-- ── Yappy QR (uploaded directly to GitHub, same flow as the company logo) ── -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
-            Código QR de Yappy
-          </div>
-          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:16px">
-            Esta imagen se muestra en la página pública de abono (infoselect). Se sube directamente a tu repositorio de GitHub.
-          </p>
-
-          <div class="field">
-            <div id="qrZone" onclick="document.getElementById('qrInput').click()"
-              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:24px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
-              <input type="file" id="qrInput" accept="image/*" style="display:none" onchange="handleYappyQrFile(this.files[0])" />
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <div style="font-size:0.82rem;color:var(--gray-l)" id="qrZoneLabel">Haz clic o arrastra el QR de Yappy aquí</div>
-            </div>
-            <div id="qrPreviewWrap" style="display:none;margin-top:14px;max-width:160px">
-              <img id="qrPreviewImg" src="" style="width:100%;border-radius:8px;display:block;background:#fff;padding:8px" />
-            </div>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="saveYappyQr()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              Guardar y publicar QR
-            </button>
-          </div>
-          <div id="qrMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
-        </div>
-      </div>
-
-      <!-- ── EQUIPO ── -->
-</div>
-<div id="section-blog" style="display:none">
 <div class="view" id="view-blog">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div><h2>Blog</h2><p>Publicaciones que aparecen en la página de blogs</p></div>
@@ -448,6 +359,7 @@
       <!-- ── PLANES PÚBLICOS ── -->
 </div>
 <div id="section-serv" style="display:none">
+
 <div class="view" id="view-servAdicionales">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
@@ -476,6 +388,7 @@
       <!-- ── INVENTARIO ── -->
 </div>
 <div id="section-inventario" style="display:none">
+
 <div class="view" id="view-inventario">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
@@ -512,248 +425,7 @@
       </div>
 
       <!-- ── PANEL ADMINISTRATIVO ── -->
-      <div class="view" id="view-panel">
-        <div class="page-header">
-          <h2>Panel Administrativo</h2>
-          <p>Vista general del negocio: ingresos, inventario y tendencias</p>
-        </div>
 
-        <!-- Revenue summary -->
-        <div class="stats-grid">
-          <div class="stat-card pink">
-            <div class="stat-label">Ingresos este mes</div>
-            <div class="stat-value" id="panelRevMonth">$0</div>
-            <div class="stat-sub" id="panelRevMonthSub">Confirmadas/completadas</div>
-          </div>
-          <div class="stat-card green">
-            <div class="stat-label">Ingresos totales</div>
-            <div class="stat-value" id="panelRevTotal">$0</div>
-            <div class="stat-sub">Histórico acumulado</div>
-          </div>
-          <div class="stat-card amber">
-            <div class="stat-label">Pendiente por cobrar</div>
-            <div class="stat-value" id="panelRevPending">$0</div>
-            <div class="stat-sub" id="panelRevPendingSub">Saldos de reservas confirmadas</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-label">Ticket promedio</div>
-            <div class="stat-value" id="panelAvgTicket">$0</div>
-            <div class="stat-sub">Por reserva confirmada</div>
-          </div>
-        </div>
-
-        <!-- Charts row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" id="panelChartsGrid">
-          <div class="card" style="margin-bottom:0">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-              Planes más solicitados
-            </div>
-            <div id="panelPlansChart" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center"></div>
-          </div>
-          <div class="card" style="margin-bottom:0">
-            <div class="card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-              Servicios adicionales más vendidos
-            </div>
-            <div id="panelExtrasChart" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center"></div>
-          </div>
-        </div>
-
-        <!-- Inventory status -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            Estado del Inventario
-          </div>
-          <div id="panelInventoryStatus" style="display:flex;flex-direction:column;gap:10px"></div>
-        </div>
-
-        <!-- Top clients -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
-            Clientes Frecuentes
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Cliente</th><th>Reservas</th><th>Total gastado</th><th>Última visita</th></tr></thead>
-              <tbody id="panelTopClients"><tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aún</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Monthly trend -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Reservas por mes (últimos 6 meses)
-          </div>
-          <div id="panelMonthlyChart" style="display:flex;align-items:flex-end;gap:14px;height:160px;padding:10px 4px"></div>
-        </div>
-      </div>
-
-
-
-      <div class="view" id="view-notas">
-        <div class="page-header">
-          <h2>Notas Importantes</h2>
-          <p>Información que verán los clientes al momento de hacer su reserva</p>
-        </div>
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Notas para el cliente
-          </div>
-          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:20px">
-            Estas notas aparecerán en la página de reservas con fondo amarillo antes del formulario.
-            Úsalas para comunicar requisitos, políticas de cancelación, indicaciones de pago, etc.<br/>
-            <span style="color:var(--gray)">Una nota por línea.</span>
-          </p>
-          <div class="field">
-            <label>Notas <span style="color:var(--gray);font-weight:400">(una por línea)</span></label>
-            <textarea id="notasTexto" oninput="updateNotasPreview()" style="min-height:320px;font-size:0.9rem;line-height:1.7"
-              placeholder="Ej: El pago del 50% del plan debe realizarse al confirmar la reserva.&#10;Las sesiones canceladas con menos de 24hrs no tienen reembolso.&#10;Por favor llega 10 minutos antes de tu sesión."></textarea>
-          </div>
-
-          <!-- Preview -->
-          <div id="notasPreview" style="display:none;margin:16px 0;background:#fff9f0;border-top:3px solid #f59e0b;border-radius:8px;padding:18px">
-            <div style="font-weight:700;font-size:0.8rem;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">⚠ Previsualización</div>
-            <div id="notasPreviewContent" style="font-size:0.88rem;color:#78350f;line-height:1.75"></div>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="saveNotas()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              Guardar y publicar
-            </button>
-            <button class="btn btn-outline" onclick="clearNotas()">Eliminar notas</button>
-          </div>
-          <div id="notasMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
-        </div>
-      </div>
-
-      <!-- ── RECARGAR SITIO ── -->
-      <div class="view" id="view-recargar">
-        <div class="page-header">
-          <h2>Recargar Sitio</h2>
-          <p>Fuerza a todas las páginas públicas a cargar los últimos cambios</p>
-        </div>
-
-        <!-- ── Auto-sync polling ── -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Sincronización Automática
-          </div>
-          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
-            Cuando está activa, el Master revisa cada <strong style="color:var(--white)">60 segundos</strong> si hay
-            reservas nuevas (desde Supabase) o cambios publicados, y actualiza la pantalla automáticamente sin que tengas que recargar.
-          </p>
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-            <button class="btn" id="pollToggleBtn" onclick="togglePolling()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span id="pollToggleLabel">Activar sincronización automática</span>
-            </button>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div id="pollStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--gray);flex-shrink:0"></div>
-              <span id="pollStatusText" style="font-size:0.85rem;color:var(--gray-l)">Desactivada</span>
-            </div>
-          </div>
-          <div style="font-size:0.78rem;color:var(--gray);margin-top:12px" id="pollLastCheck"></div>
-        </div>
-
-        <!-- ── Calendar cleanup ── -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Limpiar Días y Horas Bloqueadas Sin Reservas
-          </div>
-          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
-            Si un día o un horario quedó marcado como "ocupado" pero ya no tiene ninguna reserva confirmada
-            respaldándolo (por ejemplo, si confirmaste y luego regresaste una reserva a pendiente), usa este
-            botón para liberarlo. También te muestra qué horas siguen bloqueadas en este momento.
-          </p>
-          <button class="btn btn-outline" onclick="cleanupStaleCalendarDays()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
-            Revisar y liberar días y horas sin reservas
-          </button>
-          <div id="cleanupResult" style="font-size:0.82rem;color:var(--gray-l);margin-top:12px"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
-            Publicar actualización
-          </div>
-          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:24px">
-            Al presionar <strong style="color:var(--white)">Recargar Sitio</strong>, se sube un nuevo <code>version.json</code> al repositorio público.
-            Todas las páginas del sitio detectan el cambio automáticamente y se recargan para mostrar
-            los últimos planes, precios, disponibilidad e imágenes.
-          </p>
-
-          <div class="field">
-            <label>Nota de actualización <span style="color:var(--gray);font-weight:400">(opcional)</span></label>
-            <input type="text" id="reloadNote" placeholder="Ej: Nuevos planes de boda, precios actualizados..." />
-          </div>
-
-          <!-- What gets updated -->
-          <div style="background:var(--dark);border-radius:12px;padding:20px;margin-bottom:24px">
-            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:14px">Al recargar se actualizará:</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkPlanes" checked style="accent-color:var(--pink)"> Planes fotográficos
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkPopular" checked style="accent-color:var(--pink)"> Populares marcados
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkCalendar" checked style="accent-color:var(--pink)"> Calendario disponibilidad
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkInstagram" checked style="accent-color:var(--pink)"> Post de Instagram
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkYoutube" checked style="accent-color:var(--pink)"> Video de YouTube
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkNotas" checked style="accent-color:var(--pink)"> Notas de reservas
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkServAdic" checked style="accent-color:var(--pink)"> Servicios adicionales
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkFaqs" checked style="accent-color:var(--pink)"> Preguntas frecuentes
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
-                <input type="checkbox" id="chkCompany" checked style="accent-color:var(--pink)"> Datos de empresa
-              </label>
-            </div>
-          </div>
-
-          <button class="btn btn-pink" id="btnReload" onclick="publishReload()" style="font-size:1rem;padding:14px 32px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
-            Recargar Sitio
-          </button>
-
-          <!-- Status log -->
-          <div id="reloadLog" style="margin-top:24px;display:none">
-            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:10px">Progreso</div>
-            <div id="reloadLogItems" style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem"></div>
-          </div>
-        </div>
-
-        <!-- Last reload info -->
-        <div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Última actualización publicada
-          </div>
-          <div id="lastReloadInfo" style="font-size:0.88rem;color:var(--gray-l)">Cargando...</div>
-        </div>
-      </div>
-</div>
-<div id="section-faqs" style="display:none">
 <div class="view" id="view-faqs">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div><h2>Preguntas Frecuentes</h2><p>Aparecen en todas las páginas de planes, al final del catálogo</p></div>
@@ -774,6 +446,7 @@
       <!-- ── SERVICIOS ADICIONALES ── -->
 </div>
 <div id="section-equipo" style="display:none">
+
 <div class="view" id="view-team">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
