@@ -13,7 +13,7 @@
 </head>
 <body>
 <script>
-(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){window.location.replace('../master.html');}})();
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();
 </script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
@@ -33,7 +33,7 @@
 </header>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <main class="main-content" style="padding-top:80px">
-<div class="view active" id="view-dashboard">
+<div id="view-dashboard">
         <div class="page-header">
           <h2>Dashboard</h2>
           <p>Resumen general del estudio</p>
