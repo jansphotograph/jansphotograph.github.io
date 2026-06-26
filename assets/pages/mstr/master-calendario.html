@@ -4,20 +4,20 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Calendario - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
+<link rel="icon" type="image/png" href="../../images/"icons/JansBlackBag.png" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../css/master.css" />
+<link rel="stylesheet" href="../../css/master.css" />
 </head>
 <body>
 <script>
-(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('master.html');}}catch(e){window.location.replace('master.html');}})();
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){window.location.replace('../master.html');}})();
 </script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
-<a href="master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
-<img src="../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+<a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
 </a>
 <span class="master-badge">MASTER</span>
 <span style="color:var(--gray);font-size:0.8rem">/ Calendario</span>
@@ -25,7 +25,7 @@
 <nav style="display:flex;gap:4px">
 <a href="master-dashboard.html" class="topbar-link">Dashboard</a>
 <a href="master-reservas.html" class="topbar-link">Reservas</a>
-<a href="master.html" class="topbar-link">Inicio</a>
+<a href="../master.html" class="topbar-link">Inicio</a>
 <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
 </nav>
 </header>
@@ -1151,7 +1151,7 @@ async function deleteCalEvent(ds) {
   const ok2 = await ghPutPublic('calendar.json', state.calendar);
   showToast(ok1 && ok2 ? `"${titulo}" eliminado — día liberado ✓` : 'Eliminado localmente — verifica GitHub', ok1 && ok2 ? 'success' : 'error');
 }
-function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("master.html"); }
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("../master.html"); }
 document.addEventListener('DOMContentLoaded', () => {
   // Cargar datos locales
   loadCalendar();
