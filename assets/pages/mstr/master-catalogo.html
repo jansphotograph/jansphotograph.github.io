@@ -10,7 +10,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../../css/master.css" />
+<link rel="stylesheet" href="../../css/mstr-base.css" />
+  <link rel="stylesheet" href="../../css/master-catalogo.css" />
 </head>
 <body>
 <script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){window.location.replace('../master.html');}})();</script>
@@ -791,14 +792,6 @@
       <!-- ── PREGUNTAS FRECUENTES ── -->
 </div>
 </main>
-<style>
-.subnav{position:fixed;top:64px;left:0;right:0;z-index:200;background:var(--panel);border-bottom:1px solid var(--border);display:flex;gap:4px;padding:8px 20px;flex-wrap:wrap;}
-.subnav-btn{background:transparent;border:1px solid transparent;border-radius:8px;color:var(--gray-l);font-family:var(--font);font-size:0.85rem;font-weight:600;padding:7px 16px;cursor:pointer;transition:all 0.15s;}
-.subnav-btn:hover{background:rgba(255,255,255,0.05);color:var(--white);}
-.subnav-btn.active{background:rgba(199,30,95,0.15);border-color:rgba(199,30,95,0.4);color:var(--pink-l);}
-.topbar-link{color:var(--gray-l);text-decoration:none;font-size:0.85rem;padding:6px 12px;border-radius:8px;transition:all 0.15s;}
-.topbar-link:hover{color:var(--white);background:rgba(255,255,255,0.05);}
-</style>
 <script>
 const SESSION_KEY = 'jans_master_auth';
 const CONFIG = {
