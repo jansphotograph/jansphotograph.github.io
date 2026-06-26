@@ -49,3 +49,6 @@
   font-size: 2rem; color: var(--white); margin-bottom: 8px;
 }
 .home-welcome p { color: var(--gray-l); font-size: 0.9rem; }
+
+/* Control de iconos en las tarjetas */
+.home-card-icon svg { width: 22px; height: 22px; flex-shrink: 0; }

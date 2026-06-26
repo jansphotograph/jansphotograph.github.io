@@ -25,6 +25,14 @@
   --subnav-h: 48px;
 }
 
+/* ── SVG size control ── */
+svg { flex-shrink: 0; }
+.btn svg        { width: 16px; height: 16px; flex-shrink: 0; }
+.card-title svg { color: var(--pink-l); flex-shrink: 0; width: 18px; height: 18px; }
+.topbar svg     { width: 18px; height: 18px; flex-shrink: 0; }
+.subnav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+table svg       { width: 15px; height: 15px; flex-shrink: 0; }
+
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
