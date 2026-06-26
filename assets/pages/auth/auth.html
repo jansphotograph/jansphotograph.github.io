@@ -227,19 +227,10 @@
       console.warn('No se pudo inicializar Supabase:', e);
     }
 
-    // Redirect if already authenticated with valid session
-    (async () => {
-      try {
-        const raw = sessionStorage.getItem(SESSION_KEY);
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s && s.expiry && s.expiry > Date.now()) {
-            const fp = await sha256(navigator.userAgent + screen.width + screen.colorDepth);
-            if (s.fp === fp) window.location.replace('../master.html');
-          }
-        }
-      } catch(e) { sessionStorage.removeItem(SESSION_KEY); }
-    })();
+    // Redirect if already authenticated
+    if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+      window.location.replace('../master.html');
+    }
 
     // ── SHA-256 via WebCrypto (no external libs needed) ──
     async function sha256(text) {
@@ -398,12 +389,11 @@
         await new Promise(r => setTimeout(r, 400 + Math.random() * 200));
 
         if (userOk && passOk) {
-          // Generar token de sesión con expiración (8 horas) y fingerprint del browser
-          const expiry    = Date.now() + (8 * 60 * 60 * 1000);
-          const fp        = await sha256(navigator.userAgent + screen.width + screen.colorDepth);
-          const token     = await sha256(rawUser + rawPass + expiry + fp + Math.random());
-          const sessionData = JSON.stringify({ token, expiry, fp });
-          sessionStorage.setItem(SESSION_KEY, sessionData);
+          const authToken = await sha256(SESSION_KEY + Date.now() + Math.random());
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            token:  authToken,
+            expiry: Date.now() + (8 * 60 * 60 * 1000)  // 8 horas
+          }));
           await resetAttempts(); // reset shared counter on success
           btnText.textContent = '¡Bienvenido!';
           setTimeout(() => window.location.replace('../master.html'), 400);
