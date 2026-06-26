@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calendario - Jans Photograph</title>
+<link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="../css/master.css" />
+</head>
+<body>
+<script>
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('master.html');}}catch(e){window.location.replace('master.html');}})();
+</script>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:12px">
+<a href="master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+</a>
+<span class="master-badge">MASTER</span>
+<span style="color:var(--gray);font-size:0.8rem">/ Calendario</span>
+</div>
+<nav style="display:flex;gap:4px">
+<a href="master-dashboard.html" class="topbar-link">Dashboard</a>
+<a href="master-reservas.html" class="topbar-link">Reservas</a>
+<a href="master.html" class="topbar-link">Inicio</a>
+<button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+</nav>
+</header>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<div class="modal-overlay" id="calEventActionModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--pink)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Eventos del Calendario
+      </h3>
+      <button class="modal-close" onclick="closeModal('calEventActionModal')">×</button>
+    </div>
+    <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px">¿Qué deseas hacer?</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-pink" onclick="closeModal('calEventActionModal');openCalEventForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Crear nuevo evento
+      </button>
+      <button class="btn btn-outline" onclick="closeModal('calEventActionModal');openCalEventPicker('edit')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Editar / Aplazar evento existente
+      </button>
+      <button class="btn" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5" onclick="closeModal('calEventActionModal');openCalEventPicker('delete')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar evento
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Event picker for Edit/Delete (lists existing calendar events) -->
+<div class="cal-ctx-menu" id="calCtxMenu">
+  <!-- Event info block (shown only when day has a calendar event) -->
+  <div id="ctxEventInfo" style="display:none;padding:10px 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span id="ctxEventDot" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
+      <span id="ctxEventTitulo" style="font-weight:700;font-size:0.88rem;color:var(--white)"></span>
+    
+<main class="main-content" style="padding-top:80px">
+<div class="view" id="view-calendar">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Calendario</h2>
+            <p id="calSubtitle">Gestiona disponibilidad y reservas</p>
+          </div>
+          <div class="cal-view-btns">
+            <button class="cal-view-btn active" id="btnViewMonth" onclick="setCalView('month')">Mes</button>
+            <button class="cal-view-btn"        id="btnViewWeek"  onclick="setCalView('week')">Semana</button>
+            <button class="cal-view-btn"        id="btnViewDay"   onclick="setCalView('day')">Día</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <!-- Nav row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
+              <span style="font-weight:700;font-size:1rem;min-width:200px;text-align:center" id="calMonthLabel"></span>
+              <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
+              <button class="btn btn-sm btn-outline" onclick="calGoToday()" style="margin-left:6px">Hoy</button>
+              <button class="btn btn-sm btn-blue" onclick="syncCalendarPublic()" style="margin-left:4px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+                Sincronizar
+              </button>
+            </div>
+            <button class="btn btn-pink" onclick="openCalEventModal()" style="gap:7px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
+              Nuevo Evento
+            </button>
+          </div>
+
+          <!-- Views -->
+          <div id="calViewMonth">
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+          <div id="calViewWeek" style="display:none;overflow-x:auto">
+            <div class="week-grid" id="weekGrid"></div>
+          </div>
+          <div id="calViewDay" style="display:none">
+            <div class="day-timeline" id="dayTimeline"></div>
+          </div>
+
+          <!-- Legend -->
+          <div class="cal-legend" style="margin-top:16px">
+            <div class="cal-legend-item"><div class="dot dot-avail"></div> Disponible</div>
+            <div class="cal-legend-item"><div class="dot dot-book"></div> Ocupado</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(233,30,140,0.35)"></div> Evento</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(34,197,94,0.18)"></div> Confirmada</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.08)"></div> Pendiente</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(245,158,11,0.18)"></div> Aplazada</div>
+            <div class="cal-legend-item" style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.04);text-decoration:line-through"></div> Cancelada</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── QUOTES LIST ── -->
+      <div class="view" id="view-quotes">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2>Cotizaciones</h2>
+            <p>Registro de todas las cotizaciones</p>
+          </div>
+          <button class="btn btn-pink" onclick="switchView('newquote', document.querySelector('[onclick*=newquote]'))">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva
+          </button>
+        </div>
+        <div class="card">
+          <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+            <input type="text" id="searchQuotes" placeholder="Buscar cliente..." oninput="renderQuotesTable()" style="flex:1;min-width:180px;padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;" />
+            <select id="filterStatus" onchange="renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
+              <option value="">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="approved">Aprobada</option>
+              <option value="booked">Reservada</option>
+              <option value="rejected">Rechazada</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+              <tbody id="quotesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW QUOTE ── -->
+      <!-- ── FORMULARIO EVENTO ── -->
+      <div class="view" id="view-eventoForm">
+        <div class="page-header">
+          <h2>Formulario de Cotización para Evento</h2>
+          <p>Selecciona el tipo de cliente para copiar el formulario y compartirlo</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px">
+
+          <!-- Persona Natural -->
+          <div class="card" style="cursor:pointer;transition:all 0.2s;border:2px solid transparent"
+               id="cardNatural"
+               onclick="copyEventoForm('natural')"
+               onmouseenter="this.style.borderColor='var(--pink)'"
+               onmouseleave="this.style.borderColor='transparent'">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:8px 0">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(199,30,95,0.12);display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--pink-l)" stroke-width="1.8" width="28" height="28"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">Persona Natural</div>
+                <div style="font-size:0.8rem;color:var(--gray-l)">Nombre, cédula, correo, fecha, lugar y hora del evento</div>
+              </div>
+              <button class="btn btn-pink btn-sm" style="width:100%">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar formulario
+              </button>
+              <div id="msgNatural" style="display:none;font-size:0.78rem;color:#86efac">✓ ¡Copiado al portapapeles!</div>
+            </div>
+          </div>
+
+          <!-- Persona Jurídica -->
+          <div class="card" style="cursor:pointer;transition:all 0.2s;border:2px solid transparent"
+               id="cardJuridica"
+               onclick="copyEventoForm('juridica')"
+               onmouseenter="this.style.borderColor='var(--pink)'"
+               onmouseleave="this.style.borderColor='transparent'">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:8px 0">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="1.8" width="28" height="28"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">Persona Jurídica</div>
+                <div style="font-size:0.8rem;color:var(--gray-l)">Incluye RUC y DV adicional al formulario estándar</div>
+              </div>
+              <button class="btn btn-blue btn-sm" style="width:100%">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar formulario
+              </button>
+              <div id="msgJuridica" style="display:none;font-size:0.78rem;color:#86efac">✓ ¡Copiado al portapapeles!</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Preview del mensaje -->
+        <div style="margin-top:28px;max-width:700px">
+          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);margin-bottom:10px">Vista previa del formulario</div>
+          <div id="eventoFormPreview" style="background:var(--dark);border-radius:12px;padding:20px 24px;font-size:0.88rem;color:var(--gray-l);line-height:1.8;white-space:pre-wrap;font-family:monospace;border:1px solid var(--border)"></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-newquote">
+        <div class="page-header">
+          <h2>Nueva Cotización</h2>
+          <p>Completa los datos del cliente y selecciona los servicios</p>
+        </div>
+
+        <div class="card">
+          <span class="section-label-sm">Tipo de Cliente</span>
+          <div class="radio-group" style="margin-bottom:20px">
+            <div class="radio-btn selected" id="rNatural"   onclick="selectClientType('natural')">👤 Persona Natural</div>
+            <div class="radio-btn"          id="rJuridica"  onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
+          </div>
+
+          <span class="section-label-sm">Datos del Cliente</span>
+          <div class="form-row">
+            <div class="field"><label>Nombre Completo *</label><input type="text" id="qClientName" placeholder="Ej. Ana García" /></div>
+            <div class="field"><label>Cédula / RUC *</label><input type="text" id="qClientId" placeholder="8-888-8888" /></div>
+          </div>
+          <div class="form-row" id="juridicaFields" style="display:none">
+            <div class="field"><label>Razón Social</label><input type="text" id="qRazonSocial" placeholder="Nombre de la empresa" /></div>
+            <div class="field"><label>Representante Legal</label><input type="text" id="qRepLegal" placeholder="Nombre del representante" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Teléfono *</label><input type="tel" id="qPhone" placeholder="+507 6000-0000" /></div>
+            <div class="field"><label>Correo Electrónico</label><input type="email" id="qEmail" placeholder="cliente@correo.com" /></div>
+          </div>
+          <div class="field"><label>Dirección</label><input type="text" id="qAddress" placeholder="Ciudad, Provincia" /></div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Sesión Fotográfica</span>
+          <div class="form-row">
+            <div class="field"><label>Fecha de Sesión *</label><input type="date" id="qDate" /></div>
+            <div class="field"><label>Hora</label><input type="time" id="qTime" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior" /></div>
+            <div class="field"><label>Plan Fotográfico</label>
+              <select id="qPlan" onchange="updateTotal()">
+                <option value="">— Seleccionar —</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Servicios Adicionales</span>
+          <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Resumen</span>
+          <div style="background:var(--dark);border-radius:var(--radius);padding:20px">
+            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan para ver el resumen.</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
+              <span style="font-weight:700;font-size:1.05rem">Total Estimado</span>
+              <span style="font-weight:700;font-size:1.4rem;color:var(--pink-l)" id="qTotal">$0.00</span>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:16px"><label>Notas / Observaciones</label><textarea id="qNotes" placeholder="Detalles adicionales, requerimientos especiales..."></textarea></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveQuote()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Guardar Cotización
+            </button>
+            <button class="btn btn-outline" onclick="clearQuoteForm()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SERVICES MANAGER ── -->
+      <div class="view" id="view-services">
+        <div class="page-header">
+          <h2>Gestión de Servicios</h2>
+          <p>Administra los servicios adicionales y sus precios</p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Servicio de Maquillaje
+          </div>
+          <div id="servicesMakeup"></div>
+          <button class="btn btn-sm btn-outline" onclick="addServiceItem('makeup')" style="margin-top:10px">+ Añadir ítem</button>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Servicio de Impresiones
+          </div>
+          <div id="servicesPrint"></div>
+          <button class="btn btn-sm btn-outline" onclick="addServiceItem('print')" style="margin-top:10px">+ Añadir ítem</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-pink" onclick="saveServices()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            Guardar Servicios
+          </button>
+        </div>
+      </div>
+
+      <!-- ── PLANS MANAGER ── -->
+      <div class="view" id="view-plans">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2>Planes Fotográficos</h2>
+            <p>Crea y administra los paquetes de sesiones</p>
+          </div>
+          <button class="btn btn-pink" onclick="addPlan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Plan
+          </button>
+        </div>
+        <div id="plansContainer"></div>
+        <div class="btn-row">
+          <button class="btn btn-pink" onclick="savePlans()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+            Guardar Planes
+          </button>
+        </div>
+      </div>
+
+      <!-- ── CONFIG ── -->
+      <div class="view" id="view-config">
+        <div class="page-header">
+          <h2>Configuración GitHub</h2>
+          <p>Ingresa tus credenciales para conectar con el repositorio privado de datos</p>
+        </div>
+
+        <!-- ── GitHub Credentials Card ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            Credenciales de GitHub
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label>Usuario de GitHub *</label>
+              <input type="text" id="cfgOwner" placeholder="tu-usuario-github" oninput="previewRepo()" />
+            </div>
+            <div class="field">
+              <label>Repositorio privado *</label>
+              <input type="text" id="cfgRepo" placeholder="jans-master-data" oninput="previewRepo()" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Token Personal de GitHub *
+              <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener"
+                style="color:var(--pink-l);font-size:0.72rem;font-weight:400;margin-left:8px;text-decoration:underline">
+                ¿Cómo obtenerlo? →
+              </a>
+            </label>
+            <div style="position:relative">
+              <input type="password" id="cfgToken" placeholder="ghp_XXXXXXXXXXXXXXXXXXXX" style="padding-right:44px" oninput="previewRepo()" />
+              <button onclick="toggleTokenVisibility()" title="Mostrar/ocultar token"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-l);cursor:pointer;padding:4px;display:flex;align-items:center">
+                <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+              El token necesita permiso <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">repo</code> (acceso completo a repositorios privados). Se guarda localmente en tu navegador.
+            </div>
+          </div>
+          <hr class="section-divider" />
+          <span class="section-label-sm">Repositorio Público (GitHub Pages)</span>
+          <p style="font-size:0.78rem;color:var(--gray);margin-bottom:14px;line-height:1.6">
+            El repositorio donde está alojada tu página web. Los enlaces de Instagram y YouTube se guardan aquí en <code>data/socialmedia/</code> y son leídos por todos los visitantes sin necesidad de token.
+          </p>
+          <div class="form-row">
+            <div class="field">
+              <label>Usuario GitHub (página)</label>
+              <input type="text" id="cfgPublicOwner" placeholder="tu-usuario-github" oninput="savePublicRepoConfig()" />
+            </div>
+            <div class="field">
+              <label>Repositorio de la página</label>
+              <input type="text" id="cfgPublicRepo" placeholder="jans-photograph" oninput="savePublicRepoConfig()" />
+            </div>
+          </div>
+          <div style="background:var(--dark);border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:0.82rem;color:var(--gray-l);display:flex;align-items:center;gap:10px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray)" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            Repo privado: <code id="ghRepoDisplay" style="color:var(--white);margin-left:4px">—</code>
+            &nbsp;·&nbsp;
+            Repo público: <code id="ghPublicRepoDisplay" style="color:var(--white)">—</code>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveGithubConfig()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Guardar configuración
+            </button>
+            <button class="btn btn-outline" onclick="testGithubConnection()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Probar conexión
+            </button>
+            <button class="btn btn-red" onclick="clearGithubConfig()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Connection Status ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Estado de Conexión
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+            <div id="ghStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
+            <span id="ghStatusText" style="font-size:0.9rem;color:var(--gray-l)">Sin verificar — guarda la configuración y prueba la conexión</span>
+          </div>
+          <div style="font-size:0.8rem;color:var(--gray);line-height:2;background:var(--dark);border-radius:10px;padding:14px 18px">
+            Archivos sincronizados:<br/>
+            <code style="color:var(--gray-l)">data/quotes.json</code> ·
+            <code style="color:var(--gray-l)">data/services.json</code> ·
+            <code style="color:var(--gray-l)">data/plans.json</code> ·
+            <code style="color:var(--gray-l)">data/calendar.json</code>
+          </div>
+        </div>
+
+
+        <!-- ── Setup móvil notice ── -->
+        <div class="card" style="border-color:rgba(233,30,140,0.25)">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            Acceso desde otros dispositivos
+          </div>
+          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:16px">
+            Para acceder al Master desde tu celular u otro dispositivo, solo necesitas ingresar tu <strong style="color:var(--white)">usuario y contraseña</strong> en la pantalla de login. El token de GitHub se puede configurar después desde <strong style="color:var(--white)">Configuración → Token de GitHub</strong>.
+          </p>
+          <div style="background:var(--dark);border-radius:10px;padding:16px 18px;font-size:0.82rem;color:var(--gray-l)">
+            <div style="margin-bottom:8px;color:var(--white);font-weight:600">Sin token configurado puedes:</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span>✓ Ver y gestionar reservas</span>
+              <span>✓ Crear y editar planes, blogs</span>
+              <span>✓ Ver el calendario</span>
+              <span style="color:rgba(255,255,255,0.35)">✗ Publicar cambios al sitio web (requiere token)</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:0.78rem;color:var(--gray);background:rgba(233,30,140,0.07);border:1px solid rgba(233,30,140,0.15);border-radius:8px;padding:10px 14px">
+            🔐 El token se guarda <strong style="color:var(--pink-l)">cifrado con AES-256</strong> — nunca en texto plano. Es seguro guardarlo en el dispositivo.
+          </div>
+        </div>
+
+        <!-- ── Credentials ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Cambiar Usuario / Contraseña
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Usuario actual</label><input type="text" id="credCurrentUser" placeholder="Usuario actual" /></div>
+            <div class="field"><label>Contraseña actual</label><input type="password" id="credCurrentPass" placeholder="Contraseña actual" /></div>
+          </div>
+          <hr class="section-divider" />
+          <div class="form-row">
+            <div class="field"><label>Nuevo usuario</label><input type="text" id="credNewUser" placeholder="Nuevo usuario" /></div>
+            <div class="field"><label>Nueva contraseña</label><input type="password" id="credNewPass" placeholder="Nueva contraseña" /></div>
+          </div>
+          <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="credConfirmPass" placeholder="Repite la nueva contraseña" /></div>
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="changeCredentials()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Actualizar credenciales
+            </button>
+          </div>
+          <div id="credMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+
+        <!-- ── Sync ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Sincronización de Datos
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-blue" onclick="loadAllData()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+              Recargar datos de GitHub
+            </button>
+            <button class="btn btn-outline" onclick="exportAllJSON()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar JSON local
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Guide ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Guía de configuración
+          </div>
+          <div style="font-size:0.85rem;color:var(--gray-l);line-height:2">
+            <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+              <span>Crea un repositorio <strong style="color:var(--white)">privado</strong> en GitHub (ej. <code>jans-master-data</code>)</span>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
+              <span>Crea una carpeta <code>data/</code> con 5 archivos JSON vacíos: <code>quotes.json</code>, <code>services.json</code>, <code>plans.json</code>, <code>calendar.json</code>, <code>inventario.json</code> — todos iniciando con <code>[]</code> excepto calendar que inicia con <code>{}</code> e inventario con <code>{"categories":[],"items":[]}</code></span>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
+              <span>Ve a <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--pink-l)">GitHub → Settings → Developer settings → Personal access tokens</a> y genera un token con permiso <code>repo</code></span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">4</span>
+              <span>Ingresa tu usuario, repositorio y token arriba, guarda y prueba la conexión</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Invoice number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Control de Numeración de Facturas
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima factura que generes. El sistema siempre toma el número siguiente al que establezcas aquí como "último emitido". Útil para continuar una numeración de facturas preexistente.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de factura emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">Factura #</span>
+                <input type="number" id="facturaCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima factura será: <span id="facturaNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">Factura #001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveFacturaCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="facturaCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
+      </div>
+
+      <!-- ── SOCIAL LINKS ── -->
+      <div class="view" id="view-social">
+        <div class="page-header">
+          <h2>Redes Sociales</h2>
+          <p>Actualiza el enlace del último post de Instagram y el video de YouTube</p>
+        </div>
+
+        <!-- Instagram -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="color:#e91e8c"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            Último Post de Instagram
+          </div>
+
+          <!-- URL del post -->
+          <div class="field">
+            <label>URL del post <span style="color:var(--gray);font-weight:400">(redirige al hacer clic en la imagen)</span></label>
+            <input type="url" id="igPostUrl" placeholder="https://www.instagram.com/p/XXXXXXXX/" />
+          </div>
+
+          <!-- Subir imagen -->
+          <div class="field">
+            <label>Imagen del post</label>
+            <div id="igDropZone" onclick="document.getElementById('igFileInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="igFileInput" accept="image/*" style="display:none" onchange="handleIgFile(this.files[0])" />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 10px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+              <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Haz clic o arrastra la imagen aquí</div>
+              <div style="font-size:0.75rem;color:var(--gray)">Se guardará con su formato original (jpg, jpeg, png o webp) como <code>lastpost.[ext]</code></div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div id="igPreviewWrap" style="display:none;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:320px">
+            <img id="igPreviewImg" src="" alt="Preview"
+              style="width:100%;aspect-ratio:1;object-fit:cover;display:block" />
+          </div>
+
+          <!-- Status -->
+          <div id="igUploadStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:0.84rem;margin-bottom:12px"></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" id="igSaveBtn" onclick="saveIgLink()" disabled style="opacity:0.5;cursor:not-allowed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Subir y publicar
+            </button>
+            <a id="igOpenLink" href="#" target="_blank" rel="noopener" class="btn btn-outline" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Ver post
+            </a>
+          </div>
+        </div>
+
+                <!-- YouTube -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="#ff0000"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+            Último Video de YouTube
+          </div>
+
+          <div class="field">
+            <label>URL o ID del video</label>
+            <input type="text" id="ytVideoUrl" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX  ó  XXXXXXXXXXX" oninput="previewYT()" />
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+              Pega la URL completa o el ID del video (11 caracteres después de <code>v=</code>).
+            </div>
+          </div>
+
+          <div class="field">
+            <label>URL de tu canal</label>
+            <input type="text" id="ytChannelUrl" placeholder="https://www.youtube.com/@jansphotograph" />
+          </div>
+
+          <!-- Custom Thumbnail Upload -->
+          <div class="field">
+            <label>Thumbnail personalizado <span style="color:var(--gray);font-weight:400">(opcional — se guarda en /assets/images/social/youtube/)</span></label>
+            <div id="ytThumbZone" onclick="document.getElementById('ytThumbInput').click()"
+              style="border:2px dashed rgba(255,0,0,0.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="ytThumbInput" accept="image/*" style="display:none" onchange="handleYtThumb(this.files[0])" />
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff0000" opacity="0.5" style="margin:0 auto 8px;display:block"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="ytThumbLabel">Haz clic o arrastra el thumbnail aquí</div>
+            </div>
+            <div id="ytThumbPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-width:360px">
+              <img id="ytThumbImg" src="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" />
+            </div>
+            <div id="ytThumbStatus" style="display:none;margin-top:6px;font-size:0.78rem"></div>
+          </div>
+
+          <!-- Video Preview (desktop) -->
+          <div id="ytPreviewWrap" style="margin:18px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:560px;display:none">
+            <iframe id="ytPreviewFrame" width="100%" style="aspect-ratio:16/9;border:none;display:block" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div id="ytNoPreview" style="margin:18px 0;background:var(--dark);border-radius:12px;padding:24px;text-align:center;color:var(--gray);font-size:0.85rem;max-width:560px">
+            La previsualización aparecerá aquí cuando ingreses la URL.
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveYtLink()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+            <a id="ytOpenLink" href="#" target="_blank" rel="noopener" class="btn btn-outline" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Ver en YouTube
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RESERVAS ── -->
+</main>
+<style>
+.topbar-link{color:var(--gray-l);text-decoration:none;font-size:0.85rem;padding:6px 12px;border-radius:8px;transition:all 0.15s;}
+.topbar-link:hover{color:var(--white);background:rgba(255,255,255,0.05);}
+.cal-day{min-height:72px;max-height:108px;overflow:hidden;border-radius:9px;padding:6px;border:1px solid transparent;transition:all 0.15s;position:relative;cursor:pointer;}
+.day-events{display:flex;flex-direction:column;gap:2px;overflow:hidden;max-height:60px;}
+.ev-pill{font-size:0.62rem;font-weight:600;padding:1px 5px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block;}
+</style>
+<script>
+const SESSION_KEY = 'jans_master_auth';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  // GitHub API — Repositorio PRIVADO
+  GH_TOKEN:  'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', // Token Personal de GitHub (permisos: repo)
+  GH_OWNER:  'tu-usuario-github',    // Tu nombre de usuario en GitHub
+  GH_REPO:   'jans-master-data',     // Nombre del repositorio privado
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+/* ═════════════════════════════════════ */
+
+// ── State ──
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) { console.warn("Supabase error", e); }
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+function statusClassQ(s) {
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+}
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+async function ghPut(file, data) {
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
+  let res = await fetch(`${GH_BASE()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${CONFIG.GH_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  if (res.status === 409) {
+    try {
+      const getRes = await fetch(`${GH_BASE()}/${file}`, {
+        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.sha) {
+          state.fileSHAs[file] = getJson.sha;
+          body.sha = getJson.sha;
+          res = await fetch(`${GH_BASE()}/${file}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
+    } catch(e) { /* retry failed — return original failed response */ }
+  }
+
+  const json = await res.json();
+  if (json.content) state.fileSHAs[file] = json.content.sha;
+  return res.ok;
+}
+async function ghPutPublic(file, data) {
+  const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  // First try to get the current SHA
+  let sha = null;
+  try {
+    const getRes = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+  } catch(e) {}
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (sha) body.sha = sha;
+  const res = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+let allReservas = [];
+function loadReservasLocal() {
+  try {
+    const raw = localStorage.getItem('jans_reservas');
+    if (!raw) { allReservas = []; return; }
+    // Intentar parsear (puede ser JSON plano o datos encriptados)
+    try { allReservas = JSON.parse(raw); } catch(e) { allReservas = []; }
+  } catch(e) { allReservas = []; }
+  let changed = false;
+  allReservas.forEach(r => {
+    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
+    if (r.abono === undefined) { r.abono = 0; changed = true; }
+  });
+  if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+}
+function resTotal(r) {
+  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
+    ? (parseFloat(r.totalManual) || 0)
+    : resPlanPrice(r);
+  const extras        = resExtrasTotal(r);
+  const personasExtra = parseFloat(r.costoPersonasExtra) || 0;
+  const exterior      = parseFloat(r.costoExterior)      || 0;
+  return base + extras + personasExtra + exterior;
+}
+function resStatusClass(s) {
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
+}
+function resStatusLabel(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
+}
+
+function todayPanama() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Panama' }));
+}
+function todayStrPanama() {
+  const d = todayPanama();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+
+let calView     = 'month';
+let calViewDay  = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let state = { calendar: {}, quotes: [] };
+
+function loadCalendar() {
+  try { state.calendar = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) { state.calendar = {}; }
+}
+
+function getGHConfig() {
+  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+}
+
+async function fetchCalendarData() {
+  const cfg = getGHConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) return;
+  try {
+    const r = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/calendar.json', {
+      headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      state.calendar = JSON.parse(atob(d.content.replace(/\n/g,'')));
+      localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+    }
+  } catch(e) { console.warn('fetchCalendar error:', e); }
+
+  // También cargar cotizaciones para mostrar en calendario
+  try {
+    const r2 = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/quotes.json', {
+      headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
+    });
+    if (r2.ok) {
+      const d2 = await r2.json();
+      state.quotes = JSON.parse(atob(d2.content.replace(/\n/g,'')));
+      localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
+    }
+  } catch(e) {}
+
+  renderCalendar();
+  showToast('Calendario sincronizado');
+}
+
+function evClass(status) {
+  return { confirmed:'ev-confirmed', postponed:'ev-postponed', cancelled:'ev-cancelled' }[status] || 'ev-pending';
+}
+function getEventsForDate(ds) {
+  const res  = (JSON.parse(localStorage.getItem('jans_reservas')||'[]')).filter(r=>r.fecha===ds && r.status!=='deleted');
+  const quot = state.quotes.filter(q=>q.sessionDate===ds);
+  const evs  = [];
+  res.forEach(r  => evs.push({ name: r.nombre,         plan: r.plan||'—',   hora: r.hora||'',  horaVal: r.horaVal||0, status: r.status,   type:'res'   }));
+  quot.forEach(q => evs.push({ name: q.clientName,     plan: q.plan||'—',   hora: q.sessionTime||'', horaVal: parseInt((q.sessionTime||'0').split(':')[0])||0, status: q.status, type:'quote' }));
+  return evs;
+}
+function renderCalendar() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  if(calView==='month')  renderMonthView(todayStr);
+  else if(calView==='week') renderWeekView(todayStr);
+  else if(calView==='day')  renderDayView(todayStr);
+}
+function renderMonthView(todayStr) {
+  document.getElementById('calMonthLabel').textContent = MONTHS_ES[state.calMonth] + ' ' + state.calYear;
+  document.getElementById('calSubtitle').textContent = 'Vista mensual';
+  const g = document.getElementById('calGrid');
+  g.innerHTML = '';
+  DAYS_ES.forEach(d => { const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; g.appendChild(el); });
+  const firstDay    = new Date(state.calYear, state.calMonth, 1).getDay();
+  const daysInMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
+  for(let i=0;i<firstDay;i++){ const el=document.createElement('div'); el.className='cal-day empty'; g.appendChild(el); }
+
+  for(let d=1;d<=daysInMonth;d++) {
+    const ds  = state.calYear+'-'+String(state.calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const st  = state.calendar[ds];
+    const evs = getEventsForDate(ds);
+    const el  = document.createElement('div');
+    el.className = 'cal-day';
+    if(ds===todayStr) el.classList.add('today');
+
+    // st can be 'booked', 'available', or an event object {type:'event', titulo, color, ...}
+    if (st && typeof st === 'object' && st.type === 'event') {
+      el.classList.add('booked', 'cal-event', `ev-${st.color || 'pink'}`);
+      el.title = st.titulo || 'Evento';
+    } else if(st==='booked')    { el.classList.add('booked'); }
+      else if(st==='available') { el.classList.add('available'); }
+
+    // Reserva event pills (max 3)
+    const pills = evs.slice(0,3).map(e =>
+      `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
+    ).join('');
+    const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
+
+    // Calendar event label (if it's an event object, show the title below the day number)
+    const evLabel = (st && typeof st === 'object' && st.type === 'event')
+      ? `<div style="font-size:0.6rem;color:var(--ev-color,var(--pink));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;line-height:1.1;margin-top:1px">${st.titulo||'Evento'}</div>`
+      : '';
+
+    el.innerHTML = `<span class="day-num">${d}</span>${evLabel}<div class="day-events">${pills}${more}</div>`;
+    el.addEventListener('click', e => openCtxMenu(e, ds));
+    g.appendChild(el);
+  }
+}
+function renderWeekView(todayStr) {
+  // Find Monday of current week relative to calYear/calMonth/1
+  const refDate   = new Date(state.calYear, state.calMonth, 1);
+  const dayOfWeek = refDate.getDay(); // 0=Sun
+  const monday    = new Date(refDate); monday.setDate(refDate.getDate() - dayOfWeek);
+  const days = Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
+  const startStr = days[0].toISOString().split('T')[0];
+  const endStr   = days[6].toISOString().split('T')[0];
+  document.getElementById('calMonthLabel').textContent = MONTHS_ES[days[0].getMonth()] + ' ' + days[0].getDate() + ' – ' + MONTHS_ES[days[6].getMonth()] + ' ' + days[6].getDate() + ', ' + days[6].getFullYear();
+  document.getElementById('calSubtitle').textContent = 'Vista semanal';
+
+  const g = document.getElementById('weekGrid'); g.innerHTML = '';
+
+  // Header row
+  const cornerEl = document.createElement('div'); cornerEl.className='week-header-cell'; g.appendChild(cornerEl);
+  days.forEach(d => {
+    const ds  = d.toISOString().split('T')[0];
+    const el  = document.createElement('div');
+    el.className = 'week-header-cell' + (ds===todayStr?' today-col':'');
+    el.innerHTML = DAYS_ES[d.getDay()] + '<br><strong style="font-size:0.95rem">' + d.getDate() + '</strong>';
+    g.appendChild(el);
+  });
+
+  // Hour rows
+  HOURS_CAL.forEach((h, hi) => {
+    const tlEl = document.createElement('div'); tlEl.className='week-time-label'; tlEl.style.cssText='display:flex;align-items:flex-start;padding:4px 8px 0 0;border-bottom:1px solid rgba(255,255,255,0.05)'; tlEl.textContent=HOUR_LABELS[hi]; g.appendChild(tlEl);
+    days.forEach(d => {
+      const ds  = d.toISOString().split('T')[0];
+      const evs = getEventsForDate(ds).filter(e=>e.horaVal===h);
+      const cell= document.createElement('div');
+      cell.className = 'week-cell' + (ds===todayStr?' today-col':'');
+      evs.forEach(e => {
+        const pill = document.createElement('div');
+        pill.className = 'week-event';
+        pill.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
+        pill.textContent = e.name.split(' ')[0] + (e.plan ? ' · ' + e.plan.substring(0,10) : '');
+        pill.title = e.name + ' — ' + e.plan + ' @ ' + e.hora;
+        cell.appendChild(pill);
+      });
+      cell.addEventListener('click', ev => openCtxMenu(ev, ds));
+      g.appendChild(cell);
+    });
+  });
+}
+function renderDayView(todayStr) {
+  if(!calViewDay) calViewDay = todayStr;
+  const [y,m,d] = calViewDay.split('-');
+  const dateObj  = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+  document.getElementById('calMonthLabel').textContent = DAYS_ES[dateObj.getDay()] + ', ' + parseInt(d) + ' de ' + MONTHS_ES[parseInt(m)-1] + ' ' + y;
+  document.getElementById('calSubtitle').textContent = 'Vista diaria';
+
+  const evs = getEventsForDate(calViewDay);
+  const tl  = document.getElementById('dayTimeline'); tl.innerHTML = '';
+
+  // ── Calendar event info banner (shown when the day has a scheduled event) ──
+  const daySt = state.calendar[calViewDay];
+  if (daySt && typeof daySt === 'object' && daySt.type === 'event') {
+    const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+    const evColor  = colorHex[daySt.color] || colorHex.pink;
+    const fmtH = h => { const s = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:00 ${s}`; };
+    const blockLabel = (!daySt.blockType || daySt.blockType === 'day')
+      ? 'Día completo bloqueado'
+      : `Horas bloqueadas: ${fmtH(daySt.horaInicio)} – ${fmtH(daySt.horaFin)}`;
+    const banner   = document.createElement('div');
+    banner.style.cssText = `grid-column:1/-1;background:${evColor}18;border:1px solid ${evColor}44;border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px`;
+    banner.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:10px;background:${evColor}25;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="${evColor}" stroke-width="2" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${evColor};margin-bottom:3px">Evento del día</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">${daySt.titulo || 'Evento'}</div>
+        <div style="font-size:0.78rem;color:${evColor};font-weight:600;margin-bottom:${daySt.descripcion ? '4px' : '0'}">${blockLabel}</div>
+        ${daySt.descripcion ? `<div style="font-size:0.82rem;color:var(--gray-l);line-height:1.5">${daySt.descripcion}</div>` : ''}
+      </div>
+      <button onclick="openCalEventEdit('${calViewDay}')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>
+      <button onclick="openCalEventDeleteDirect('${calViewDay}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:6px">✕ Eliminar</button>`;
+    tl.appendChild(banner);
+  }
+
+  HOURS_CAL.forEach((h, hi) => {
+    const tlEl = document.createElement('div'); tlEl.className='day-time-label'; tlEl.style.cssText='padding-top:14px;'; tlEl.textContent=HOUR_LABELS[hi]; tl.appendChild(tlEl);
+    const cell = document.createElement('div'); cell.className='day-slot hour-block';
+    const slotEvs = evs.filter(e=>e.horaVal===h);
+    slotEvs.forEach(e => {
+      const ev = document.createElement('div');
+      ev.className = 'day-event';
+      ev.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
+      ev.innerHTML = '<div class="de-time">'+e.hora+'</div><div class="de-name">'+e.name+'</div><div class="de-plan">'+e.plan+'</div>';
+      cell.appendChild(ev);
+    });
+    tl.appendChild(cell);
+  });
+
+  // If no reservas/quotes show contextual message
+  if(!evs.length) {
+    const noEvEl = document.createElement('div');
+    noEvEl.style.cssText = 'grid-column:2;padding:20px;color:var(--gray);font-size:0.88rem;';
+    const daySt2 = state.calendar[calViewDay];
+    const hasCalEvent = daySt2 && typeof daySt2 === 'object' && daySt2.type === 'event';
+    noEvEl.textContent = hasCalEvent
+      ? 'Día reservado para el evento — sin solicitudes de clientes.'
+      : 'Sin reservas ni cotizaciones para este día.';
+    tl.appendChild(noEvEl);
+  }
+}
+function calNext() {
+  if(calView==='month') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
+  else if(calView==='week') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
+  else if(calView==='day' && calViewDay) {
+    const d = new Date(calViewDay); d.setDate(d.getDate()+1);
+    calViewDay = d.toISOString().split('T')[0];
+    state.calYear  = d.getFullYear();
+    state.calMonth = d.getMonth();
+  }
+  renderCalendar();
+}
+function calPrev() {
+  if(calView==='month') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
+  else if(calView==='week') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
+  else if(calView==='day' && calViewDay) {
+    const d = new Date(calViewDay); d.setDate(d.getDate()-1);
+    calViewDay = d.toISOString().split('T')[0];
+    state.calYear  = d.getFullYear();
+    state.calMonth = d.getMonth();
+  }
+  renderCalendar();
+}
+function calGoToday() {
+  const now = new Date();
+  state.calYear  = now.getFullYear();
+  state.calMonth = now.getMonth();
+  if(calView==='day') {
+    calViewDay = now.toISOString().split('T')[0];
+  }
+  renderCalendar();
+}
+function setCalView(v) {
+  calView = v;
+  ['month','week','day'].forEach(x => {
+    document.getElementById('calView'+x.charAt(0).toUpperCase()+x.slice(1)).style.display = x===v ? 'block' : 'none';
+    document.getElementById('btnView'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active', x===v);
+  });
+  renderCalendar();
+}
+async function syncCalendarPublic() {
+  showToast('Sincronizando calendario...', 'success');
+  try {
+    const ok = await ghPutPublic('calendar.json', state.calendar);
+    if (ok) showToast('Calendario publicado ✓ — visible en index y reservas');
+    else    showToast('Error al sincronizar — verifica configuración GitHub', 'error');
+  } catch(e) {
+    showToast('Error de conexión', 'error');
+  }
+}
+function openCalEventModal() {
+  openModal('calEventActionModal');
+}
+async function saveCalEvent() {
+  const titulo     = document.getElementById('calEvTitulo').value.trim();
+  const fecha      = document.getElementById('calEvFecha').value;
+  const nuevaFecha = document.getElementById('calEvNuevaFecha').value;
+  const desc       = document.getElementById('calEvDesc').value.trim();
+  const color      = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
+  const blockType  = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
+  const editDs     = document.getElementById('calEvEditDs').value;
+
+  const horaInicio = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraInicio').value, 10) : null;
+  const horaFin    = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraFin').value,    10) : null;
+
+  if (!titulo) { showToast('El título es obligatorio', 'error'); document.getElementById('calEvTitulo').focus(); return; }
+  if (!fecha && !editDs) { showToast('La fecha es obligatoria', 'error'); document.getElementById('calEvFecha').focus(); return; }
+  if (blockType === 'hours' && horaInicio >= horaFin) {
+    showToast('La hora de inicio debe ser anterior a la hora de fin', 'error'); return;
+  }
+
+  const newDs = editDs ? (nuevaFecha || editDs) : fecha;
+
+  const evObj = { type: 'event', titulo, descripcion: desc, color, blockType };
+  if (blockType === 'hours') { evObj.horaInicio = horaInicio; evObj.horaFin = horaFin; }
+
+  // If rescheduling to a different date, release the original day first
+  if (editDs && newDs !== editDs) state.calendar[editDs] = 'available';
+
+  state.calendar[newDs] = evObj;
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+  closeModal('calEventFormModal');
+
+  const ok1 = await ghPut('calendar.json', state.calendar);
+  const ok2 = await ghPutPublic('calendar.json', state.calendar);
+
+  const label = blockType === 'hours'
+    ? `(${horaInicio % 12 || 12}${horaInicio < 12 ? 'AM' : 'PM'} – ${horaFin % 12 || 12}${horaFin < 12 ? 'AM' : 'PM'})`
+    : '(día completo)';
+
+  if (ok1 && ok2) {
+    showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : `Evento actualizado ${label} ✓`) : `Evento creado — bloqueado ${label} ✓`);
+  } else {
+    showToast('Guardado localmente — verifica GitHub en Configuración', 'error');
+  }
+}
+async function deleteCalEvent(ds) {
+  closeModal('calEventPickerModal');
+  if (!ds || !state.calendar[ds] || typeof state.calendar[ds] !== 'object') return;
+
+  const titulo = state.calendar[ds].titulo || 'este evento';
+  if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
+
+  state.calendar[ds] = 'available';
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+
+  const ok1 = await ghPut('calendar.json', state.calendar);
+  const ok2 = await ghPutPublic('calendar.json', state.calendar);
+  showToast(ok1 && ok2 ? `"${titulo}" eliminado — día liberado ✓` : 'Eliminado localmente — verifica GitHub', ok1 && ok2 ? 'success' : 'error');
+}
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("master.html"); }
+document.addEventListener('DOMContentLoaded', () => {
+  // Cargar datos locales
+  loadCalendar();
+  try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
+  try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
+  renderCalendar();
+  // Cargar datos frescos en background
+  fetchCalendarData();
+});
+</script>
+</body>
+</html>

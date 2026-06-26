@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard - Jans Photograph</title>
+<link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="../css/master.css" />
+</head>
+<body>
+<script>
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('master.html');}}catch(e){window.location.replace('master.html');}})();
+</script>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:12px">
+<a href="master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+</a>
+<span class="master-badge">MASTER</span>
+<span style="color:var(--gray);font-size:0.8rem">/ Dashboard</span>
+</div>
+<nav style="display:flex;gap:4px">
+<a href="master-reservas.html" class="topbar-link">Reservas</a>
+<a href="master-cotizaciones.html" class="topbar-link">Cotizaciones</a>
+<a href="master-panel.html" class="topbar-link">Panel</a>
+<a href="master.html" class="topbar-link">Inicio</a>
+<button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+</nav>
+</header>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<main class="main-content" style="padding-top:80px">
+<div class="view active" id="view-dashboard">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <p>Resumen general del estudio</p>
+        </div>
+
+        <!-- Fila 1: totales globales -->
+        <div class="stats-grid" style="margin-bottom:12px">
+          <div class="stat-card pink">
+            <div class="stat-label">Operaciones totales</div>
+            <div class="stat-value" id="statOpsTotal">0</div>
+            <div class="stat-sub">Reservas + cotizaciones</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Completadas</div>
+            <div class="stat-value" id="statCompleted">0</div>
+            <div class="stat-sub"><span id="statCompletedRes">0</span> res · <span id="statCompletedQ">0</span> cot</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Ingresos Est.</div>
+            <div class="stat-value" id="statRevenue">$0</div>
+            <div class="stat-sub">Confirmadas + completadas</div>
+          </div>
+        </div>
+
+        <!-- Fila 2: pendientes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card amber">
+            <div class="stat-label">Reservas pendientes</div>
+            <div class="stat-value" id="statPendingRes">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Cotizaciones pendientes</div>
+            <div class="stat-value" id="statPendingQ">0</div>
+            <div class="stat-sub">Esperando confirmación</div>
+          </div>
+        </div>
+
+        <!-- Fila 3: confirmadas este mes -->
+        <div class="stats-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+          <div class="stat-card green">
+            <div class="stat-label">Reservas confirmadas</div>
+            <div class="stat-value" id="statApprovedRes">0</div>
+            <div class="stat-sub">Este mes</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Cotizaciones confirmadas</div>
+            <div class="stat-value" id="statApprovedQ">0</div>
+            <div class="stat-sub">Total confirmadas</div>
+          </div>
+        </div>
+
+        <!-- Tabla pendientes -->
+        <div class="card" id="dashPendingCard" style="border-color:rgba(245,158,11,0.3);display:none">
+          <div class="card-title" style="color:#fcd34d">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Solicitudes pendientes
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Fecha</th><th>Hora</th><th>Total</th><th></th></tr></thead>
+              <tbody id="dashPendingTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Últimas reservas -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Últimas reservas
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody id="dashRecentTable"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Últimas cotizaciones -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Últimas cotizaciones
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody id="dashRecentQuotes"><tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CALENDAR ── -->
+</main>
+<style>
+.topbar-link{color:var(--gray-l);text-decoration:none;font-size:0.85rem;padding:6px 12px;border-radius:8px;transition:all 0.15s;}
+.topbar-link:hover{color:var(--white);background:rgba(255,255,255,0.05);}
+</style>
+<script>
+const SESSION_KEY = 'jans_master_auth';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  // GitHub API — Repositorio PRIVADO
+  GH_TOKEN:  'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', // Token Personal de GitHub (permisos: repo)
+  GH_OWNER:  'tu-usuario-github',    // Tu nombre de usuario en GitHub
+  GH_REPO:   'jans-master-data',     // Nombre del repositorio privado
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+/* ═════════════════════════════════════ */
+
+// ── State ──
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) { console.warn("Supabase error", e); }
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+function statusClassQ(s) {
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+}
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+async function ghPut(file, data) {
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
+  let res = await fetch(`${GH_BASE()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${CONFIG.GH_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  if (res.status === 409) {
+    try {
+      const getRes = await fetch(`${GH_BASE()}/${file}`, {
+        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.sha) {
+          state.fileSHAs[file] = getJson.sha;
+          body.sha = getJson.sha;
+          res = await fetch(`${GH_BASE()}/${file}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
+    } catch(e) { /* retry failed — return original failed response */ }
+  }
+
+  const json = await res.json();
+  if (json.content) state.fileSHAs[file] = json.content.sha;
+  return res.ok;
+}
+let allReservas = [];
+let state = { quotes: [] };
+function loadReservasLocal() {
+  try {
+    const raw = localStorage.getItem('jans_reservas');
+    if (!raw) { allReservas = []; return; }
+    // Intentar parsear (puede ser JSON plano o datos encriptados)
+    try { allReservas = JSON.parse(raw); } catch(e) { allReservas = []; }
+  } catch(e) { allReservas = []; }
+  let changed = false;
+  allReservas.forEach(r => {
+    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
+    if (r.abono === undefined) { r.abono = 0; changed = true; }
+  });
+  if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+}
+function resTotal(r) {
+  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
+    ? (parseFloat(r.totalManual) || 0)
+    : resPlanPrice(r);
+  const extras        = resExtrasTotal(r);
+  const personasExtra = parseFloat(r.costoPersonasExtra) || 0;
+  const exterior      = parseFloat(r.costoExterior)      || 0;
+  return base + extras + personasExtra + exterior;
+}
+function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r) - resCancelado(r)); }
+function resStatusClass(s) {
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
+}
+function resStatusLabel(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
+}
+function goToReservaInTable(id) {
+  const filterStatus = document.getElementById('filterResStatus');
+  const filterMonth  = document.getElementById('filterResMonth');
+  if (filterStatus) filterStatus.value = '';
+  if (filterMonth)  filterMonth.value  = '';
+
+  switchView('reservas', document.querySelector('.sidebar-item[onclick*=\'reservas\']'));
+  // switchView already calls renderReservasTable() with no args; re-render with
+  // the highlight target right after so the row gets the highlight + scroll treatment.
+  setTimeout(() => renderReservasTable(id), 80);
+}
+function updateDashboard() {
+  loadReservasLocal();
+  const activeRes = allReservas.filter(r => r.status !== 'deleted');
+  const activeQ   = (state.quotes || []);
+  const now       = typeof todayPanama==='function' ? todayPanama() : new Date();
+  const thisMonth = now.getMonth(), thisYear = now.getFullYear();
+
+  const pendingR   = activeRes.filter(r => r.status === 'pending');
+  const pendingQ   = activeQ.filter(q => q.status === 'pending');
+  const confirmedR = activeRes.filter(r => r.status === 'confirmed');
+  const confirmedQ = activeQ.filter(q => q.status === 'confirmed');
+  const completedR = activeRes.filter(r => r.status === 'completed');
+  const completedQ = activeQ.filter(q => q.status === 'completed');
+
+  const approvedRMonth = confirmedR.filter(r=>{const d=new Date((r.fecha||'')+'T00:00:00');return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+  // Cotizaciones: mostrar TOTAL confirmadas (no solo este mes, ya que pueden no tener fecha de sesión)
+  const approvedQMonth = confirmedQ.length;
+
+  // Ingresos = suma de TODOS los totales de reservas + cotizaciones (confirmadas + completadas)
+  const revenueR = [...confirmedR,...completedR].reduce((s,r)=>s+resTotal(r),0);
+  const revenueQ = [...confirmedQ,...completedQ].reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+
+  const el = id => document.getElementById(id);
+  // Nuevos IDs
+  if(el('statOpsTotal'))    el('statOpsTotal').textContent    = activeRes.length + activeQ.length;
+  if(el('statCompleted'))   el('statCompleted').textContent   = completedR.length + completedQ.length;
+  if(el('statCompletedRes'))el('statCompletedRes').textContent= completedR.length;
+  if(el('statCompletedQ')) el('statCompletedQ').textContent  = completedQ.length;
+  if(el('statRevenue'))     el('statRevenue').textContent     = '$'+(revenueR+revenueQ).toFixed(2);
+  if(el('statPendingRes'))  el('statPendingRes').textContent  = pendingR.length;
+  if(el('statPendingQ'))    el('statPendingQ').textContent    = pendingQ.length;
+  if(el('statApprovedRes')) el('statApprovedRes').textContent = approvedRMonth;
+  if(el('statApprovedQ'))   el('statApprovedQ').textContent   = approvedQMonth;
+  // IDs legacy (compatibilidad)
+  if(el('statTotal'))    el('statTotal').textContent    = activeRes.length;
+  if(el('statPending'))  el('statPending').textContent  = pendingR.length + pendingQ.length;
+  if(el('statApproved')) el('statApproved').textContent = approvedRMonth + approvedQMonth;
+
+  // Badges
+  const pb=el('pendingBadge'); if(pb){pb.textContent=pendingQ.length;pb.style.display=pendingQ.length>0?'':'none';}
+  const rb=el('reservasBadge'),rb2=el('reservasBadge2');
+  if(rb){rb.textContent=pendingR.length;rb.style.display=pendingR.length>0?'':'none';}
+  if(rb2){rb2.textContent=pendingR.length;rb2.style.display=pendingR.length>0?'':'none';}
+
+  // Tabla pendientes (reservas + cotizaciones)
+  const allPending=[
+    ...pendingR.map(r=>({numero:r.numero||'—',cliente:r.nombre,tipo:'Reserva',plan:r.plan||'—',fecha:r.fechaLabel||r.fecha||'—',hora:r.hora||'—',total:resTotal(r),isReserva:true,id:r.id})),
+    ...pendingQ.map(q=>({numero:q.numero||'—',cliente:q.clientName,tipo:q.tipo==='evento'?'Evento':'Foto',plan:q.plan||'—',fecha:q.sessionDate||'—',hora:q.sessionTime||'—',total:parseFloat(q.total)||0,isReserva:false,id:q.id}))
+  ];
+  const pendingCard=el('dashPendingCard'),pendingTable=el('dashPendingTable');
+  if(allPending.length>0){
+    if(pendingCard)pendingCard.style.display='';
+    if(pendingTable)pendingTable.innerHTML=allPending.map(item=>`<tr>
+      <td><span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${item.numero}</span></td>
+      <td style="font-weight:600">${item.cliente}</td>
+      <td><span class="badge-status status-pending" style="font-size:0.72rem">${item.tipo}</span></td>
+      <td>${item.plan}</td><td>${item.fecha}</td><td>${item.hora}</td>
+      <td style="font-weight:700">$${item.total.toFixed(2)}</td>
+      <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
+    </tr>`).join('');
+  } else { if(pendingCard)pendingCard.style.display='none'; }
+
+  // Últimas reservas
+  const dashRecent=el('dashRecentTable');
+  if(dashRecent) dashRecent.innerHTML=activeRes.length
+    ? activeRes.slice(-6).reverse().map(r=>`<tr><td>${r.nombre}</td><td>${r.plan||'—'}</td><td>$${resTotal(r).toFixed(2)}</td><td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td><td>${r.fechaLabel||r.fecha||'—'}</td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin reservas aún</td></tr>';
+
+  // Últimas cotizaciones
+  const dashQ=el('dashRecentQuotes');
+  if(dashQ) dashQ.innerHTML=activeQ.length
+    ? activeQ.slice(-6).reverse().map(q=>`<tr><td style="font-weight:600">${q.clientName}</td><td>${q.tipo==='evento'?'Evento':'Foto'}</td><td style="font-weight:700">$${(parseFloat(q.total)||0).toFixed(2)}</td><td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td><td>${q.sessionDate||'—'}</td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones aún</td></tr>';
+}
+
+async function fetchDashboardData() {
+  // Cargar reservas desde Supabase
+  if (typeof sbClient !== 'undefined' && sbClient) {
+    try {
+      const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
+      if (!error && data) {
+        let local = [];
+        try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+        const remoteIds = new Set(data.map(r => r.id));
+        local = local.filter(r => remoteIds.has(r.id));
+        const byId = new Map(local.map(r => [r.id, r]));
+        data.forEach(remote => {
+          const loc = byId.get(remote.id) || {};
+          byId.set(remote.id, Object.assign({}, loc, {
+            id: remote.id, nombre: remote.nombre || loc.nombre || '',
+            tel: remote.tel || '', email: remote.email || '',
+            plan: remote.plan || '', fecha: remote.fecha || '',
+            fechaLabel: remote.fechaLabel || remote.fecha || '',
+            hora: remote.hora || '', status: remote.status || 'pending',
+            abono: parseFloat(remote.abono) || 0,
+            cancelado: parseFloat(remote.cancelado) || 0,
+            totalManual: remote.totalManual != null ? remote.totalManual : loc.totalManual,
+            extras: remote.extras || loc.extras || [],
+            costoExterior: parseFloat(remote.costoExterior) || 0,
+            personasExtra: remote.personasExtra || 0,
+            costoPersonasExtra: parseFloat(remote.costoPersonasExtra) || 0,
+            numero: remote.numero || loc.numero || null,
+          }));
+        });
+        const merged = Array.from(byId.values());
+        localStorage.setItem('jans_reservas', JSON.stringify(merged));
+      }
+    } catch(e) { console.warn('Supabase sync error:', e); }
+  }
+  // Cargar cotizaciones desde GitHub
+  try {
+    const cfg = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+    if (cfg.owner && cfg.repo && cfg.token) {
+      const r = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/quotes.json', {
+        headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
+      });
+      if (r.ok) {
+        const d = await r.json();
+        const data = JSON.parse(atob(d.content.replace(/\n/g,'')));
+        state.quotes = Array.isArray(data) ? data : [];
+        localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
+      }
+    }
+  } catch(e) { console.warn('fetchQuotes error:', e); }
+  updateDashboard();
+}
+
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("master.html"); }
+document.addEventListener('DOMContentLoaded', () => {
+  // Cargar datos locales inmediatamente
+  try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
+  try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
+  updateDashboard();
+  // Luego cargar datos frescos en background
+  fetchDashboardData();
+});
+</script>
+</body>
+</html>
