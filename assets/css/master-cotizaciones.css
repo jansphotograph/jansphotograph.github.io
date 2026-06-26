@@ -1,0 +1,15 @@
+/* master-cotizaciones.html */
+.plan-card { background: var(--dark); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+.plan-card-header { font-weight: 700; margin-bottom: 6px; }
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-btn {
+  padding: 8px 16px; border-radius: 8px;
+  border: 1px solid var(--border); color: var(--gray-l);
+  cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  background: transparent; transition: all 0.15s;
+}
+.radio-btn.selected {
+  background: rgba(199,30,95,0.15);
+  border-color: rgba(199,30,95,0.4);
+  color: var(--pink-l);
+}

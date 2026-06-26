@@ -1,0 +1,34 @@
+/* master-config.html */
+.ig-preview-wrap {
+  border-radius: 12px; border: 1px solid var(--border);
+  max-width: 320px; overflow: hidden; margin: 16px 0;
+}
+.ig-focus-area {
+  position: relative; aspect-ratio: 1;
+  cursor: crosshair; overflow: hidden;
+}
+.ig-focus-area img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block; pointer-events: none;
+}
+.ig-focus-dot {
+  position: absolute; width: 20px; height: 20px;
+  border-radius: 50%; border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(233,30,140,0.8), 0 2px 8px rgba(0,0,0,0.5);
+  transform: translate(-50%, -50%);
+  pointer-events: none; display: none;
+  transition: left 0.1s, top 0.1s;
+}
+.toggle-switch { position:relative; display:inline-block; width:42px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0; background:var(--border);
+  border-radius:24px; cursor:pointer; transition:0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background:var(--pink); }
+.toggle-slider::before {
+  content:''; position:absolute;
+  height:18px; width:18px; left:3px; bottom:3px;
+  background:#fff; border-radius:50%; transition:0.3s;
+}
+.toggle-switch input:checked + .toggle-slider::before { transform:translateX(18px); }

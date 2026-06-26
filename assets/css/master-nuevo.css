@@ -1,0 +1,51 @@
+/* master.html — página de inicio */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding: 32px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.home-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.home-card:hover {
+  border-color: rgba(199,30,95,0.4);
+  background: rgba(199,30,95,0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.home-card-icon {
+  width: 44px; height: 44px;
+  background: rgba(199,30,95,0.12);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--pink-l);
+}
+.home-card-icon svg { width: 22px; height: 22px; }
+.home-card-title { font-size: 1.05rem; font-weight: 700; color: var(--white); }
+.home-card-desc  { font-size: 0.82rem; color: var(--gray-l); line-height: 1.4; }
+.home-card-badge {
+  display: inline-block;
+  background: rgba(199,30,95,0.15);
+  color: var(--pink-l);
+  font-size: 0.72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+  align-self: flex-start;
+}
+.home-welcome { text-align: center; padding: 40px 24px 8px; }
+.home-welcome h1 {
+  font-family: var(--serif);
+  font-size: 2rem; color: var(--white); margin-bottom: 8px;
+}
+.home-welcome p { color: var(--gray-l); font-size: 0.9rem; }
