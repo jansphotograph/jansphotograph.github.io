@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../../css/master-catalogo.css" />
 </head>
 <body>
-<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}if(raw==='true')return;try{const s=JSON.parse(raw);if(!s||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){window.location.replace('../master.html');}})();</script>
+<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();</script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
