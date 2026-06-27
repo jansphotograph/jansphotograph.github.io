@@ -841,7 +841,7 @@ function goToReservaInTable(id) {
   // the highlight target right after so the row gets the highlight + scroll treatment.
   setTimeout(() => renderReservasTable(id), 80);
 }
-function sanitizeText(str){if(!str)return"";return String(str).replace(/[^ -ÿ]/g,"").replace(/\s+/g," ").trim();}
+function sanitizeText(str){if(!str)return "";return String(str).trim();}
 async function generateConfirmationPDF(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
   const { jsPDF } = window.jspdf;
@@ -1237,6 +1237,54 @@ function resPlanPrice(r) {
 function resExtrasTotal(r) {
   // Sum of additional plans/services added manually in the modal
   return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
+}
+
+
+function resAbono(r)     { return parseFloat(r.abono)     || 0; }
+
+function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
+
+
+function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round(((resAbono(r)+resCancelado(r))/t)*100)) : 0; }
+
+function restoreInventoryForReserva(r) {
+  loadServAdicionales();
+  loadPaperTypes();
+  const impresiones = servData.impresiones || [];
+  if (!impresiones.length || !paperTypes.length) return;
+
+  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
+
+  let changed = false;
+  lineItems.forEach(itemName => {
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
+    if (!match || !match.papelTipoId) return;
+
+    const paper = paperTypes.find(p => p.id === match.papelTipoId);
+    if (!paper) return;
+
+    const sheets = match.hojasPorVenta || 1;
+    paper.stock = paper.stock + sheets;
+    logInventoryMovement(paper.nombre, 'entrada', sheets, `Reserva revertida: ${r.nombre} (${r.numero||r.id})`);
+    changed = true;
+  });
+
+  if (changed) {
+    localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+    ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
+    checkLowStock();
+  }
+}
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
