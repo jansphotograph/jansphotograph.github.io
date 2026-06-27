@@ -111,7 +111,7 @@
             <h2>Cotizaciones</h2>
             <p>Registro de todas las cotizaciones</p>
           </div>
-          <button class="btn btn-pink" onclick="switchView('newquote', document.querySelector('[onclick*=newquote]'))">
+          <button class="btn btn-pink" onclick="showSection('newquote')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nueva
           </button>
@@ -691,7 +691,7 @@ async function saveQuote() {
     showToast('Cotización ' + numero + ' guardada ✓');
     clearQuoteForm();
     updateDashboard(); renderQuotesTable();
-    switchView('quotes', document.querySelector('.sidebar-item[onclick*="\'quotes\'"]'));
+    showSection('quotes');
   } else {
     showToast('Guardada localmente — verifica GitHub para publicar','error');
     clearQuoteForm();
