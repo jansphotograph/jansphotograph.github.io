@@ -1,93 +1,571 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calendario - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../../images/"icons/JansBlackBag.png" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../../css/mstr-base.css" />
-  <link rel="stylesheet" href="../../css/master-nav.css" />
-  <link rel="stylesheet" href="../../css/master-calendario.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Calendario — Jans Photograph</title>
+  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"/>
+  <link rel="stylesheet" href="../../css/master-calendario.css"/>
+<style>
+/* ═══════════════════════════════════════════════
+   master-calendario.css — CSS consolidado
+   Incluye: base + nav + estilos específicos
+   ═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   MSTR BASE CSS — compartido por todas las páginas del master
+   No usa sidebar — usa topbar + subnav horizontal
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Variables ── */
+:root {
+  --pink:    #c71e5f;
+  --pink-l:  #e91e8c;
+  --black:   #0d0d0d;
+  --dark:    #141414;
+  --panel:   #1c1c1c;
+  --border:  rgba(255,255,255,0.07);
+  --gray:    #666;
+  --gray-l:  #999;
+  --white:   #ffffff;
+  --red:     #ef4444;
+  --amber:   #f59e0b;
+  --green:   #22c55e;
+  --blue:    #3b82f6;
+  --font:    'Inter', system-ui, sans-serif;
+  --serif:   'Playfair Display', Georgia, serif;
+  --radius:  12px;
+  --topbar-h: 64px;
+  --subnav-h: 48px;
+}
+
+/* ── SVG size control — global hard cap ── */
+svg {
+  flex-shrink: 0;
+  overflow: visible;
+}
+/* SVGs que no están dentro de contenedores con tamaño definido — limitar */
+:not(.home-card-icon):not(.stat-card):not([class*="chart"]) > svg:not([width]):not([height]) {
+  width: 20px;
+  height: 20px;
+}
+.btn svg         { width: 16px !important; height: 16px !important; flex-shrink: 0; }
+.card-title svg  { color: var(--pink-l); flex-shrink: 0; width: 18px !important; height: 18px !important; }
+.topbar svg      { width: 20px !important; height: 20px !important; flex-shrink: 0; }
+.subnav-btn svg  { width: 15px !important; height: 15px !important; flex-shrink: 0; }
+table svg        { width: 15px !important; height: 15px !important; flex-shrink: 0; }
+.modal-close svg { width: 20px !important; height: 20px !important; }
+.page-header svg { width: 24px !important; height: 24px !important; }
+.home-card-icon svg { width: 22px !important; height: 22px !important; }
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 300;
+}
+
+.master-badge {
+  background: var(--pink);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.topbar-link {
+  color: var(--gray-l);
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.topbar-link:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+
+/* ── Subnav ── */
+.subnav {
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0;
+  height: var(--subnav-h);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 20px;
+  z-index: 200;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav::-webkit-scrollbar { display: none; }
+
+.subnav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--gray-l);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.subnav-btn:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+.subnav-btn.active {
+  background: rgba(199,30,95,0.15);
+  border-color: rgba(199,30,95,0.4);
+  color: var(--pink-l);
+}
+
+/* ── Main content — sin sidebar, con subnav ── */
+.main-content {
+  padding-top: 136px; /* topbar(64) + master-nav(44) + espacio(28) */
+  padding-left: 28px;
+  padding-right: 28px;
+  padding-bottom: 60px;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* Sin subnav */
+.main-content.no-subnav {
+  padding-top: calc(var(--topbar-h) + 28px);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 0.85rem;
+  color: var(--white);
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.25s;
+  pointer-events: none;
+  border-left: 3px solid var(--green);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { border-left-color: var(--red); }
+
+/* ── Cards ── */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title svg { color: var(--pink-l); }
+
+/* ── Stats grid ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.stat-card.pink  { border-color: rgba(199,30,95,0.3); }
+.stat-card.amber { border-color: rgba(245,158,11,0.3); }
+.stat-card.green { border-color: rgba(34,197,94,0.3); }
+.stat-card.blue  { border-color: rgba(59,130,246,0.3); }
+.stat-label { font-size: 0.72rem; color: var(--gray-l); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.stat-value { font-size: 1.7rem; font-weight: 800; color: var(--white); line-height: 1; }
+.stat-sub   { font-size: 0.72rem; color: var(--gray); margin-top: 4px; }
+
+/* ── Page header ── */
+.page-header { margin-bottom: 24px; }
+.page-header h2 { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; }
+.page-header p  { color: var(--gray-l); font-size: 0.85rem; margin-top: 4px; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 9px;
+  font-family: var(--font); font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.15s; text-decoration: none;
+}
+.btn-pink    { background: var(--pink);  color: #fff; }
+.btn-pink:hover  { background: var(--pink-l); }
+.btn-green   { background: var(--green); color: #fff; }
+.btn-amber   { background: var(--amber); color: #000; }
+.btn-red     { background: var(--red);   color: #fff; }
+.btn-blue    { background: var(--blue);  color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--gray-l); }
+.btn-outline:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+.btn-ghost   { background: transparent; color: var(--gray-l); border: none; }
+.btn-ghost:hover { color: var(--white); }
+.btn-sm { padding: 6px 12px; font-size: 0.78rem; border-radius: 7px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ── Forms ── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 0.78rem; font-weight: 600; color: var(--gray-l); }
+.field input, .field textarea, .field select {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: rgba(199,30,95,0.4);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead th {
+  text-align: left; padding: 10px 12px;
+  color: var(--gray-l); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 1px solid var(--border);
+}
+tbody td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── Badges ── */
+.badge-status {
+  display: inline-block; padding: 3px 9px;
+  border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+}
+.status-pending   { background: rgba(245,158,11,0.15); color: #fcd34d; }
+.status-approved  { background: rgba(34,197,94,0.15);  color: #86efac; }
+.status-rejected  { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+.status-postponed { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+
+/* ── Modals ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+}
+.modal-flex {
+  display: flex; flex-direction: column;
+  padding: 0; overflow: hidden;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+.modal-header h3 { font-family: var(--serif); font-size: 1.1rem; }
+.modal-close {
+  background: none; border: none; color: var(--gray-l);
+  font-size: 1.4rem; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: var(--white); }
+
+/* ── Section dividers ── */
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.section-label-sm {
+  font-size: 0.7rem; font-weight: 700; color: var(--gray-l);
+  text-transform: uppercase; letter-spacing: .08em; display: block; margin-bottom: 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .main-content { padding-left: 16px; padding-right: 16px; }
+  .form-row { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+
+/* ── Master Nav — barra de navegación debajo del header ── */
+.master-nav {
+  position: fixed;
+  top: 64px;
+  left: 0; right: 0;
+  background: #111;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 16px;
+  z-index: 200;
+  overflow-x: auto;
+  scrollbar-width: none;
+  height: 44px;
+}
+.master-nav::-webkit-scrollbar { display: none; }
+
+.master-nav a {
+  color: #999;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 7px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.master-nav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+.master-nav a.active { color: #e91e8c; background: rgba(199,30,95,0.12); }
+.master-nav .nav-sep {
+  width: 1px; height: 18px;
+  background: rgba(255,255,255,0.08);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+
+/* master-calendario.html */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day {
+  min-height: 72px; max-height: 108px;
+  overflow: hidden;
+  border-radius: 9px; padding: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  transition: all 0.15s;
+  position: relative; cursor: pointer;
+}
+.cal-day:hover { border-color: var(--border); background: rgba(255,255,255,0.02); }
+.cal-day.today  { border-color: var(--pink); }
+.cal-day.other-month { opacity: 0.4; }
+.cal-day.blocked { background: rgba(239,68,68,0.08); }
+.day-num { font-size: 0.78rem; font-weight: 600; display: block; color: var(--gray-l); margin-bottom: 3px; }
+.day-events { display: flex; flex-direction: column; gap: 2px; overflow: hidden; max-height: 60px; }
+.ev-pill {
+  font-size: 0.62rem; font-weight: 600; padding: 1px 5px;
+  border-radius: 4px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+  max-width: 100%; display: block;
+}
+.ev-confirmed { background: rgba(34,197,94,0.2);  color: #86efac; }
+.ev-pending   { background: rgba(255,255,255,0.08); color: var(--gray-l); }
+.ev-completed { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+.cal-view-btns { display:flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.cal-view-btn  { background:transparent; border:none; color:var(--gray-l); padding:6px 14px; cursor:pointer; font-family:var(--font); font-size:0.82rem; font-weight:600; transition:all 0.15s; }
+.cal-view-btn.active { background:var(--pink); color:#fff; }
+.week-grid {
+  display: grid;
+  grid-template-columns: 56px repeat(7, 1fr);
+  min-width: 600px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+/* Header row — nombre del día */
+.week-header-cell {
+  background: #1a1a1a;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #999;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+.week-header-cell.today-col { color: #e91e8c; }
+/* Etiqueta de hora */
+.week-time-label {
+  font-size: 0.68rem;
+  color: #555;
+  padding: 6px 8px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid rgba(255,255,255,0.05);
+  text-align: right;
+  background: #141414;
+}
+/* Celda de hora por día */
+.week-cell {
+  min-height: 52px;
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.week-cell:hover { background: rgba(255,255,255,0.03); }
+.week-cell.today-col { background: rgba(199,30,95,0.04); }
+/* Evento en vista semanal */
+.week-event {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+/* Legacy */
+.week-header { background:#1a1a1a; padding:8px; text-align:center; font-size:0.75rem; font-weight:700; color:#999; border-bottom:1px solid rgba(255,255,255,0.08); }
+.week-slot { min-height:52px; padding:3px 4px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.week-time { font-size:0.68rem; color:#555; padding:4px 6px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.04); }
+
+
+
+/* Padding para header(64) + master-nav(44) */
+
+
+.cal-dow {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-l);
+  text-transform: uppercase;
+  padding: 8px 0;
+  letter-spacing: 0.05em;
+}
+.cal-day.empty {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+.cal-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--gray-l); }
+.cal-nav-btn {
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--white); border-radius: 8px; padding: 6px 12px;
+  cursor: pointer; font-size: 1rem; transition: all 0.15s;
+}
+.cal-nav-btn:hover { border-color: var(--pink); color: var(--pink-l); }
+
+
+/* ── Vista de día ── */
+#dayTimeline {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.day-time-label {
+  font-size: 0.68rem;
+  color: #555;
+  padding: 14px 8px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: #141414;
+  text-align: right;
+}
+.day-slot {
+  min-height: 56px;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.day-slot:hover { background: rgba(255,255,255,0.03); }
+.day-event {
+  background: rgba(199,30,95,0.15);
+  border-left: 3px solid #e91e8c;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+.de-time { font-size: 0.7rem; color: #e91e8c; font-weight: 700; margin-bottom: 2px; }
+.de-name { font-size: 0.88rem; font-weight: 700; color: #fff; }
+.de-plan { font-size: 0.78rem; color: #999; margin-top: 2px; }
+
+</style>
 </head>
 <body>
-<script>
-(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();
-</script>
+<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();</script>
 <header class="topbar">
-<div style="display:flex;align-items:center;gap:12px">
-<a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
-<img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
-</a>
-<span class="master-badge">MASTER</span>
-<span style="color:var(--gray);font-size:0.8rem">/ Calendario</span>
-</div>
-<nav style="display:flex;gap:4px">
-<a href="master-dashboard.html" class="topbar-link">Dashboard</a>
-<a href="master-reservas.html" class="topbar-link">Reservas</a>
-<a href="../master.html" class="topbar-link">Inicio</a>
-<button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
-</nav>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+      <img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo"/>
+    </a>
+    <span class="master-badge">MASTER</span>
+    <span style="color:var(--gray);font-size:0.8rem">/ Calendario</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="../master.html" class="topbar-link">Inicio</a>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+  </div>
 </header>
-<!-- ── Master Nav ── -->
 <nav class="master-nav" id="masterNav">
-  <a href="../master.html" id="nav-inicio">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Inicio
-  </a>
+  <a href="../master.html" id="nav-inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Inicio</a>
   <div class="nav-sep"></div>
-  <a href="master-dashboard.html" id="nav-dashboard">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    Dashboard
-  </a>
-  <a href="master-reservas.html" id="nav-reservas">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    Reservas
-  </a>
-  <a href="master-cotizaciones.html" id="nav-cotizaciones">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-    Cotizaciones
-  </a>
-  <a href="master-calendario.html" id="nav-calendario">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Calendario
-  </a>
-  <a href="master-panel.html" id="nav-panel">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    Panel
-  </a>
+  <a href="master-dashboard.html" id="nav-dashboard">Dashboard</a>
+  <a href="master-reservas.html" id="nav-reservas">Reservas</a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">Cotizaciones</a>
+  <a href="master-calendario.html" id="nav-calendario">Calendario</a>
+  <a href="master-panel.html" id="nav-panel">Panel</a>
   <div class="nav-sep"></div>
-  <a href="master-catalogo.html" id="nav-catalogo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Catálogo
-  </a>
-  <a href="master-config.html" id="nav-config">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    Config
-  </a>
+  <a href="master-catalogo.html" id="nav-catalogo">Catálogo</a>
+  <a href="master-config.html" id="nav-config">Config</a>
 </nav>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
-  const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':              'nav-inicio',
-  };
-  const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
-
+<script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
+<div id="calCtxMenu" style="display:none;position:fixed;background:#1c1c1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px;z-index:500;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
+  <button onclick="closeCalCtxMenu();openCalEventModal()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#fff;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">+ Nuevo evento</button>
+  <button onclick="closeCalCtxMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#999;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">Cerrar</button>
+</div>
 <div class="modal-overlay" id="calEventActionModal">
   <div class="modal" style="max-width:380px">
     <div class="modal-header">
@@ -114,16 +592,117 @@
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="calEventPickerModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 id="calPickerTitle">Seleccionar Evento</h3>
+      <button class="modal-close" onclick="closeModal('calEventPickerModal')">×</button>
+    </div>
+    <div id="calEventPickerList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+    <div style="margin-top:16px;text-align:right">
+      <button class="btn btn-outline" onclick="closeModal('calEventPickerModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="calEventFormModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="calEventFormTitle">Nuevo Evento</h3>
+      <button class="modal-close" onclick="closeModal('calEventFormModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Título del evento *</label>
+      <input type="text" id="calEvTitulo" placeholder="Ej. Sesión Familiar García" maxlength="100" />
+    </div>
+    <div class="field">
+      <label>Fecha *</label>
+      <input type="date" id="calEvFecha" />
+    </div>
+    <div class="field" id="calEvNewFechaField" style="display:none">
+      <label>Nueva fecha (aplazar a)</label>
+      <input type="date" id="calEvNuevaFecha" />
+    </div>
 
-<!-- Modal 2: Event picker for Edit/Delete (lists existing calendar events) -->
-<div class="cal-ctx-menu" id="calCtxMenu">
-  <!-- Event info block (shown only when day has a calendar event) -->
-  <div id="ctxEventInfo" style="display:none;padding:10px 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <span id="ctxEventDot" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
-      <span id="ctxEventTitulo" style="font-weight:700;font-size:0.88rem;color:var(--white)"></span>
-    
-<main class="main-content" style="padding-top:120px">
+    <!-- Block type toggle -->
+    <div class="field">
+      <label>Tipo de bloqueo</label>
+      <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:9px;overflow:hidden">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;cursor:pointer;transition:background 0.18s;font-size:0.85rem;font-weight:600;text-transform:none;letter-spacing:0" id="calEvBlockDayLabel">
+          <input type="radio" name="calEvBlockType" value="day" checked onchange="onCalEvBlockTypeChange()" style="display:none" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Día completo
+        </label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;cursor:pointer;transition:background 0.18s;font-size:0.85rem;font-weight:600;text-transform:none;letter-spacing:0;border-left:1px solid var(--border)" id="calEvBlockHoursLabel">
+          <input type="radio" name="calEvBlockType" value="hours" onchange="onCalEvBlockTypeChange()" style="display:none" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Rango de horas
+        </label>
+      </div>
+    </div>
+
+    <!-- Hour range (shown only when blockType === 'hours') -->
+    <div id="calEvHoursField" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>Hora inicio</label>
+          <select id="calEvHoraInicio">
+            <option value="8">8:00 AM</option><option value="9">9:00 AM</option>
+            <option value="10">10:00 AM</option><option value="11">11:00 AM</option>
+            <option value="12">12:00 PM</option><option value="13">1:00 PM</option>
+            <option value="14">2:00 PM</option><option value="15">3:00 PM</option>
+            <option value="16">4:00 PM</option><option value="17">5:00 PM</option>
+            <option value="18">6:00 PM</option><option value="19">7:00 PM</option>
+            <option value="20">8:00 PM</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Hora fin</label>
+          <select id="calEvHoraFin">
+            <option value="9">9:00 AM</option><option value="10">10:00 AM</option>
+            <option value="11">11:00 AM</option><option value="12">12:00 PM</option>
+            <option value="13">1:00 PM</option><option value="14">2:00 PM</option>
+            <option value="15">3:00 PM</option><option value="16">4:00 PM</option>
+            <option value="17">5:00 PM</option><option value="18">6:00 PM</option>
+            <option value="19">7:00 PM</option><option value="20">8:00 PM</option>
+            <option value="21" selected>9:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div id="calEvHoursPreview" style="font-size:0.78rem;color:var(--gray-l);margin-top:-6px;margin-bottom:8px"></div>
+    </div>
+
+    <div class="field">
+      <label>Descripción (opcional)</label>
+      <textarea id="calEvDesc" style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:70px;outline:none" placeholder="Detalles del evento..."></textarea>
+    </div>
+    <div class="field">
+      <label>Color identificador</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="pink" checked /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#e91e8c"></span> Rosa</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="blue" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#3b82f6"></span> Azul</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="green" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#22c55e"></span> Verde</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="amber" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#f59e0b"></span> Ámbar</label>
+        <label style="text-transform:none;letter-spacing:0;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer"><input type="radio" name="calEvColor" value="purple" /> <span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#a855f7"></span> Morado</label>
+      </div>
+    </div>
+    <input type="hidden" id="calEvEditDs" />
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;flex-wrap:wrap;align-items:center">
+      <button id="calEvDeleteBtn" style="display:none" class="btn" onclick="deleteCalEventFromForm()"
+        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar evento
+      </button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn btn-outline" onclick="closeModal('calEventFormModal')">Cancelar</button>
+        <button class="btn btn-pink" onclick="saveCalEvent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Guardar Evento
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<main style="display:block;padding-top:120px;padding-left:28px;padding-right:28px;padding-bottom:60px;min-height:100vh;width:100%;box-sizing:border-box;">
 <div id="view-calendar">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
@@ -179,18 +758,9 @@
           </div>
         </div>
       </div>
-
-      <!-- ── QUOTES LIST ── -->
 </main>
-<style>
-.topbar-link{color:var(--gray-l);text-decoration:none;font-size:0.85rem;padding:6px 12px;border-radius:8px;transition:all 0.15s;}
-.topbar-link:hover{color:var(--white);background:rgba(255,255,255,0.05);}
-.cal-day{min-height:72px;max-height:108px;overflow:hidden;border-radius:9px;padding:6px;border:1px solid transparent;transition:all 0.15s;position:relative;cursor:pointer;}
-.day-events{display:flex;flex-direction:column;gap:2px;overflow:hidden;max-height:60px;}
-.ev-pill{font-size:0.62rem;font-weight:600;padding:1px 5px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:block;}
-</style>
 <script>
-const SESSION_KEY = 'jans_master_auth';
+const SESSION_KEY='jans_master_auth';
 const CONFIG = {
   ADMIN_USER: 'admin',               // Usuario de acceso
   ADMIN_PASS: 'jans2025',            // Contraseña de acceso
@@ -205,9 +775,6 @@ const CONFIG = {
   COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
   COMPANY_WEB:   'jansphotograph.com',
 };
-/* ═════════════════════════════════════ */
-
-// ── State ──
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 let sbClient = null;
@@ -217,7 +784,97 @@ try {
   } else {
     console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
   }
-} catch(e) { console.warn("Supabase error", e); }
+} catch(e) {
+  console.warn('No se pudo inicializar Supabase:', e);
+}
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+
+
+let toastTimer;
+let ctxDs = null;
+let calView = 'month';
+let calViewDay = null;
+let state = { calendar: {}, quotes: [], calYear: new Date().getFullYear(), calMonth: new Date().getMonth(), calDay: new Date().getDate() };
+let allReservas = [];
+
+
+const HOURS_CAL   = [8,9,10,11,12,13,14,15,16,17,18,19,20];
+const HOUR_LABELS = ['8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm'];
+
+function evBg(status) {
+  return {confirmed:'rgba(34,197,94,0.18)',completed:'rgba(59,130,246,0.18)',postponed:'rgba(139,92,246,0.15)',cancelled:'rgba(239,68,68,0.1)'}[status] || 'rgba(255,255,255,0.06)';
+}
+
+function evColor(status) {
+  return {confirmed:'#86efac',completed:'#93c5fd',postponed:'#c4b5fd',cancelled:'#fca5a5'}[status] || '#999';
+}
+
+function loadCalendar() {
+  try { state.calendar = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) { state.calendar = {}; }
+}
+
+function getGHConfig() {
+  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+}
+
+function openCalEventForm() {
+  closeModal('calEventActionModal');
+  const fd = document.getElementById('calEvFecha');
+  if(fd && ctxDs) fd.value = ctxDs;
+  openModal('calEventFormModal');
+}
+
+function closeCalCtxMenu() {
+  const m = document.getElementById('calCtxMenu');
+  if(m) m.style.display = 'none';
+}
+
+function openCtxMenu(e, ds) {
+  e.stopPropagation();
+  ctxDs = ds;
+  const m = document.getElementById('calCtxMenu');
+  if(!m) return;
+  m.style.display = 'block';
+  m.style.left = Math.min(e.clientX, window.innerWidth-200) + 'px';
+  m.style.top  = Math.min(e.clientY, window.innerHeight-120) + 'px';
+}
+
+async function fetchCalendarData() {
+  const cfg = getGHConfig();
+  if (cfg.owner && cfg.repo && cfg.token) {
+    try {
+      const r = await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/data/calendar.json',
+        {headers:{Authorization:'token '+cfg.token,Accept:'application/vnd.github.v3.json'}});
+      if(r.ok){const d=await r.json();state.calendar=JSON.parse(atob(d.content.replace(/\n/g,'')));localStorage.setItem('jans_calendar',JSON.stringify(state.calendar));}
+    } catch(e){}
+    try {
+      const r2 = await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/data/quotes.json',
+        {headers:{Authorization:'token '+cfg.token,Accept:'application/vnd.github.v3.json'}});
+      if(r2.ok){const d2=await r2.json();state.quotes=JSON.parse(atob(d2.content.replace(/\n/g,'')));localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));}
+    } catch(e){}
+  }
+  renderCalendar();
+  showToast('Calendario sincronizado');
+}
+
+document.addEventListener('click', function(e){
+  const ctx=document.getElementById('calCtxMenu');
+  if(ctx&&!ctx.contains(e.target))ctx.style.display='none';
+});
+
+function handleLogout(){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  window.scrollTo(0,0);
+  loadCalendar();
+  try{allReservas=JSON.parse(localStorage.getItem('jans_reservas')||'[]');}catch(e){allReservas=[];}
+  try{state.quotes=JSON.parse(localStorage.getItem('jans_quotes')||'[]');}catch(e){state.quotes=[];}
+  renderCalendar();
+  setTimeout(()=>fetchCalendarData(),500);
+});
+
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -227,85 +884,6 @@ function showToast(msg, type='success') {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function statusLabel(s) {
-  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
-}
-function statusClassQ(s) {
-  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
-}
-const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DAYS_ES   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-
-const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
-async function ghPut(file, data) {
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const body = { message: `update ${file}`, content };
-  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
-  let res = await fetch(`${GH_BASE()}/${file}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-
-  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
-  if (res.status === 409) {
-    try {
-      const getRes = await fetch(`${GH_BASE()}/${file}`, {
-        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
-      });
-      if (getRes.ok) {
-        const getJson = await getRes.json();
-        if (getJson.sha) {
-          state.fileSHAs[file] = getJson.sha;
-          body.sha = getJson.sha;
-          res = await fetch(`${GH_BASE()}/${file}`, {
-            method: 'PUT',
-            headers: {
-              Authorization: `token ${CONFIG.GH_TOKEN}`,
-              Accept: 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-          });
-        }
-      }
-    } catch(e) { /* retry failed — return original failed response */ }
-  }
-
-  const json = await res.json();
-  if (json.content) state.fileSHAs[file] = json.content.sha;
-  return res.ok;
-}
-async function ghPutPublic(file, data) {
-  const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
-  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
-  // First try to get the current SHA
-  let sha = null;
-  try {
-    const getRes = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-    });
-    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
-  } catch(e) {}
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const body = { message: `update ${file}`, content };
-  if (sha) body.sha = sha;
-  const res = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
-}
-let allReservas = [];
 function loadReservasLocal() {
   try {
     const raw = localStorage.getItem('jans_reservas');
@@ -320,77 +898,11 @@ function loadReservasLocal() {
   });
   if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
 }
-function resTotal(r) {
-  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
-    ? (parseFloat(r.totalManual) || 0)
-    : resPlanPrice(r);
-  const extras        = resExtrasTotal(r);
-  const personasExtra = parseFloat(r.costoPersonasExtra) || 0;
-  const exterior      = parseFloat(r.costoExterior)      || 0;
-  return base + extras + personasExtra + exterior;
-}
 function resStatusClass(s) {
   return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
 }
 function resStatusLabel(s) {
   return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
-}
-
-function todayPanama() {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Panama' }));
-}
-function todayStrPanama() {
-  const d = todayPanama();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-
-
-let calView     = 'month';
-let calViewDay  = null;
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let state = { calendar: {}, quotes: [] };
-
-function loadCalendar() {
-  try { state.calendar = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) { state.calendar = {}; }
-}
-
-function getGHConfig() {
-  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
-}
-
-async function fetchCalendarData() {
-  const cfg = getGHConfig();
-  if (!cfg.owner || !cfg.repo || !cfg.token) return;
-  try {
-    const r = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/calendar.json', {
-      headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
-    });
-    if (r.ok) {
-      const d = await r.json();
-      state.calendar = JSON.parse(atob(d.content.replace(/\n/g,'')));
-      localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
-    }
-  } catch(e) { console.warn('fetchCalendar error:', e); }
-
-  // También cargar cotizaciones para mostrar en calendario
-  try {
-    const r2 = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/quotes.json', {
-      headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
-    });
-    if (r2.ok) {
-      const d2 = await r2.json();
-      state.quotes = JSON.parse(atob(d2.content.replace(/\n/g,'')));
-      localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
-    }
-  } catch(e) {}
-
-  renderCalendar();
-  showToast('Calendario sincronizado');
-}
-
-function evClass(status) {
-  return { confirmed:'ev-confirmed', postponed:'ev-postponed', cancelled:'ev-cancelled' }[status] || 'ev-pending';
 }
 function getEventsForDate(ds) {
   const res  = (JSON.parse(localStorage.getItem('jans_reservas')||'[]')).filter(r=>r.fecha===ds && r.status!=='deleted');
@@ -400,11 +912,30 @@ function getEventsForDate(ds) {
   quot.forEach(q => evs.push({ name: q.clientName,     plan: q.plan||'—',   hora: q.sessionTime||'', horaVal: parseInt((q.sessionTime||'0').split(':')[0])||0, status: q.status, type:'quote' }));
   return evs;
 }
+function evClass(status) {
+  return { confirmed:'ev-confirmed', postponed:'ev-postponed', cancelled:'ev-cancelled' }[status] || 'ev-pending';
+}
 function renderCalendar() {
-  const todayStr = new Date().toISOString().split('T')[0];
-  if(calView==='month')  renderMonthView(todayStr);
-  else if(calView==='week') renderWeekView(todayStr);
-  else if(calView==='day')  renderDayView(todayStr);
+  try {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if(calView==='month')  renderMonthView(todayStr);
+    else if(calView==='week') renderWeekView(todayStr);
+    else if(calView==='day')  renderDayView(todayStr);
+    // Verificar que se renderizó
+    const g = document.getElementById('calGrid');
+    if(g && g.children.length === 0) {
+      // Forzar renderizado básico
+      g.innerHTML = '<div style="color:#999;padding:20px;grid-column:span 7">Cargando calendario...</div>';
+      setTimeout(() => {
+        g.innerHTML = '';
+        renderMonthView(new Date().toISOString().split('T')[0]);
+      }, 100);
+    }
+  } catch(err) {
+    console.error('renderCalendar error:', err);
+    const g = document.getElementById('calGrid');
+    if(g) g.innerHTML = '<div style="color:#ef4444;padding:20px;grid-column:span 7">Error: ' + err.message + '</div>';
+  }
 }
 function renderMonthView(todayStr) {
   document.getElementById('calMonthLabel').textContent = MONTHS_ES[state.calMonth] + ' ' + state.calYear;
@@ -448,8 +979,8 @@ function renderMonthView(todayStr) {
   }
 }
 function renderWeekView(todayStr) {
-  // Find Monday of current week relative to calYear/calMonth/1
-  const refDate   = new Date(state.calYear, state.calMonth, 1);
+  // Find Sunday of current week relative to today or calYear/calMonth
+  const refDate   = new Date(state.calYear, state.calMonth, state.calDay || 1);
   const dayOfWeek = refDate.getDay(); // 0=Sun
   const monday    = new Date(refDate); monday.setDate(refDate.getDate() - dayOfWeek);
   const days = Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
@@ -555,7 +1086,11 @@ function renderDayView(todayStr) {
 }
 function calNext() {
   if(calView==='month') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
-  else if(calView==='week') { state.calMonth++; if(state.calMonth>11){state.calMonth=0;state.calYear++;} }
+  else if(calView==='week') {
+    const d = new Date(state.calYear, state.calMonth, state.calDay||1);
+    d.setDate(d.getDate() + 7);
+    state.calYear = d.getFullYear(); state.calMonth = d.getMonth(); state.calDay = d.getDate();
+  }
   else if(calView==='day' && calViewDay) {
     const d = new Date(calViewDay); d.setDate(d.getDate()+1);
     calViewDay = d.toISOString().split('T')[0];
@@ -566,7 +1101,11 @@ function calNext() {
 }
 function calPrev() {
   if(calView==='month') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
-  else if(calView==='week') { state.calMonth--; if(state.calMonth<0){state.calMonth=11;state.calYear--;} }
+  else if(calView==='week') {
+    const d = new Date(state.calYear, state.calMonth, state.calDay||1);
+    d.setDate(d.getDate() - 7);
+    state.calYear = d.getFullYear(); state.calMonth = d.getMonth(); state.calDay = d.getDate();
+  }
   else if(calView==='day' && calViewDay) {
     const d = new Date(calViewDay); d.setDate(d.getDate()-1);
     calViewDay = d.toISOString().split('T')[0];
@@ -591,16 +1130,6 @@ function setCalView(v) {
     document.getElementById('btnView'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active', x===v);
   });
   renderCalendar();
-}
-async function syncCalendarPublic() {
-  showToast('Sincronizando calendario...', 'success');
-  try {
-    const ok = await ghPutPublic('calendar.json', state.calendar);
-    if (ok) showToast('Calendario publicado ✓ — visible en index y reservas');
-    else    showToast('Error al sincronizar — verifica configuración GitHub', 'error');
-  } catch(e) {
-    showToast('Error de conexión', 'error');
-  }
 }
 function openCalEventModal() {
   openModal('calEventActionModal');
@@ -664,16 +1193,117 @@ async function deleteCalEvent(ds) {
   const ok2 = await ghPutPublic('calendar.json', state.calendar);
   showToast(ok1 && ok2 ? `"${titulo}" eliminado — día liberado ✓` : 'Eliminado localmente — verifica GitHub', ok1 && ok2 ? 'success' : 'error');
 }
-function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("../master.html"); }
-document.addEventListener('DOMContentLoaded', () => {
-  // Cargar datos locales
-  loadCalendar();
-  try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
-  try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
-  renderCalendar();
-  // Cargar datos frescos en background
-  fetchCalendarData();
-});
+function openCalEventPicker(mode) {
+  const eventDays = Object.entries(state.calendar)
+    .filter(([, v]) => v && typeof v === 'object' && v.type === 'event')
+    .sort(([a],[b]) => a.localeCompare(b));
+
+  if (!eventDays.length) {
+    showToast('No hay eventos en el calendario todavía', 'error');
+    return;
+  }
+
+  const isDelete = mode === 'delete';
+  document.getElementById('calPickerTitle').textContent = isDelete ? 'Eliminar Evento' : 'Seleccionar Evento para Editar';
+
+  const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+  document.getElementById('calEventPickerList').innerHTML = eventDays.map(([ds, ev]) => {
+    const fechaFmt = new Date(ds + 'T00:00:00').toLocaleDateString('es-PA', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
+    const color = colorHex[ev.color] || colorHex.pink;
+    return `
+      <div onclick="${isDelete ? `deleteCalEvent('${ds}')` : `openCalEventForm('${ds}')`}"
+        style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all 0.18s"
+        onmouseover="this.style.borderColor='rgba(233,30,140,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:0.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.titulo || 'Evento'}</div>
+          <div style="font-size:0.75rem;color:var(--gray-l)">${fechaFmt}</div>
+          ${ev.descripcion ? `<div style="font-size:0.73rem;color:var(--gray);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.descripcion}</div>` : ''}
+        </div>
+        <span style="color:${isDelete ? '#fca5a5' : 'var(--pink-l)'};font-size:0.8rem;font-weight:600;flex-shrink:0">${isDelete ? 'Eliminar →' : 'Editar →'}</span>
+      </div>`;
+  }).join('');
+
+  openModal('calEventPickerModal');
+}
+async function syncCalendarPublic() {
+  showToast('Sincronizando calendario...', 'success');
+  try {
+    const ok = await ghPutPublic('calendar.json', state.calendar);
+    if (ok) showToast('Calendario publicado ✓ — visible en index y reservas');
+    else    showToast('Error al sincronizar — verifica configuración GitHub', 'error');
+  } catch(e) {
+    showToast('Error de conexión', 'error');
+  }
+}
+async function ghPut(file, data) {
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
+  let res = await fetch(`${GH_BASE()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${CONFIG.GH_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  if (res.status === 409) {
+    try {
+      const getRes = await fetch(`${GH_BASE()}/${file}`, {
+        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.sha) {
+          state.fileSHAs[file] = getJson.sha;
+          body.sha = getJson.sha;
+          res = await fetch(`${GH_BASE()}/${file}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
+    } catch(e) { /* retry failed — return original failed response */ }
+  }
+
+  const json = await res.json();
+  if (json.content) state.fileSHAs[file] = json.content.sha;
+  return res.ok;
+}
+async function ghPutPublic(file, data) {
+  const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  // First try to get the current SHA
+  let sha = null;
+  try {
+    const getRes = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+  } catch(e) {}
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (sha) body.sha = sha;
+  const res = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
 </script>
 </body>
 </html>

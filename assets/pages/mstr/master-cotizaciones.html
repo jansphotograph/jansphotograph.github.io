@@ -8,8 +8,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../../css/mstr-base.css" />
-  <link rel="stylesheet" href="../../css/master-nav.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../../css/master-cotizaciones.css" />
 </head>
 <body>
@@ -102,8 +102,8 @@
     <div id="quoteModalFooter" style="flex-shrink:0;padding:16px 32px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap"></div>
   </div>
 </div>
-<main class="main-content" style="padding-top:156px">
-<div id="section-quotes">
+<main class="main-content">
+<div id="section-quotes" style="display:block">
 <div id="view-quotes">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
           <div>
@@ -159,7 +159,7 @@
           </div>
           <div class="form-row" id="juridicaFields" style="display:none">
             <div class="field"><label>Razón Social</label><input type="text" id="qRazonSocial" placeholder="Nombre de la empresa" /></div>
-            <div class="field"><label>Representante Legal</label><input type="text" id="qRepLegal" placeholder="Nombre del representante" /></div>
+            <div class="field"><label>DV</label><input type="text" id="qDV" placeholder="Dígito verificador" maxlength="2" /></div>
           </div>
           <div class="form-row">
             <div class="field"><label>Teléfono *</label><input type="tel" id="qPhone" placeholder="+507 6000-0000" /></div>
@@ -207,68 +207,39 @@
           </div>
         </div>
 </div>
+</div>
 
-id="section-eventoForm" style="display:none">
-<div id="view-eventoForm">
-        <div class="page-header">
-          <h2>Formulario de Cotización para Evento</h2>
-          <p>Selecciona el tipo de cliente para copiar el formulario y compartirlo</p>
+<div id="section-eventoForm" style="display:none">
+  <div style="color:#fff">
+    <div style="margin-bottom:24px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:6px">Formulario de Cotización para Evento</h2>
+      <p style="color:#999;font-size:0.85rem">Selecciona el tipo de cliente para copiar el formulario y compartirlo</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin-bottom:28px">
+      <div onclick="copyEventoForm('natural')" style="background:#1c1c1c;border:2px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;cursor:pointer;text-align:center" onmouseenter="this.style.borderColor='#c71e5f'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(199,30,95,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e91e8c" stroke-width="1.8" width="26" height="26"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
         </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px">
-
-          <!-- Persona Natural -->
-          <div class="card" style="cursor:pointer;transition:all 0.2s;border:2px solid transparent"
-               id="cardNatural"
-               onclick="copyEventoForm('natural')"
-               onmouseenter="this.style.borderColor='var(--pink)'"
-               onmouseleave="this.style.borderColor='transparent'">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:8px 0">
-              <div style="width:56px;height:56px;border-radius:50%;background:rgba(199,30,95,0.12);display:flex;align-items:center;justify-content:center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--pink-l)" stroke-width="1.8" width="28" height="28"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              </div>
-              <div>
-                <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">Persona Natural</div>
-                <div style="font-size:0.8rem;color:var(--gray-l)">Nombre, cédula, correo, fecha, lugar y hora del evento</div>
-              </div>
-              <button class="btn btn-pink btn-sm" style="width:100%">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                Copiar formulario
-              </button>
-              <div id="msgNatural" style="display:none;font-size:0.78rem;color:#86efac">✓ ¡Copiado al portapapeles!</div>
-            </div>
-          </div>
-
-          <!-- Persona Jurídica -->
-          <div class="card" style="cursor:pointer;transition:all 0.2s;border:2px solid transparent"
-               id="cardJuridica"
-               onclick="copyEventoForm('juridica')"
-               onmouseenter="this.style.borderColor='var(--pink)'"
-               onmouseleave="this.style.borderColor='transparent'">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:8px 0">
-              <div style="width:56px;height:56px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="1.8" width="28" height="28"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-              </div>
-              <div>
-                <div style="font-weight:700;font-size:1rem;color:var(--white);margin-bottom:4px">Persona Jurídica</div>
-                <div style="font-size:0.8rem;color:var(--gray-l)">Incluye RUC y DV adicional al formulario estándar</div>
-              </div>
-              <button class="btn btn-blue btn-sm" style="width:100%">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                Copiar formulario
-              </button>
-              <div id="msgJuridica" style="display:none;font-size:0.78rem;color:#86efac">✓ ¡Copiado al portapapeles!</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Preview del mensaje -->
-        <div style="margin-top:28px;max-width:700px">
-          <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--gray);margin-bottom:10px">Vista previa del formulario</div>
-          <div id="eventoFormPreview" style="background:var(--dark);border-radius:12px;padding:20px 24px;font-size:0.88rem;color:var(--gray-l);line-height:1.8;white-space:pre-wrap;font-family:monospace;border:1px solid var(--border)"></div>
-        </div>
+        <div style="font-weight:700;color:#fff;margin-bottom:6px">Persona Natural</div>
+        <div style="font-size:0.78rem;color:#999;margin-bottom:16px">Nombre, cédula, correo, fecha, lugar y hora</div>
+        <button class="btn btn-pink btn-sm" style="width:100%">Copiar formulario</button>
+        <div id="msgNatural" style="display:none;font-size:0.78rem;color:#86efac;margin-top:8px">✓ ¡Copiado!</div>
       </div>
+      <div onclick="copyEventoForm('juridica')" style="background:#1c1c1c;border:2px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;cursor:pointer;text-align:center" onmouseenter="this.style.borderColor='#3b82f6'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="1.8" width="26" height="26"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div style="font-weight:700;color:#fff;margin-bottom:6px">Persona Jurídica</div>
+        <div style="font-size:0.78rem;color:#999;margin-bottom:16px">Incluye RUC y DV</div>
+        <button class="btn btn-blue btn-sm" style="width:100%">Copiar formulario</button>
+        <div id="msgJuridica" style="display:none;font-size:0.78rem;color:#86efac;margin-top:8px">✓ ¡Copiado!</div>
+      </div>
+    </div>
+    <div style="max-width:700px">
+      <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.07em;color:#666;margin-bottom:10px">Vista previa</div>
+      <div id="eventoFormPreview" style="background:#141414;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px 24px;font-size:0.85rem;color:#aaa;line-height:1.8;white-space:pre-wrap;font-family:monospace;min-height:200px"></div>
+    </div>
+  </div>
 </div>
 </main>
 <script>
@@ -464,7 +435,7 @@ function showSection(name) {
   ['quotes','newquote','eventoForm'].forEach(s => {
     const sec=document.getElementById('section-'+s);
     const btn=document.getElementById('btn-'+s);
-    if(sec)sec.style.display=s===name?'':'none';
+    if(sec)sec.style.display=s===name?'block':'none';
     if(btn)btn.classList.toggle('active',s===name);
   });
   if(name==='newquote'){loadPublicPlans();updateQPlanSelect();renderServiceChecks();}
@@ -571,7 +542,8 @@ async function saveQuote() {
     clientName: name,
     clientId:   cid,
     razonSocial:document.getElementById('qRazonSocial').value,
-    repLegal:   document.getElementById('qRepLegal').value,
+    dv:         document.getElementById('qDV')?.value || '',
+    repLegal:   '',
     phone,
     email:      document.getElementById('qEmail').value,
     address:    document.getElementById('qAddress').value,
@@ -614,7 +586,8 @@ async function saveQuote() {
       clientId:   cid,
       clientType,
       razonSocial: quote.razonSocial,
-      repLegal:    quote.repLegal,
+      dv:          quote.dv || '',
+    repLegal:    '',
       address:     quote.address,
       extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
       origin:     'manual',
@@ -642,7 +615,7 @@ async function saveQuote() {
   }
 }
 function clearQuoteForm() {
-  ['qClientName','qClientId','qRazonSocial','qRepLegal','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  ['qClientName','qClientId','qRazonSocial','qDV','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
   document.getElementById('qPlan').value = '';
   document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
   selectClientType('natural'); updateTotal();
@@ -970,7 +943,7 @@ function showPDF(id) {
         <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${q.clientId||'—'}</div></div>
         ${q.clientType==='juridica'?`
         <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${q.razonSocial||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Rep. Legal</div><div class="pdf-value">${q.repLegal||'—'}</div></div>`:''}
+        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${q.dv||'—'}</div></div>`:''}
         <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${q.phone||'—'}</div></div>
         <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${q.email||'—'}</div></div>
         <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${q.address||'—'}</div></div>
@@ -1023,7 +996,7 @@ function downloadPDF() {
   doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9);
   const clientData = [
     ['Nombre:', q.clientName], ['Cédula/RUC:', q.clientId||'—'],
-    ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['Rep. Legal:', q.repLegal||'—']]:[]),
+    ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['DV:', q.dv||'—']]:[]),
     ['Teléfono:', q.phone||'—'], ['Email:', q.email||'—'],
     ['Dirección:', q.address||'—'], ['Lugar:', q.location||'—'],
   ];
@@ -1066,6 +1039,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadPublicPlans();
   updateQPlanSelect();
   fetchQuotes();
+  // Pre-inicializar el formulario de evento aunque no sea visible aún
+  initEventoForm();
 });
 </script>
 </body>

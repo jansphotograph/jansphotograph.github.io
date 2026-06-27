@@ -4,12 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Configuracion - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../../images/"icons/JansBlackBag.png" />
+<link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../../css/mstr-base.css" />
-  <link rel="stylesheet" href="../../css/master-nav.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../../css/master-config.css" />
 </head>
 <body>
@@ -1232,7 +1232,7 @@ async function saveNotas() {
   msgEl.textContent      = ok ? '✓ Notas publicadas en el sitio' : '✓ Guardadas localmente (configura GitHub para publicar)';
   showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
 }
-function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config')loadFacturaCounterUI();if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
+function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config')loadFacturaCounterUI();if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
 function handleLogout(){sessionStorage.removeItem(SESSION_KEY);window.location.replace('../master.html');}
 document.addEventListener('DOMContentLoaded',()=>{loadCompanyUI();});
 </script>

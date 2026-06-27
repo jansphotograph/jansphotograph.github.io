@@ -4,14 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Catalogo - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../../images/"icons/JansBlackBag.png" />
+<link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
-<link rel="stylesheet" href="../../css/mstr-base.css" />
-  <link rel="stylesheet" href="../../css/master-nav.css" />
   <link rel="stylesheet" href="../../css/master-catalogo.css" />
 </head>
 <body>
@@ -94,6 +92,24 @@
   <button class="subnav-btn" id="btn-faqs" onclick="showSection('faqs')">FAQ</button>
   <button class="subnav-btn" id="btn-equipo" onclick="showSection('equipo')">Equipo</button>
 </div>
+<script>
+function showSection(name) {
+  ['planes','blog','serv','inventario','faqs','equipo'].forEach(function(s) {
+    var sec = document.getElementById('section-'+s);
+    var btn = document.getElementById('btn-'+s);
+    if(sec) sec.style.display = s===name ? 'block' : 'none';
+    if(btn) btn.classList.toggle('active', s===name);
+  });
+  try {
+    if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
+    if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
+    if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
+    if(name==='inventario') { loadInvData(); initInventario(); }
+    if(name==='faqs')       initFaqs();
+    if(name==='equipo')     renderTeamList();
+  } catch(e) { console.error('showSection error:', e); }
+}
+</script>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div class="modal-overlay" id="servModal">
   <div class="modal" style="max-width:520px">
@@ -349,7 +365,136 @@
     <div id="teamModalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.82rem"></div>
   </div>
 </div>
+<div class="modal-overlay" id="pubPlanModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 id="pubPlanModalTitle">Nuevo Plan</h3>
+      <button class="modal-close" onclick="closeModal('pubPlanModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Nombre del plan *</label>
+      <input type="text" id="ppNombre" placeholder="Ej. Plan Básico" />
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Precio (USD) *</label>
+        <input type="number" id="ppPrecio" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="field">
+        <label>Categoría *</label>
+        <select id="ppCategoria">
+          <option value="">— Seleccionar —</option>
+              <option value="retratos">Retratos</option>
+              <option value="xv-anos">XV Años</option>
+              <option value="familiares">Familiares</option>
+              <option value="pre-boda">Pre Boda</option>
+              <option value="boda">Boda</option>
+              <option value="eventos">Eventos</option>
+              <option value="graduacion">Graduación</option>
+              <option value="gastronomia">Gastronomía</option>
+              <option value="infantiles">Infantiles</option>
+          <option value="todos">Todos (aparece en todas)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>¿Qué incluye? <span style="color:var(--gray);font-weight:400">(una línea por ítem)</span></label>
+      <textarea id="ppIncluye" placeholder="30 fotos editadas&#10;Entrega digital en 7 días&#10;1 hora de sesión" style="min-height:120px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="savePubPlanModal()">Guardar plan</button>
+      <button class="btn btn-outline" onclick="closeModal('pubPlanModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal-overlay" id="invBarcodeModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3 id="invBarcodeModalTitle">Código de barras</h3>
+      <button class="modal-close" onclick="closeModal('invBarcodeModal')">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <canvas id="invBarcodeCanvas" style="max-width:100%;border-radius:8px;background:#fff;padding:16px"></canvas>
+      <div id="invBarcodeCode" style="font-family:monospace;font-size:0.8rem;color:var(--gray);margin-top:8px"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="downloadBarcode()">⬇ Descargar JPG</button>
+        <button class="btn btn-outline" onclick="uploadBarcodeToGitHub()">☁ Subir a GitHub</button>
+      </div>
+      <div id="invBarcodeMsg" style="margin-top:10px;font-size:0.82rem;color:var(--gray)"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newCategoryModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3>Nueva Categoría de Planes</h3>
+      <button class="modal-close" onclick="closeModal('newCategoryModal')">×</button>
+    </div>
+    <p style="font-size:0.85rem;color:var(--gray-l);line-height:1.7;margin-bottom:18px">
+      Esto crea automáticamente la página pública de la categoría (con su nav, galería y FAQs),
+      la carpeta de imágenes en el repo, y la añade al menú de navegación de todas las páginas existentes.
+    </p>
+
+    <div class="field">
+      <label>Nombre de la categoría *</label>
+      <input type="text" id="newCatName" placeholder="Ej. Mascotas, Embarazo, Corporativo..." oninput="previewCatSlug()" />
+    </div>
+    <div class="field">
+      <label>Identificador (slug) <span style="color:var(--gray);font-weight:400">— se genera automático</span></label>
+      <input type="text" id="newCatSlug" placeholder="mascotas" />
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+        Se creará: <code id="newCatPagePreview">assets/pages/planes/[slug].html</code><br/>
+        Carpeta de imágenes: <code id="newCatFolderPreview">assets/images/planes/[slug]/</code>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ícono <span style="color:var(--gray);font-weight:400">(emoji, se usa en Servicios)</span></label>
+      <input type="text" id="newCatIcon" placeholder="📸" maxlength="4" />
+    </div>
+    <div class="field">
+      <label>Subtítulo del hero</label>
+      <input type="text" id="newCatSubtitle" placeholder="Ej. Sesiones especiales para capturar momentos únicos." />
+    </div>
+
+    <div id="newCatStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-pink" id="newCatBtn" onclick="createNewCategory()">Crear Categoría</button>
+      <button class="btn btn-outline" onclick="closeModal('newCategoryModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="barcodeScanner">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="barcodeScannerTitle">Escanear insumo</h3>
+      <button class="modal-close" onclick="closeBarcodeScanner()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:16px">
+        <video id="barcodeVideo" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+        <!-- Guía visual -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:70%;height:40%;border:2px solid var(--pink);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+        </div>
+        <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.7)">Apunta la cámara al código de barras</div>
+      </div>
+      <div id="barcodeScanResult" style="display:none;background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:14px"></div>
+      <div id="barcodeScanActions" style="display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn btn-outline btn-sm" onclick="closeBarcodeScanner()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <main class="main-content" style="padding-top:156px">
+<div id="section-planes" style="display:block">
 <div id="view-planesPublicos">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
@@ -396,7 +541,9 @@
       </div>
 
       <!-- ── DATOS DE EMPRESA ── -->
+</div>
 
+<div id="section-blog" style="display:none">
 <div id="view-blog">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div><h2>Blog</h2><p>Publicaciones que aparecen en la página de blogs</p></div>
@@ -416,6 +563,7 @@
 
       <!-- ── PLANES PÚBLICOS ── -->
 </div>
+
 <div id="section-serv" style="display:none">
 
 <div id="view-servAdicionales">
@@ -483,7 +631,9 @@
       </div>
 
       <!-- ── PANEL ADMINISTRATIVO ── -->
+</div>
 
+<div id="section-faqs" style="display:none">
 <div id="view-faqs">
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div><h2>Preguntas Frecuentes</h2><p>Aparecen en todas las páginas de planes, al final del catálogo</p></div>
@@ -503,6 +653,7 @@
 
       <!-- ── SERVICIOS ADICIONALES ── -->
 </div>
+
 <div id="section-equipo" style="display:none">
 
 <div id="view-team">
@@ -525,6 +676,39 @@
 </main>
 <script>
 const SESSION_KEY = 'jans_master_auth';
+
+const FAQ_KEY = 'jans_faqs';
+
+let faqsData = [];
+
+function moveFaq(idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= faqsData.length) return;
+  [faqsData[idx], faqsData[ni]] = [faqsData[ni], faqsData[idx]];
+  renderFaqsList();
+}
+
+async function ghGetPublic() { return null; }
+function GH_BASE() {
+  return `https://api.github.com/repos/${CONFIG.GH_OWNER}/${CONFIG.GH_REPO}/contents/data`;
+}
+async function ghGet(file) {
+  const res = await fetch(`${GH_BASE()}/${file}`, {
+    headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  if (!res.ok) return null; // 404 = file doesn't exist yet, treat as empty, don't throw
+  const json = await res.json();
+  state.fileSHAs[file] = json.sha;
+  try {
+    const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    return JSON.parse(decoded);
+  } catch(e) {
+    console.warn(`ghGet: failed to parse ${file}:`, e);
+    return null;
+  }
+}
+
+let invActiveFilter = 'all';
 const CONFIG = {
   ADMIN_USER: 'admin',               // Usuario de acceso
   ADMIN_PASS: 'jans2025',            // Contraseña de acceso
@@ -553,8 +737,10 @@ try {
 }
 const PP_KEY = 'jans_planes';
 
+let editingPlanIdx = null;
 let publicPlans = [];
 
+const CAT_ORDER   = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia','infantiles','todos'];
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
@@ -957,9 +1143,10 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   <!-- Geo -->
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
-  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
-  <link rel="stylesheet" href="../../css/style.css" />
-  <link rel="stylesheet" href="../../css/pages.css" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+ 
 </head>
 <body>
 
@@ -1065,8 +1252,8 @@ ${galleryItems}
     Ver Planes
   </button>
 
-  <script src="../../js/main.js"><\/script>
-  <script>
+  <\/script>
+  <scr'+'ipt>
     // ── Filter nav — only show categories with plans ──
     (function() {
       const OWNER    = 'jansphotograph';
@@ -1101,7 +1288,7 @@ ${galleryItems}
         .catch(() => {});
     })();
   <\/script>
-  <script>
+  <scr'+'ipt>
     // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = '${slug}';
@@ -1160,7 +1347,7 @@ ${galleryItems}
       }
     });
   <\/script>
-  <script>
+  <scr'+'ipt>
     // ── Auto-reload when master publishes an update ──
     (function() {
       const OWNER   = 'jansphotograph';
@@ -1189,7 +1376,7 @@ ${galleryItems}
       setInterval(checkVersion, 60000);
     })();
   <\/script>
-  <script>
+  <scr'+'ipt>
     // ── Hide planes nav on scroll down, show on scroll up ──
     (function() {
       var nav      = document.querySelector('.planes-nav-wrap');
@@ -1215,7 +1402,7 @@ ${galleryItems}
       }, { passive: true });
     })();
   <\/script>
-  <script>
+  <scr'+'ipt>
     // ── Load FAQs dynamically — same visual format as before ──
     (function() {
       const OWNER = 'jansphotograph';
@@ -1252,8 +1439,8 @@ ${galleryItems}
         .catch(() => {});
     })();
   <\/script>
-</body>
-</html>`;
+<\/body>
+<\/html>`;
 }
 function injectNavIntoPageHTML(html, navSlugs) {
   const navLinksRegex = /(<nav class="planes-nav" id="planesNav"[^>]*>)([\s\S]*?)(<\/nav>)/;
@@ -2120,7 +2307,7 @@ function showSection(name) {
   ['planes','blog','serv','inventario','faqs','equipo'].forEach(s => {
     const sec = document.getElementById('section-'+s);
     const btn = document.getElementById('btn-'+s);
-    if(sec) sec.style.display = s===name ? '' : 'none';
+    if(sec) sec.style.display = s===name ? 'block' : 'none';
     if(btn) btn.classList.toggle('active', s===name);
   });
   if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
@@ -2131,7 +2318,158 @@ function showSection(name) {
   if(name==='equipo')     renderTeamList();
 }
 
+
 function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace('../master.html'); }
+
+function openBarcodeScanner() {
+  document.getElementById('barcodeScanResult').style.display  = 'none';
+  document.getElementById('barcodeScanActions').style.display = 'none';
+  openModal('barcodeScanner');
+  startZxingScanner('barcodeVideo', code => {
+    stopZxingScanner();
+    handleBarcodeScan(code);
+  });
+}
+
+function savePubPlanModal() {
+  const nombre    = document.getElementById('ppNombre').value.trim();
+  const precio    = parseFloat(document.getElementById('ppPrecio').value) || 0;
+  const categoria = document.getElementById('ppCategoria').value;
+  const incluye   = document.getElementById('ppIncluye').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!nombre || !categoria) { showToast('Completa nombre y categoría', 'error'); return; }
+  const plan = { nombre, precio, categoria, incluye, popular: editingPlanIdx !== null ? (publicPlans[editingPlanIdx].popular || false) : false };
+  if (editingPlanIdx !== null) {
+    publicPlans[editingPlanIdx] = plan;
+  } else {
+    publicPlans.push(plan);
+  }
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+  closeModal('pubPlanModal');
+  renderPublicPlans();
+  showToast(editingPlanIdx !== null ? 'Plan actualizado ✓' : 'Plan creado ✓');
+}
+
+function addFaqItem() {
+  faqsData.push({ pregunta: '', respuesta: '' });
+  renderFaqsList();
+}
+
+function openTeamMemberForm(id) {
+  loadTeamLocal();
+  teamPhotoFileData = null;
+  const isEdit = !!id;
+  document.getElementById('teamModalTitle').textContent = isEdit ? 'Editar miembro' : 'Añadir miembro del equipo';
+  document.getElementById('teamMemberId').value = id || '';
+  document.getElementById('teamMemberNombre').value = '';
+  document.getElementById('teamMemberRol').value = '';
+  document.getElementById('teamMemberBio').value = '';
+  document.getElementById('teamPhotoPreview').style.display = 'none';
+  document.getElementById('teamPhotoIcon').style.display = 'flex';
+  document.getElementById('teamPhotoLabel').textContent = 'Haz clic o arrastra una foto';
+  document.getElementById('teamPhotoZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById('teamDeleteBtn').style.display = isEdit ? 'flex' : 'none';
+  document.getElementById('teamModalMsg').style.display = 'none';
+
+  if (isEdit) {
+    const m = teamMembers.find(x => x.id === id);
+    if (m) {
+      document.getElementById('teamMemberNombre').value = m.nombre || '';
+      document.getElementById('teamMemberRol').value    = m.rol    || '';
+      document.getElementById('teamMemberBio').value    = m.bio    || '';
+      if (m.fotoPath) {
+        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          document.getElementById('teamPhotoPreview').src = rawUrl;
+          document.getElementById('teamPhotoPreview').style.display = 'block';
+          document.getElementById('teamPhotoIcon').style.display = 'none';
+          document.getElementById('teamPhotoLabel').textContent = '✓ Foto actual — haz clic para reemplazar';
+          document.getElementById('teamPhotoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+        };
+        testImg.src = rawUrl;
+      }
+    }
+  }
+  openModal('teamMemberModal');
+}
+
+
+function downloadBarcode() {
+  if (!currentBarcodeItem) return;
+  const canvas = document.getElementById('invBarcodeCanvas');
+  const link   = document.createElement('a');
+  const slug   = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  link.download = `${slug}.jpg`;
+  link.href     = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+}
+
+async function uploadBarcodeToGitHub() {
+  if (!currentBarcodeItem) return;
+  const msg  = document.getElementById('invBarcodeMsg');
+  msg.textContent = 'Subiendo a GitHub...';
+  const canvas  = document.getElementById('invBarcodeCanvas');
+  const base64  = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+  const slug    = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  const path    = `assets/images/barcodes/${slug}.jpg`;
+  const ok      = await ghPutPublicFile(path, base64, `barcode: ${currentBarcodeItem.titulo}`);
+  if (ok) {
+    // Guardar la URL del barcode en el insumo
+    loadInvData();
+    const item = invItems.find(x=>x.id===currentBarcodeItem.id);
+    if (item) {
+      item.barcodePath = path;
+      item.barcodeUrl  = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+      await saveInvData();
+    }
+    msg.textContent = `✓ Subido: ${path}`;
+    msg.style.color = '#86efac';
+  } else {
+    msg.textContent = 'Error al subir. Verifica el token de GitHub.';
+    msg.style.color = '#fca5a5';
+  }
+}
+
+
+function closeBarcodeScanner() { closeModal('barcodeScanner'); }
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+function loadTeamLocal() {
+  try { teamMembers = JSON.parse(localStorage.getItem(TEAM_KEY) || '[]'); } catch(e) { teamMembers = []; }
+}
+
+function slugify(str) {
+  return str.toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+async function startZxingScanner(videoId, onDetect) {
+  if (zxingReader) { try { zxingReader.reset(); } catch(e){} }
+  zxingReader = new ZXing.BrowserMultiFormatReader();
+  try {
+    const devices = await zxingReader.listVideoInputDevices();
+    const camId   = devices.length > 1 ? devices[1].deviceId : devices[0]?.deviceId;
+    zxingReader.decodeFromVideoDevice(camId, videoId, (result, err) => {
+      if (result) onDetect(result.getText());
+    });
+  } catch(e) {
+    showToast('No se pudo acceder a la cámara: ' + e.message, 'error');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => { loadPublicPlans(); renderPublicPlans(); });
 </script>
 </body>

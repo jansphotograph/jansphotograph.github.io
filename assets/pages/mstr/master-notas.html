@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notas — Jans Photograph</title>
+  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-notas.css" />
+</head>
+<body>
+
+<script>
+(function(){
+  const raw = sessionStorage.getItem('jans_master_auth');
+  if(!raw){ window.location.replace('../master.html'); return; }
+  try{
+    const s = JSON.parse(raw);
+    if(!s||!s.token||!s.expiry||s.expiry<Date.now()){
+      sessionStorage.removeItem('jans_master_auth');
+      window.location.replace('../master.html');
+    }
+  }catch(e){ sessionStorage.removeItem('jans_master_auth'); window.location.replace('../master.html'); }
+})();
+</script>
+
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+      <img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+    </a>
+    <span class="master-badge">MASTER</span>
+    <span style="color:var(--gray);font-size:0.8rem">/ Notas</span>
+  </div>
+  <nav style="display:flex;gap:4px">
+    <a href="../master.html" class="topbar-link">Inicio</a>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+  </nav>
+</header>
+
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<main class="main-content" style="padding-top:120px">
+  <div id="view-notas">
+        <div class="page-header">
+          <h2>Notas Importantes</h2>
+          <p>Información que verán los clientes al momento de hacer su reserva</p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Notas para el cliente
+          </div>
+          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:20px">
+            Estas notas aparecerán en la página de reservas con fondo amarillo antes del formulario.
+            Úsalas para comunicar requisitos, políticas de cancelación, indicaciones de pago, etc.<br/>
+            <span style="color:var(--gray)">Una nota por línea.</span>
+          </p>
+          <div class="field">
+            <label>Notas <span style="color:var(--gray);font-weight:400">(una por línea)</span></label>
+            <textarea id="notasTexto" oninput="updateNotasPreview()" style="min-height:320px;font-size:0.9rem;line-height:1.7"
+              placeholder="Ej: El pago del 50% del plan debe realizarse al confirmar la reserva.&#10;Las sesiones canceladas con menos de 24hrs no tienen reembolso.&#10;Por favor llega 10 minutos antes de tu sesión."></textarea>
+          </div>
+
+          <!-- Preview -->
+          <div id="notasPreview" style="display:none;margin:16px 0;background:#fff9f0;border-top:3px solid #f59e0b;border-radius:8px;padding:18px">
+            <div style="font-weight:700;font-size:0.8rem;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">⚠ Previsualización</div>
+            <div id="notasPreviewContent" style="font-size:0.88rem;color:#78350f;line-height:1.75"></div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveNotas()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+            <button class="btn btn-outline" onclick="clearNotas()">Eliminar notas</button>
+          </div>
+          <div id="notasMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+      </div>
+
+      <!-- ── RECARGAR SITIO ── -->
+</main>
+
+<script>
+const SESSION_KEY = 'jans_master_auth';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  // GitHub API — Repositorio PRIVADO
+  GH_TOKEN:  'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', // Token Personal de GitHub (permisos: repo)
+  GH_OWNER:  'tu-usuario-github',    // Tu nombre de usuario en GitHub
+  GH_REPO:   'jans-master-data',     // Nombre del repositorio privado
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) {
+  console.warn('No se pudo inicializar Supabase:', e);
+}
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+async function ghPut(file, data) {
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
+  let res = await fetch(`${GH_BASE()}/${file}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${CONFIG.GH_TOKEN}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  if (res.status === 409) {
+    try {
+      const getRes = await fetch(`${GH_BASE()}/${file}`, {
+        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (getRes.ok) {
+        const getJson = await getRes.json();
+        if (getJson.sha) {
+          state.fileSHAs[file] = getJson.sha;
+          body.sha = getJson.sha;
+          res = await fetch(`${GH_BASE()}/${file}`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
+    } catch(e) { /* retry failed — return original failed response */ }
+  }
+
+  const json = await res.json();
+  if (json.content) state.fileSHAs[file] = json.content.sha;
+  return res.ok;
+}
+function loadNotasUI() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('jans_notas_reservas') || '{}');
+    if (saved.texto) {
+      document.getElementById('notasTexto').value = saved.texto;
+      updateNotasPreview();
+    }
+  } catch(e) {}
+}
+function updateNotasPreview() {
+  const texto   = document.getElementById('notasTexto').value.trim();
+  const preview = document.getElementById('notasPreview');
+  const content = document.getElementById('notasPreviewContent');
+  if (!texto) { preview.style.display = 'none'; return; }
+  content.innerHTML = texto.split('\n').map(line =>
+    line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b">•</span>${line.trim()}</div>` : ''
+  ).join('');
+  preview.style.display = 'block';
+}
+async function saveNotas() {
+  const texto = document.getElementById('notasTexto').value.trim();
+  const msgEl = document.getElementById('notasMsg');
+  const payload = { texto, updatedAt: new Date().toISOString() };
+  localStorage.setItem('jans_notas_reservas', JSON.stringify(payload));
+  const ok = await ghPutPublic('notas.json', payload);
+  msgEl.style.display    = 'block';
+  msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
+  msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)';
+  msgEl.style.color      = ok ? '#86efac' : '#fcd34d';
+  msgEl.textContent      = ok ? '✓ Notas publicadas en el sitio' : '✓ Guardadas localmente (configura GitHub para publicar)';
+  showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
+}
+function handleLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.replace('../master.html');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  loadNotasUI();
+  updateNotasPreview();
+});
+</script>
+</body>
+</html>
