@@ -312,14 +312,18 @@ function nextFacturaNumero() {
   return String(counter).padStart(3, '0');
 }
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+const _fileSHAs = {};
 async function ghPut(file, data) {
+  const { owner, repo, token } = getGHConfig();
+  if (!owner || !repo || !token) return false;
+  const base = `https://api.github.com/repos/${owner}/${repo}/contents/data`;
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
-  if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
-  let res = await fetch(`${GH_BASE()}/${file}`, {
+  if (_fileSHAs[file]) body.sha = _fileSHAs[file];
+  let res = await fetch(`${base}/${file}`, {
     method: 'PUT',
     headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
+      Authorization: `token ${token}`,
       Accept: 'application/vnd.github.v3+json',
       'Content-Type': 'application/json'
     },
@@ -329,18 +333,18 @@ async function ghPut(file, data) {
   // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
   if (res.status === 409) {
     try {
-      const getRes = await fetch(`${GH_BASE()}/${file}`, {
-        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+      const getRes = await fetch(`${base}/${file}`, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
       });
       if (getRes.ok) {
         const getJson = await getRes.json();
         if (getJson.sha) {
-          state.fileSHAs[file] = getJson.sha;
+          _fileSHAs[file] = getJson.sha;
           body.sha = getJson.sha;
-          res = await fetch(`${GH_BASE()}/${file}`, {
+          res = await fetch(`${base}/${file}`, {
             method: 'PUT',
             headers: {
-              Authorization: `token ${CONFIG.GH_TOKEN}`,
+              Authorization: `token ${token}`,
               Accept: 'application/vnd.github.v3+json',
               'Content-Type': 'application/json'
             },
@@ -352,7 +356,7 @@ async function ghPut(file, data) {
   }
 
   const json = await res.json();
-  if (json.content) state.fileSHAs[file] = json.content.sha;
+  if (json.content) _fileSHAs[file] = json.content.sha;
   return res.ok;
 }
 async function ghPutPublic(file, data) {
