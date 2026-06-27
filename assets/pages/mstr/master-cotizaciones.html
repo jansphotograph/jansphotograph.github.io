@@ -401,7 +401,7 @@ function loadServAdicionales() {
   } catch(e) { servData = { items: [] }; }
 }
 
-let state = { quotes: [], plans: [] };
+let state = { quotes: [], plans: [], services: { makeup: [], print: [] } };
 
 function loadQuotes() {
   try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
@@ -1037,6 +1037,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadQuotes();
   renderQuotesTable();
   loadPublicPlans();
+  // Cargar servicios adicionales en state
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    state.services = {
+      makeup: Array.isArray(saved.makeup) ? saved.makeup : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='makeup') : []),
+      print:  Array.isArray(saved.print)  ? saved.print  : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='print')  : [])
+    };
+  } catch(e) { state.services = { makeup: [], print: [] }; }
   updateQPlanSelect();
   fetchQuotes();
   // Pre-inicializar el formulario de evento aunque no sea visible aún
