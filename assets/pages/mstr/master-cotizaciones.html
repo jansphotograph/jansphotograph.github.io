@@ -424,6 +424,7 @@ function loadServAdicionales() {
 }
 
 let state = { quotes: [], plans: [], services: { makeup: [], print: [] } };
+let clientType = 'natural';
 
 function loadQuotes() {
   try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
@@ -580,7 +581,28 @@ function toggleEventoPrecio(val) {
   if (field) field.style.display = val === 'Cobertura de Evento' ? 'block' : 'none';
 }
 function renderServiceChecks() {
+  // Recargar servicios del localStorage por si no están en state
+  if (!state.services.makeup.length && !state.services.print.length) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+      state.services = {
+        makeup: Array.isArray(saved.makeup) ? saved.makeup : [],
+        print:  Array.isArray(saved.print)  ? saved.print  : []
+      };
+      // También soportar formato items plano
+      if (!state.services.makeup.length && !state.services.print.length && Array.isArray(saved.items)) {
+        saved.items.forEach(i => {
+          if (i.cat === 'makeup') state.services.makeup.push(i);
+          else state.services.print.push(i);
+        });
+      }
+    } catch(e) {}
+  }
   const all = [...state.services.makeup, ...state.services.print];
+  if (!all.length) {
+    document.getElementById('qServicesCheck').innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
+    return;
+  }
   document.getElementById('qServicesCheck').innerHTML = all.map(s=>`
     <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">
       <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />
@@ -590,7 +612,11 @@ function renderServiceChecks() {
 function updateTotal() {
   const planSel = document.getElementById('qPlan');
   const opt = planSel.options[planSel.selectedIndex];
-  const planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
+  let planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
+  // Si es Cobertura de Evento usar precio manual
+  if (opt && opt.value === 'Cobertura de Evento') {
+    planPrice = parseFloat(document.getElementById('qPrecioEvento')?.value || 0);
+  }
   const planName  = opt ? opt.value : '';
   const checks = document.querySelectorAll('#qServicesCheck input:checked');
   let addonsTotal = 0;
