@@ -169,6 +169,7 @@
       </div>
 </main>
 <script>
+let toastTimer;
 const SESSION_KEY = 'jans_master_auth';
 const CONFIG = {
   ADMIN_USER: 'admin',               // Usuario de acceso
@@ -493,6 +494,101 @@ async function fetchPanelData() {
 }
 
 function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("../master.html"); }
+
+function resPlanPrice(r) {
+  // Resolve the MAIN plan's price by name match from publicPlans.
+  // r.plan may come as "Plan Kids" (exact) or "Plan Kids ($45)" (from the public
+  // reservation form, which embeds the price in the displayed/stored string) —
+  // try exact match first, then fall back to matching the name with the price suffix stripped.
+  try {
+    const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+    if (!r.plan) return 0;
+
+    let match = plans.find(p => p.nombre === r.plan);
+    if (match) return parseFloat(match.precio) || 0;
+
+    // Strip a trailing " ($XX)" / " ($XX.XX)" suffix and retry
+    const cleanName = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    match = plans.find(p => p.nombre === cleanName);
+    if (match) return parseFloat(match.precio) || 0;
+
+    // Last resort: if the plan string itself contains a price like "($45)", use that
+    // directly as the price, even if the plan name no longer matches the current catalog
+    // (e.g. the plan was renamed/removed after the reserva was made).
+    const priceMatch = r.plan.match(/\(\$([\d.,]+)\)/);
+    if (priceMatch) return parseFloat(priceMatch[1].replace(',', '')) || 0;
+  } catch(e) {}
+  return 0;
+}
+
+function resExtrasTotal(r) {
+  // Sum of additional plans/services added manually in the modal
+  return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
+}
+
+
+function resStatusClass(s) {
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
+}
+
+function resAbono(r)     { return parseFloat(r.abono)     || 0; }
+
+function resStatusLabel(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
+}
+
+function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
+
+function restoreInventoryForReserva(r) {
+  loadServAdicionales();
+  loadPaperTypes();
+  const impresiones = servData.impresiones || [];
+  if (!impresiones.length || !paperTypes.length) return;
+
+  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
+
+  let changed = false;
+  lineItems.forEach(itemName => {
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
+    if (!match || !match.papelTipoId) return;
+
+    const paper = paperTypes.find(p => p.id === match.papelTipoId);
+    if (!paper) return;
+
+    const sheets = match.hojasPorVenta || 1;
+    paper.stock = paper.stock + sheets;
+    logInventoryMovement(paper.nombre, 'entrada', sheets, `Reserva revertida: ${r.nombre} (${r.numero||r.id})`);
+    changed = true;
+  });
+
+  if (changed) {
+    localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+    ghPutPublic('inventario-papel.json', { paperTypes, history: invHistory });
+    checkLowStock();
+  }
+}
+
+function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round(((resAbono(r)+resCancelado(r))/t)*100)) : 0; }
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+function nextNumero(prefix) {
+  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  let counter = parseInt(localStorage.getItem(key) || '0', 10);
+  counter += 1;
+  localStorage.setItem(key, String(counter));
+  return prefix + '-' + String(counter).padStart(2, '0');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   try { allReservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) { allReservas = []; }
   try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
