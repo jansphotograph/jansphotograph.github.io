@@ -1233,7 +1233,402 @@ async function saveNotas() {
   showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
 }
 function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config')loadFacturaCounterUI();if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
+
+async function saveGithubConfig() {
+  const owner = document.getElementById('cfgOwner').value.trim();
+  const repo  = document.getElementById('cfgRepo').value.trim();
+  const token = document.getElementById('cfgToken').value.trim();
+  if (!owner || !repo || !token) { showToast('Completa todos los campos', 'error'); return; }
+
+  CONFIG.GH_OWNER = owner;
+  CONFIG.GH_REPO  = repo;
+  CONFIG.GH_TOKEN = token;
+
+  // Save owner/repo plain (not sensitive)
+  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo }));
+
+  // Save token encrypted with AES-GCM
+  try {
+    const encrypted = await encryptToken(token);
+    localStorage.setItem(LS_KEY_ENC, encrypted);
+    // Remove any old plaintext token
+    localStorage.removeItem('jans_gh_token_plain');
+    previewRepo();
+    showToast('Token guardado cifrado con AES-256 ✓');
+  } catch(e) {
+    showToast('Error al cifrar token', 'error');
+  }
+}
+
+async function saveYappyQr() {
+  const msgEl = document.getElementById('qrMsg');
+  if (!yappyQrFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
+
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) {
+    showToast('Configura tu conexión a GitHub primero (Configuración → GitHub)', 'error');
+    return;
+  }
+
+  // Publish under the image's REAL extension (jpg, png, webp, whatever was picked),
+  // so the file is always a valid, correctly-typed image — no more forcing
+  // everything to .png regardless of actual content. The public page is told
+  // exactly which extension to look for via yappyQrExt in company.json.
+  const ext = (yappyQrFileData.extension || 'png').toLowerCase();
+  const KNOWN_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'];
+  const safeExt = KNOWN_EXTS.includes(ext) ? ext : 'png';
+  const imgPath = `assets/images/company/yappy-qr.${safeExt}`;
+
+  try {
+    // Clean up any previously-published QR under a DIFFERENT extension, so
+    // switching formats doesn't leave stale orphaned files in the repo that
+    // could confuse a future lookup.
+    for (const oldExt of KNOWN_EXTS) {
+      if (oldExt === safeExt) continue;
+      const oldPath = `assets/images/company/yappy-qr.${oldExt}`;
+      try {
+        const checkRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+        if (checkRes.ok) {
+          const j = await checkRes.json();
+          await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+            { method: 'DELETE', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'remove stale yappy qr format', sha: j.sha }) });
+        }
+      } catch(e) { /* non-fatal — an old file lingering is harmless, just skip cleanup */ }
+    }
+
+    // Upload the new file
+    let sha = null;
+    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+      { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+    const body = { message: 'update yappy qr', content: yappyQrFileData.base64 };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+      { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+    if (!res.ok) throw new Error('GitHub upload failed');
+
+    // Record the current extension publicly so infoselect.js knows exactly
+    // which file to request, instead of having to guess/probe formats.
+    const companyData = getCompanyData();
+    companyData.yappyQrExt = safeExt;
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(companyData));
+    await ghPutPublic('company.json', companyData);
+
+    yappyQrFileData = null;
+    document.getElementById('qrZoneLabel').textContent = '✓ QR publicado — haz clic para reemplazarlo';
+    document.getElementById('qrZone').style.borderColor = 'rgba(34,197,94,0.4)';
+
+    msgEl.style.display = 'block';
+    msgEl.style.background = 'rgba(34,197,94,0.1)';
+    msgEl.style.border = '1px solid rgba(34,197,94,0.3)';
+    msgEl.style.color = '#86efac';
+    msgEl.textContent = '✓ QR de Yappy publicado en GitHub — ya está visible en la página de abono.';
+    showToast('QR de Yappy publicado ✓');
+  } catch(e) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = 'rgba(239,68,68,0.1)';
+    msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
+    msgEl.style.color = '#fca5a5';
+    msgEl.textContent = 'No se pudo publicar el QR. Verifica tu conexión a GitHub en Configuración.';
+    showToast('Error al publicar el QR', 'error');
+  }
+}
+
 function handleLogout(){sessionStorage.removeItem(SESSION_KEY);window.location.replace('../master.html');}
+
+async function loadAllData() {
+  try {
+    const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+    if (!token || token.startsWith('ghp_XXXX')) {
+      showToast('GitHub no configurado — modo local', 'error');
+      updateDashboard(); renderQuotesTable(); renderCalendar();
+      renderServices(); renderPlans(); updateQPlanSelect();
+      return;
+    }
+    showToast('Sincronizando con GitHub…', 'success');
+    const [q, s, pl, cal, inv] = await Promise.all([
+      ghGet('quotes.json'), ghGet('services.json'),
+      ghGet('plans.json'),  ghGet('calendar.json'),
+      ghGet('inventario.json')
+    ]);
+    if (q)   state.quotes   = q;
+    if (s)   state.services = s;
+    if (pl)  state.plans    = pl;
+    if (cal) { state.calendar = cal; localStorage.setItem('jans_calendar', JSON.stringify(cal)); ghPutPublic('calendar.json', cal).catch(()=>{}); }
+    if (inv) {
+      if (Array.isArray(inv.items))      { invItems      = inv.items;      localStorage.setItem(INV_KEY,     JSON.stringify(invItems)); }
+      if (Array.isArray(inv.categories)) { invCategories = inv.categories; localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories)); }
+    }
+    updateDashboard(); renderQuotesTable(); renderCalendar();
+    renderServices(); renderPlans(); updateQPlanSelect();
+    const el = document.getElementById('ghRepoDisplay');
+    if(el) el.textContent = CONFIG.GH_OWNER + '/' + CONFIG.GH_REPO;
+    showToast('Datos sincronizados ✓', 'success');
+  } catch(e) {
+    console.error('loadAllData error:', e);
+    // Still render local data so the UI isn't blank
+    updateDashboard(); renderQuotesTable(); renderCalendar();
+    renderServices(); renderPlans(); updateQPlanSelect();
+    // Only show the error toast if GitHub is actually configured
+    const token = CONFIG.GH_TOKEN;
+    if (token && !token.startsWith('ghp_XXXX')) {
+      showToast(`Error al sincronizar — revisa la consola del navegador`, 'error');
+    }
+  }
+}
+
+async function clearNotas() {
+  if (!confirm('¿Eliminar todas las notas?')) return;
+  document.getElementById('notasTexto').value = '';
+  document.getElementById('notasPreview').style.display = 'none';
+  document.getElementById('notasMsg').style.display = 'none';
+  localStorage.removeItem('jans_notas_reservas');
+  await ghPutPublic('notas.json', { texto: '', updatedAt: new Date().toISOString() });
+  showToast('Notas eliminadas ✓');
+}
+
+function clearGithubConfig() {
+  if (!confirm('¿Limpiar la configuración de GitHub guardada?')) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_KEY_ENC);
+  localStorage.removeItem('jans_public_owner');
+  localStorage.removeItem('jans_public_repo');
+  document.getElementById('cfgOwner').value       = '';
+  document.getElementById('cfgRepo').value        = '';
+  document.getElementById('cfgToken').value       = '';
+  document.getElementById('cfgPublicOwner').value = '';
+  document.getElementById('cfgPublicRepo').value  = '';
+  CONFIG.GH_OWNER = ''; CONFIG.GH_REPO = ''; CONFIG.GH_TOKEN = '';
+  document.getElementById('ghRepoDisplay').textContent       = '—';
+  document.getElementById('ghPublicRepoDisplay').textContent = '—';
+  document.getElementById('ghStatusDot').style.background    = 'var(--gray)';
+  document.getElementById('ghStatusText').textContent        = 'Sin verificar';
+  showToast('Configuración limpiada', 'error');
+}
+
+async function testGithubConnection() {
+  const dot  = document.getElementById('ghStatusDot');
+  const text = document.getElementById('ghStatusText');
+  // Read current input values before testing
+  const owner = document.getElementById('cfgOwner')?.value.trim() || CONFIG.GH_OWNER;
+  const repo  = document.getElementById('cfgRepo')?.value.trim()  || CONFIG.GH_REPO;
+  const token = document.getElementById('cfgToken')?.value.trim() || CONFIG.GH_TOKEN;
+  if (!owner || !repo || !token) {
+    showToast('Completa usuario, repositorio y token primero', 'error');
+    return;
+  }
+  text.textContent = 'Probando conexión…'; dot.style.background = 'var(--amber)';
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      dot.style.background = 'var(--green)';
+      text.textContent = `Conectado ✓ — ${data.full_name} (${data.private ? 'Privado' : 'Público'})`;
+      showToast('GitHub conectado correctamente ✓');
+    } else {
+      const err = await res.json().catch(()=>({}));
+      dot.style.background = 'var(--red)';
+      text.textContent = `Error ${res.status} — ${err.message || 'verifica token y repositorio'}`;
+      showToast(`Error ${res.status}: ${err.message||'sin acceso'}`, 'error');
+    }
+  } catch(e) {
+    dot.style.background = 'var(--red)';
+    text.textContent = 'Sin conexión a internet';
+    showToast('Sin conexión', 'error');
+  }
+}
+
+async function cleanupStaleCalendarDays() {
+  const resultEl = document.getElementById('cleanupResult');
+  resultEl.textContent = 'Revisando...';
+
+  // ── 1. Release whole-day "booked" marks that no longer have a confirmed/completed
+  //       reserva backing them up (leftover from the old day-blocking behavior). ──
+  const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+  let releasedDaysCount = 0;
+  const releasedDays = [];
+
+  Object.keys(calData).forEach(ds => {
+    if (calData[ds] !== 'booked') return;
+    const hasConfirmed = allReservas.some(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed'));
+    if (!hasConfirmed) {
+      calData[ds] = 'available';
+      releasedDaysCount++;
+      releasedDays.push(ds);
+    }
+  });
+
+  if (releasedDaysCount > 0) {
+    localStorage.setItem('jans_calendar', JSON.stringify(calData));
+    state.calendar = calData;
+    renderCalendar?.();
+    await ghPutPublic('calendar.json', calData);
+  }
+
+  // ── 2. Clear the orphaned blockedHours field on any reserva that is no longer
+  //       confirmed/completed — it isn't read anywhere for the actual hour-blocking
+  //       calculation (that's done live from status), but leaving stale data around
+  //       is confusing, so we clean it up for consistency. ──
+  let clearedHoursCount = 0;
+  const clearedReservas = [];
+  allReservas.forEach(r => {
+    if (r.status !== 'confirmed' && r.status !== 'completed' && r.blockedHours && r.blockedHours.length) {
+      r.blockedHours = [];
+      clearedHoursCount++;
+      clearedReservas.push(r);
+    }
+  });
+  if (clearedHoursCount > 0) {
+    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+    clearedReservas.forEach(r => pushReservaToSupabase(r));
+  }
+
+  // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
+  //       computed live from confirmed/completed reservas — so you can visually
+  //       confirm everything is correct, not just trust that cleanup ran. ──
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeBlocks = {};
+  allReservas
+    .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
+    .forEach(r => {
+      const hv = parseInt(r.horaVal);
+      if (isNaN(hv)) return;
+      if (!activeBlocks[r.fecha]) activeBlocks[r.fecha] = [];
+      for (let h = hv-2; h <= hv+2; h++) activeBlocks[r.fecha].push(h);
+    });
+
+  const summaryLines = Object.keys(activeBlocks).sort().map(ds => {
+    const hours = [...new Set(activeBlocks[ds])].sort((a,b)=>a-b);
+    const hourLabels = hours.map(h => (h % 12 || 12) + (h < 12 ? 'AM' : 'PM'));
+    return `${ds}: ${hourLabels.join(', ')}`;
+  });
+
+  // ── Render result ──
+  let msg = '';
+  if (releasedDaysCount > 0 || clearedHoursCount > 0) {
+    msg += `<div style="color:#86efac;margin-bottom:8px">✓ ${releasedDaysCount} día(s) liberado(s)${releasedDays.length ? ' (' + releasedDays.join(', ') + ')' : ''} · ${clearedHoursCount} registro(s) de horas limpiados</div>`;
+  } else {
+    msg += `<div style="margin-bottom:8px">No había días ni horas huérfanas que limpiar — todo estaba al día.</div>`;
+  }
+
+  if (summaryLines.length) {
+    msg += `<div style="font-weight:600;color:var(--white);margin-bottom:4px">Horas actualmente bloqueadas (por reservas confirmadas):</div>`;
+    msg += summaryLines.map(l => `<div style="margin-bottom:2px">• ${l}</div>`).join('');
+  } else {
+    msg += `<div style="color:var(--gray)">No hay ninguna hora bloqueada en fechas futuras en este momento.</div>`;
+  }
+
+  resultEl.innerHTML = msg;
+  showToast(
+    (releasedDaysCount > 0 || clearedHoursCount > 0)
+      ? `Limpieza completada ✓`
+      : 'Nada que limpiar ✓'
+  );
+}
+
+function exportAllJSON() {
+  const blob = new Blob([JSON.stringify({quotes:state.quotes,services:state.services,plans:state.plans,calendar:state.calendar},null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'jans_data_export.json'; a.click();
+  showToast('JSON exportado ✓');
+}
+
+async function publishReload() {
+  const btn     = document.getElementById('btnReload');
+  const log     = document.getElementById('reloadLog');
+  const logItems= document.getElementById('reloadLogItems');
+  const note    = document.getElementById('reloadNote').value.trim() || 'Actualización general';
+
+  btn.disabled = true;
+  btn.textContent = 'Publicando...';
+  log.style.display = 'block';
+  logItems.innerHTML = '';
+
+  function addLog(msg, ok) {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:' +
+      (ok === true ? 'rgba(34,197,94,0.1)' : ok === false ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)');
+    el.style.color = ok === true ? '#86efac' : ok === false ? '#fca5a5' : 'var(--gray-l)';
+    el.innerHTML = (ok === true ? '✓' : ok === false ? '✗' : '·') + ' ' + msg;
+    logItems.appendChild(el);
+    return el;
+  }
+
+  const tasks = [];
+
+  // 1. version.json — always
+  const versionPayload = {
+    v:    Date.now(),
+    ts:   new Date().toISOString(),
+    note
+  };
+  const vLog = addLog('Subiendo version.json...', null);
+  const vOk  = await ghPutPublic('version.json', versionPayload);
+  vLog.style.background = vOk ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+  vLog.style.color      = vOk ? '#86efac' : '#fca5a5';
+  vLog.innerHTML        = (vOk?'✓':'✗') + ' version.json — ' + (vOk ? 'OK' : 'Error');
+
+  // 2. Conditional publishes
+  const checks = {
+    chkPlanes:    { label:'planes.json',   data: publicPlans },
+    chkPopular:   { label:'popular.json',  data: (() => { const m={}; publicPlans.forEach(p=>{ if(p.popular) m[p.nombre]=true; }); return m; })() },
+    chkCalendar:  { label:'calendar.json', data: state.calendar },
+    chkInstagram: { label:'instagram.json',data: null }, // read from localStorage
+    chkYoutube:   { label:'youtube.json',  data: null },
+    chkNotas:     { label:'notas.json',    data: null },
+    chkServAdic:  { label:'servicios-adicionales.json', data: null },
+    chkFaqs:      { label:'faqs.json',     data: null },
+    chkCompany:   { label:'company.json',  data: null },
+  };
+
+  // Fill instagram / youtube from localStorage
+  try { checks.chkInstagram.data = JSON.parse(localStorage.getItem('jans_ig_preview') || 'null'); } catch(e) {}
+  try { checks.chkYoutube.data   = JSON.parse(localStorage.getItem('jans_yt_preview')  || 'null'); } catch(e) {}
+  try { checks.chkNotas.data     = JSON.parse(localStorage.getItem('jans_notas_reservas') || 'null'); } catch(e) {}
+  try { checks.chkServAdic.data  = JSON.parse(localStorage.getItem('jans_serv_adicionales') || 'null'); } catch(e) {}
+  try { checks.chkFaqs.data      = JSON.parse(localStorage.getItem('jans_faqs') || 'null'); } catch(e) {}
+  try { checks.chkCompany.data   = JSON.parse(localStorage.getItem('jans_company') || 'null'); } catch(e) {}
+
+  for (const [chkId, task] of Object.entries(checks)) {
+    const chk = document.getElementById(chkId);
+    if (!chk || !chk.checked) continue;
+    if (!task.data) { addLog(task.label + ' — sin datos locales, omitido', null); continue; }
+    const tLog = addLog('Subiendo ' + task.label + '...', null);
+    const ok   = await ghPutPublic(task.label, task.data);
+    tLog.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+    tLog.style.color      = ok ? '#86efac' : '#fca5a5';
+    tLog.innerHTML        = (ok?'✓':'✗') + ' ' + task.label + ' — ' + (ok ? 'OK' : 'Error');
+  }
+
+  addLog('¡Listo! El sitio se actualizará automáticamente.', true);
+  btn.disabled    = false;
+  btn.innerHTML   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg> Recargar Sitio';
+  document.getElementById('reloadNote').value = '';
+
+  // Update last reload info
+  loadLastReloadInfo();
+  showToast('Sitio actualizado y publicado ✓');
+}
+
+function toggleTokenVisibility() {
+  const inp  = document.getElementById('cfgToken');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
 document.addEventListener('DOMContentLoaded',()=>{loadCompanyUI();});
 </script>
 </body>
