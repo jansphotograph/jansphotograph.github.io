@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../../css/master-cotizaciones.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <script>
@@ -243,6 +244,23 @@
 </div>
 </main>
 <script>
+
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase conectado');
+    return true;
+  }
+  return false;
+}
+try {
+  if (!initSupabase()) {
+    window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
+  }
+} catch(e) { console.warn('Supabase init error:', e); }
 const SESSION_KEY = 'jans_master_auth';
 const CONFIG = {
   ADMIN_USER: 'admin',               // Usuario de acceso
@@ -415,6 +433,45 @@ function getGHConfig() {
 }
 
 async function fetchQuotes() {
+  // 1. Intentar Supabase primero
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.from('cotizaciones').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) {
+        const mapped = data.map(r => ({
+          id:          r.id,
+          numero:      r.numero,
+          clientName:  r.client_name,
+          clientId:    r.client_id,
+          clientType:  r.client_type,
+          razonSocial: r.razon_social || '',
+          dv:          r.dv || '',
+          phone:       r.phone,
+          email:       r.email,
+          address:     r.address || '',
+          sessionDate: r.session_date || '',
+          sessionTime: r.session_time || '',
+          location:    r.location || '',
+          plan:        r.plan,
+          planPrice:   r.plan_price,
+          addons:      typeof r.addons === 'string' ? JSON.parse(r.addons || '[]') : (r.addons || []),
+          total:       r.total,
+          notes:       r.notes || '',
+          status:      r.status,
+          createdAt:   r.created_at,
+        }));
+        // Merge con locales
+        const local = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
+        const ids = new Set(mapped.map(q => q.id));
+        const merged = [...mapped, ...local.filter(q => !ids.has(q.id))];
+        state.quotes = merged;
+        localStorage.setItem('jans_quotes', JSON.stringify(merged));
+        renderQuotesTable();
+        return;
+      }
+    } catch(e) { console.warn('Supabase fetchQuotes error', e); }
+  }
+  // 2. Fallback: GitHub
   const { owner, repo, token } = getGHConfig();
   if (!owner || !repo || !token) return;
   try {
@@ -560,6 +617,33 @@ async function saveQuote() {
   };
 
   state.quotes.push(quote);
+  // Guardar en Supabase tabla cotizaciones
+  if (sbClient) {
+    sbClient.from('cotizaciones').upsert([{
+      id:           quote.id,
+      numero:       quote.numero,
+      client_name:  quote.clientName,
+      client_id:    quote.clientId,
+      client_type:  quote.clientType,
+      razon_social: quote.razonSocial || '',
+      dv:           quote.dv || '',
+      phone:        quote.phone,
+      email:        quote.email,
+      address:      quote.address || '',
+      session_date: quote.sessionDate || '',
+      session_time: quote.sessionTime || '',
+      location:     quote.location || '',
+      plan:         quote.plan,
+      plan_price:   quote.planPrice,
+      addons:       JSON.stringify(quote.addons || []),
+      total:        quote.total,
+      notes:        quote.notes || '',
+      status:       quote.status,
+      created_at:   quote.createdAt,
+    }]).then(({error}) => {
+      if (error) console.error('Supabase cotizacion error:', error);
+    });
+  }
   const ok = await ghPut('quotes.json', state.quotes);
 
   // Also feed into the unified reservas system so it appears in Reservas
