@@ -190,11 +190,23 @@ const CONFIG = {
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 let sbClient = null;
-try {
+function initSupabase() {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } else {
-    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+    console.log('✅ Supabase conectado');
+    return true;
+  }
+  return false;
+}
+try {
+  if (!initSupabase()) {
+    // Reintentar cuando el DOM esté listo
+    window.addEventListener('load', () => {
+      if (!sbClient) {
+        initSupabase();
+      }
+    });
+    console.warn('Supabase SDK no cargó a tiempo — reintentando en load...');
   }
 } catch(e) { console.warn("Supabase error", e); }
 function showToast(msg, type='success') {
