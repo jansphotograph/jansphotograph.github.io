@@ -163,9 +163,13 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Reservas por mes (últimos 6 meses)
+            Operaciones por mes (últimos 6 meses)
           </div>
-          <div id="panelMonthlyChart" style="display:flex;align-items:flex-end;gap:14px;height:160px;padding:10px 4px"></div>
+          <div style="display:flex;gap:16px;margin-bottom:12px;font-size:0.75rem">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#e91e8c,#c71e5f);display:inline-block"></span>Reservas</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:linear-gradient(180deg,#60a5fa,#3b82f6);display:inline-block"></span>Cotizaciones</span>
+          </div>
+          <div id="panelMonthlyChart" style="display:flex;align-items:flex-end;gap:8px;height:160px;padding:10px 4px"></div>
         </div>
       </div>
 </main>
@@ -342,6 +346,17 @@ function buildDonutChart(data, opts) {
 
   return svg + legend;
 }
+// Parsear createdAt en formato local "dd/mm/yyyy" o ISO "2026-06-24T..."
+function parseCreatedAt(str) {
+  if (!str) return null;
+  // Formato ISO o "yyyy-mm-dd"
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return new Date(str);
+  // Formato local "24/6/2026" o "24/06/2026"
+  const parts = str.split('/');
+  if (parts.length === 3) return new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+  return new Date(str);
+}
+
 function updatePanelAdministrativo() {
   loadReservasLocal();
   const activeRes = allReservas.filter(r => r.status !== 'deleted');
@@ -352,11 +367,11 @@ function updatePanelAdministrativo() {
   const billR = activeRes.filter(r => r.status === 'confirmed' || r.status === 'completed');
   const billQ = activeQ.filter(q => q.status === 'confirmed' || q.status === 'completed');
 
-  // Ingresos este mes: completadas (total) + confirmadas (abono)
-  const compRM = activeRes.filter(r => { if(r.status!=='completed')return false; const d=new Date((r.fecha||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
-  const confRM = activeRes.filter(r => { if(r.status!=='confirmed')return false; const d=new Date((r.fecha||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
-  const compQM = activeQ.filter(q => { if(q.status!=='completed')return false; const d=new Date((q.sessionDate||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
-  const confQM = activeQ.filter(q => { if(q.status!=='confirmed')return false; const d=new Date((q.sessionDate||'')+'T00:00:00'); return d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
+  // Ingresos este mes: completadas (total) + confirmadas (abono) — filtrado por fecha de RESERVACIÓN
+  const compRM = activeRes.filter(r => { if(r.status!=='completed')return false; const d=parseCreatedAt(r.createdAt); return d&&d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
+  const confRM = activeRes.filter(r => { if(r.status!=='confirmed')return false; const d=parseCreatedAt(r.createdAt); return d&&d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
+  const compQM = activeQ.filter(q => { if(q.status!=='completed')return false; const d=parseCreatedAt(q.createdAt); return d&&d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
+  const confQM = activeQ.filter(q => { if(q.status!=='confirmed')return false; const d=parseCreatedAt(q.createdAt); return d&&d.getMonth()===thisMonth&&d.getFullYear()===thisYear; });
 
   const revMonth = compRM.reduce((s,r)=>s+resTotal(r),0) + confRM.reduce((s,r)=>s+(parseFloat(r.abono)||0)+(parseFloat(r.cancelado)||0),0)
                  + compQM.reduce((s,q)=>s+(parseFloat(q.total)||0),0) + confQM.reduce((s,q)=>s+(parseFloat(q.abono)||0)+(parseFloat(q.pagado)||0),0);
@@ -423,21 +438,26 @@ function updatePanelAdministrativo() {
     ? topClients.map(c=>'<tr><td style="font-weight:600">'+c.nombre+'</td><td>'+c.count+'</td><td style="font-weight:700;color:var(--pink-l)">$'+c.total.toFixed(2)+'</td><td style="color:var(--gray-l);font-size:0.85rem">'+(c.lastDate||'—')+'</td></tr>').join('')
     : '<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:20px">Sin datos aun</td></tr>';
 
-  // Grafico mensual
+  // Grafico mensual — barras dobles: reservas (rosa) + cotizaciones (azul), por fecha de reservación
   const months = [];
   for(let i=5;i>=0;i--){ const d=new Date(thisYear,thisMonth-i,1); months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('es-PA',{month:'short'})}); }
-  const monthCounts = months.map(m => {
-    const cR = activeRes.filter(r=>{ const d=new Date((r.fecha||'')+'T00:00:00'); return d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
-    const cQ = activeQ.filter(q=>{ const d=new Date((q.sessionDate||'')+'T00:00:00'); return d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
-    return cR+cQ;
+  const monthData = months.map(m => {
+    const cR = activeRes.filter(r=>{ const d=parseCreatedAt(r.createdAt); return d&&d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
+    const cQ = activeQ.filter(q=>{ const d=parseCreatedAt(q.createdAt); return d&&d.getFullYear()===m.year&&d.getMonth()===m.month; }).length;
+    return {cR, cQ, total: cR+cQ};
   });
-  const maxCount = Math.max(1,...monthCounts);
+  const maxCount = Math.max(1,...monthData.map(m=>m.total));
   if(el('panelMonthlyChart')) el('panelMonthlyChart').innerHTML = months.map((m,i)=>{
-    const h = Math.max(4, Math.round((monthCounts[i]/maxCount)*130));
-    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px">'
-      +'<span style="font-size:0.75rem;font-weight:700;color:var(--white)">'+monthCounts[i]+'</span>'
-      +'<div style="width:100%;max-width:36px;height:'+h+'px;background:linear-gradient(180deg,var(--pink-l),var(--pink));border-radius:6px 6px 0 0"></div>'
-      +'<span style="font-size:0.7rem;color:var(--gray-l);text-transform:capitalize">'+m.label+'</span>'
+    const hR = monthData[i].cR > 0 ? Math.max(8, Math.round((monthData[i].cR/maxCount)*130)) : 0;
+    const hQ = monthData[i].cQ > 0 ? Math.max(8, Math.round((monthData[i].cQ/maxCount)*130)) : 0;
+    const total = monthData[i].total;
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px">'
+      +'<span style="font-size:0.72rem;font-weight:700;color:var(--white)">'+(total||'0')+'</span>'
+      +'<div style="display:flex;align-items:flex-end;gap:3px;width:100%;max-width:48px;justify-content:center">'
+      +(hR>0?'<div title="Reservas: '+monthData[i].cR+'" style="flex:1;height:'+hR+'px;background:linear-gradient(180deg,#e91e8c,#c71e5f);border-radius:4px 4px 0 0"></div>':'<div style="flex:1;height:4px;background:rgba(199,30,95,0.2);border-radius:4px 4px 0 0"></div>')
+      +(hQ>0?'<div title="Cotizaciones: '+monthData[i].cQ+'" style="flex:1;height:'+hQ+'px;background:linear-gradient(180deg,#60a5fa,#3b82f6);border-radius:4px 4px 0 0"></div>':'<div style="flex:1;height:4px;background:rgba(59,130,246,0.2);border-radius:4px 4px 0 0"></div>')
+      +'</div>'
+      +'<span style="font-size:0.68rem;color:var(--gray-l);text-transform:capitalize">'+m.label+'</span>'
       +'</div>';
   }).join('');
 }

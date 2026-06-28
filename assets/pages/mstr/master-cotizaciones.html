@@ -467,6 +467,8 @@ async function fetchQuotes() {
           planPrice:   r.plan_price,
           addons:      typeof r.addons === 'string' ? JSON.parse(r.addons || '[]') : (r.addons || []),
           total:       r.total,
+          abono:       parseFloat(r.abono)  || 0,
+          pagado:      parseFloat(r.pagado) || 0,
           notes:       r.notes || '',
           status:      r.status,
           createdAt:   r.created_at,
@@ -996,11 +998,26 @@ async function saveQuoteChanges(id){
   q.pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
   // Guardar extras editados desde el modal
   if(Array.isArray(window._modalExtras)){q.addons=window._modalExtras.slice();}
+  // Guardar fecha de cotización editada
+  const newCat = document.getElementById('qCreatedAtInput')?.value;
+  if(newCat){
+    const [cy,cm,cd] = newCat.split('-');
+    q.createdAt = parseInt(cd)+'/'+parseInt(cm)+'/'+cy;
+  }
   // Sincronizar Supabase — solo columnas que existen en cotizaciones
   if(sbClient){
-    const sbPayload = { addons: JSON.stringify(q.addons||[]), total: q.total, status: q.status };
+    const sbPayload = { addons: JSON.stringify(q.addons||[]), total: q.total, status: q.status, abono: q.abono||0, pagado: q.pagado||0 };
     sbClient.from('cotizaciones').update(sbPayload).eq('id', id)
-      .then(({error})=>{ if(error) console.warn('sbUpdate cotizacion:', error.message); });
+      .then(({error})=>{
+        if(error){
+          // Si falla por columnas faltantes, reintentar sin abono/pagado
+          console.warn('sbUpdate cotizacion:', error.message);
+          if(error.message && error.message.includes('column')){
+            sbClient.from('cotizaciones').update({ addons: sbPayload.addons, total: sbPayload.total, status: sbPayload.status }).eq('id', id)
+              .then(({error:e2})=>{ if(e2) console.warn('sbUpdate retry:', e2.message); });
+          }
+        }
+      });
   }
   if(q.status==='confirmed'&&q.sessionDate&&q.sessionTime)await blockCalendarForQuote(q);
   localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
@@ -1015,6 +1032,15 @@ async function saveQuoteChanges(id){
 function sanitizeText(str){
   if(!str)return'';
   return String(str).replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();
+}
+
+// Convertir "dd/mm/yyyy" o ISO a "yyyy-mm-dd" para input type="date"
+function toDateInputVal(str) {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.substring(0, 10);
+  const parts = str.split('/');
+  if (parts.length === 3) return parts[2].padStart(4,'0') + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+  return '';
 }
 
 function viewQuote(id){
@@ -1109,7 +1135,10 @@ function viewQuote(id){
     +'<span id="qStatusBadge" class="badge-status '+statusClassQ(q.status)+'">'+statusLabel(q.status)+'</span></div>'
     +'<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>'+(q.phone||'—')+'</div></div>'
     +'<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>'+(q.email||'—')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Fecha</div><div>'+(q.sessionDate||'—')+' '+(q.sessionTime||'')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>'
+    +'<input type="date" id="qCreatedAtInput" value="'+toDateInputVal(q.createdAt)+'" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />'
+    +'</div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">'+(q.sessionDate||'—')+' '+(q.sessionTime||'')+'</div></div>'
     +'<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>'+(q.location||'—')+'</div></div>'
     +'</div>'
     +'<hr class="section-divider"/>'

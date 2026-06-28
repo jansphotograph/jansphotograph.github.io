@@ -113,8 +113,13 @@
       <div class="field"><label>Teléfono</label><input type="text" id="editResTel" /></div>
     </div>
     <div class="field"><label>Email</label><input type="email" id="editResEmail" /></div>
+    <div class="field">
+      <label>📋 Fecha de reservación</label>
+      <input type="date" id="editResCreatedAt" />
+      <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">Fecha en que el cliente realizó la reserva (afecta ingresos del mes)</div>
+    </div>
     <div class="form-row">
-      <div class="field"><label>Fecha</label><input type="date" id="editResDate" /></div>
+      <div class="field"><label>📸 Fecha de sesión</label><input type="date" id="editResDate" /></div>
       <div class="field"><label>Hora</label>
         <select id="editResHora">
           <option value="8|8:00 AM">8:00 AM</option><option value="9|9:00 AM">9:00 AM</option>
@@ -252,6 +257,7 @@ try {
   }
 
 } catch(e) { console.warn("Supabase error", e); }
+let toastTimer;
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -627,9 +633,9 @@ function viewReserva(id) {
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
       ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Recibida</div><div>${r.createdAt||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Fecha sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Hora sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${r.createdAt||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
       <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
       ${r.personasExtra > 0 ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Personas adicionales</div><div style="font-weight:600;color:#fbbf24">+${r.personasExtra} persona(s)</div></div>` : ''}
       ${r.quiereExterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Solicita exterior</div><div style="font-weight:600;color:#86efac">✓ Sí — ${r.lugarExterior||'Lugar por confirmar'}</div></div>` : ''}
@@ -722,7 +728,7 @@ function viewReserva(id) {
           </div>
           <div class="field" style="margin-bottom:0">
             <label>Nueva hora</label>
-            <input type="time" id="resNewHora" value="${r.horaNueva||r.hora||''}" />
+            <input type="time" id="resNewHora" value="${to24h(r.horaNueva||r.hora||'')}" />
           </div>
         </div>
         <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">El estado de la reserva se mantiene como <strong style="color:#fbbf24">Aplazada</strong>. Guarda los cambios para aplicar la nueva fecha.</div>
@@ -758,6 +764,63 @@ function viewReserva(id) {
 
   openModal('reservaModal');
 }
+// updateDashboard no aplica en esta página separada — stub para evitar errores
+function updateDashboard() {}
+
+function changeResStatus(id, status) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  allReservas[idx].status = status;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
+  // Actualizar badge
+  const badge = document.getElementById('resStatusBadge');
+  if (badge) { badge.className = 'badge-status ' + resStatusClass(status); badge.textContent = resStatusLabel(status); }
+  // Actualizar botones — iterar todos los botones del modal body
+  const clsMap = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', declined:'btn-red', cancelled:'btn-red' };
+  const body = document.getElementById('reservaModalBody');
+  if (body) {
+    body.querySelectorAll('.btn').forEach(function(btn) {
+      const oc = btn.getAttribute('onclick') || '';
+      const match = oc.match(/changeResStatus\([^,]+,\s*'([^']+)'\)/);
+      if (match) {
+        const s = match[1];
+        btn.className = 'btn btn-sm ' + (s === status ? (clsMap[s] || 'btn-outline') : 'btn-outline');
+      }
+    });
+  }
+  // Mostrar/ocultar bloque de aplazamiento
+  const pb = document.getElementById('resPostponeBlock');
+  if (pb) pb.style.display = status === 'postponed' ? '' : 'none';
+  renderReservasTable();
+  updateDashboard();
+  showToast('Estado actualizado ✓');
+}
+
+
+function applyPostpone(id) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const r = allReservas[idx];
+  const nf = document.getElementById('resNewFecha')?.value;
+  const nh = document.getElementById('resNewHora')?.value;
+  if (!nf) { showToast('Ingresa una nueva fecha', 'error'); return; }
+  if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
+  r.fechaNueva = nf; r.horaNueva = nh || r.hora;
+  r.fecha = nf; r.hora = nh || r.hora;
+  const [y,m,d] = nf.split('-');
+  r.fechaLabel = parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y;
+  allReservas[idx] = r;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(r);
+  renderReservasTable();
+  showToast('Nueva fecha guardada ✓');
+}
+
+function openReservaScan(id) {
+  // Redirige a la sección de insumos/inventario filtrando por esta reserva
+  // Si tienes una sección de insumos en este archivo, ajusta el nombre de sección aquí
+  showToast('Función de insumos disponible en el Master principal', 'error');
+}
+
 async function saveReservaChanges(id) {
   const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
   const r = allReservas[idx];
@@ -792,10 +855,20 @@ function openEditReserva(id) {
   document.getElementById('editResNombre').value = r.nombre || '';
   document.getElementById('editResTel').value    = r.tel || '';
   document.getElementById('editResEmail').value  = r.email || '';
-  document.getElementById('editResDate').value  = r.fecha || '';
-  document.getElementById('editResHora').value  = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
-  document.getElementById('editResPlan').value  = r.plan || '';
-  document.getElementById('editResNotas').value = r.notas || '';
+  document.getElementById('editResDate').value   = r.fecha || '';
+  document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
+  document.getElementById('editResPlan').value   = r.plan || '';
+  document.getElementById('editResNotas').value  = r.notas || '';
+  // Convertir createdAt "dd/mm/yyyy" → "yyyy-mm-dd" para input type="date"
+  const cat = r.createdAt || '';
+  let catISO = '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(cat)) {
+    catISO = cat.substring(0, 10);
+  } else {
+    const parts = cat.split('/');
+    if (parts.length === 3) catISO = parts[2].padStart(4,'0') + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+  }
+  document.getElementById('editResCreatedAt').value = catISO;
   openModal('editReservaModal');
 }
 function saveEditReserva() {
@@ -803,17 +876,25 @@ function saveEditReserva() {
   const horaRaw = document.getElementById('editResHora').value.split('|');
   const fecha   = document.getElementById('editResDate').value;
   const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
+  const newCreatedAt = document.getElementById('editResCreatedAt').value;
+  // Convertir "yyyy-mm-dd" → "dd/mm/yyyy" para mantener consistencia con el formato local
+  let createdAtFormatted = allReservas[idx].createdAt || '';
+  if (newCreatedAt) {
+    const [cy,cm,cd] = newCreatedAt.split('-');
+    createdAtFormatted = parseInt(cd) + '/' + parseInt(cm) + '/' + cy;
+  }
   allReservas[idx] = {
     ...allReservas[idx],
-    nombre:   document.getElementById('editResNombre').value,
-    tel:      document.getElementById('editResTel').value,
-    email:    document.getElementById('editResEmail').value,
+    nombre:    document.getElementById('editResNombre').value,
+    tel:       document.getElementById('editResTel').value,
+    email:     document.getElementById('editResEmail').value,
     fecha,
     fechaLabel: d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
-    horaVal:  horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
-    hora:     horaRaw[1] || allReservas[idx].hora,
-    plan:     document.getElementById('editResPlan').value,
-    notas:    document.getElementById('editResNotas').value,
+    horaVal:   horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
+    hora:      horaRaw[1] || allReservas[idx].hora,
+    plan:      document.getElementById('editResPlan').value,
+    notas:     document.getElementById('editResNotas').value,
+    createdAt: createdAtFormatted,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
@@ -1233,6 +1314,144 @@ function resPlanPrice(r) {
     if (priceMatch) return parseFloat(priceMatch[1].replace(',', '')) || 0;
   } catch(e) {}
   return 0;
+}
+
+// Convertir hora "6:00 PM" / "14:00" a "HH:mm" para input type="time"
+function to24h(horaStr) {
+  if (!horaStr) return '';
+  horaStr = String(horaStr).trim();
+  // Ya está en formato HH:mm o HH:mm:ss
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(horaStr)) {
+    const parts = horaStr.split(':');
+    return parts[0].padStart(2,'0') + ':' + parts[1];
+  }
+  // Formato 12h: "6:00 PM", "11:30 AM"
+  const m = horaStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (m) {
+    let h = parseInt(m[1]);
+    const min = m[2];
+    const ampm = m[3].toUpperCase();
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return String(h).padStart(2,'0') + ':' + min;
+  }
+  return '';
+}
+
+// ══════════════════════════════════════════════════════
+//  EXTRAS — funciones que faltaban en master-reservas
+// ══════════════════════════════════════════════════════
+
+// servData y loader (referenciados desde restoreInventoryForReserva)
+let servData = { items: [], maquillaje: [], impresiones: [] };
+const SA_KEY = 'jans_serv_adicionales';
+function loadServAdicionales() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    if (saved.items) {
+      servData = saved;
+    } else {
+      servData = {
+        items:       [],
+        maquillaje:  Array.isArray(saved.maquillaje)  ? saved.maquillaje  : [],
+        impresiones: Array.isArray(saved.impresiones) ? saved.impresiones : [],
+      };
+    }
+  } catch(e) { servData = { items: [], maquillaje: [], impresiones: [] }; }
+}
+
+// Catálogo plano de todos los servicios adicionales disponibles
+function getExtrasCatalog() {
+  loadServAdicionales();
+  const all = [];
+  // Formato nuevo (items plano)
+  if (Array.isArray(servData.items) && servData.items.length) {
+    servData.items.forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: s.cat||s.categoria||'Servicios' }));
+    return all;
+  }
+  // Formato antiguo (maquillaje + impresiones)
+  (servData.maquillaje  || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Maquillaje' }));
+  (servData.impresiones || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Impresiones' }));
+  return all;
+}
+
+// Renderizar la lista de extras ya añadidos en el modal
+function renderResExtrasList(r) {
+  const extras = r.extras || [];
+  if (!extras.length) return '<div style="font-size:0.78rem;color:var(--gray);padding:6px 0">Sin servicios adicionales</div>';
+  return extras.map((e, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
+      <span style="color:var(--gray-l)">+ ${e.nombre}</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
+        <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0" title="Eliminar">✕</button>
+      </span>
+    </div>`).join('');
+}
+
+// Selector de servicios adicionales disponibles en Supabase/localStorage
+function renderExtrasOptions() {
+  const catalog = getExtrasCatalog();
+  if (!catalog.length) return '<option value="">— Sin servicios configurados —</option>';
+  const groups = {};
+  catalog.forEach(item => { (groups[item.grupo] = groups[item.grupo] || []).push(item); });
+  let html = '<option value="">— Seleccionar —</option>';
+  Object.entries(groups).forEach(([grupo, items]) => {
+    html += `<optgroup label="${grupo}">`;
+    items.forEach(it => { html += `<option value="${it.nombre}||${it.precio}">${it.nombre} — $${it.precio.toFixed(2)}</option>`; });
+    html += '</optgroup>';
+  });
+  return html;
+}
+
+// Añadir un extra desde el selector
+function addResExtra(id) {
+  const sel = document.getElementById('resExtraSelect');
+  if (!sel || !sel.value) { showToast('Selecciona un servicio primero', 'error'); return; }
+  const [nombre, precio] = sel.value.split('||');
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!allReservas[idx].extras) allReservas[idx].extras = [];
+  allReservas[idx].extras.push({ nombre, precio: parseFloat(precio) || 0 });
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  sel.value = '';
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  showToast('Servicio añadido ✓');
+}
+
+// Eliminar un extra por índice
+function removeResExtra(id, extraIdx) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!allReservas[idx].extras) return;
+  allReservas[idx].extras.splice(extraIdx, 1);
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  showToast('Servicio eliminado', 'error');
+}
+
+// Resumen financiero HTML (barra de progreso + totales)
+function renderResFinancialSummary(total, abono, cancelado, pend, prog) {
+  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$' + total.toFixed(2) + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$' + abono.toFixed(2) + '</span></div>'
+    + (cancelado > 0 ? '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Cancelado</span><span style="font-weight:700;color:#86efac">$' + cancelado.toFixed(2) + '</span></div>' : '')
+    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:' + (pend > 0 ? '#fca5a5' : '#86efac') + '">$' + pend.toFixed(2) + '</span></div>'
+    + '<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>'
+    + '<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">' + prog + '% pagado</div>';
+}
+
+// Refrescar solo el bloque financiero del modal sin cerrarlo
+function refreshResFinancialBlock(id) {
+  const r = allReservas.find(x => x.id === id); if (!r) return;
+  const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
+  const extrasList = document.getElementById('resExtrasList');
+  if (extrasList) extrasList.innerHTML = renderResExtrasList(r);
+  const totalInput = document.getElementById('resTotalInput');
+  if (totalInput) totalInput.value = total.toFixed(2);
+  const pendInput = document.getElementById('resPendienteInput');
+  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend > 0 ? '#fca5a5' : '#86efac'; }
+  const summary = document.getElementById('resFinancialSummary');
+  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
 }
 
 function resExtrasTotal(r) {
