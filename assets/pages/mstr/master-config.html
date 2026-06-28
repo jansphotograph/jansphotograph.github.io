@@ -725,7 +725,7 @@ const CONFIG_PUBLIC = {
   get REPO()  { return localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io'; },
 };
 const GH_BASE_PUBLIC = () =>
-  `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data/socialmedia`;
+  `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data`;
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 let sbClient = null;
@@ -800,7 +800,7 @@ async function ghPut(file, data) {
   return res.ok;
 }
 async function ghPutPublic(file, data) {
-  const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
+  const token = getGHConfig().token || CONFIG.GH_TOKEN || '';
   if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
   // First try to get the current SHA
   let sha = null;
@@ -906,7 +906,7 @@ async function saveCompanyData() {
   };
 
   localStorage.setItem(COMPANY_KEY, JSON.stringify(data));
-  const ok = await ghPutPublic('company.json', data);
+  const ok = await sbSetConfig('company', data);
 
   msgEl.style.display    = 'block';
   msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
@@ -1095,23 +1095,24 @@ async function saveYtLink() {
 async function loadLastReloadInfo() {
   const el = document.getElementById('lastReloadInfo');
   if (!el) return;
+  const gh = getGHConfig();
+  if (!gh.token) {
+    el.textContent = 'Configura el token de GitHub para ver el estado.';
+    return;
+  }
   try {
-    const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
-    const headers = token ? { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' } : {};
+    const owner = gh.owner || 'jansphotograph';
+    const publicRepo = owner + '.github.io';
     const res = await fetch(
-      'https://api.github.com/repos/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/contents/data/socialmedia/version.json',
-      { headers }
+      `https://api.github.com/repos/${owner}/${publicRepo}/contents/data/version.json`,
+      { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } }
     );
-    if (res.ok) {
-      const j = await res.json();
-      const d = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))));
-      const ts = new Date(d.ts).toLocaleString('es-PA', { dateStyle:'medium', timeStyle:'short' });
-      el.innerHTML = '<strong style="color:var(--white)">' + ts + '</strong><br><span style="color:var(--gray)">' + (d.note||'Sin nota') + '</span>';
-    } else {
-      el.textContent = 'Sin actualizaciones publicadas aún.';
-    }
+    if (!res.ok) { el.textContent = 'Sin publicaciones previas.'; return; }
+    const d = await res.json();
+    const data = JSON.parse(atob(d.content.replace(/\n/g, '')));
+    el.innerHTML = `Última publicación: <strong>${new Date(data.ts).toLocaleString('es-PA')}</strong> — ${data.note || 'Actualización general'}`;
   } catch(e) {
-    el.textContent = 'No se pudo obtener la información.';
+    el.textContent = 'No se pudo verificar la última publicación.';
   }
 }
 function updatePollUI(active) {
@@ -1702,6 +1703,13 @@ function getSocialData() {
 
 function getGHConfig() {
   try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+}
+
+function GH_BASE() {
+  const gh = getGHConfig();
+  const owner = gh.owner || CONFIG.GH_OWNER || '';
+  const repo  = gh.repo  || CONFIG.GH_REPO  || '';
+  return `https://api.github.com/repos/${owner}/${repo}/contents/data`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {

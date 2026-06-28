@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Reservas - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1285,6 +1286,59 @@ function resetBlogImgField() {
   document.getElementById('bpImgStatus').style.display  = 'none';
   document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
   document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+
+// ── Supabase helpers — reemplaza ghPut/ghGet para repo privado ──
+
+async function sbUpsert(tabla, datos) {
+  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  try {
+    const { error } = await sbClient.from(tabla).upsert(
+      Array.isArray(datos) ? datos : [datos],
+      { onConflict: 'id' }
+    );
+    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    return true;
+  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+}
+
+async function sbDelete(tabla, id) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetAll(tabla, order='created_at') {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    if (error) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+// Guardar en config_sitio
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

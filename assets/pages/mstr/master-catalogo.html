@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Catalogo - Jans Photograph</title>
-<link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -675,9 +676,14 @@ function showSection(name) {
 </div>
 </main>
 <script>
-const SESSION_KEY = 'jans_master_auth';
-
-const FAQ_KEY = 'jans_faqs';
+let toastTimer;
+const SESSION_KEY  = 'jans_master_auth';
+const INV_KEY      = 'jans_inventario_insumos';
+const INV_CAT_KEY  = 'jans_inventario_categorias';
+const BLOG_KEY     = 'jans_blogs';
+const SA_KEY       = 'jans_serv_adicionales';
+const TEAM_KEY     = 'jans_team';
+const FAQ_KEY      = 'jans_faqs';
 
 let faqsData = [];
 
@@ -1796,12 +1802,53 @@ async function saveInvData() {
   const ok = await ghPut('inventario.json', data);
   if (ok) showToast('Inventario guardado ✓');
   else    showToast('Guardado localmente — verifica GitHub', 'error');
+  // Sincronizar con Supabase
+  if (sbClient && invItems.length > 0) {
+    sbUpsert('inventario', invItems.map(i => ({
+      id:           i.id,
+      nombre:       i.name || i.nombre || '',
+      categoria_id: i.category || i.categoria_id || '',
+      categoria:    i.category || i.categoria || '',
+      cantidad:     i.cantidad || 0,
+      unidad:       i.unidad || 'unidad',
+      precio:       i.precio || i.price || 0,
+      codigo_barras:i.barcode || i.codigo_barras || '',
+      notas:        i.notes || i.notas || ''
+    }))).catch(e => console.warn('saveInvData Supabase:', e));
+  }
 }
 async function syncInvFromGitHub() {
-  const data = await ghGet('inventario.json');
-  if (!data) return;
-  if (Array.isArray(data.items))      { invItems      = data.items;      localStorage.setItem(INV_KEY,     JSON.stringify(invItems)); }
-  if (Array.isArray(data.categories)) { invCategories = data.categories; localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories)); }
+  if (!sbClient) { showToast('Supabase no disponible', 'error'); return; }
+  try {
+    // Cargar items
+    const { data: items, error: e1 } = await sbClient.from('inventario').select('*').order('nombre');
+    if (!e1 && items) {
+      invItems = items.map(i => ({
+        id:          i.id,
+        name:        i.nombre,
+        category:    i.categoria_id || i.categoria || '',
+        cantidad:    i.cantidad || 0,
+        unidad:      i.unidad || 'unidad',
+        precio:      i.precio || 0,
+        barcode:     i.codigo_barras || '',
+        notes:       i.notas || ''
+      }));
+      localStorage.setItem(INV_KEY, JSON.stringify(invItems));
+    }
+    // Cargar categorías
+    const { data: cats, error: e2 } = await sbClient.from('inventario').select('categoria_id, categoria').neq('categoria_id', '');
+    if (!e2 && cats) {
+      const unique = {};
+      cats.forEach(c => { if (c.categoria_id) unique[c.categoria_id] = { id: c.categoria_id, name: c.categoria || c.categoria_id }; });
+      invCategories = Object.values(unique);
+      localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
+    }
+    renderInvCategoryTabs();
+    showToast('Inventario sincronizado ✓');
+  } catch(e) { 
+    console.error('syncInv error:', e);
+    showToast('Error al sincronizar inventario', 'error'); 
+  }
 }
 function genInvId() { return 'inv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
 async function initInventario() {
@@ -2120,7 +2167,7 @@ async function saveFaqs() {
   }
   faqsData = valid;
   localStorage.setItem(FAQ_KEY, JSON.stringify(faqsData));
-  const ok = await ghPutPublic('faqs.json', faqsData);
+  const ok = await sbUpsert('faqs', faqsData.map((f,i)=>({id:f.id||'faq_'+i,pregunta:f.pregunta||f.question,respuesta:f.respuesta||f.answer,orden:i})));
   renderFaqsList();
   if (ok) showToast('Preguntas frecuentes publicadas ✓');
   else    showToast('Guardadas localmente — verifica GitHub para publicar', 'error');

@@ -4,7 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Calendario — Jans Photograph</title>
-  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"/>
@@ -872,6 +873,59 @@ document.addEventListener('click', function(e){
 
 function handleLogout(){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}
 
+
+// ── Supabase helpers — reemplaza ghPut/ghGet para repo privado ──
+
+async function sbUpsert(tabla, datos) {
+  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  try {
+    const { error } = await sbClient.from(tabla).upsert(
+      Array.isArray(datos) ? datos : [datos],
+      { onConflict: 'id' }
+    );
+    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    return true;
+  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+}
+
+async function sbDelete(tabla, id) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetAll(tabla, order='created_at') {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    if (error) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+// Guardar en config_sitio
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   window.scrollTo(0,0);
   loadCalendar();
@@ -1171,18 +1225,24 @@ async function saveCalEvent() {
   renderCalendar();
   closeModal('calEventFormModal');
 
-  const ok1 = await ghPut('calendar.json', state.calendar);
-  const ok2 = await ghPutPublic('calendar.json', state.calendar);
+  // Guardar en Supabase
+  const sbOk = await sbUpsert('calendario', {
+    id: newDs + '_' + Date.now(),
+    fecha: newDs,
+    titulo,
+    desc,
+    color,
+    block_type: blockType,
+    hora_inicio: horaInicio,
+    hora_fin: horaFin,
+    status: 'evento'
+  });
 
   const label = blockType === 'hours'
     ? `(${horaInicio % 12 || 12}${horaInicio < 12 ? 'AM' : 'PM'} – ${horaFin % 12 || 12}${horaFin < 12 ? 'AM' : 'PM'})`
     : '(día completo)';
 
-  if (ok1 && ok2) {
-    showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : `Evento actualizado ${label} ✓`) : `Evento creado — bloqueado ${label} ✓`);
-  } else {
-    showToast('Guardado localmente — verifica GitHub en Configuración', 'error');
-  }
+  showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : `Evento actualizado ${label} ✓`) : `Evento creado — bloqueado ${label} ✓`);
 }
 async function deleteCalEvent(ds) {
   closeModal('calEventPickerModal');
