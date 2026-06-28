@@ -1433,9 +1433,10 @@ async function testGithubConnection() {
   const dot  = document.getElementById('ghStatusDot');
   const text = document.getElementById('ghStatusText');
   // Read current input values before testing
-  const owner = document.getElementById('cfgOwner')?.value.trim() || CONFIG.GH_OWNER;
-  const repo  = document.getElementById('cfgRepo')?.value.trim()  || CONFIG.GH_REPO;
-  const token = document.getElementById('cfgToken')?.value.trim() || CONFIG.GH_TOKEN;
+  const _gh   = getGHConfig();
+  const owner = document.getElementById('cfgOwner')?.value.trim() || _gh.owner || '';
+  const repo  = document.getElementById('cfgRepo')?.value.trim()  || _gh.repo  || '';
+  const token = document.getElementById('cfgToken')?.value.trim() || _gh.token || '';
   if (!owner || !repo || !token) {
     showToast('Completa usuario, repositorio y token primero', 'error');
     return;
@@ -1698,7 +1699,25 @@ function getSocialData() {
   try { return JSON.parse(localStorage.getItem(SOCIAL_KEY) || '{}'); } catch(e) { return {}; }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{loadCompanyUI();});
+document.addEventListener('DOMContentLoaded', () => {
+  loadCompanyUI();
+  // Cargar config de GitHub guardado
+  try {
+    const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+    if (gh.owner) {
+      const el = document.getElementById('cfgOwner');
+      if (el) el.value = gh.owner;
+    }
+    if (gh.repo) {
+      const el = document.getElementById('cfgRepo');
+      if (el) el.value = gh.repo;
+    }
+    if (gh.token) {
+      const el = document.getElementById('cfgToken');
+      if (el) el.value = gh.token;
+    }
+  } catch(e) {}
+});
 </script>
 </body>
 </html>
