@@ -1699,6 +1699,11 @@ function getSocialData() {
   try { return JSON.parse(localStorage.getItem(SOCIAL_KEY) || '{}'); } catch(e) { return {}; }
 }
 
+
+function getGHConfig() {
+  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadCompanyUI();
   // Cargar config de GitHub guardado
