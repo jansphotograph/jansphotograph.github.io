@@ -828,9 +828,22 @@ function getGHConfig() {
 
 function openCalEventForm() {
   closeModal('calEventActionModal');
+  // Reset completo del formulario
+  document.getElementById('calEvTitulo').value = '';
+  document.getElementById('calEvDesc').value   = '';
+  document.getElementById('calEvEditDs').value = '';
+  document.getElementById('calEvNuevaFecha') && (document.getElementById('calEvNuevaFecha').value = '');
+  // Fecha del día seleccionado
   const fd = document.getElementById('calEvFecha');
-  if(fd && ctxDs) fd.value = ctxDs;
+  if (fd && ctxDs) fd.value = ctxDs;
+  // Color por defecto
+  const pinkRadio = document.querySelector('[name="calEvColor"][value="pink"]');
+  if (pinkRadio) pinkRadio.checked = true;
+  // Tipo de bloqueo por defecto
+  const dayRadio = document.querySelector('[name="calEvBlockType"][value="day"]');
+  if (dayRadio) dayRadio.checked = true;
   openModal('calEventFormModal');
+  initBlockTypeUI();
 }
 
 function closeCalCtxMenu() {
@@ -1194,6 +1207,78 @@ function setCalView(v) {
 function openCalEventModal() {
   openModal('calEventActionModal');
 }
+
+// ── Editar evento desde vista de día ──
+function openCalEventEdit(ds) {
+  const ev = state.calendar[ds];
+  if (!ev || typeof ev !== 'object') return;
+
+  // Rellenar el formulario con los datos del evento
+  document.getElementById('calEvTitulo').value  = ev.titulo || '';
+  document.getElementById('calEvFecha').value   = ds;
+  document.getElementById('calEvDesc').value    = ev.descripcion || '';
+  document.getElementById('calEvEditDs').value  = ds;
+
+  // Color
+  const colorRadio = document.querySelector('[name="calEvColor"][value="' + (ev.color||'pink') + '"]');
+  if (colorRadio) colorRadio.checked = true;
+
+  // Tipo de bloqueo
+  const blockRadio = document.querySelector('[name="calEvBlockType"][value="' + (ev.blockType||'day') + '"]');
+  if (blockRadio) blockRadio.checked = true;
+
+  // Horas si aplica
+  if (ev.blockType === 'hours') {
+    const ini = document.getElementById('calEvHoraInicio');
+    const fin = document.getElementById('calEvHoraFin');
+    if (ini && ev.horaInicio != null) ini.value = ev.horaInicio;
+    if (fin && ev.horaFin    != null) fin.value = ev.horaFin;
+  }
+
+  openModal('calEventFormModal');
+  initBlockTypeUI();
+}
+
+// ── Eliminar evento desde vista de día ──
+async function openCalEventDeleteDirect(ds) {
+  if (!confirm('¿Eliminar este evento del ' + ds + '?')) return;
+  // Eliminar de Supabase buscando por fecha
+  if (sbClient) {
+    sbClient.from('calendario').delete().eq('fecha', ds)
+      .then(({ error }) => { if (error) console.warn('sbDelete calendario:', error.message); });
+  }
+  // Eliminar del estado local
+  delete state.calendar[ds];
+  localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
+  renderCalendar();
+  // Si estamos en vista día, actualizar la vista
+  if (typeof renderDayView === 'function') renderDayView();
+  else if (typeof renderCalView === 'function') renderCalView();
+  showToast('Evento eliminado ✓');
+}
+
+function onCalEvBlockTypeChange() {
+  const val = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
+  const hoursField = document.getElementById('calEvHoursField');
+  const dayLabel   = document.getElementById('calEvBlockDayLabel');
+  const hoursLabel = document.getElementById('calEvBlockHoursLabel');
+
+  // Mostrar/ocultar selector de horas
+  if (hoursField) hoursField.style.display = val === 'hours' ? 'block' : 'none';
+
+  // Estilos activo/inactivo en los botones
+  const activeStyle   = 'background:rgba(199,30,95,0.15);color:var(--pink-l,#e91e8c)';
+  const inactiveStyle = 'background:transparent;color:var(--gray-l,#999)';
+
+  if (dayLabel)   dayLabel.style.cssText   += ';' + (val === 'day'   ? activeStyle : inactiveStyle);
+  if (hoursLabel) hoursLabel.style.cssText += ';' + (val === 'hours' ? activeStyle : inactiveStyle);
+}
+
+// Inicializar estado visual al abrir el modal
+function initBlockTypeUI() {
+  onCalEvBlockTypeChange();
+}
+
 async function saveCalEvent() {
   const titulo     = document.getElementById('calEvTitulo').value.trim();
   const fecha      = document.getElementById('calEvFecha').value;
@@ -1230,7 +1315,7 @@ async function saveCalEvent() {
     id: newDs + '_' + Date.now(),
     fecha: newDs,
     titulo,
-    desc,
+    notas: desc,
     color,
     block_type: blockType,
     hora_inicio: horaInicio,

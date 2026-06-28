@@ -471,7 +471,12 @@ async function fetchQuotes() {
           pagado:      parseFloat(r.pagado) || 0,
           notes:       r.notes || '',
           status:      r.status,
-          createdAt:   r.created_at,
+          createdAt:   (function(iso){
+            if(!iso) return '';
+            const d = new Date(iso);
+            if(isNaN(d.getTime())) return iso;
+            return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+          })(r.created_at),
         }));
         // Merge con locales
         const local = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
@@ -531,12 +536,7 @@ function renderQuotesTable() {
       <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
       <td style="font-size:0.8rem;color:var(--gray-l)">${q.createdAt||'—'}</td>
       <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
-          <button class="btn btn-sm btn-blue"    onclick="showPDF('${q.id}')">PDF</button>
-          <button class="btn btn-sm btn-green"   onclick="changeStatus('${q.id}','approved')">✓</button>
-          <button class="btn btn-sm btn-red"     onclick="changeStatus('${q.id}','rejected')">✗</button>
-        </div>
+        <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
       </td>
     </tr>`).join('');
 }
@@ -683,7 +683,7 @@ async function saveQuote() {
     total,
     notes:      document.getElementById('qNotes').value,
     status:     'pending',
-    createdAt:  new Date().toLocaleDateString('es-PA'),
+    createdAt:  (function(){ const d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); })(),
   };
 
   state.quotes.push(quote);
@@ -1036,10 +1036,29 @@ function sanitizeText(str){
 
 // Convertir "dd/mm/yyyy" o ISO a "yyyy-mm-dd" para input type="date"
 function toDateInputVal(str) {
-  if (!str) return '';
-  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.substring(0, 10);
-  const parts = str.split('/');
-  if (parts.length === 3) return parts[2].padStart(4,'0') + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+  if (!str || str === '—') return '';
+  str = String(str).trim();
+  // ISO yyyy-mm-dd o yyyy-mm-ddT...
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const p = str.substring(0,10).split('-').map(Number);
+    // si el segundo segmento > 12 está invertido (yyyy-dd-mm)
+    if (p[1] > 12) return p[0]+'-'+String(p[2]).padStart(2,'0')+'-'+String(p[1]).padStart(2,'0');
+    return str.substring(0,10);
+  }
+  // Formato con barras: puede ser dd/mm/yyyy o mm/dd/yyyy
+  const parts = str.split('/').map(Number);
+  if (parts.length === 3) {
+    let [a, b, y] = parts;
+    // si el año está al final (dd/mm/yyyy o mm/dd/yyyy)
+    if (y > 31) {
+      // a > 12 → seguro que es día/mes
+      const day = a > 12 ? a : b;
+      const mon = a > 12 ? b : a;
+      return y+'-'+String(mon).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    }
+    // año al principio yyyy/mm/dd
+    return String(a)+'-'+String(b).padStart(2,'0')+'-'+String(y).padStart(2,'0');
+  }
   return '';
 }
 
@@ -1313,6 +1332,367 @@ function downloadPDF() {
 
   doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
   showToast('PDF descargado ✓');
+}
+
+
+function getCompanyData() {
+  try { return JSON.parse(localStorage.getItem('jans_company') || '{}'); } catch(e) { return {}; }
+}
+
+async function loadLogoForPDF() {
+  // Intentar con loadImageAsDataUrl si CONFIG_PUBLIC está disponible
+  const base = (typeof CONFIG_PUBLIC !== 'undefined' && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO)
+    ? 'https://raw.githubusercontent.com/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/main/'
+    : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/';
+  const comp = pdfCompanyInfo();
+  const paths = [
+    comp.logoPath,
+    'assets/images/icons/Janssocialmedialogo.png',
+    'assets/images/icons/Janssocialmedialogo.jpg',
+    'assets/images/icons/Janssocialmedialogo.webp',
+  ].filter(Boolean);
+  for (const p of paths) {
+    try {
+      const url = base + p;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      const dataUrl = await new Promise(r => {
+        const fr = new FileReader();
+        fr.onloadend = () => r(fr.result);
+        fr.onerror  = () => r(null);
+        fr.readAsDataURL(blob);
+      });
+      if (dataUrl) return dataUrl;
+    } catch(e) { continue; }
+  }
+  return null;
+}
+
+// Formatear fecha "2026-06-26" o "26/6/2026" → "26 de Junio 2026"
+function fmtFechaPDF(str) {
+  if (!str || str === '—') return '—';
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  str = String(str).trim();
+  // ISO yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const [y,m,d] = str.substring(0,10).split('-').map(Number);
+    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+  }
+  // dd/mm/yyyy
+  const parts = str.split('/');
+  if (parts.length === 3) {
+    const [d,m,y] = parts.map(Number);
+    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+  }
+  return str;
+}
+
+// ════════════════════════════════════════════
+//  PDF CONFIRMACIÓN — modelo "RESERVA CONFIRMADA"
+// ════════════════════════════════════════════
+async function generateQuotePDF(id) {
+  const q = state.quotes.find(x => x.id === id); if (!q) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const comp = pdfCompanyInfo();
+  const footer = pdfCompanyFooterLine(comp);
+  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const margin = 14;
+  const pageW = 210;
+  const today = new Date().toLocaleDateString('es-PA');
+  let y = 0;
+
+  // ── HEADER OSCURO ──
+  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  const logo = await loadLogoForPDF();
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+  } else {
+    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('JP', margin+10, 18, {align:'center'});
+  }
+  // Empresa — izquierda
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(comp.nombre, 40, 13);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
+  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.text(comp.email, 40, 22);
+  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
+  // Derecha — número arriba, fecha abajo, RUC
+  doc.setTextColor(180,180,180); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 9, {align:'right'});
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('# ' + qNum, pageW-margin, 18, {align:'right'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text('Emitido: ' + today, pageW-margin, 24, {align:'right'});
+
+  y = 40;
+
+  // ── CINTILLO VERDE ──
+  doc.setFillColor(34,197,94); doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 12, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+  doc.text('COTIZACIÓN CONFIRMADA', pageW/2, y+8, {align:'center'});
+  y += 26;
+
+  // ── DATOS DE LA RESERVA ──
+  const col2 = 112;
+  const dataRows = [
+    ['Cliente',      q.clientName,            'Fecha de sesión', fmtFechaPDF(q.sessionDate)],
+    ['Teléfono',     q.phone || '—',          'Hora',            q.sessionTime || '—'],
+    ['Email',        q.email || '—',          'Plan',            q.plan || '—'],
+    ['# Cotización', qNum,                    'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+  ];
+  const dataH = 14 + dataRows.length * 9 + 4;
+  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, dataH, 3, 3, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DE LA RESERVA', margin+2, y); y += 9;
+
+  dataRows.forEach(([l1,v1,l2,v2]) => {
+    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l1 + ':', margin+2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(v1||'—'), margin+30, y);
+    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l2 + ':', col2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(v2||'—'), col2+34, y);
+    y += 9;
+  });
+  y += 14;
+
+  // ── RESUMEN DE PAGO ──
+  const total     = parseFloat(q.total)||0;
+  const abono     = parseFloat(q.abono)||0;
+  const pagado    = parseFloat(q.pagado)||0;
+  const pend      = Math.max(0, total - abono - pagado);
+  const planPrice = parseFloat(q.planPrice)||0;
+  const addonsPos = (q.addons||[]).filter(a => parseFloat(a.price||0) > 0);
+  const pagoH = 14 + 11 + (addonsPos.length*8) + 8 + (abono>0?8:0) + (pagado>0?8:0) + 12;
+
+  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, pagoH, 3, 3, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('RESUMEN DE PAGO', margin+2, y); y += 10;
+
+  // Plan
+  doc.setTextColor(20,20,20); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('Plan:', margin+4, y);
+  doc.text(q.plan || '—', margin+22, y);
+  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 9;
+
+  // Extras
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,70,70);
+  addonsPos.forEach(a => {
+    doc.text(a.name||'', margin+6, y);
+    doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+    y += 8;
+  });
+
+  y += 2;
+  doc.setDrawColor(220,220,220); doc.line(margin+4, y, pageW-margin-2, y); y += 8;
+
+  doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total:', margin+4, y);
+  doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20);
+  doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+
+  if (abono > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    doc.text('Abonado:', margin+4, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+  }
+  if (pagado > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    doc.text('Pago adicional:', margin+4, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text('$'+pagado.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+  }
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.setTextColor(199,30,95);
+  doc.text('Saldo pendiente:', margin+4, y);
+  doc.text('$'+pend.toFixed(2), pageW-margin, y, {align:'right'});
+
+  // ── FOOTER ──
+  doc.setFillColor(30,30,30); doc.rect(0, 272, pageW, 25, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 282, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180,180,180);
+  doc.text(footer, pageW/2, 290, {align:'center'});
+  doc.save('Confirmacion_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '_' + qNum + '.pdf');
+  showToast('PDF de confirmación descargado ✓');
+}
+
+// ════════════════════════════════════════════
+//  PDF FACTURA — modelo con constancia
+// ════════════════════════════════════════════
+async function generateQuoteInvoicePDF(id) {
+  const q = state.quotes.find(x => x.id === id); if (!q) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const comp = pdfCompanyInfo();
+  const footer = pdfCompanyFooterLine(comp);
+  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const margin = 14;
+  const pageW = 210;
+
+  // Número de factura correlativo
+  let facNum = parseInt(localStorage.getItem('jans_factura_counter')||'0') + 1;
+  localStorage.setItem('jans_factura_counter', String(facNum));
+  const facNumStr = String(facNum).padStart(3,'0');
+  const today = new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  let y = 0;
+
+  // ── HEADER OSCURO ──
+  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  const logo = await loadLogoForPDF();
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+  } else {
+    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('JP', margin+10, 18, {align:'center'});
+  }
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(comp.nombre, 40, 13);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
+  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.text(comp.email, 40, 22);
+  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
+  // Derecha
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('FACTURA #' + facNumStr, pageW-margin, 13, {align:'right'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text('Emitida: ' + today, pageW-margin, 19, {align:'right'});
+  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 25, {align:'right'});
+
+  y = 42;
+
+  // ── DATOS DEL CLIENTE Y SESIÓN ──
+  doc.setFillColor(248,248,248); doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
+  doc.rect(margin-2, y-4, pageW-(margin*2)+4, 48, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
+
+  const col2 = 115;
+  const clientRows = [
+    ['Nombre',    q.clientName,         'Fecha de sesión', q.sessionDate || '—'],
+    ['Cédula/RUC',q.clientId || '—',   'Hora',            q.sessionTime || '—'],
+    ['Teléfono',  q.phone || '—',       'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+    ['Email',     q.email || '—',       'Origen',          qNum],
+  ];
+  clientRows.forEach(([l1,v1,l2,v2]) => {
+    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l1 + ':', margin, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
+    doc.text(String(v1||'—'), margin+26, y);
+    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
+    doc.text(l2 + ':', col2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
+    doc.text(String(v2||'—'), col2+30, y);
+    y += 7;
+  });
+  y += 14;
+
+  // ── PLANES Y SERVICIOS ──
+  doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-4, pageW-(margin*2)+4, 70, 3, 3, 'D');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('PLANES Y SERVICIOS', margin, y); y += 6;
+  // Encabezado tabla
+  doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text('DESCRIPCIÓN', margin+4, y); doc.text('PRECIO', pageW-margin, y, {align:'right'});
+  doc.setDrawColor(200,200,200); doc.line(margin+2, y+2, pageW-margin, y+2); y += 7;
+
+  // Plan
+  const planPrice = parseFloat(q.planPrice)||0;
+  doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+  doc.text(q.plan || '—', margin+4, y);
+  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 7;
+
+  // Extras con precio
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(60,60,60);
+  (q.addons||[]).forEach(a => {
+    if (parseFloat(a.price||0) > 0) {
+      doc.text(a.name||'', margin+4, y);
+      doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+      y += 5;
+    }
+  });
+  y += 4;
+
+  // Totales
+  const total  = parseFloat(q.total)||0;
+  const abono  = parseFloat(q.abono)||0;
+  const pagado = parseFloat(q.pagado)||0;
+  const pend   = Math.max(0, total - abono - pagado);
+
+  doc.setDrawColor(220,220,220); doc.line(margin+2, y, pageW-margin, y); y += 5;
+  doc.setTextColor(60,60,60); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Total de plan(es):', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20); doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+  if (abono > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+    doc.text('Abono realizado:', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(34,197,94); doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+  }
+  doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+  doc.text('Cancelación completa:', margin+4, y);
+  doc.setFont('helvetica','bold'); doc.setTextColor(199,30,95);
+  doc.text('Pendiente: $'+pend.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+
+  // Barra TOTAL FACTURADO
+  doc.setFillColor(199,30,95); doc.roundedRect(margin-2, y-4, pageW-(margin*2)+4, 11, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('TOTAL FACTURADO', margin+4, y+3);
+  doc.text('$'+total.toFixed(2), pageW-margin, y+3, {align:'right'});
+  y += 18;
+
+  // ── CAJA SELLO ──
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 14, 2, 2, 'D');
+  doc.setTextColor(160,160,160); doc.setFontSize(8); doc.setFont('helvetica','italic');
+  doc.text('Factura que no presente sello es nula', pageW/2, y+9, {align:'center'});
+  y += 20;
+
+  // ── FOOTER fijo en la página ──
+  const footerY = 230;
+  doc.setFillColor(30,30,30); doc.rect(0, footerY, pageW, 18, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, footerY+7, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,180,180);
+  doc.text(footer, pageW/2, footerY+13, {align:'center'});
+
+  // ── LÍNEA PUNTEADA + CONSTANCIA — pegada debajo del footer ──
+  let cy = footerY + 22;
+  doc.setDrawColor(140,140,140); doc.setLineWidth(0.2);
+  for (let x = margin; x < pageW-margin; x += 4) doc.line(x, cy, x+2, cy);
+  doc.setTextColor(140,140,140); doc.setFontSize(7); doc.setFont('helvetica','italic');
+  doc.text("' Constancia — recortar y conservar", pageW/2, cy+5, {align:'center'});
+  cy += 10;
+
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('CONSTANCIA DE FACTURACIÓN', margin, cy); cy += 7;
+
+  doc.setTextColor(80,80,80); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  const constLeft  = [['Factura','#'+facNumStr],['Origen',qNum],['Plan', q.plan||'—']];
+  const constRight = [['Cliente',q.clientName],['Teléfono',q.phone||'—'],['Total','$'+total.toFixed(2)]];
+  constLeft.forEach(([l,v],i) => {
+    doc.setTextColor(120,120,120); doc.text(l+':', margin, cy);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(v||'—'), margin+20, cy);
+    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); doc.text(constRight[i][0]+':', col2, cy);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(constRight[i][1]||'—'), col2+22, cy);
+    doc.setFont('helvetica','normal'); cy += 6;
+  });
+  cy += 4;
+  doc.setDrawColor(150,150,150); doc.line(margin, cy, margin+70, cy);
+  doc.setTextColor(120,120,120); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('Firma del cliente', margin, cy+4);
+
+  doc.save('Factura_' + facNumStr + '_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '.pdf');
+  showToast('Factura #' + facNumStr + ' descargada ✓');
 }
 
 
