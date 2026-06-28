@@ -284,6 +284,7 @@ const CONFIG = {
 /* ═════════════════════════════════════ */
 
 // ── State ──
+let toastTimer;
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -956,6 +957,12 @@ function updateQFinancials(id){
 function changeQuoteStatus(id,status){
   const q=state.quotes.find(x=>x.id===id);if(!q)return;
   q.status=status;
+  // Persistir inmediatamente en localStorage y Supabase
+  localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
+  if(sbClient){
+    sbClient.from('cotizaciones').update({status:status}).eq('id',id)
+      .then(function(r){ if(r.error) console.warn('sbUpdate status:', r.error.message); });
+  }
   const badge=document.getElementById('qStatusBadge');
   if(badge){badge.className='badge-status '+statusClassQ(status);badge.textContent=statusLabel(status);}
   ['pending','confirmed','completed','postponed','cancelled'].forEach(function(s){
@@ -987,12 +994,22 @@ async function saveQuoteChanges(id){
   if(!isNaN(newTotal))q.total=newTotal;
   q.abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
   q.pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
+  // Guardar extras editados desde el modal
+  if(Array.isArray(window._modalExtras)){q.addons=window._modalExtras.slice();}
+  // Sincronizar Supabase — solo columnas que existen en cotizaciones
+  if(sbClient){
+    const sbPayload = { addons: JSON.stringify(q.addons||[]), total: q.total, status: q.status };
+    sbClient.from('cotizaciones').update(sbPayload).eq('id', id)
+      .then(({error})=>{ if(error) console.warn('sbUpdate cotizacion:', error.message); });
+  }
   if(q.status==='confirmed'&&q.sessionDate&&q.sessionTime)await blockCalendarForQuote(q);
-  const ok=await ghPut('quotes.json',state.quotes);
   localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
+  // Supabase es la fuente principal — GitHub es secundario (repo privado puede fallar)
+  const sbOk = !!sbClient;
+  ghPut('quotes.json',state.quotes).catch(()=>{});  // fire-and-forget, no bloquea
   renderQuotesTable();
   closeModal('quoteModal');
-  showToast(ok?'Cotizacion '+(q.numero||'')+' guardada':'Error al guardar',ok?'':'error');
+  showToast('Cotizacion '+(q.numero||'')+' guardada ✓');
 }
 
 function sanitizeText(str){
@@ -1020,6 +1037,69 @@ function viewQuote(id){
     return '<button class="btn btn-sm '+active+'" onclick="changeQuoteStatus(\''+q.id+'\',\''+s+'\')">'+labels[s]+'</button>';
   }).join('');
 
+  // Cargar servicios adicionales de Supabase para el selector
+  let modalSAOptions = '<option value="">— Seleccionar servicio —</option>';
+  try {
+    loadServAdicionales();
+    (servData.items||[]).forEach(function(s){
+      modalSAOptions += '<option value="'+s.id+'" data-price="'+parseFloat(s.precio||0).toFixed(2)+'" data-name="'+s.nombre.replace(/"/g,'&quot;')+'">'+s.nombre+' — $'+parseFloat(s.precio||0).toFixed(2)+'</option>';
+    });
+  } catch(e){}
+
+  // Extras actuales de la cotización (para mostrar la lista editable)
+  const currentExtras = JSON.parse(JSON.stringify(q.addons || []));
+  window._modalExtras = currentExtras;
+  window._modalBaseTotal = parseFloat(q.planPrice)||0;
+
+  function _buildExtrasHTML() {
+    if(!window._modalExtras.length) return '<div id="extrasEmptyMsg" style="color:var(--gray);font-size:0.82rem;padding:8px 0">Sin extras añadidos aún.</div>';
+    return window._modalExtras.map(function(a,i){
+      return '<div id="extra-row-'+i+'" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--black);border-radius:8px;margin-bottom:6px">'
+        +'<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">'+a.name+'</span>'
+        +(a.price>0?'<span style="color:var(--pink-l);font-size:0.82rem;margin-left:8px">+$'+parseFloat(a.price).toFixed(2)+'</span>':'<span style="color:var(--gray);font-size:0.78rem;margin-left:8px">gratis</span>')+'</div>'
+        +'<button onclick="removeModalExtra('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px" title="Eliminar">✕</button>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.removeModalExtra = function(i){
+    window._modalExtras.splice(i,1);
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    _recalcModalTotal();
+  };
+  window.addModalSAExtra = function(){
+    const sel = document.getElementById('modalSASelect');
+    const opt = sel.options[sel.selectedIndex];
+    if(!opt||!opt.value) return;
+    const name  = opt.dataset.name;
+    const price = parseFloat(opt.dataset.price)||0;
+    window._modalExtras.push({name,price});
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    sel.value='';
+    _recalcModalTotal();
+  };
+  window.addModalCustomExtra = function(){
+    const nameEl  = document.getElementById('modalCustomName');
+    const priceEl = document.getElementById('modalCustomPrice');
+    const name    = (nameEl.value||'').trim();
+    const price   = parseFloat(priceEl.value)||0;
+    if(!name){nameEl.focus();return;}
+    window._modalExtras.push({name,price});
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    nameEl.value=''; priceEl.value='';
+    _recalcModalTotal();
+  };
+  function _recalcModalTotal(){
+    const base = window._modalBaseTotal;
+    const extrasSum = window._modalExtras.reduce(function(s,a){return s+parseFloat(a.price||0);},0);
+    const newTotal  = base + extrasSum;
+    const inp = document.getElementById('qTotalInput');
+    if(inp){ inp.value = newTotal.toFixed(2); }
+    // Disparar actualización financiera sin pasar id (lee inputs directamente)
+    const qId = inp ? inp.dataset.qid : '';
+    updateQFinancials(qId);
+  }
+
   document.getElementById('quoteModalBody').innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
     +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>'
@@ -1038,8 +1118,30 @@ function viewQuote(id){
     +'<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>'+(q.plan||'Sin plan')+'</span><span>$'+(q.planPrice||0).toFixed(2)+'</span></div>'
     +addonsPos+addonsZero
     +'</div>'
+
+    // ── EXTRAS ADICIONALES ──
+    +'<hr class="section-divider"/>'
+    +'<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>'
+    // Lista de extras actuales
+    +'<div id="modalExtrasList" style="margin-bottom:12px">'+_buildExtrasHTML()+'</div>'
+    // Selector desde Supabase
+    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">'
+    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>'
+    +'<div style="display:flex;gap:8px;align-items:center">'
+    +'<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">'+modalSAOptions+'</select>'
+    +'<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>'
+    +'</div></div>'
+    // Item personalizado
+    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">'
+    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
+    +'<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
+    +'<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>'
+    +'</div></div>'
+
     +'<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>'
-    +'<input type="number" id="qTotalInput" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'<input type="number" id="qTotalInput" data-qid="'+q.id+'" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
     +'<hr class="section-divider"/>'
     +'<span class="section-label-sm">Control Financiero</span>'
     +'<div class="form-row" style="margin-bottom:8px">'

@@ -346,6 +346,66 @@
           </div>
           <div id="facturaCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
         </div>
+
+        <!-- ── Cotizaciones number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Control de Numeración de Cotizaciones
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima cotización manual (COT-). Útil para continuar una numeración preexistente.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de cotización emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">COT-</span>
+                <input type="number" id="cotCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" oninput="updateCotNextPreview()" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima cotización será: <span id="cotNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">COT-001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveCotCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="cotCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
+
+        <!-- ── Reservas Web number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Control de Numeración de Reservas Web
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima reserva recibida desde la página web (WEB-). Útil si migraste reservas previas a este sistema.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de reserva web emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">WEB-</span>
+                <input type="number" id="webCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" oninput="updateWebNextPreview()" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima reserva web será: <span id="webNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">WEB-001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveWebCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="webCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
       </div>
 
       <!-- ── SOCIAL LINKS ── -->
@@ -1173,6 +1233,68 @@ function saveFacturaCounter() {
   setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
 }
 function resetFacturaCounter(){if(!confirm('Resetear a 0?'))return;localStorage.setItem('jans_factura_counter','0');loadFacturaCounterUI();showToast('Contador reseteado');}
+
+// ── COT counter ──
+function updateCotNextPreview() {
+  const input = document.getElementById('cotCounterInput');
+  const preview = document.getElementById('cotNextPreview');
+  if (!input || !preview) return;
+  const current = parseInt(input.value, 10);
+  const next = isNaN(current) || current < 0 ? 1 : current + 1;
+  preview.textContent = 'COT-' + String(next).padStart(3, '0');
+}
+function loadCotCounterUI() {
+  const current = parseInt(localStorage.getItem('jans_cot_counter') || '0', 10);
+  const input = document.getElementById('cotCounterInput');
+  if (input) { input.value = current; updateCotNextPreview(); }
+}
+function saveCotCounter() {
+  const input = document.getElementById('cotCounterInput');
+  const msgEl = document.getElementById('cotCounterMsg');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val < 0) {
+    msgEl.style.cssText = 'display:block;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5';
+    msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
+  }
+  localStorage.setItem('jans_cot_counter', String(val));
+  updateCotNextPreview();
+  msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
+  msgEl.textContent = '✓ Guardado. La próxima cotización será COT-' + String(val + 1).padStart(3, '0') + '.';
+  showToast('Contador COT actualizado — próxima COT-' + String(val + 1).padStart(3, '0') + ' ✓');
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
+
+// ── WEB counter ──
+function updateWebNextPreview() {
+  const input = document.getElementById('webCounterInput');
+  const preview = document.getElementById('webNextPreview');
+  if (!input || !preview) return;
+  const current = parseInt(input.value, 10);
+  const next = isNaN(current) || current < 0 ? 1 : current + 1;
+  preview.textContent = 'WEB-' + String(next).padStart(3, '0');
+}
+function loadWebCounterUI() {
+  const current = parseInt(localStorage.getItem('jans_web_counter') || '0', 10);
+  const input = document.getElementById('webCounterInput');
+  if (input) { input.value = current; updateWebNextPreview(); }
+}
+function saveWebCounter() {
+  const input = document.getElementById('webCounterInput');
+  const msgEl = document.getElementById('webCounterMsg');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val < 0) {
+    msgEl.style.cssText = 'display:block;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5';
+    msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
+  }
+  localStorage.setItem('jans_web_counter', String(val));
+  updateWebNextPreview();
+  msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
+  msgEl.textContent = '✓ Guardado. La próxima reserva web será WEB-' + String(val + 1).padStart(3, '0') + '.';
+  showToast('Contador WEB actualizado — próxima WEB-' + String(val + 1).padStart(3, '0') + ' ✓');
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
 async function changeCredentials() {
   const curUser  = sanitizeCred(document.getElementById('credCurrentUser').value);
   const curPass  = sanitizeCred(document.getElementById('credCurrentPass').value);
@@ -1258,7 +1380,7 @@ async function saveNotas() {
   msgEl.textContent      = ok ? '✓ Notas publicadas en el sitio' : '✓ Guardadas localmente (configura GitHub para publicar)';
   showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
 }
-function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config')loadFacturaCounterUI();if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
+function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config'){loadFacturaCounterUI();loadCotCounterUI();loadWebCounterUI();}if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
 
 async function saveGithubConfig() {
   const owner = document.getElementById('cfgOwner').value.trim();
