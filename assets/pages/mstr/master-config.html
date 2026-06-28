@@ -1265,24 +1265,17 @@ async function saveGithubConfig() {
   const token = document.getElementById('cfgToken').value.trim();
   if (!owner || !repo || !token) { showToast('Completa todos los campos', 'error'); return; }
 
-  CONFIG.GH_OWNER = owner;
-  CONFIG.GH_REPO  = repo;
-  CONFIG.GH_TOKEN = token;
+  // Guardar en localStorage — usado por getGHConfig() en todas las páginas
+  const ghConfig = { owner, repo, token };
+  localStorage.setItem('jans_gh_config', JSON.stringify(ghConfig));
 
-  // Save owner/repo plain (not sensitive)
+  // También guardar en LS_KEY para compatibilidad
   localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo }));
+  // Token en base64 simple
+  localStorage.setItem(LS_KEY_ENC, btoa(token));
 
-  // Save token encrypted with AES-GCM
-  try {
-    const encrypted = await encryptToken(token);
-    localStorage.setItem(LS_KEY_ENC, encrypted);
-    // Remove any old plaintext token
-    localStorage.removeItem('jans_gh_token_plain');
-    previewRepo();
-    showToast('Token guardado cifrado con AES-256 ✓');
-  } catch(e) {
-    showToast('Error al cifrar token', 'error');
-  }
+  previewRepo();
+  showToast('Configuración de GitHub guardada ✓');
 }
 
 async function saveYappyQr() {
