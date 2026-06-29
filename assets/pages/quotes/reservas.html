@@ -515,13 +515,13 @@
             calRows.forEach(row => {
               if (!row.fecha) return;
               calData[row.fecha] = {
-                type:        row.tipo || 'event',
+                type:        'event',
                 titulo:      row.titulo || '',
                 descripcion: row.notas || '',
                 color:       row.color || 'pink',
                 blockType:   row.block_type || 'day',
-                horaInicio:  row.hora_inicio,
-                horaFin:     row.hora_fin,
+                horaInicio:  row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
+                horaFin:     row.hora_fin    != null ? parseInt(row.hora_fin)    : null,
                 status:      row.status || 'evento',
               };
             });
