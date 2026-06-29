@@ -972,7 +972,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{state.quotes=JSON.parse(localStorage.getItem('jans_quotes')||'[]');}catch(e){state.quotes=[];}
   renderCalendar();
   // Sincronizar desde Supabase (fuente de verdad para calendario)
-  syncCalendarFromSupabase();
+  syncCalendarFromSupabase().then(() => {
+    // Limpiar duplicados en Supabase — dejar solo el registro con id=fecha
+    if (sbClient) {
+      sbClient.from('calendario').select('id,fecha').order('fecha').then(({data}) => {
+        if (!data) return;
+        const seen = {};
+        data.forEach(row => {
+          if (seen[row.fecha] && row.id !== row.fecha) {
+            sbClient.from('calendario').delete().eq('id', row.id);
+          } else { seen[row.fecha] = true; }
+        });
+      });
+    }
+  });
 });
 
 function showToast(msg, type='success') {
@@ -1269,10 +1282,9 @@ function openCalEventEdit(ds) {
 // ── Eliminar evento desde vista de día ──
 async function openCalEventDeleteDirect(ds) {
   if (!confirm('¿Eliminar este evento del ' + ds + '?')) return;
-  // Eliminar de Supabase buscando por fecha
+  // Eliminar de Supabase — borrar todos los registros con esa fecha
   if (sbClient) {
-    sbClient.from('calendario').delete().eq('fecha', ds)
-      .then(({ error }) => { if (error) console.warn('sbDelete calendario:', error.message); });
+    await sbClient.from('calendario').delete().eq('fecha', ds);
   }
   // Eliminar del estado local
   delete state.calendar[ds];
@@ -1337,9 +1349,9 @@ async function saveCalEvent() {
   renderCalendar();
   closeModal('calEventFormModal');
 
-  // Guardar en Supabase
+  // Guardar en Supabase — usar fecha como ID para garantizar un solo registro por día
   const sbOk = await sbUpsert('calendario', {
-    id: newDs + '_' + Date.now(),
+    id: newDs,
     fecha: newDs,
     titulo,
     notas: desc,
@@ -1363,13 +1375,15 @@ async function deleteCalEvent(ds) {
   const titulo = state.calendar[ds].titulo || 'este evento';
   if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
 
-  state.calendar[ds] = 'available';
+  delete state.calendar[ds];
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
 
-  const ok1 = await ghPut('calendar.json', state.calendar);
-  const ok2 = await ghPutPublic('calendar.json', state.calendar);
-  showToast(ok1 && ok2 ? `"${titulo}" eliminado — día liberado ✓` : 'Eliminado localmente — verifica GitHub', ok1 && ok2 ? 'success' : 'error');
+  // Eliminar de Supabase — id = fecha (y limpiar duplicados con id antiguo)
+  if (sbClient) {
+    await sbClient.from('calendario').delete().eq('fecha', ds);
+  }
+  showToast(`"${titulo}" eliminado — día liberado ✓`);
 }
 function openCalEventPicker(mode) {
   const eventDays = Object.entries(state.calendar)
