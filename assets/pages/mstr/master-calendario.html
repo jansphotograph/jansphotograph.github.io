@@ -826,24 +826,31 @@ async function syncCalendarFromSupabase() {
   if (!sbClient) return;
   try {
     const { data, error } = await sbClient.from('calendario').select('*').order('fecha', { ascending: true });
-    if (error || !data) return;
+    if (error) { console.error('syncCalendarFromSupabase error:', error); return; }
+    if (!data || data.length === 0) { console.log('syncCalendarFromSupabase: sin datos'); return; }
+    console.log('syncCalendarFromSupabase: cargando', data.length, 'eventos', data.map(r=>r.fecha));
     // Reconstruir state.calendar desde Supabase — es la fuente de verdad
     const cal = {};
     data.forEach(row => {
       if (!row.fecha) return;
       cal[row.fecha] = {
-        type:       row.tipo || 'event',
-        titulo:     row.titulo || '',
+        type:        'event',  // siempre 'event' — renderCalendar filtra por este valor
+        titulo:      row.titulo || '',
         descripcion: row.notas || '',
-        color:      row.color || 'pink',
-        blockType:  row.block_type || 'day',
-        horaInicio: row.hora_inicio,
-        horaFin:    row.hora_fin,
-        status:     row.status || 'evento',
+        color:       row.color || 'pink',
+        blockType:   row.block_type || 'day',
+        horaInicio:  row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
+        horaFin:     row.hora_fin    != null ? parseInt(row.hora_fin)    : null,
+        status:      row.status || 'evento',
       };
     });
-    state.calendar = cal;
-    localStorage.setItem('jans_calendar', JSON.stringify(cal));
+    // Mergear: Supabase tiene prioridad sobre localStorage para las fechas que conoce
+    // pero preservar eventos locales que aún no están en Supabase
+    let localCal = {};
+    try { localCal = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
+    const merged = Object.assign({}, localCal, cal); // cal (Supabase) sobreescribe local en conflictos
+    state.calendar = merged;
+    localStorage.setItem('jans_calendar', JSON.stringify(merged));
     renderCalendar();
   } catch(e) { console.warn('syncCalendarFromSupabase:', e); }
 }
@@ -891,17 +898,13 @@ async function fetchCalendarData() {
   const cfg = getGHConfig();
   if (cfg.owner && cfg.repo && cfg.token) {
     try {
-      const r = await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/data/calendar.json',
-        {headers:{Authorization:'token '+cfg.token,Accept:'application/vnd.github.v3.json'}});
-      if(r.ok){const d=await r.json();state.calendar=JSON.parse(atob(d.content.replace(/\n/g,'')));localStorage.setItem('jans_calendar',JSON.stringify(state.calendar));}
-    } catch(e){}
-    try {
       const r2 = await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/data/quotes.json',
         {headers:{Authorization:'token '+cfg.token,Accept:'application/vnd.github.v3.json'}});
       if(r2.ok){const d2=await r2.json();state.quotes=JSON.parse(atob(d2.content.replace(/\n/g,'')));localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));}
     } catch(e){}
   }
-  renderCalendar();
+  // Supabase es la fuente de verdad para el calendario — no leer de GitHub
+  await syncCalendarFromSupabase();
   showToast('Calendario sincronizado');
 }
 
@@ -972,20 +975,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{state.quotes=JSON.parse(localStorage.getItem('jans_quotes')||'[]');}catch(e){state.quotes=[];}
   renderCalendar();
   // Sincronizar desde Supabase (fuente de verdad para calendario)
-  syncCalendarFromSupabase().then(() => {
-    // Limpiar duplicados en Supabase — dejar solo el registro con id=fecha
-    if (sbClient) {
-      sbClient.from('calendario').select('id,fecha').order('fecha').then(({data}) => {
-        if (!data) return;
-        const seen = {};
-        data.forEach(row => {
-          if (seen[row.fecha] && row.id !== row.fecha) {
-            sbClient.from('calendario').delete().eq('id', row.id);
-          } else { seen[row.fecha] = true; }
-        });
-      });
-    }
-  });
+  syncCalendarFromSupabase();
 });
 
 function showToast(msg, type='success') {
@@ -1282,10 +1272,7 @@ function openCalEventEdit(ds) {
 // ── Eliminar evento desde vista de día ──
 async function openCalEventDeleteDirect(ds) {
   if (!confirm('¿Eliminar este evento del ' + ds + '?')) return;
-  // Eliminar de Supabase — borrar todos los registros con esa fecha
-  if (sbClient) {
-    await sbClient.from('calendario').delete().eq('fecha', ds);
-  }
+  if (sbClient) await sbClient.from('calendario').delete().eq('fecha', ds);
   // Eliminar del estado local
   delete state.calendar[ds];
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
@@ -1349,7 +1336,7 @@ async function saveCalEvent() {
   renderCalendar();
   closeModal('calEventFormModal');
 
-  // Guardar en Supabase — usar fecha como ID para garantizar un solo registro por día
+  // Guardar en Supabase — id = fecha para garantizar un solo registro por día
   const sbOk = await sbUpsert('calendario', {
     id: newDs,
     fecha: newDs,
@@ -1361,6 +1348,7 @@ async function saveCalEvent() {
     hora_fin: horaFin,
     status: 'evento'
   });
+  if (!sbOk) console.warn('No se pudo guardar evento en Supabase');
 
   const label = blockType === 'hours'
     ? `(${horaInicio % 12 || 12}${horaInicio < 12 ? 'AM' : 'PM'} – ${horaFin % 12 || 12}${horaFin < 12 ? 'AM' : 'PM'})`
@@ -1379,10 +1367,7 @@ async function deleteCalEvent(ds) {
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
 
-  // Eliminar de Supabase — id = fecha (y limpiar duplicados con id antiguo)
-  if (sbClient) {
-    await sbClient.from('calendario').delete().eq('fecha', ds);
-  }
+  if (sbClient) await sbClient.from('calendario').delete().eq('fecha', ds);
   showToast(`"${titulo}" eliminado — día liberado ✓`);
 }
 function openCalEventPicker(mode) {
