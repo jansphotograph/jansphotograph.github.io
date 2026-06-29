@@ -513,23 +513,27 @@
       // reserva while this visitor still has the page open.
       setInterval(syncAvailabilityFromSupabase, 60000);
 
-      // ── Load notas importantes ──
+      // ── Load notas importantes — desde Supabase ──
       try {
-        const notas = localStorage.getItem('jans_notas_reservas');
-        if (notas) {
-          const parsed = JSON.parse(notas);
+        // Mostrar desde localStorage mientras carga (si hay)
+        const cached = localStorage.getItem('jans_notas_reservas');
+        if (cached) {
+          const parsed = JSON.parse(cached);
           if (parsed && parsed.texto) showNotas(parsed.texto);
         }
-      } catch(e) {}
-
-      // Fetch notas from GitHub
-      try {
-        const notasRes = await fetch(`${BASE}/notas.json?t=${Date.now()}`, { cache:'no-cache' });
-        if (notasRes.ok) {
-          const n = await notasRes.json();
-          if (n && n.texto) {
-            localStorage.setItem('jans_notas_reservas', JSON.stringify(n));
-            showNotas(n.texto);
+        // Cargar desde Supabase (fuente principal)
+        if (sbClient) {
+          const { data, error } = await sbClient
+            .from('config_sitio')
+            .select('valor')
+            .eq('clave', 'notas')
+            .maybeSingle();
+          if (!error && data && data.valor) {
+            const n = JSON.parse(data.valor);
+            if (n && n.texto) {
+              localStorage.setItem('jans_notas_reservas', JSON.stringify(n));
+              showNotas(n.texto);
+            }
           }
         }
       } catch(e) {}
