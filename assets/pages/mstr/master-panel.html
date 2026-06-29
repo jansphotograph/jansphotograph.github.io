@@ -487,6 +487,13 @@ async function fetchPanelData() {
             costoExterior: parseFloat(remote.costoExterior) || 0,
             personasExtra: remote.personasExtra || 0,
             costoPersonasExtra: parseFloat(remote.costoPersonasExtra) || 0,
+            // createdAt — normalizar a dd/mm/yyyy para parseCreatedAt
+            createdAt: (function(iso) {
+              if (!iso) return loc.createdAt || '';
+              const d = new Date(iso);
+              if (isNaN(d)) return loc.createdAt || iso;
+              return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+            })(remote.created_at),
           }));
         });
         const merged = Array.from(byId.values());
@@ -495,21 +502,46 @@ async function fetchPanelData() {
       }
     } catch(e) { console.warn('Supabase sync:', e); }
   }
-  // Cargar cotizaciones
-  try {
-    const cfg = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
-    if (cfg.owner && cfg.repo && cfg.token) {
-      const r = await fetch('https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/data/quotes.json', {
-        headers: { Authorization: 'token ' + cfg.token, Accept: 'application/vnd.github.v3.json' }
-      });
-      if (r.ok) {
-        const d = await r.json();
-        const data = JSON.parse(atob(d.content.replace(/\n/g,'')));
-        state.quotes = Array.isArray(data) ? data : [];
+  // Cargar cotizaciones desde Supabase
+  if (sbClient) {
+    try {
+      const { data: qData, error: qErr } = await sbClient.from('cotizaciones').select('*').order('created_at', { ascending: true });
+      if (!qErr && qData && qData.length > 0) {
+        state.quotes = qData.map(r => ({
+          id:         r.id,
+          numero:     r.numero || '',
+          clientName: r.clientName || r.nombre || '',
+          clientId:   r.clientId || '',
+          clientType: r.clientType || 'natural',
+          phone:      r.phone || '',
+          email:      r.email || '',
+          plan:       r.plan || '',
+          planPrice:  parseFloat(r.planPrice) || 0,
+          total:      parseFloat(r.total) || 0,
+          abono:      parseFloat(r.abono) || 0,
+          pagado:     parseFloat(r.pagado) || 0,
+          status:     r.status || 'pending',
+          sessionDate: r.sessionDate || '',
+          addons:     r.addons ? (typeof r.addons === 'string' ? JSON.parse(r.addons) : r.addons) : [],
+          createdAt:  (function(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d)) return iso;
+            return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+          })(r.created_at),
+        }));
         localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
+      } else {
+        // Fallback localStorage
+        try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) {}
       }
+    } catch(e) {
+      console.warn('fetchQuotes Supabase:', e);
+      try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e2) {}
     }
-  } catch(e) { console.warn('fetchQuotes:', e); }
+  } else {
+    try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) {}
+  }
   updatePanelAdministrativo();
   showToast('Panel actualizado');
 }
