@@ -252,7 +252,68 @@
               <input type="text" id="rHora" placeholder="Selecciona en el calendario" readonly style="cursor:default;color:#888" />
             </div>
           </div>
+          <!-- ── Exterior ── -->
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
+              <input type="checkbox" id="rExterior" onchange="toggleExterior()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
+              ¿Te gustaría hacer las fotos en exterior?
+            </label>
+            <div id="exteriorField" style="display:none;margin-top:12px">
+              <label style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Nombre del lugar</label>
+              <input type="text" id="rLugar" placeholder="Ej: Parque Omar, Playa Coronado, Escuela de Jujucal..."
+                style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#fff;font-size:0.88rem;padding:10px 14px;outline:none;font-family:inherit" />
+              <p style="font-size:0.75rem;color:#f59e0b;margin-top:8px;display:flex;align-items:flex-start;gap:6px">
+                <span style="flex-shrink:0">⚠️</span>
+                Se añadirá un costo adicional dependiendo del lugar seleccionado.
+              </p>
+            </div>
+          </div>
+
+          <!-- ── Personas adicionales ── -->
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
+              <input type="checkbox" id="rPersonasCheck" onchange="togglePersonas()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
+              ¿Vendrán personas adicionales?
+            </label>
+            <div id="personasField" style="display:none;margin-top:12px">
+              <label style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">¿Cuántas personas adicionales?</label>
+              <div style="display:flex;align-items:center;gap:12px">
+                <button type="button" onclick="changePersonas(-1)" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>
+                <span id="personasCount" style="font-size:1.4rem;font-weight:700;color:#fff;min-width:32px;text-align:center">1</span>
+                <button type="button" onclick="changePersonas(1)" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>
+                <span style="font-size:0.82rem;color:#999;margin-left:4px">× $5.00 c/u = <span id="personasCosto" style="color:#e91e8c;font-weight:700">$5.00</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Notas ── -->
           <div class="res-field"><label>Notas</label><textarea id="rNotas" placeholder="Locación, requerimientos especiales..."></textarea></div>
+
+          <!-- ── Resumen de precio ── -->
+          <div id="resumenPrecio" style="display:none;background:rgba(199,30,95,0.08);border:1px solid rgba(199,30,95,0.2);border-radius:12px;padding:14px 16px;margin-bottom:4px">
+            <div style="font-size:0.75rem;font-weight:700;color:#e91e8c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Resumen de precio estimado</div>
+            <div id="resumenLineas" style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem"></div>
+            <div style="border-top:1px solid rgba(199,30,95,0.2);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-weight:700;color:#fff">Total estimado</span>
+              <span id="resumenTotal" style="font-size:1.15rem;font-weight:800;color:#e91e8c">$0.00</span>
+            </div>
+            <div id="resumenNotaExterior" style="display:none;margin-top:8px;font-size:0.75rem;color:#f59e0b;display:flex;align-items:flex-start;gap:6px">
+              <span style="flex-shrink:0">⚠️</span>
+              El precio final puede variar dependiendo del lugar exterior seleccionado. Te notificaremos el costo por WhatsApp.
+            </div>
+          </div>
+
+          <!-- ── Términos de reserva ── -->
+          <div style="margin-bottom:4px">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.85rem;color:#ccc;line-height:1.5">
+              <input type="checkbox" id="rTerminos" onchange="updateReservaBtn()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0;margin-top:2px" />
+              <span>Acepto los <strong style="color:#fff">Términos de Reserva</strong> — entiendo que esta solicitud queda pendiente de confirmación y que se me contactará por WhatsApp. <a href="#terminosSection" onclick="document.getElementById('terminosSection').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#e91e8c;text-decoration:underline;font-weight:600;white-space:nowrap" onclick="const s=document.getElementById('notasSection');if(s){s.style.display='block';setTimeout(()=>s.scrollIntoView({behavior:'smooth',block:'start'}),50);}return false;">Ver Términos Aquí</a></span>
+            </label>
+            <div id="terminosError" style="display:none;margin-top:8px;font-size:0.78rem;color:#fca5a5;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 12px">
+              ⚠️ Para realizar la solicitud debes haber leído y aceptado los Términos de Reserva.
+            </div>
+          </div>
+
           <button class="btn-reservar" id="btnReservar" onclick="submitReserva()" disabled>
             Selecciona fecha y hora primero
           </button>
@@ -432,6 +493,7 @@
         badge.textContent = 'Plan: ' + p.get('plan') + (p.get('precio') ? ' — $' + p.get('precio') : '');
         badge.style.display = 'inline-flex';
         document.getElementById('rPlan').value = p.get('plan') + (p.get('precio') ? ' ($' + p.get('precio') + ')' : '');
+        window._planPrecio = parseFloat(p.get('precio') || '0') || 0;
       }
       document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
 
@@ -662,10 +724,14 @@
     }
 
     function updateSubmitBtn() {
-      const btn = document.getElementById('btnReservar');
-      if(selectedDate && selectedHour) {
+      const btn        = document.getElementById('btnReservar');
+      const terminosOk = document.getElementById('rTerminos')?.checked || false;
+      if (selectedDate && selectedHour && terminosOk) {
         btn.disabled = false;
         btn.textContent = 'Solicitar reserva';
+      } else if (selectedDate && selectedHour && !terminosOk) {
+        btn.disabled = true;
+        btn.textContent = 'Acepta los términos para continuar';
       } else {
         btn.disabled = true;
         btn.textContent = selectedDate ? 'Selecciona una hora' : 'Selecciona fecha y hora primero';
@@ -673,11 +739,86 @@
     }
 
     // ── Submit ──
+    // ── Personas adicionales ──
+    let _personasNum = 1;
+    const PRECIO_PERSONA = 5;
+
+    function togglePersonas() {
+      const checked = document.getElementById('rPersonasCheck').checked;
+      document.getElementById('personasField').style.display = checked ? 'block' : 'none';
+      if (!checked) { _personasNum = 1; updateResumen(); }
+      else updateResumen();
+    }
+
+    function changePersonas(delta) {
+      _personasNum = Math.max(1, _personasNum + delta);
+      document.getElementById('personasCount').textContent = _personasNum;
+      document.getElementById('personasCosto').textContent = '$' + (_personasNum * PRECIO_PERSONA).toFixed(2);
+      updateResumen();
+    }
+
+    function updateResumen() {
+      const planPrecio  = window._planPrecio || 0;
+      const exterior    = document.getElementById('rExterior').checked;
+      const personas    = document.getElementById('rPersonasCheck').checked ? _personasNum : 0;
+      const costoPersonas = personas * PRECIO_PERSONA;
+      const total       = planPrecio + costoPersonas;
+
+      // Mostrar resumen solo si hay algo que sumar
+      const mostrar = planPrecio > 0 || personas > 0;
+      document.getElementById('resumenPrecio').style.display = mostrar ? 'block' : 'none';
+      if (!mostrar) return;
+
+      // Líneas del resumen
+      let lineas = '';
+      if (planPrecio > 0) {
+        const planVal = document.getElementById('rPlan').value || 'Plan seleccionado';
+        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${planVal}</span><span style="font-weight:600;color:#fff">$${planPrecio.toFixed(2)}</span></div>`;
+      }
+      if (personas > 0) {
+        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${personas} persona${personas>1?'s':''} adicional${personas>1?'es':''} (×$${PRECIO_PERSONA})</span><span style="font-weight:600;color:#e91e8c">$${costoPersonas.toFixed(2)}</span></div>`;
+      }
+      if (exterior) {
+        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>Costo exterior</span><span style="font-weight:600;color:#f59e0b">Por confirmar</span></div>`;
+      }
+      document.getElementById('resumenLineas').innerHTML = lineas;
+      document.getElementById('resumenTotal').textContent = '$' + total.toFixed(2) + (exterior ? '+' : '');
+
+      // Nota exterior
+      const notaEl = document.getElementById('resumenNotaExterior');
+      if (notaEl) notaEl.style.display = exterior ? 'flex' : 'none';
+    }
+
+    function updateReservaBtn() {
+      // Solo oculta el error — el estado del botón lo maneja updateSubmitBtn
+      const terminosOk = document.getElementById('rTerminos')?.checked;
+      const errEl = document.getElementById('terminosError');
+      if (terminosOk && errEl) errEl.style.display = 'none';
+      updateSubmitBtn();
+    }
+
+    function toggleExterior() {
+      const checked = document.getElementById('rExterior').checked;
+      document.getElementById('exteriorField').style.display = checked ? 'block' : 'none';
+      if (!checked) document.getElementById('rLugar').value = '';
+      updateResumen();
+    }
+
     async function submitReserva() {
       const nombre = document.getElementById('rNombre').value.trim();
       const tel    = document.getElementById('rTel').value.trim();
       if(!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
       if(!selectedDate || !selectedHour) { alert('Selecciona fecha y hora.'); return; }
+
+      // Validar términos
+      const terminosOk = document.getElementById('rTerminos').checked;
+      const terminosError = document.getElementById('terminosError');
+      if (!terminosOk) {
+        if (terminosError) terminosError.style.display = 'block';
+        document.getElementById('rTerminos').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (terminosError) terminosError.style.display = 'none';
 
       const btn = document.getElementById('btnReservar');
       if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
@@ -686,13 +827,17 @@
       const hora  = document.getElementById('rHora').value;
       const plan  = document.getElementById('rPlan').value;
       const email = document.getElementById('rEmail').value;
-      const notas = document.getElementById('rNotas').value;
+      const notas    = document.getElementById('rNotas').value;
+      const exterior        = document.getElementById('rExterior').checked;
+      const lugar           = exterior ? (document.getElementById('rLugar').value.trim() || '') : '';
+      const personasAdicionales = document.getElementById('rPersonasCheck').checked ? _personasNum : 0;
+      const costoPersonas   = personasAdicionales * PRECIO_PERSONA;
       const fechaLabel = parseInt(d) + ' de ' + MONTHS[parseInt(m)-1] + ' ' + y;
 
       const reserva = {
         id:          'r_' + Date.now(),
         numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
-        nombre, tel, email, plan, notas,
+        nombre, tel, email, plan, notas, exterior, lugar, personasAdicionales, costoPersonas,
         fecha:       selectedDate,
         fechaLabel,
         hora,
