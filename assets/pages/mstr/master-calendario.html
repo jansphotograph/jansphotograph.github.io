@@ -822,6 +822,32 @@ function loadCalendar() {
   try { state.calendar = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) { state.calendar = {}; }
 }
 
+async function syncCalendarFromSupabase() {
+  if (!sbClient) return;
+  try {
+    const { data, error } = await sbClient.from('calendario').select('*').order('fecha', { ascending: true });
+    if (error || !data) return;
+    // Reconstruir state.calendar desde Supabase — es la fuente de verdad
+    const cal = {};
+    data.forEach(row => {
+      if (!row.fecha) return;
+      cal[row.fecha] = {
+        type:       row.tipo || 'event',
+        titulo:     row.titulo || '',
+        descripcion: row.notas || '',
+        color:      row.color || 'pink',
+        blockType:  row.block_type || 'day',
+        horaInicio: row.hora_inicio,
+        horaFin:    row.hora_fin,
+        status:     row.status || 'evento',
+      };
+    });
+    state.calendar = cal;
+    localStorage.setItem('jans_calendar', JSON.stringify(cal));
+    renderCalendar();
+  } catch(e) { console.warn('syncCalendarFromSupabase:', e); }
+}
+
 function getGHConfig() {
   try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
 }
@@ -945,7 +971,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{allReservas=JSON.parse(localStorage.getItem('jans_reservas')||'[]');}catch(e){allReservas=[];}
   try{state.quotes=JSON.parse(localStorage.getItem('jans_quotes')||'[]');}catch(e){state.quotes=[];}
   renderCalendar();
-  setTimeout(()=>fetchCalendarData(),500);
+  // Sincronizar desde Supabase (fuente de verdad para calendario)
+  syncCalendarFromSupabase();
 });
 
 function showToast(msg, type='success') {
