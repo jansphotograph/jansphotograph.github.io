@@ -506,6 +506,31 @@
       try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
       renderCal();
 
+      // ── Sync calendario desde Supabase ──
+      if (sbClient) {
+        try {
+          const { data: calRows, error: calErr } = await sbClient
+            .from('calendario').select('*').order('fecha', { ascending: true });
+          if (!calErr && calRows) {
+            calRows.forEach(row => {
+              if (!row.fecha) return;
+              calData[row.fecha] = {
+                type:        row.tipo || 'event',
+                titulo:      row.titulo || '',
+                descripcion: row.notas || '',
+                color:       row.color || 'pink',
+                blockType:   row.block_type || 'day',
+                horaInicio:  row.hora_inicio,
+                horaFin:     row.hora_fin,
+                status:      row.status || 'evento',
+              };
+            });
+            localStorage.setItem('jans_calendar', JSON.stringify(calData));
+            renderCal();
+          }
+        } catch(e) { console.warn('sync calendario:', e); }
+      }
+
       // ── Sync availability from Supabase — real source of truth for hour-blocking ──
       await syncAvailabilityFromSupabase();
 
@@ -586,9 +611,12 @@
         el.textContent = d;
         if(ds===todayStr)    el.classList.add('today');
         if(isPast)          { el.classList.add('past'); }
-        else if(isFull)      { el.classList.add('booked'); }
+        else if(isFull || isDayFull(ds)) {
+          // Día completamente bloqueado — sin click
+          el.classList.add('booked');
+        }
         else {
-          // available (explicitly marked) or unmarked — both are selectable
+          // available — selectable
           el.classList.add('available');
           if(selectedDate===ds) el.classList.add('selected');
           el.addEventListener('click', () => pickDate(ds, d));
@@ -646,6 +674,17 @@
     // Hour-range events NEVER block the full day — they only block specific hours in the
     // time slot picker (handled by getBlockedHours above). Only full-day events and
     // manual 'booked' closures lock the calendar day itself.
+    // Verificar si todas las horas disponibles están bloqueadas por eventos de calendario de tipo 'hours'
+    function isDayFullByCalEvent(ds) {
+      const st = calData[ds];
+      if (!st || typeof st !== 'object' || st.blockType !== 'hours') return false;
+      const ini = parseInt(st.horaInicio, 10);
+      const fin = parseInt(st.horaFin, 10);
+      if (isNaN(ini) || isNaN(fin)) return false;
+      // Si el rango del evento cubre todas las horas disponibles
+      return HOUR_VALS.every(hv => hv >= ini && hv <= fin);
+    }
+
     function isDayBlocked(ds) {
       const st = calData[ds];
       if (st === 'booked') return true;
@@ -655,8 +694,8 @@
         // blockType === 'hours': day stays selectable, only specific hours are blocked
         return false;
       }
-      // No event — block if all time slots are taken by confirmed reservas
-      return isDayFull(ds);
+      // No event — block si todas las horas están tomadas por reservas o por evento de horas
+      return isDayFull(ds) || isDayFullByCalEvent(ds);
     }
 
     function renderTimeSlots(ds) {
