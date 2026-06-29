@@ -428,8 +428,9 @@ function updatePanelAdministrativo() {
     if((r.fecha||'') > clientMap[k].lastDate) clientMap[k].lastDate = r.fecha;
   });
   activeQ.forEach(q => {
-    const k = q.phone || q.clientName;
-    if(!clientMap[k]) clientMap[k] = { nombre: q.clientName, count: 0, total: 0, lastDate: '' };
+    const k = (q.phone || q.clientName || q.email || '').trim();
+    if (!k) return; // ignorar cotizaciones sin identificador de cliente
+    if(!clientMap[k]) clientMap[k] = { nombre: q.clientName || '—', count: 0, total: 0, lastDate: '' };
     clientMap[k].count++; clientMap[k].total += parseFloat(q.total)||0;
     if((q.sessionDate||'') > clientMap[k].lastDate) clientMap[k].lastDate = q.sessionDate;
   });
@@ -510,18 +511,18 @@ async function fetchPanelData() {
         state.quotes = qData.map(r => ({
           id:         r.id,
           numero:     r.numero || '',
-          clientName: r.clientName || r.nombre || '',
-          clientId:   r.clientId || '',
-          clientType: r.clientType || 'natural',
-          phone:      r.phone || '',
-          email:      r.email || '',
-          plan:       r.plan || '',
-          planPrice:  parseFloat(r.planPrice) || 0,
-          total:      parseFloat(r.total) || 0,
-          abono:      parseFloat(r.abono) || 0,
-          pagado:     parseFloat(r.pagado) || 0,
-          status:     r.status || 'pending',
-          sessionDate: r.sessionDate || '',
+          clientName:  r.client_name  || r.clientName  || r.nombre || '',
+          clientId:    r.client_id    || r.clientId    || '',
+          clientType:  r.client_type  || r.clientType  || 'natural',
+          phone:       r.phone        || '',
+          email:       r.email        || '',
+          plan:        r.plan         || '',
+          planPrice:   parseFloat(r.plan_price  || r.planPrice)  || 0,
+          total:       parseFloat(r.total)       || 0,
+          abono:       parseFloat(r.abono)       || 0,
+          pagado:      parseFloat(r.pagado)      || 0,
+          status:      r.status                  || 'pending',
+          sessionDate: r.session_date || r.sessionDate || '',
           addons:     r.addons ? (typeof r.addons === 'string' ? JSON.parse(r.addons) : r.addons) : [],
           createdAt:  (function(iso) {
             if (!iso) return '';
