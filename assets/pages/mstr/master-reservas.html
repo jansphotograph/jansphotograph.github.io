@@ -467,7 +467,7 @@ function getOrAssignFacturaNumero(r) {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('reservas').select('*').order('created_at', { ascending: true });
+    const { data, error } = await sbClient.from('reservas').select('*').neq('status','deleted').order('created_at', { ascending: true });
     if (error) { console.error('Supabase fetch error:', error); return false; }
     if (!data) return false;
 
@@ -477,6 +477,7 @@ async function syncReservasFromSupabase() {
 
     let added = 0;
     data.forEach(remote => {
+      if (remote.status === 'deleted') return; // ignorar eliminadas
       if (!localIds.has(remote.id)) {
         // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
         local.push({
@@ -503,6 +504,7 @@ async function syncReservasFromSupabase() {
           origin:        remote.origin || 'web',
           facturaNumero: remote.facturaNumero,
           createdAt:     remote.createdAt,
+          fechaEspecial:      remote.fechaEspecial       || '',
           exterior:           remote.exterior            || false,
           lugar:              remote.lugar               || '',
           personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || 0,
@@ -529,7 +531,7 @@ async function pushReservaToSupabase(r) {
       extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
       nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
       fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
-      exterior: r.exterior || false, lugar: r.lugar || '',
+      fechaEspecial: r.fechaEspecial || '', exterior: r.exterior || false, lugar: r.lugar || '',
       personas_adicionales: r.personasAdicionales || 0,
       costo_personas: r.costoPersonas || 0,
     }).eq('id', r.id);
@@ -655,6 +657,7 @@ function viewReserva(id) {
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
       ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
+      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${r.fechaEspecial}</div></div>` : ''}
       ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${r.lugar || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
       ${r.personasAdicionales > 0 ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">👥 Personas adicionales</div><div style="font-weight:600;color:#e91e8c">${r.personasAdicionales} persona${r.personasAdicionales>1?'s':''} — <span style="color:#86efac">+$${(r.costoPersonas||0).toFixed(2)}</span></div></div>` : ''}
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${r.createdAt||'—'}</div></div>
@@ -926,11 +929,16 @@ function saveEditReserva() {
   renderReservasTable();
   showToast('Reserva actualizada ✓');
 }
-function deleteReserva(id) {
+async function deleteReserva(id) {
   if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
-  allReservas = allReservas.filter(x=>x.id!==id);
+  // 1. Eliminar de Supabase primero
+  if (sbClient) {
+    const { error } = await sbClient.from('reservas').delete().eq('id', id);
+    if (error) console.error('Supabase delete error:', error);
+  }
+  // 2. Eliminar del array local y localStorage
+  allReservas = allReservas.filter(x => x.id !== id);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  if (sbClient) sbClient.from('reservas').delete().eq('id', id).then(({error}) => { if (error) console.error('Supabase delete error:', error); });
   closeModal('reservaModal');
   renderReservasTable();
   updateDashboard();

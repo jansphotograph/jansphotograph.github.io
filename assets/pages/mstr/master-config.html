@@ -511,9 +511,17 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Estado de Conexión
           </div>
-          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-            <div id="ghStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
-            <span id="ghStatusText" style="font-size:0.9rem;color:var(--gray-l)">Sin verificar — guarda la configuración y prueba la conexión</span>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="ghStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
+              <span style="font-size:0.78rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em">Repo privado</span>
+              <span id="ghStatusText" style="font-size:0.88rem;color:var(--gray-l)">Sin verificar — guarda la configuración y prueba la conexión</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="ghPublicStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
+              <span style="font-size:0.78rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em">Repo público</span>
+              <span id="ghPublicStatusText" style="font-size:0.88rem;color:var(--gray-l)">Sin verificar</span>
+            </div>
           </div>
           <div style="font-size:0.8rem;color:var(--gray);line-height:2;background:var(--dark);border-radius:10px;padding:14px 18px">
             Archivos sincronizados:<br/>
@@ -771,7 +779,7 @@ const CONFIG = {
   ADMIN_PASS: 'jans2025',            // Contraseña de acceso
 
   // GitHub API — Repositorio PRIVADO
-  GH_TOKEN:  'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', // Token Personal de GitHub (permisos: repo)
+  GH_TOKEN:  '', // Token se lee de localStorage via getGHConfig().token
   GH_OWNER:  'tu-usuario-github',    // Tu nombre de usuario en GitHub
   GH_REPO:   'jans-master-data',     // Nombre del repositorio privado
 
@@ -817,42 +825,27 @@ function statusClassQ(s) {
 }
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
 async function ghPut(file, data) {
+  const token = (getGHConfig().token || '').replace(/\s+/g,'');
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
   if (state.fileSHAs[file]) body.sha = state.fileSHAs[file];
-  let res = await fetch(`${GH_BASE()}/${file}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+  const headers = { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' };
+  let res = await fetch(`${GH_BASE()}/${file}`, { method: 'PUT', headers, body: JSON.stringify(body) });
 
-  // If we get a 409 Conflict, our SHA is stale — fetch the current one and retry once.
+  // Si 409 Conflict, SHA desactualizado — obtener el actual y reintentar
   if (res.status === 409) {
     try {
-      const getRes = await fetch(`${GH_BASE()}/${file}`, {
-        headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
-      });
+      const getRes = await fetch(`${GH_BASE()}/${file}`, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
       if (getRes.ok) {
         const getJson = await getRes.json();
         if (getJson.sha) {
           state.fileSHAs[file] = getJson.sha;
           body.sha = getJson.sha;
-          res = await fetch(`${GH_BASE()}/${file}`, {
-            method: 'PUT',
-            headers: {
-              Authorization: `token ${CONFIG.GH_TOKEN}`,
-              Accept: 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-          });
+          res = await fetch(`${GH_BASE()}/${file}`, { method: 'PUT', headers, body: JSON.stringify(body) });
         }
       }
-    } catch(e) { /* retry failed — return original failed response */ }
+    } catch(e) {}
   }
 
   const json = await res.json();
@@ -860,37 +853,46 @@ async function ghPut(file, data) {
   return res.ok;
 }
 async function ghPutPublic(file, data) {
-  const token = getGHConfig().token || CONFIG.GH_TOKEN || '';
+  const token = (getGHConfig().token || '').replace(/\s+/g, '');
   if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
-  // First try to get the current SHA
+
+  const url = `${GH_BASE_PUBLIC()}/${file}`;
+
+  // GET sin token — repo público no lo necesita, evita 401 por token inválido
   let sha = null;
   try {
-    const getRes = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-    });
+    const getRes = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
     if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
   } catch(e) {}
+
+  // PUT con Bearer token — escritura sí requiere autenticación
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
   if (sha) body.sha = sha;
-  const res = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+  const res = await fetch(url, {
     method: 'PUT',
     headers: {
-      Authorization: `token ${token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3+json',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
+  const resJson = await res.json().catch(()=>({}));
+  if (!res.ok) {
+    console.error('ghPutPublic FAILED:', res.status, JSON.stringify(resJson));
+    showToast('Error GitHub ' + res.status + ': ' + (resJson.message || 'sin detalle'), 'error');
+  }
   return res.ok;
 }
+
 async function ghPutPublicFile(path, base64Content, commitMsg) {
-  const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+  const token = ((JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token) || '').replace(/\s+/g,'');
   if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
   const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
   let sha = null;
   try {
-    const r = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    const r = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github.v3+json' } });
     if (r.ok) { const j = await r.json(); sha = j.sha; }
   } catch(e) {}
   const body = { message: commitMsg || `upload ${path}`, content: base64Content };
@@ -985,17 +987,17 @@ async function saveCompanyData() {
 
   if (companyLogoFileData) {
     const imgPath = `assets/images/company/logo.${companyLogoFileData.extension}`;
-    const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+    const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
     if (hasGH) {
       try {
         let sha = null;
         const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
         if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
         const body = { message: 'update company logo', content: companyLogoFileData.base64 };
         if (sha) body.sha = sha;
         const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-          { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+          { method:'PUT', headers:{ Authorization:`token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) });
         if (res.ok) { logoPath = imgPath; companyLogoFileData = null; }
       } catch(e) {}
     }
@@ -1090,7 +1092,7 @@ async function saveIgLink() {
 
   igSetStatus('info', 'Subiendo imagen...');
 
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
   if (!hasGH) {
     igSetStatus('success', '✓ URL guardada. Configura GitHub para subir la imagen al repo.');
     showToast('URL guardada ✓ — configura GitHub para la imagen');
@@ -1105,13 +1107,13 @@ async function saveIgLink() {
       try {
         const oldRes = await fetch(
           `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
-          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
         );
         if (oldRes.ok) {
           const oldJson = await oldRes.json();
           await fetch(
             `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
-            { method: 'DELETE', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+            { method: 'DELETE', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
               body: JSON.stringify({ message: 'remove old instagram image', sha: oldJson.sha }) }
           );
         }
@@ -1121,7 +1123,7 @@ async function saveIgLink() {
     let sha = null;
     const getRes = await fetch(
       `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
-      { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+      { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
     );
     if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
 
@@ -1130,7 +1132,7 @@ async function saveIgLink() {
 
     const res = await fetch(
       `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
-      { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      { method: 'PUT', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
 
     if (res.ok) {
@@ -1168,7 +1170,7 @@ async function saveYtLink() {
       let sha = null;
       const getRes = await fetch(
         `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-        { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+        { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
       );
       if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
 
@@ -1177,7 +1179,7 @@ async function saveYtLink() {
 
       const res = await fetch(
         `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-        { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+        { method:'PUT', headers:{ Authorization:`token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
       );
       if (res.ok) {
         thumbPath = imgPath;
@@ -1397,7 +1399,18 @@ async function changeCredentials() {
     showCredMsg('Error al procesar. Intenta de nuevo.', false);
   }
 }
-function loadNotasUI() {
+async function loadNotasUI() {
+  // Intentar Supabase primero, fallback localStorage
+  try {
+    const sbData = await sbGetConfig('notas');
+    if (sbData && sbData.texto) {
+      localStorage.setItem('jans_notas_reservas', JSON.stringify(sbData));
+      document.getElementById('notasTexto').value = sbData.texto;
+      updateNotasPreview();
+      return;
+    }
+  } catch(e) {}
+  // Fallback localStorage
   try {
     const saved = JSON.parse(localStorage.getItem('jans_notas_reservas') || '{}');
     if (saved.texto) {
@@ -1420,31 +1433,41 @@ async function saveNotas() {
   const texto = document.getElementById('notasTexto').value.trim();
   const msgEl = document.getElementById('notasMsg');
   const payload = { texto, updatedAt: new Date().toISOString() };
+
+  // Guardar en localStorage
   localStorage.setItem('jans_notas_reservas', JSON.stringify(payload));
-  const ok = await ghPutPublic('notas.json', payload);
+
+  // Guardar en Supabase
+  const sbOk = await sbSetConfig('notas', payload);
+
   msgEl.style.display    = 'block';
-  msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
-  msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)';
-  msgEl.style.color      = ok ? '#86efac' : '#fcd34d';
-  msgEl.textContent      = ok ? '✓ Notas publicadas en el sitio' : '✓ Guardadas localmente (configura GitHub para publicar)';
-  showToast(ok ? 'Notas publicadas ✓' : 'Guardadas localmente ✓');
+  msgEl.style.background = 'rgba(34,197,94,0.1)';
+  msgEl.style.border     = '1px solid rgba(34,197,94,0.3)';
+  msgEl.style.color      = '#86efac';
+  msgEl.textContent      = sbOk ? '✓ Notas guardadas en Supabase' : '✓ Notas guardadas localmente';
+  showToast('Notas guardadas ✓');
 }
 function showSection(name){['company','social','config','recargar','notas'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config'){loadFacturaCounterUI();loadCotCounterUI();loadWebCounterUI();}if(name==='recargar')loadLastReloadInfo();if(name==='notas'){loadNotasUI();updateNotasPreview();}}
 
 async function saveGithubConfig() {
-  const owner = document.getElementById('cfgOwner').value.trim();
-  const repo  = document.getElementById('cfgRepo').value.trim();
-  const token = document.getElementById('cfgToken').value.trim();
-  if (!owner || !repo || !token) { showToast('Completa todos los campos', 'error'); return; }
+  const owner       = document.getElementById('cfgOwner').value.trim();
+  const repo        = document.getElementById('cfgRepo').value.trim();
+  const publicOwner = document.getElementById('cfgPublicOwner').value.trim();
+  const publicRepo  = document.getElementById('cfgPublicRepo').value.trim();
+  // Si el input del token está vacío, usar el que ya está guardado
+  const _saved = getGHConfig();
+  const tokenInput = document.getElementById('cfgToken').value.replace(/\s+/g,'').trim();
+  const token = tokenInput || (_saved.token||'').replace(/\s+/g,'').trim() || '';
+  if (!owner || !repo || !token) { showToast('Completa usuario, repositorio y token del repo privado', 'error'); return; }
 
-  // Guardar en localStorage — usado por getGHConfig() en todas las páginas
-  const ghConfig = { owner, repo, token };
+  // Guardar en localStorage — incluye repo público
+  const ghConfig = { owner, repo, token, publicOwner, publicRepo };
   localStorage.setItem('jans_gh_config', JSON.stringify(ghConfig));
-
-  // También guardar en LS_KEY para compatibilidad
-  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo }));
-  // Token en base64 simple
+  localStorage.setItem(LS_KEY, JSON.stringify({ owner, repo, publicOwner, publicRepo }));
   localStorage.setItem(LS_KEY_ENC, btoa(token));
+  // Sincronizar claves que usa CONFIG_PUBLIC (ghPutPublic, ghPutPublicFile)
+  if (publicOwner) localStorage.setItem('jans_public_owner', publicOwner);
+  if (publicRepo)  localStorage.setItem('jans_public_repo',  publicRepo);
 
   previewRepo();
   showToast('Configuración de GitHub guardada ✓');
@@ -1454,7 +1477,7 @@ async function saveYappyQr() {
   const msgEl = document.getElementById('qrMsg');
   if (!yappyQrFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
 
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
   if (!hasGH) {
     showToast('Configura tu conexión a GitHub primero (Configuración → GitHub)', 'error');
     return;
@@ -1478,11 +1501,11 @@ async function saveYappyQr() {
       const oldPath = `assets/images/company/yappy-qr.${oldExt}`;
       try {
         const checkRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
-          { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
         if (checkRes.ok) {
           const j = await checkRes.json();
           await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
-            { method: 'DELETE', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+            { method: 'DELETE', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
               body: JSON.stringify({ message: 'remove stale yappy qr format', sha: j.sha }) });
         }
       } catch(e) { /* non-fatal — an old file lingering is harmless, just skip cleanup */ }
@@ -1491,14 +1514,14 @@ async function saveYappyQr() {
     // Upload the new file
     let sha = null;
     const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-      { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+      { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
     if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
 
     const body = { message: 'update yappy qr', content: yappyQrFileData.base64 };
     if (sha) body.sha = sha;
 
     const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
-      { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      { method: 'PUT', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
     if (!res.ok) throw new Error('GitHub upload failed');
 
@@ -1533,7 +1556,7 @@ function handleLogout(){sessionStorage.removeItem(SESSION_KEY);window.location.r
 
 async function loadAllData() {
   try {
-    const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+    const token = (getGHConfig().token||'').replace(/\s+/g,'') || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
     if (!token || token.startsWith('ghp_XXXX')) {
       showToast('GitHub no configurado — modo local', 'error');
       updateDashboard(); renderQuotesTable(); renderCalendar();
@@ -1565,7 +1588,7 @@ async function loadAllData() {
     updateDashboard(); renderQuotesTable(); renderCalendar();
     renderServices(); renderPlans(); updateQPlanSelect();
     // Only show the error toast if GitHub is actually configured
-    const token = CONFIG.GH_TOKEN;
+    const token = (getGHConfig().token||'').replace(/\s+/g,'');
     if (token && !token.startsWith('ghp_XXXX')) {
       showToast(`Error al sincronizar — revisa la consola del navegador`, 'error');
     }
@@ -1593,11 +1616,15 @@ function clearGithubConfig() {
   document.getElementById('cfgToken').value       = '';
   document.getElementById('cfgPublicOwner').value = '';
   document.getElementById('cfgPublicRepo').value  = '';
-  CONFIG.GH_OWNER = ''; CONFIG.GH_REPO = ''; CONFIG.GH_TOKEN = '';
+  CONFIG.GH_OWNER = ''; CONFIG.GH_REPO = ''; (getGHConfig().token||'').replace(/\s+/g,'') = '';
   document.getElementById('ghRepoDisplay').textContent       = '—';
   document.getElementById('ghPublicRepoDisplay').textContent = '—';
-  document.getElementById('ghStatusDot').style.background    = 'var(--gray)';
-  document.getElementById('ghStatusText').textContent        = 'Sin verificar';
+  document.getElementById('ghStatusDot').style.background       = 'var(--gray)';
+  document.getElementById('ghStatusText').textContent           = 'Sin verificar';
+  const pubDotEl = document.getElementById('ghPublicStatusDot');
+  const pubTxtEl = document.getElementById('ghPublicStatusText');
+  if (pubDotEl) pubDotEl.style.background = 'var(--gray)';
+  if (pubTxtEl) pubTxtEl.textContent = 'Sin verificar';
   showToast('Configuración limpiada', 'error');
 }
 
@@ -1633,6 +1660,33 @@ async function testGithubConnection() {
     dot.style.background = 'var(--red)';
     text.textContent = 'Sin conexión a internet';
     showToast('Sin conexión', 'error');
+  }
+
+  // ── Verificar repo público ──
+  const pubDot  = document.getElementById('ghPublicStatusDot');
+  const pubText = document.getElementById('ghPublicStatusText');
+  const pubOwner = document.getElementById('cfgPublicOwner')?.value.trim() || getGHConfig().publicOwner || '';
+  const pubRepo  = document.getElementById('cfgPublicRepo')?.value.trim()  || getGHConfig().publicRepo  || '';
+  if (pubOwner && pubRepo && pubDot && pubText) {
+    pubDot.style.background = 'var(--amber)';
+    pubText.textContent = 'Verificando repo público…';
+    try {
+      const pubRes = await fetch(`https://api.github.com/repos/${pubOwner}/${pubRepo}`);
+      if (pubRes.ok) {
+        const pd = await pubRes.json();
+        pubDot.style.background = 'var(--green)';
+        pubText.textContent = `Conectado ✓ — ${pd.full_name} (${pd.private ? 'Privado' : 'Público'})`;
+      } else {
+        pubDot.style.background = 'var(--red)';
+        pubText.textContent = `Error ${pubRes.status} — verifica usuario y repositorio público`;
+      }
+    } catch(e) {
+      pubDot.style.background = 'var(--red)';
+      pubText.textContent = 'Sin conexión';
+    }
+  } else if (pubDot && pubText) {
+    pubDot.style.background = 'var(--gray)';
+    pubText.textContent = 'Configura el repo público para verificarlo';
   }
 }
 
@@ -1888,18 +1942,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cargar config de GitHub guardado
   try {
     const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
-    if (gh.owner) {
-      const el = document.getElementById('cfgOwner');
-      if (el) el.value = gh.owner;
+    if (gh.owner)       { const el = document.getElementById('cfgOwner');       if (el) el.value = gh.owner; }
+    if (gh.repo)        { const el = document.getElementById('cfgRepo');        if (el) el.value = gh.repo; }
+    if (gh.token)       { const el = document.getElementById('cfgToken');       if (el) el.value = gh.token; }
+    if (gh.publicOwner) {
+      const el = document.getElementById('cfgPublicOwner'); if (el) el.value = gh.publicOwner;
+      localStorage.setItem('jans_public_owner', gh.publicOwner);
     }
-    if (gh.repo) {
-      const el = document.getElementById('cfgRepo');
-      if (el) el.value = gh.repo;
+    if (gh.publicRepo)  {
+      const el = document.getElementById('cfgPublicRepo');  if (el) el.value = gh.publicRepo;
+      localStorage.setItem('jans_public_repo', gh.publicRepo);
     }
-    if (gh.token) {
-      const el = document.getElementById('cfgToken');
-      if (el) el.value = gh.token;
-    }
+    previewRepo();
   } catch(e) {}
 });
 </script>
