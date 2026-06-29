@@ -244,13 +244,17 @@
           <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
-              <label>Fecha</label>
+              <label>Fecha de la sesión</label>
               <input type="date" id="rFecha" onchange="onDateInputChange()" />
             </div>
             <div class="res-field">
               <label>Hora</label>
               <input type="text" id="rHora" placeholder="Selecciona en el calendario" readonly style="cursor:default;color:#888" />
             </div>
+          </div>
+          <div class="res-field">
+            <label style="line-height:1.4">Cuéntanos cuándo es tu cumpleaños o la fecha en la que te gustaría tener las fotos <span style="color:#666;font-weight:400;font-size:0.78rem">(opcional)</span></label>
+            <input type="date" id="rFechaEspecial" style="cursor:pointer" />
           </div>
           <!-- ── Exterior ── -->
           <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
@@ -307,7 +311,7 @@
           <div style="margin-bottom:4px">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.85rem;color:#ccc;line-height:1.5">
               <input type="checkbox" id="rTerminos" onchange="updateReservaBtn()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0;margin-top:2px" />
-              <span>Acepto los <strong style="color:#fff">Términos de Reserva</strong> — entiendo que esta solicitud queda pendiente de confirmación y que se me contactará por WhatsApp. <a href="#terminosSection" onclick="document.getElementById('terminosSection').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#e91e8c;text-decoration:underline;font-weight:600;white-space:nowrap" onclick="const s=document.getElementById('notasSection');if(s){s.style.display='block';setTimeout(()=>s.scrollIntoView({behavior:'smooth',block:'start'}),50);}return false;">Ver Términos Aquí</a></span>
+              <span>Acepto los <strong style="color:#fff">Términos de Reserva</strong> — entiendo que esta solicitud queda pendiente de confirmación y que se me contactará por WhatsApp. <a href="#terminosSection" onclick="document.getElementById('terminosSection').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#e91e8c;text-decoration:underline;font-weight:600;white-space:nowrap" onclick="const s=document.getElementById('notasSection');if(s){s.style.display='block';s.style.visibility='visible';setTimeout(()=>{s.scrollIntoView({behavior:'smooth',block:'start'});},80);}else{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}return false;">Ver Términos Aquí</a></span>
             </label>
             <div id="terminosError" style="display:none;margin-top:8px;font-size:0.78rem;color:#fca5a5;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 12px">
               ⚠️ Para realizar la solicitud debes haber leído y aceptado los Términos de Reserva.
@@ -827,7 +831,8 @@
       const hora  = document.getElementById('rHora').value;
       const plan  = document.getElementById('rPlan').value;
       const email = document.getElementById('rEmail').value;
-      const notas    = document.getElementById('rNotas').value;
+      const notas          = document.getElementById('rNotas').value;
+      const fechaEspecial  = document.getElementById('rFechaEspecial')?.value || '';
       const exterior        = document.getElementById('rExterior').checked;
       const lugar           = exterior ? (document.getElementById('rLugar').value.trim() || '') : '';
       const personasAdicionales = document.getElementById('rPersonasCheck').checked ? _personasNum : 0;
@@ -837,7 +842,7 @@
       const reserva = {
         id:          'r_' + Date.now(),
         numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
-        nombre, tel, email, plan, notas, exterior, lugar, personasAdicionales, costoPersonas,
+        nombre, tel, email, plan, notas, exterior, lugar, personasAdicionales, costoPersonas, fechaEspecial,
         fecha:       selectedDate,
         fechaLabel,
         hora,
