@@ -38,7 +38,7 @@
     "@type": "LocalBusiness",
     "name": "Jans Photograph",
     "description": "Fotografía profesional en Panamá. Sesiones de retratos, bodas, XV años, familiares, eventos, graduación y gastronomía.",
-    "url": "https://jansphotograph.github.io/",
+    "url": "https://jansphotograph.com/",
     "logo": "https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png",
     "image": "https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png",
     "telephone": "+507-6862-2402",
@@ -239,7 +239,7 @@
       <div class="yt-embed-wrap">
         <!--
           INSTRUCCIONES: Reemplaza el src del iframe con el link de embed de tu último video de YouTube.
-          Ejemplo: https://www.youtube.com/embed/ID_DEL_VIDEO
+          Ejemplo: https://www.youtube-nocookie.com/embed/ID_DEL_VIDEO
           Puedes obtenerlo en YouTube > Compartir > Insertar > copiar solo el src.
         -->
         <div class="yt-placeholder">
@@ -256,7 +256,7 @@
         <!-- 
           Cuando tengas el video, elimina el bloque .yt-placeholder de arriba y descomenta esto:
           <iframe
-            src="https://www.youtube.com/embed/TU_VIDEO_ID?rel=0&modestbranding=1"
+            src="https://www.youtube-nocookie.com/embed/TU_VIDEO_ID?rel=0&modestbranding=1"
             title="Último video Jans Photograph"
             allowfullscreen
             loading="lazy">
@@ -277,23 +277,7 @@
   <section class="services-section" aria-label="Servicios adicionales" id="serviciosAdicionales">
     <div class="services-inner">
       <h2 class="services-title">Servicios Adicionales</h2>
-      <div id="servAdicIndex">
-        <!-- Rendered dynamically from servicios-adicionales.json -->
-        <div class="services-block">
-          <div class="service-group-title">Servicio de Maquillaje</div>
-          <div class="service-row"><span class="service-name">Maquillaje</span><span class="service-price">$8.00</span></div>
-          <div class="service-row"><span class="service-name">Peinado</span><span class="service-price">$8.00</span></div>
-          <div class="service-row"><span class="service-name">Asistencia en la sesión</span><span class="service-price">$10.00</span></div>
-        </div>
-        <div class="services-block">
-          <div class="service-group-title">Servicio de Impresiones</div>
-          <div class="service-row"><span class="service-name">6 Fotos tamaño Carnet</span><span class="service-price">$1.50</span></div>
-          <div class="service-row"><span class="service-name">1 Foto tamaño 4x6</span><span class="service-price">$1.00</span></div>
-          <div class="service-row"><span class="service-name">Combo (2 fotos 4x6)</span><span class="service-price">$1.50</span></div>
-          <div class="service-row"><span class="service-name">1 Foto tamaño 8x10</span><span class="service-price">$2.00</span></div>
-          <div class="service-row"><span class="service-name">Combo (3 fotos 8x10)</span><span class="service-price">$5.00</span></div>
-        </div>
-      </div>
+      <div id="servAdicIndex"></div>
     </div>
   </section>
 
@@ -446,7 +430,7 @@
           if (!wrap) return;
           const isMobile   = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
           const videoUrl   = 'https://www.youtube.com/watch?v=' + yt.ytId;
-          const embedUrl   = 'https://www.youtube.com/embed/' + yt.ytId + '?rel=0&modestbranding=1&playsinline=1';
+          const embedUrl   = 'https://www.youtube-nocookie.com/embed/' + yt.ytId + '?rel=0&modestbranding=1&playsinline=1';
           // Use custom thumbnail if set, otherwise fall back to YouTube auto-thumb
           const thumbUrl   = yt.thumbPath
             ? 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/' + yt.thumbPath + '?t=' + Date.now()
@@ -532,46 +516,42 @@
   </a>
 
   <script>
-    // ── Servicios Adicionales — load from GitHub ──
+    // ── Servicios Adicionales — load from Supabase ──
     (function() {
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
+      const SB_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SB_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 
-      function renderServAdic(data, containerId) {
+      function renderServAdic(items, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
-        const maq = data.maquillaje || [];
-        const imp = data.impresiones || [];
-        if (!maq.length && !imp.length) return; // keep static defaults
+        if (!container || !items || !items.length) return;
+        // Agrupar por categoría
+        const grouped = {};
+        items.forEach(s => {
+          const cat = s.categoria || 'general';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(s);
+        });
         let out = '';
-        if (maq.length) {
-          out += '<div class="services-block"><div class="service-group-title">Servicio de Maquillaje y Peinado</div>';
-          maq.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
+        Object.entries(grouped).forEach(([cat, svcs]) => {
+          out += '<div class="services-block"><div class="service-group-title">' + cat + '</div>';
+          svcs.forEach(s => {
+            out += '<div class="service-row"><span class="service-name">' + (s.nombre||s.name) + '</span><span class="service-price">$' + (s.precio||s.price||0) + '</span></div>';
+          });
           out += '</div>';
-        }
-        if (imp.length) {
-          out += '<div class="services-block"><div class="service-group-title">Servicio de Impresiones</div>';
-          imp.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
-          out += '</div>';
-        }
+        });
         container.innerHTML = out;
       }
 
-      // localStorage first
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_serv_adicionales') || 'null');
-        if (local) renderServAdic(local, 'servAdicIndex');
-      } catch(e) {}
-
-      // GitHub fetch
-      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/servicios-adicionales.json?t=' + Date.now(), { cache: 'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (!data) return;
-          localStorage.setItem('jans_serv_adicionales', JSON.stringify(data));
-          renderServAdic(data, 'servAdicIndex');
-        })
-        .catch(() => {});
+      // Cargar de Supabase
+      fetch(SB_URL + '/rest/v1/servicios_adicionales?activo=eq.true&order=nombre', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data || !data.length) return;
+        renderServAdic(data, 'servAdicIndex');
+      })
+      .catch(() => {});
     })();
   </script>
 </body>
