@@ -467,57 +467,57 @@ function getOrAssignFacturaNumero(r) {
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('reservas').select('*').neq('status','deleted').order('created_at', { ascending: true });
+    // Supabase es la fuente de verdad — excluir eliminadas directamente en el query
+    const { data, error } = await sbClient.from('reservas').select('*')
+      .neq('status','deleted').order('created_at', { ascending: true });
     if (error) { console.error('Supabase fetch error:', error); return false; }
     if (!data) return false;
 
+    // Preservar datos locales que Supabase no tiene (extras editados, facturaNumero, etc.)
     let local = [];
     try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-    const localIds = new Set(local.map(r => r.id));
+    const localMap = {};
+    local.forEach(r => { localMap[r.id] = r; });
 
-    let added = 0;
-    data.forEach(remote => {
-      if (remote.status === 'deleted') return; // ignorar eliminadas
-      if (!localIds.has(remote.id)) {
-        // Normalize Supabase row shape (snake/camel mismatch safety) into our local shape
-        local.push({
-          id:            remote.id,
-          numero:        remote.numero || null,
-          nombre:        remote.nombre,
-          tel:           remote.tel,
-          email:         remote.email,
-          plan:          remote.plan,
-          notas:         remote.notas,
-          fecha:         remote.fecha,
-          fechaLabel:    remote.fechaLabel,
-          hora:          remote.hora,
-          horaVal:       remote.horaVal,
-          status:        remote.status || 'pending',
-          abono:         remote.abono || 0,
-          totalManual:   remote.totalManual,
-          extras:        remote.extras || [],
-          clientId:      remote.clientId,
-          clientType:    remote.clientType,
-          razonSocial:   remote.razonSocial,
-          repLegal:      remote.repLegal,
-          address:       remote.address,
-          origin:        remote.origin || 'web',
-          facturaNumero: remote.facturaNumero,
-          createdAt:     remote.createdAt,
-          fechaEspecial:      remote.fechaEspecial       || '',
-          exterior:           remote.exterior            || false,
-          lugar:              remote.lugar               || '',
-          personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || 0,
-          costoPersonas:       remote.costo_personas       || remote.costoPersonas       || 0,
-        });
-        added++;
-      }
+    // Reconstruir desde Supabase — Supabase manda, local complementa
+    const synced = data.map(remote => {
+      const prev = localMap[remote.id] || {};
+      return {
+        id:            remote.id,
+        numero:        remote.numero        || prev.numero        || null,
+        nombre:        remote.nombre        || prev.nombre,
+        tel:           remote.tel           || prev.tel,
+        email:         remote.email         || prev.email,
+        plan:          remote.plan          || prev.plan,
+        notas:         remote.notas         || prev.notas,
+        fecha:         remote.fecha         || prev.fecha,
+        fechaLabel:    remote.fechaLabel    || prev.fechaLabel,
+        hora:          remote.hora          || prev.hora,
+        horaVal:       remote.horaVal       || prev.horaVal,
+        status:        remote.status        || prev.status || 'pending',
+        abono:         remote.abono         || prev.abono  || 0,
+        totalManual:   remote.totalManual   || prev.totalManual,
+        extras:        remote.extras        || prev.extras || [],
+        clientId:      remote.clientId      || prev.clientId,
+        clientType:    remote.clientType    || prev.clientType,
+        razonSocial:   remote.razonSocial   || prev.razonSocial,
+        repLegal:      remote.repLegal      || prev.repLegal,
+        address:       remote.address       || prev.address,
+        origin:        remote.origin        || prev.origin || 'web',
+        facturaNumero: remote.facturaNumero || prev.facturaNumero,
+        createdAt:     remote.createdAt     || prev.createdAt,
+        fechaEspecial:       remote.fechaEspecial                                   || prev.fechaEspecial       || '',
+        exterior:            remote.exterior                                         || prev.exterior            || false,
+        lugar:               remote.lugar                                            || prev.lugar               || '',
+        personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || prev.personasAdicionales || 0,
+        costoPersonas:       remote.costo_personas       || remote.costoPersonas       || prev.costoPersonas       || 0,
+      };
     });
 
-    if (added > 0) {
-      localStorage.setItem('jans_reservas', JSON.stringify(local));
-    }
-    return added > 0;
+    // Guardar en localStorage — reemplaza completamente para reflejar Supabase
+    localStorage.setItem('jans_reservas', JSON.stringify(synced));
+    allReservas = synced;
+    return true;
   } catch(e) {
     console.error('Supabase sync exception:', e);
     return false;
