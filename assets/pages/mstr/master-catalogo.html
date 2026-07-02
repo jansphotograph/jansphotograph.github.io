@@ -1855,20 +1855,17 @@ async function loadInvFromSupabase() {
     const { data: items, error: iErr } = await sbClient.from('inventario').select('*').order('nombre');
     if (!iErr && items && items.length > 0) {
       const mapped = items.map(r => ({
-        id:           r.id,
-        name:         r.nombre,
-        nombre:       r.nombre,
-        category:     r.categoria_id || r.categoria || '',
-        categoria_id: r.categoria_id || '',
-        categoria:    r.categoria || '',
-        cantidad:     r.cantidad || 0,
-        unidad:       r.unidad || 'unidad',
-        precio:       parseFloat(r.precio) || 0,
-        price:        parseFloat(r.precio) || 0,
-        barcode:      r.codigo_barras || '',
-        codigo_barras:r.codigo_barras || '',
-        notes:        r.notas || '',
-        notas:        r.notas || '',
+        id:            r.id,
+        titulo:        r.nombre || '',
+        categoryId:    r.categoria_id || '',
+        descripcion:   r.notas || '',
+        stockUnidades: r.cantidad || 0,
+        barcodeValue:  r.codigo_barras || '',
+        unidad:        r.unidad || 'unidad',
+        precio:        parseFloat(r.precio) || 0,
+        tiendas:       [],
+        foto:          '',
+        creadoEn:      r.created_at ? new Date(r.created_at).toLocaleDateString('es-PA') : '',
       }));
       localStorage.setItem(INV_KEY, JSON.stringify(mapped));
     }
@@ -1900,14 +1897,14 @@ async function saveInvData() {
       await sbClient.from('inventario').delete().neq('id', '___none___');
       const { error } = await sbClient.from('inventario').insert(invItems.map(i => ({
         id:            i.id,
-        nombre:        i.name || i.nombre || '',
-        categoria_id:  i.category || i.categoria_id || '',
-        categoria:     i.category || i.categoria || '',
-        cantidad:      parseInt(i.cantidad) || 0,
+        nombre:        i.titulo || i.name || i.nombre || '',
+        categoria_id:  i.categoryId || i.category || i.categoria_id || '',
+        categoria:     i.categoryId || i.category || i.categoria || '',
+        cantidad:      parseInt(i.stockUnidades || i.cantidad) || 0,
         unidad:        i.unidad || 'unidad',
         precio:        parseFloat(i.precio || i.price) || 0,
-        codigo_barras: i.barcode || i.codigo_barras || '',
-        notas:         i.notes || i.notas || ''
+        codigo_barras: i.barcodeValue || i.barcode || i.codigo_barras || '',
+        notas:         i.descripcion || i.notes || i.notas || ''
       })));
       if (error) { console.error('saveInvData:', error); showToast('Error al guardar inventario: ' + error.message, 'error'); return; }
     } else {
