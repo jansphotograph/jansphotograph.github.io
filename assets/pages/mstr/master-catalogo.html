@@ -803,6 +803,25 @@ async function ghPut(file, data) {
   if (json.content) state.fileSHAs[file] = json.content.sha;
   return res.ok;
 }
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).maybeSingle();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
 async function ghPutPublic(file, data) {
   const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
   if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
@@ -1632,6 +1651,13 @@ async function saveBlogPosts() {
   if (ok) showToast('Blog publicado en GitHub ✓');
   else    showToast('Guardado localmente ✓ (configura GitHub para publicar)', 'error');
 }
+async function loadServAdicionalesFromSupabase() {
+  const sbData = await sbGetConfig('serv_adicionales');
+  if (sbData && (sbData.items || sbData.maquillaje)) {
+    localStorage.setItem(SA_KEY, JSON.stringify(sbData));
+  }
+}
+
 function loadServAdicionales() {
   try {
     const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
@@ -1777,17 +1803,13 @@ function moveServAdic(idx, dir) {
 async function saveServAdicionales() {
   loadServAdicionales();
   localStorage.setItem(SA_KEY, JSON.stringify(servData));
-  // Publicar formato compatible con el sitio público (lista plana con nombre y precio)
-  const publicData = {
-    maquillaje: servData.items.filter(s=>!s.usaInsumo).map(s=>({ nombre:s.nombre, precio:s.precio })),
-    impresiones: servData.items.filter(s=>s.usaInsumo).map(s=>({ nombre:s.nombre, precio:s.precio })),
-    all: servData.items.map(s=>({ nombre:s.nombre, precio:s.precio, descripcion:s.descripcion }))
-  };
-  const ok = await ghPutPublic('servicios-adicionales.json', publicData);
-  if (ok) showToast('Servicios adicionales publicados ✓');
-  else    showToast('Guardados localmente — verifica GitHub', 'error');
+  // Guardar en Supabase (config_sitio con clave 'serv_adicionales')
+  const ok = await sbSetConfig('serv_adicionales', servData);
+  if (ok) showToast('Servicios adicionales guardados ✓');
+  else    showToast('Guardados localmente — sin conexión Supabase', 'error');
 }
-function initServAdicionales() {
+async function initServAdicionales() {
+  await loadServAdicionalesFromSupabase();
   loadServAdicionales();
   renderServAdicList();
 }
