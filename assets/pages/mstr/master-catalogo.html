@@ -1832,6 +1832,7 @@ async function saveServAdicionales() {
         precio:      parseFloat(s.precio) || 0,
         descripcion: s.descripcion || '',
         usa_insumo:  s.usaInsumo || false,
+        insumos:     s.insumos || [],
       }));
       const { error } = await sbClient.from('servicios_adicionales').insert(rows);
       if (error) { console.error('saveServAdicionales:', error); showToast('Error al guardar en Supabase', 'error'); return; }
