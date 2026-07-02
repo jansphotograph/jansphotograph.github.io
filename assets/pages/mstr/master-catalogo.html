@@ -105,7 +105,7 @@ function showSection(name) {
     if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
     if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
     if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
-    if(name==='inventario') { loadInvData(); initInventario(); }
+    if(name==='inventario') { loadInvFromSupabase().then(() => { loadInvData(); initInventario(); }); }
     if(name==='faqs')       initFaqs();
     if(name==='equipo')     renderTeamList();
   } catch(e) { console.error('showSection error:', e); }
@@ -1848,6 +1848,38 @@ async function initServAdicionales() {
   loadServAdicionales();
   renderServAdicList();
 }
+async function loadInvFromSupabase() {
+  if (!sbClient) return;
+  try {
+    // Cargar items
+    const { data: items, error: iErr } = await sbClient.from('inventario').select('*').order('nombre');
+    if (!iErr && items && items.length > 0) {
+      const mapped = items.map(r => ({
+        id:           r.id,
+        name:         r.nombre,
+        nombre:       r.nombre,
+        category:     r.categoria_id || r.categoria || '',
+        categoria_id: r.categoria_id || '',
+        categoria:    r.categoria || '',
+        cantidad:     r.cantidad || 0,
+        unidad:       r.unidad || 'unidad',
+        precio:       parseFloat(r.precio) || 0,
+        price:        parseFloat(r.precio) || 0,
+        barcode:      r.codigo_barras || '',
+        codigo_barras:r.codigo_barras || '',
+        notes:        r.notas || '',
+        notas:        r.notas || '',
+      }));
+      localStorage.setItem(INV_KEY, JSON.stringify(mapped));
+    }
+    // Cargar categorías
+    const cats = await sbGetConfig('inv_categorias');
+    if (cats && Array.isArray(cats)) {
+      localStorage.setItem(INV_CAT_KEY, JSON.stringify(cats));
+    }
+  } catch(e) { console.warn('loadInvFromSupabase:', e); }
+}
+
 function loadInvData() {
   try { invItems      = JSON.parse(localStorage.getItem(INV_KEY)     || '[]'); } catch(e) { invItems      = []; }
   try { invCategories = JSON.parse(localStorage.getItem(INV_CAT_KEY) || '[]'); } catch(e) { invCategories = []; }
@@ -1856,22 +1888,35 @@ async function saveInvData() {
   const data = { categories: invCategories, items: invItems };
   localStorage.setItem(INV_KEY,     JSON.stringify(invItems));
   localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
-  const ok = await ghPut('inventario.json', data);
-  if (ok) showToast('Inventario guardado ✓');
-  else    showToast('Guardado localmente — verifica GitHub', 'error');
-  // Sincronizar con Supabase
-  if (sbClient && invItems.length > 0) {
-    sbUpsert('inventario', invItems.map(i => ({
-      id:           i.id,
-      nombre:       i.name || i.nombre || '',
-      categoria_id: i.category || i.categoria_id || '',
-      categoria:    i.category || i.categoria || '',
-      cantidad:     i.cantidad || 0,
-      unidad:       i.unidad || 'unidad',
-      precio:       i.precio || i.price || 0,
-      codigo_barras:i.barcode || i.codigo_barras || '',
-      notas:        i.notes || i.notas || ''
-    }))).catch(e => console.warn('saveInvData Supabase:', e));
+
+  if (!sbClient) { showToast('Guardado localmente — sin conexión Supabase', 'error'); return; }
+
+  try {
+    // Guardar categorías en config_sitio
+    await sbSetConfig('inv_categorias', invCategories);
+
+    // Guardar items en tabla inventario — sync completo
+    if (invItems.length > 0) {
+      await sbClient.from('inventario').delete().neq('id', '___none___');
+      const { error } = await sbClient.from('inventario').insert(invItems.map(i => ({
+        id:            i.id,
+        nombre:        i.name || i.nombre || '',
+        categoria_id:  i.category || i.categoria_id || '',
+        categoria:     i.category || i.categoria || '',
+        cantidad:      parseInt(i.cantidad) || 0,
+        unidad:        i.unidad || 'unidad',
+        precio:        parseFloat(i.precio || i.price) || 0,
+        codigo_barras: i.barcode || i.codigo_barras || '',
+        notas:         i.notes || i.notas || ''
+      })));
+      if (error) { console.error('saveInvData:', error); showToast('Error al guardar inventario: ' + error.message, 'error'); return; }
+    } else {
+      await sbClient.from('inventario').delete().neq('id', '___none___');
+    }
+    showToast('Inventario guardado ✓');
+  } catch(e) {
+    console.error('saveInvData:', e);
+    showToast('Guardado localmente — error Supabase', 'error');
   }
 }
 async function syncInvFromGitHub() {
