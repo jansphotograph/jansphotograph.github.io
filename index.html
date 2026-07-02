@@ -543,7 +543,7 @@
       }
 
       // Cargar de Supabase
-      fetch(SB_URL + '/rest/v1/servicios_adicionales?activo=eq.true&order=nombre', {
+      fetch(SB_URL + '/rest/v1/servicios_adicionales?order=nombre', {
         headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
       })
       .then(r => r.ok ? r.json() : null)
