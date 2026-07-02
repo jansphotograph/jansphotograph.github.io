@@ -1655,10 +1655,23 @@ async function saveBlogPosts() {
   else    showToast('Guardado localmente ✓ (configura GitHub para publicar)', 'error');
 }
 async function loadServAdicionalesFromSupabase() {
-  const sbData = await sbGetConfig('serv_adicionales');
-  if (sbData && (sbData.items || sbData.maquillaje)) {
-    localStorage.setItem(SA_KEY, JSON.stringify(sbData));
-  }
+  if (!sbClient) return;
+  try {
+    const { data, error } = await sbClient.from('servicios_adicionales').select('*').order('nombre');
+    if (error || !data) return;
+    if (data.length > 0) {
+      const items = data.map(r => ({
+        id:          r.id,
+        nombre:      r.nombre,
+        precio:      parseFloat(r.precio) || 0,
+        descripcion: r.descripcion || '',
+        usaInsumo:   r.usa_insumo || false,
+        insumos:     r.insumos || [],
+      }));
+      const sbData = { items };
+      localStorage.setItem(SA_KEY, JSON.stringify(sbData));
+    }
+  } catch(e) { console.warn('loadServAdicionalesFromSupabase:', e); }
 }
 
 function loadServAdicionales() {
@@ -1806,10 +1819,29 @@ function moveServAdic(idx, dir) {
 async function saveServAdicionales() {
   loadServAdicionales();
   localStorage.setItem(SA_KEY, JSON.stringify(servData));
-  // Guardar en Supabase (config_sitio con clave 'serv_adicionales')
-  const ok = await sbSetConfig('serv_adicionales', servData);
-  if (ok) showToast('Servicios adicionales guardados ✓');
-  else    showToast('Guardados localmente — sin conexión Supabase', 'error');
+
+  if (!sbClient) { showToast('Guardados localmente — sin conexión Supabase', 'error'); return; }
+
+  try {
+    // Primero eliminar todos los existentes y reinsertar (sync completo)
+    await sbClient.from('servicios_adicionales').delete().neq('id', '___none___');
+    if (servData.items && servData.items.length > 0) {
+      const rows = servData.items.map(s => ({
+        id:          s.id || genServId(),
+        nombre:      s.nombre || '',
+        precio:      parseFloat(s.precio) || 0,
+        descripcion: s.descripcion || '',
+        usa_insumo:  s.usaInsumo || false,
+        insumos:     s.insumos || [],
+      }));
+      const { error } = await sbClient.from('servicios_adicionales').insert(rows);
+      if (error) { console.error('saveServAdicionales:', error); showToast('Error al guardar en Supabase', 'error'); return; }
+    }
+    showToast('Servicios adicionales guardados ✓');
+  } catch(e) {
+    console.error('saveServAdicionales:', e);
+    showToast('Guardados localmente — error Supabase', 'error');
+  }
 }
 async function initServAdicionales() {
   await loadServAdicionalesFromSupabase();
