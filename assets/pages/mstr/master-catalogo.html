@@ -822,27 +822,30 @@ async function sbGetConfig(clave) {
   } catch(e) { return null; }
 }
 
+function getGHPublicBase() {
+  const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+  const owner = gh.publicOwner || localStorage.getItem('jans_public_owner') || 'jansphotograph';
+  const repo  = gh.publicRepo  || localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io';
+  return `https://api.github.com/repos/${owner}/${repo}/contents/data`;
+}
+
 async function ghPutPublic(file, data) {
-  const token = CONFIG.GH_TOKEN || localStorage.getItem('jans_gh_config') && JSON.parse(localStorage.getItem('jans_gh_config')).token;
+  const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+  const token = (gh.token || '').replace(/\s+/g, '');
   if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
-  // First try to get the current SHA
+  const url = `${getGHPublicBase()}/${file}`;
+  // GET sin token para repos públicos
   let sha = null;
   try {
-    const getRes = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-    });
+    const getRes = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
     if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
   } catch(e) {}
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
   const body = { message: `update ${file}`, content };
   if (sha) body.sha = sha;
-  const res = await fetch(`${GH_BASE_PUBLIC()}/${file}`, {
+  const res = await fetch(url, {
     method: 'PUT',
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
   return res.ok;
