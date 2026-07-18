@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Catalogo - Jans Photograph</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-catalogo.css" />
+</head>
+<body>
+<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();</script>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+      <img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+    </a>
+    <span class="master-badge">MASTER</span>
+    <span style="color:var(--gray);font-size:0.8rem">/ Catalogo</span>
+  </div>
+  <nav style="display:flex;gap:4px">
+    <a href="../master.html" class="topbar-link">Inicio</a>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+  </nav>
+</header>
+
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+<div class="subnav">
+  <button class="subnav-btn active" id="btn-planes" onclick="showSection('planes')">Planes Públicos</button>
+  <button class="subnav-btn" id="btn-blog" onclick="showSection('blog')">Blog</button>
+  <button class="subnav-btn" id="btn-serv" onclick="showSection('serv')">Servicios Adicionales</button>
+  <button class="subnav-btn" id="btn-inventario" onclick="showSection('inventario')">Inventario</button>
+  <button class="subnav-btn" id="btn-faqs" onclick="showSection('faqs')">FAQ</button>
+  <button class="subnav-btn" id="btn-equipo" onclick="showSection('equipo')">Equipo</button>
+</div>
+<script>
+function showSection(name) {
+  ['planes','blog','serv','inventario','faqs','equipo'].forEach(function(s) {
+    var sec = document.getElementById('section-'+s);
+    var btn = document.getElementById('btn-'+s);
+    if(sec) sec.style.display = s===name ? 'block' : 'none';
+    if(btn) btn.classList.toggle('active', s===name);
+  });
+  try {
+    if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
+    if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
+    if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
+    if(name==='inventario') { loadInvFromSupabase().then(() => { loadInvData(); initInventario(); }); }
+    if(name==='faqs')       initFaqs();
+    if(name==='equipo')     renderTeamList();
+  } catch(e) { console.error('showSection error:', e); }
+}
+</script>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<div class="modal-overlay" id="servModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 id="servModalTitle">Nuevo servicio</h3>
+      <button class="modal-close" onclick="closeModal('servModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="servModalId" />
+
+      <div class="form-row">
+        <div class="field">
+          <label>Nombre del servicio *</label>
+          <input type="text" id="servModalNombre" placeholder="Ej. Impresión 4x6, Maquillaje..." />
+        </div>
+        <div class="field">
+          <label>Precio ($) *</label>
+          <input type="number" id="servModalPrecio" min="0" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <input type="text" id="servModalDesc" placeholder="Descripción breve (opcional)" />
+      </div>
+
+      <!-- Toggle usa insumos -->
+      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
+        <label class="toggle-switch" style="flex-shrink:0">
+          <input type="checkbox" id="servModalUsaInsumo" onchange="toggleServInsumos(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;color:var(--white)">¿Utiliza insumos?</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Activa para vincular insumos del inventario</div>
+        </div>
+      </div>
+
+      <!-- Selector de insumos (visible solo si usa insumos) -->
+      <div id="servInsumosBlock" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="section-label-sm" style="margin:0">Insumos vinculados</span>
+          <button class="btn btn-sm btn-outline" onclick="addServInsumoRow()">+ Añadir insumo</button>
+        </div>
+        <div id="servInsumosList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">
+          Indica cuántas unidades se consumen por cada venta de este servicio.
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-pink" onclick="saveServModal()">Guardar servicio</button>
+        <button class="btn btn-outline" onclick="closeModal('servModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ESCÁNER DE CÓDIGO DE BARRAS ══ -->
+<div class="modal-overlay" id="blogModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h3 id="blogModalTitle">Nueva publicación</h3>
+      <button class="modal-close" onclick="closeModal('blogModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Título *</label>
+      <input type="text" id="bpTitulo" placeholder="Título de la publicación" />
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Categoría</label>
+        <input type="text" id="bpCategoria" placeholder="Ej: Consejos, Parejas, Bodas..." />
+      </div>
+      <div class="field">
+        <label>Diseño de las otras tarjetas</label>
+        <select id="bpLayout">
+          <option value="grid">Cuadrícula (periódico)</option>
+          <option value="cards">Tarjetas (revista)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Imagen de la publicación</label>
+      <div id="bpDropZone" onclick="document.getElementById('bpFileInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+        <input type="file" id="bpFileInput" accept="image/*" style="display:none" onchange="handleBlogImg(this.files[0])" />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+        <div style="font-size:0.82rem;color:var(--gray-l)" id="bpDropLabel">Haz clic o arrastra la imagen aquí</div>
+      </div>
+      <!-- Preview -->
+      <div id="bpImgPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
+        <img id="bpImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      </div>
+      <!-- Hidden field to store the path after upload -->
+      <input type="hidden" id="bpImagen" />
+      <div id="bpImgStatus" style="display:none;margin-top:6px;font-size:0.78rem"></div>
+    </div>
+    <div class="field">
+      <label>Descripción *</label>
+      <textarea id="bpDescripcion" placeholder="Texto de la publicación..." style="min-height:100px"></textarea>
+    </div>
+    <div class="field">
+      <label>Enlace externo <span style="color:var(--gray);font-weight:400">(opcional — "Leer más")</span></label>
+      <input type="url" id="bpEnlace" placeholder="https://..." />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="saveBlogModal()">Guardar publicación</button>
+      <button class="btn btn-outline" onclick="closeModal('blogModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEW CATEGORY MODAL ── -->
+<div class="modal-overlay" id="invItemModal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h3 id="invItemModalTitle">Añadir insumo</h3>
+      <button class="modal-close" onclick="closeModal('invItemModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invItemId" />
+
+      <!-- Foto -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div id="invItemPhotoPreview" onclick="document.getElementById('invItemPhotoInput').click()"
+          style="width:80px;height:80px;border-radius:12px;background:var(--dark);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0">
+          <svg id="invItemPhotoIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28" style="color:var(--gray)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div>
+          <div style="font-size:0.85rem;color:var(--white);font-weight:600;margin-bottom:4px">Foto del insumo</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Haz clic para cambiar la imagen</div>
+          <input type="file" id="invItemPhotoInput" accept="image/*" style="display:none" onchange="previewInvItemPhoto(this)" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Título *</label>
+          <input type="text" id="invItemTitle" placeholder="Ej. Papel Foto 4x6 Brillante" />
+        </div>
+        <div class="field">
+          <label>Categoría *</label>
+          <select id="invItemCategory"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Stock en unidades</label>
+          <input type="number" id="invItemStockUnidades" min="0" step="1" placeholder="0" />
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="invItemDesc" rows="2" placeholder="Especificaciones, notas, etc." style="resize:vertical"></textarea>
+      </div>
+
+      <div style="margin-top:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="section-label-sm" style="margin:0">Tiendas y precios</span>
+          <button class="btn btn-sm btn-outline" onclick="addInvStore()">+ Añadir tienda</button>
+        </div>
+        <div id="invStoresList" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-pink" onclick="saveInvItem()">Guardar insumo</button>
+        <button class="btn btn-outline" onclick="closeModal('invItemModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEAM MEMBER MODAL ══ -->
+<div class="modal-overlay" id="invCategoryModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 id="invCategoryModalTitle">Nueva categoría</h3>
+      <button class="modal-close" onclick="closeModal('invCategoryModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="invCategoryId" />
+      <div class="field">
+        <label>Nombre de la categoría</label>
+        <input type="text" id="invCategoryName" placeholder="Ej. Papeles, Tintas, Accesorios..." />
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-pink" onclick="saveInvCategory()">Guardar</button>
+        <button class="btn btn-outline" onclick="closeModal('invCategoryModal')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Insumo -->
+<div class="modal-overlay" id="teamMemberModal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3 id="teamModalTitle">Añadir miembro del equipo</h3>
+      <button class="modal-close" onclick="closeModal('teamMemberModal')">×</button>
+    </div>
+    <input type="hidden" id="teamMemberId" />
+
+    <!-- Photo upload -->
+    <div class="field">
+      <label>Foto del miembro</label>
+      <div id="teamPhotoZone" onclick="document.getElementById('teamPhotoInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark);display:flex;align-items:center;gap:16px">
+        <input type="file" id="teamPhotoInput" accept="image/*" style="display:none" onchange="handleTeamPhoto(this.files[0])" />
+        <img id="teamPhotoPreview" src="" style="display:none;width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(233,30,140,0.4);flex-shrink:0" />
+        <div id="teamPhotoIcon" style="width:72px;height:72px;border-radius:50%;background:rgba(233,30,140,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" width="28" height="28"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div style="text-align:left">
+          <div id="teamPhotoLabel" style="font-size:0.82rem;color:var(--gray-l)">Haz clic o arrastra una foto</div>
+          <div style="font-size:0.72rem;color:var(--gray);margin-top:3px">PNG, JPG, WEBP — máx. 3MB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Nombre *</label>
+      <input type="text" id="teamMemberNombre" placeholder="Ej. Jamil Martínez" maxlength="80" />
+    </div>
+    <div class="field">
+      <label>Rol / Cargo *</label>
+      <input type="text" id="teamMemberRol" placeholder="Ej. Fotógrafo Principal" maxlength="80" />
+    </div>
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="teamMemberBio" placeholder="Una breve descripción de este miembro del equipo..."
+        style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);font-size:0.88rem;padding:10px 14px;width:100%;resize:vertical;min-height:90px;outline:none"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <button id="teamDeleteBtn" style="display:none" class="btn"
+        style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5"
+        onclick="deleteTeamMember()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Eliminar
+      </button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn btn-outline" onclick="closeModal('teamMemberModal')">Cancelar</button>
+        <button class="btn btn-pink" onclick="saveTeamMember()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Guardar
+        </button>
+      </div>
+    </div>
+    <div id="teamModalMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.82rem"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="pubPlanModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3 id="pubPlanModalTitle">Nuevo Plan</h3>
+      <button class="modal-close" onclick="closeModal('pubPlanModal')">×</button>
+    </div>
+    <div class="field">
+      <label>Nombre del plan *</label>
+      <input type="text" id="ppNombre" placeholder="Ej. Plan Básico" />
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Precio (USD) *</label>
+        <input type="number" id="ppPrecio" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="field">
+        <label>Categoría *</label>
+        <select id="ppCategoria">
+          <option value="">— Seleccionar —</option>
+              <option value="retratos">Retratos</option>
+              <option value="xv-anos">XV Años</option>
+              <option value="familiares">Familiares</option>
+              <option value="pre-boda">Pre Boda</option>
+              <option value="boda">Boda</option>
+              <option value="eventos">Eventos</option>
+              <option value="graduacion">Graduación</option>
+              <option value="gastronomia">Gastronomía</option>
+              <option value="infantiles">Infantiles</option>
+          <option value="todos">Todos (aparece en todas)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>¿Qué incluye? <span style="color:var(--gray);font-weight:400">(una línea por ítem)</span></label>
+      <textarea id="ppIncluye" placeholder="30 fotos editadas&#10;Entrega digital en 7 días&#10;1 hora de sesión" style="min-height:120px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="savePubPlanModal()">Guardar plan</button>
+      <button class="btn btn-outline" onclick="closeModal('pubPlanModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal-overlay" id="invBarcodeModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3 id="invBarcodeModalTitle">Código de barras</h3>
+      <button class="modal-close" onclick="closeModal('invBarcodeModal')">×</button>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <canvas id="invBarcodeCanvas" style="max-width:100%;border-radius:8px;background:#fff;padding:16px"></canvas>
+      <div id="invBarcodeCode" style="font-family:monospace;font-size:0.8rem;color:var(--gray);margin-top:8px"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-pink" onclick="downloadBarcode()">⬇ Descargar JPG</button>
+        <button class="btn btn-outline" onclick="uploadBarcodeToGitHub()">☁ Subir a GitHub</button>
+      </div>
+      <div id="invBarcodeMsg" style="margin-top:10px;font-size:0.82rem;color:var(--gray)"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newCategoryModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3>Nueva Categoría de Planes</h3>
+      <button class="modal-close" onclick="closeModal('newCategoryModal')">×</button>
+    </div>
+    <p style="font-size:0.85rem;color:var(--gray-l);line-height:1.7;margin-bottom:18px">
+      Esto crea automáticamente la página pública de la categoría (con su nav, galería y FAQs),
+      la carpeta de imágenes en el repo, y la añade al menú de navegación de todas las páginas existentes.
+    </p>
+
+    <div class="field">
+      <label>Nombre de la categoría *</label>
+      <input type="text" id="newCatName" placeholder="Ej. Mascotas, Embarazo, Corporativo..." oninput="previewCatSlug()" />
+    </div>
+    <div class="field">
+      <label>Identificador (slug) <span style="color:var(--gray);font-weight:400">— se genera automático</span></label>
+      <input type="text" id="newCatSlug" placeholder="mascotas" />
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+        Se creará: <code id="newCatPagePreview">assets/pages/planes/[slug].html</code><br/>
+        Carpeta de imágenes: <code id="newCatFolderPreview">assets/images/planes/[slug]/</code>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ícono <span style="color:var(--gray);font-weight:400">(emoji, se usa en Servicios)</span></label>
+      <input type="text" id="newCatIcon" placeholder="📸" maxlength="4" />
+    </div>
+    <div class="field">
+      <label>Subtítulo del hero</label>
+      <input type="text" id="newCatSubtitle" placeholder="Ej. Sesiones especiales para capturar momentos únicos." />
+    </div>
+
+    <div id="newCatStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-pink" id="newCatBtn" onclick="createNewCategory()">Crear Categoría</button>
+      <button class="btn btn-outline" onclick="closeModal('newCategoryModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="barcodeScanner">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="barcodeScannerTitle">Escanear insumo</h3>
+      <button class="modal-close" onclick="closeBarcodeScanner()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;margin-bottom:16px">
+        <video id="barcodeVideo" style="width:100%;height:100%;object-fit:cover" playsinline></video>
+        <!-- Guía visual -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:70%;height:40%;border:2px solid var(--pink);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45)"></div>
+        </div>
+        <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.7)">Apunta la cámara al código de barras</div>
+      </div>
+      <div id="barcodeScanResult" style="display:none;background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:14px"></div>
+      <div id="barcodeScanActions" style="display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn btn-outline btn-sm" onclick="closeBarcodeScanner()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="main-content" style="padding-top:156px">
+<div id="section-planes" style="display:block">
+<div id="view-planesPublicos">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Planes Públicos</h2>
+            <p>Tarjetas que se muestran en las páginas de cada categoría</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="openNewCategoryModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              Nueva Categoría
+            </button>
+            <button class="btn btn-pink" onclick="openNewPlanModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo Plan
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter by category -->
+        <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">
+          <select id="filterPlanCat" onchange="renderPublicPlans()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
+            <option value="">Todas las categorías</option>
+              <option value="retratos">Retratos</option>
+              <option value="xv-anos">XV Años</option>
+              <option value="familiares">Familiares</option>
+              <option value="pre-boda">Pre Boda</option>
+              <option value="boda">Boda</option>
+              <option value="eventos">Eventos</option>
+              <option value="graduacion">Graduación</option>
+              <option value="gastronomia">Gastronomía</option>
+            <option value="infantiles">Infantiles</option>
+            <option value="todos">Todos (aparece en todas)</option>
+          </select>
+        </div>
+
+        <div id="publicPlansGrid" style="display:grid;grid-template-columns:1fr;gap:0;margin-bottom:24px"></div>
+
+        <div class="btn-row">
+          <button class="btn btn-pink" onclick="savePublicPlans()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar todos los planes
+          </button>
+        </div>
+      </div>
+
+      <!-- ── DATOS DE EMPRESA ── -->
+</div>
+
+<div id="section-blog" style="display:none">
+<div id="view-blog">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div><h2>Blog</h2><p>Publicaciones que aparecen en la página de blogs</p></div>
+          <button class="btn btn-pink" onclick="openBlogModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva publicación
+          </button>
+        </div>
+        <div id="blogPostsList" style="display:flex;flex-direction:column;gap:16px"></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-pink" onclick="saveBlogPosts()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Guardar y publicar
+          </button>
+        </div>
+      </div>
+
+      <!-- ── PLANES PÚBLICOS ── -->
+</div>
+
+<div id="section-serv" style="display:none">
+
+<div id="view-servAdicionales">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Servicios Adicionales</h2>
+            <p>Gestiona tus servicios y vincúlalos a insumos del inventario</p>
+          </div>
+          <button class="btn btn-pink" onclick="openServModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo servicio
+          </button>
+        </div>
+
+        <div id="servAdicList" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="servAdicEmpty" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
+          <p style="font-size:0.9rem">No hay servicios. Haz clic en "Nuevo servicio" para empezar.</p>
+        </div>
+
+        <div class="btn-row" style="margin-top:20px">
+          <button class="btn btn-pink" onclick="saveServAdicionales()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar y publicar
+          </button>
+        </div>
+      </div>
+
+      <!-- ── INVENTARIO ── -->
+</div>
+<div id="section-inventario" style="display:none">
+
+<div id="view-inventario">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Inventario de Insumos</h2>
+            <p>Gestiona tus insumos por categoría, con fotos, descripción y precios por tienda</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="openInvCategoryModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              Nueva categoría
+            </button>
+            <button class="btn btn-outline" onclick="openBarcodeScanner()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
+              Escanear
+            </button>
+            <button class="btn btn-pink" onclick="openInvItemModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Añadir insumo
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtro por categoría -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="invCategoryTabs">
+          <button class="btn btn-sm btn-pink" onclick="filterInvCategory('all')" id="invTabAll">Todos</button>
+        </div>
+
+        <!-- Lista de insumos -->
+        <div id="invItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+        <div id="invEmptyState" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin-bottom:12px;opacity:0.4"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <p style="font-size:0.9rem">No hay insumos todavía.<br>Añade una categoría y luego un insumo.</p>
+        </div>
+      </div>
+
+      <!-- ── PANEL ADMINISTRATIVO ── -->
+</div>
+
+<div id="section-faqs" style="display:none">
+<div id="view-faqs">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div><h2>Preguntas Frecuentes</h2><p>Aparecen en todas las páginas de planes, al final del catálogo</p></div>
+          <button class="btn btn-pink" onclick="addFaqItem()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva pregunta
+          </button>
+        </div>
+        <div id="faqsList" style="display:flex;flex-direction:column;gap:12px"></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-pink" onclick="saveFaqs()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar y publicar
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SERVICIOS ADICIONALES ── -->
+</div>
+
+<div id="section-equipo" style="display:none">
+
+<div id="view-team">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2>Equipo</h2>
+            <p>Los miembros que aparecerán en la página "Sobre Nosotros"</p>
+          </div>
+          <button class="btn btn-pink" onclick="openTeamMemberForm()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Añadir miembro
+          </button>
+        </div>
+        <div id="teamMembersList" style="display:none;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
+        <div id="teamEmptyState" style="display:none"></div>
+      </div>
+
+      <!-- ── PREGUNTAS FRECUENTES ── -->
+</div>
+</main>
+<script>
+let toastTimer;
+const SESSION_KEY  = 'jans_master_auth';
+const INV_KEY      = 'jans_inventario_insumos';
+const INV_CAT_KEY  = 'jans_inventario_categorias';
+const BLOG_KEY     = 'jans_blogs';
+const SA_KEY       = 'jans_serv_adicionales';
+const TEAM_KEY     = 'jans_team';
+const FAQ_KEY      = 'jans_faqs';
+
+let faqsData = [];
+
+function moveFaq(idx, dir) {
+  const ni = idx + dir;
+  if (ni < 0 || ni >= faqsData.length) return;
+  [faqsData[idx], faqsData[ni]] = [faqsData[ni], faqsData[idx]];
+  renderFaqsList();
+}
+
+let invActiveFilter = 'all';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) {
+  console.warn('No se pudo inicializar Supabase:', e);
+}
+const PP_KEY = 'jans_planes';
+
+let editingPlanIdx = null;
+let publicPlans = [];
+
+const CAT_ORDER   = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia','infantiles','todos'];
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).maybeSingle();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
+function getGHPublicBase() {
+  const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+  const owner = gh.publicOwner || localStorage.getItem('jans_public_owner') || 'jansphotograph';
+  const repo  = gh.publicRepo  || localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io';
+  return `https://api.github.com/repos/${owner}/${repo}/contents/data`;
+}
+
+async function ghPutPublic(file, data) {
+  const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+  const token = (gh.token || '').replace(/\s+/g, '');
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  const url = `${getGHPublicBase()}/${file}`;
+  // GET sin token para repos públicos
+  let sha = null;
+  try {
+    const getRes = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+  } catch(e) {}
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+async function ghPutPublicFile(path, base64Content, commitMsg) {
+  const token = CONFIG.GH_TOKEN || (JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token);
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
+  let sha = null;
+  try {
+    const r = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    if (r.ok) { const j = await r.json(); sha = j.sha; }
+  } catch(e) {}
+  const body = { message: commitMsg || `upload ${path}`, content: base64Content };
+  if (sha) body.sha = sha;
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+async function ghPutFile(path, contentStr, sha, message) {
+  const body = {
+    message: message || `update ${path}`,
+    content: btoa(unescape(encodeURIComponent(contentStr)))
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(
+    `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+    { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+  );
+  return res.ok;
+}
+async function ghGetFile(path) {
+  const res = await fetch(
+    `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+    { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+  );
+  if (!res.ok) return null;
+  const json = await res.json();
+  return { content: decodeURIComponent(escape(atob(json.content.replace(/\n/g,'')))), sha: json.sha };
+}
+function loadPublicPlans() {
+  try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
+  // jans_planes already has the popular flag embedded — no need to re-apply from jans_popular
+  // jans_popular is only used as a source of truth for the PUBLIC pages
+}
+function renderPublicPlans() {
+  loadPublicPlans();
+  const filter = document.getElementById('filterPlanCat')?.value || '';
+  const container = document.getElementById('publicPlansGrid');
+  if (!container) return;
+
+  const filtered = filter
+    ? publicPlans.filter(p => p.categoria === filter || p.categoria === 'todos')
+    : publicPlans;
+
+  if (!filtered.length) {
+    container.style.display = 'block';
+    container.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin planes en esta categoría.</div>';
+    return;
+  }
+
+  // Group by category
+  container.style.display = 'block';
+  container.innerHTML = '';
+
+  const grouped = {};
+  filtered.forEach(p => {
+    const cat = p.categoria || 'todos';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(p);
+  });
+
+  // Render each group
+  const orderedCats = CAT_ORDER.filter(c => grouped[c]);
+  orderedCats.forEach(cat => {
+    const plans = grouped[cat];
+    // Category header
+    const header = document.createElement('div');
+    header.style.cssText = 'grid-column:1/-1;margin:8px 0 4px;padding-bottom:10px;border-bottom:1px solid var(--border)';
+    header.innerHTML = `<span style="font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--pink-l)">${CAT_LABELS[cat]||cat}</span>
+      <span style="font-size:0.75rem;color:var(--gray);margin-left:10px">${plans.length} plan${plans.length!==1?'es':''}</span>`;
+    container.appendChild(header);
+
+    // Plans grid for this category
+    const catGrid = document.createElement('div');
+    catGrid.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px';
+    catGrid.innerHTML = plans.map(p => {
+      const realIdx = publicPlans.indexOf(p);
+      const isPopular = !!p.popular;
+      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">
+        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">
+          <button onclick="togglePopular(${realIdx})" title="${isPopular ? 'Quitar Más Popular' : 'Marcar como Más Popular'}"
+            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular?'1':'0.3'};filter:${isPopular?'none':'grayscale(1)'};transition:all 0.2s">⭐</button>
+          <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>
+          <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>
+        </div>
+        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${p.nombre}</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${p.precio}</div>
+        <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">
+          ${(p.incluye||[]).map(x=>`<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${x}</li>`).join('')}
+        </ul>
+      </div>`;
+    }).join('');
+    container.appendChild(catGrid);
+  });
+}
+async function savePublicPlans() {
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+  // Also sync popular map
+  const popularMap = {};
+  publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
+  localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+
+  const [ok1, ok2] = await Promise.all([
+    ghPutPublic('planes.json', publicPlans),
+    ghPutPublic('popular.json', popularMap)
+  ]);
+  if (ok1 && ok2) showToast('Planes y populares guardados en GitHub ✓');
+  else            showToast('Guardados localmente ✓ (GitHub pendiente)', 'error');
+}
+function deletePubPlan(idx) {
+  if (!confirm('¿Eliminar este plan?')) return;
+  publicPlans.splice(idx, 1);
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+  renderPublicPlans();
+  showToast('Plan eliminado');
+}
+function openNewPlanModal() {
+  editingPlanIdx = null;
+  document.getElementById('pubPlanModalTitle').textContent = 'Nuevo Plan';
+  document.getElementById('ppNombre').value   = '';
+  document.getElementById('ppPrecio').value   = '';
+  document.getElementById('ppCategoria').value= '';
+  document.getElementById('ppIncluye').value  = '';
+  openModal('pubPlanModal');
+}
+function openNewCategoryModal() {
+  document.getElementById('newCatName').value     = '';
+  document.getElementById('newCatSlug').value     = '';
+  document.getElementById('newCatIcon').value     = '📸';
+  document.getElementById('newCatSubtitle').value = '';
+  document.getElementById('newCatStatus').style.display = 'none';
+  document.getElementById('newCatBtn').disabled = false;
+  document.getElementById('newCatBtn').textContent = 'Crear Categoría';
+  previewCatSlug();
+  openModal('newCategoryModal');
+}
+async function createNewCategory() {
+  const name     = document.getElementById('newCatName').value.trim();
+  const slug     = document.getElementById('newCatSlug').value.trim();
+  const icon     = document.getElementById('newCatIcon').value.trim() || '📸';
+  const subtitle = document.getElementById('newCatSubtitle').value.trim();
+  const btn      = document.getElementById('newCatBtn');
+
+  if (!name || !slug) { setCatStatus('error', 'Completa el nombre de la categoría.'); return; }
+  if (ALL_PLAN_SLUGS.includes(slug)) { setCatStatus('error', 'Ya existe una categoría con ese identificador.'); return; }
+  if (!/^[a-z0-9-]+$/.test(slug)) { setCatStatus('error', 'El identificador solo puede tener letras minúsculas, números y guiones.'); return; }
+
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) { setCatStatus('error', 'Configura tu token de GitHub en Configuración antes de crear categorías.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creando...';
+  setCatStatus('info', 'Iniciando creación de la categoría...');
+
+  try {
+    // 1. Add to CAT_LABELS/CAT_ORDER in-memory so the new page generator + nav updates use it
+    CAT_LABELS[slug] = name;
+    const navSlugs = [...ALL_PLAN_SLUGS, slug];
+
+    // 2. Create the new category page
+    setCatStatus('info', `Creando página assets/pages/planes/${slug}.html...`);
+    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs);
+    const ok1 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, null, `create category page: ${slug}`);
+    if (!ok1) throw new Error('No se pudo crear la página de la categoría.');
+
+    // 3. Create the images folder placeholder (.gitkeep) so the folder exists in the repo
+    setCatStatus('info', `Creando carpeta assets/images/planes/${slug}/...`);
+    await ghPutFile(`assets/images/planes/${slug}/.gitkeep`, '', null, `create images folder: ${slug}`);
+
+    // 4. Update nav in all existing category pages
+    setCatStatus('info', 'Actualizando menú en las páginas existentes...');
+    for (const existingSlug of ALL_PLAN_SLUGS) {
+      try {
+        const file = await ghGetFile(`assets/pages/planes/${existingSlug}.html`);
+        if (!file) continue;
+        const updated = injectNavIntoPageHTML(file.content, navSlugs);
+        if (updated !== file.content) {
+          await ghPutFile(`assets/pages/planes/${existingSlug}.html`, updated, file.sha, `add ${slug} to nav`);
+        }
+      } catch(e) { /* continue with the rest even if one page fails */ }
+    }
+
+    // 5. Update servicios.html CATS array
+    setCatStatus('info', 'Actualizando página de Servicios...');
+    try {
+      const svc = await ghGetFile('assets/pages/servicios.html');
+      if (svc) {
+        const insertion = `        { slug:'${slug}',  name:'${name}',  icon:'${icon}' },\n      ];`;
+        const updatedSvc = svc.content.replace(/(\s*)\];(\s*\n\s*const grid)/, (match, p1, p2) => `${p1}${insertion}${p2}`);
+        if (updatedSvc !== svc.content) {
+          await ghPutFile('assets/pages/servicios.html', updatedSvc, svc.sha, `add ${slug} category card`);
+        }
+      }
+    } catch(e) { /* non-fatal */ }
+
+    // 6. Persist locally too (CAT_LABELS / CAT_ORDER / select options) for this session
+    ALL_PLAN_SLUGS.push(slug);
+    if (!CAT_ORDER.includes(slug)) CAT_ORDER.splice(CAT_ORDER.length-1, 0, slug); // before 'todos'
+    addCategoryToSelects(slug, name);
+
+    // 7. Bump version.json so all pages auto-reload with the new nav
+    await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `Nueva categoría: ${name}` });
+
+    setCatStatus('success', `✓ Categoría "${name}" creada correctamente.`);
+    showToast(`Categoría "${name}" creada ✓`);
+    btn.textContent = '✓ Creada';
+    setTimeout(() => { closeModal('newCategoryModal'); renderPublicPlans(); }, 1200);
+
+  } catch(e) {
+    setCatStatus('error', 'Error: ' + (e.message || 'no se pudo completar la creación.'));
+    btn.disabled = false; btn.textContent = 'Crear Categoría';
+  }
+}
+function renderPlans() {
+  const c = document.getElementById('plansContainer');
+  if(!state.plans.length){c.innerHTML='<div class="card" style="text-align:center;color:var(--gray);padding:32px">Sin planes. Haz clic en "Nuevo Plan".</div>';return;}
+  c.innerHTML = state.plans.map((p,i)=>`
+    <div class="plan-card">
+      <div class="plan-card-header">
+        <input type="text" value="${p.name}" placeholder="Nombre del plan" onchange="state.plans[${i}].name=this.value" style="background:transparent;border:none;color:var(--white);font-weight:700;font-size:0.95rem;font-family:var(--font);outline:none;flex:1" />
+        <button class="btn btn-sm btn-red" onclick="state.plans.splice(${i},1);renderPlans()">✕</button>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Precio ($)</label><input type="number" value="${p.price}" min="0" step="0.01" onchange="state.plans[${i}].price=parseFloat(this.value)||0" /></div>
+        <div class="field"><label>Duración</label><input type="text" value="${p.duration||''}" placeholder="Ej. 2 horas" onchange="state.plans[${i}].duration=this.value" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Personas incluidas</label><input type="number" value="${p.personasIncluidas||1}" min="1" step="1" onchange="state.plans[${i}].personasIncluidas=parseInt(this.value)||1" /></div>
+        <div class="field"><label>Máx. personas extra permitidas</label><input type="number" value="${p.maxPersonasExtra||0}" min="0" step="1" onchange="state.plans[${i}].maxPersonasExtra=parseInt(this.value)||0" /></div>
+        <div class="field"><label>Precio por persona extra ($)</label><input type="number" value="${p.precioPersonaExtra||0}" min="0" step="0.01" onchange="state.plans[${i}].precioPersonaExtra=parseFloat(this.value)||0" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Tipo de ubicación</label>
+          <select onchange="state.plans[${i}].tipoUbicacion=this.value" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);padding:8px 12px;outline:none;width:100%">
+            <option value="estudio" ${(p.tipoUbicacion||'estudio')==='estudio'?'selected':''}>Solo estudio</option>
+            <option value="exterior" ${p.tipoUbicacion==='exterior'?'selected':''}>Solo exterior</option>
+            <option value="ambos" ${p.tipoUbicacion==='ambos'?'selected':''}>Estudio y exterior</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Descripción / Incluye</label><textarea onchange="state.plans[${i}].description=this.value" placeholder="Ej. 30 fotos editadas, entrega digital...">${p.description||''}</textarea></div>
+    </div>`).join('');
+}
+function previewCatSlug() {
+  const name = document.getElementById('newCatName').value;
+  const slug = slugify(name);
+  document.getElementById('newCatSlug').value = slug;
+  document.getElementById('newCatPagePreview').textContent   = `assets/pages/planes/${slug || '[slug]'}.html`;
+  document.getElementById('newCatFolderPreview').textContent = `assets/images/planes/${slug || '[slug]'}/`;
+}
+function setCatStatus(type, msg) {
+  const el = document.getElementById('newCatStatus');
+  const colors = { info:['rgba(147,197,253,0.1)','#93c5fd'], success:['rgba(34,197,94,0.1)','#86efac'], error:['rgba(239,68,68,0.1)','#fca5a5'] };
+  const [bg, fg] = colors[type] || colors.info;
+  el.style.display = 'block';
+  el.style.background = bg;
+  el.style.color = fg;
+  el.textContent = msg;
+}
+function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
+  const navLinks = navSlugs.map(s => {
+    const label = CAT_LABELS[s] || s;
+    const active = s === slug ? ' class="active"' : '';
+    return `        <a href="${s}.html"${active} data-slug="${s}">${label}</a>`;
+  }).join('\n');
+
+  const galleryItems = Array.from({length:16}, (_, i) => {
+    const n = String(i+1).padStart(2,'0');
+    return `      <div class="catalog-item">
+        <img src="../../images/planes/${slug}/foto_${n}.jpeg"
+          alt="${name} foto ${i+1}"
+          onerror="this.parentElement.style.display='none'" />
+      </div>`;
+  }).join('\n');
+
+  const title = `Fotografía de ${name} en Panamá | Jans Photograph`;
+  const desc  = subtitle || `Sesiones de ${name.toLowerCase()} profesionales en Panamá. Ve nuestros planes y precios.`;
+  const url   = `https://jansphotograph.github.io/assets/pages/planes/${slug}.html`;
+  const navSlugsList = navSlugs.map(s => `'${s}'`).join(',');
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- ══ SEO ══ -->
+  <title>${title}</title>
+  <meta name="description" content="${desc}" />
+  <meta name="keywords"    content="${name.toLowerCase()} Panamá, fotografía de ${name.toLowerCase()}, sesión de fotos ${name.toLowerCase()} Panamá" />
+  <meta name="author"      content="Jans Photograph" />
+  <meta name="robots"      content="index, follow" />
+  <link rel="canonical"    href="${url}" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="${title}" />
+  <meta property="og:description" content="${desc}" />
+  <meta property="og:url"         content="${url}" />
+  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta property="og:site_name"   content="Jans Photograph" />
+  <meta property="og:locale"      content="es_PA" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="${title}" />
+  <meta name="twitter:description" content="${desc}" />
+  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+
+  <!-- Geo -->
+  <meta name="geo.region"      content="PA" />
+  <meta name="geo.placename"   content="Panamá" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+ 
+</head>
+<body>
+
+  <header>
+    <div class="header-logo">
+      <a href="../../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
+    </div>
+    <a href="../../../../index.html" class="header-title">Jans <span>Photograph</span></a>
+    <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <div class="nav-overlay" id="navOverlay"></div>
+  <nav class="nav-drawer" id="navDrawer">
+    <ul>
+      <li><a href="../../../../index.html">Home</a></li>
+      <li><a href="../servicios.html">Servicios</a></li>
+      <li><a href="../nosotros.html">Sobre Nosotros</a></li>
+      <li><a href="../blogs.html">Blogs</a></li>
+    </ul>
+    <hr class="nav-lock-divider" />
+    <a href="../auth/auth.html" class="nav-lock-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Master
+    </a>
+  </nav>
+
+  <!-- ── Plans Nav ── -->
+  <div class="planes-nav-wrap">
+    <nav class="planes-nav" id="planesNav" aria-label="Planes fotográficos">
+${navLinks}
+    </nav>
+  </div>
+
+    <!-- ── Page Hero ── -->
+  <section class="page-hero" style="margin-top:0">
+    <span class="section-label">Sesiones fotográficas</span>
+    <h1>${name}</h1>
+    <p>${subtitle || `Sesiones de ${name.toLowerCase()} a tu medida.`}</p>
+  </section>
+
+  <!-- ── Photo Catalog ── -->
+  <section class="catalog-section">
+    <h2>Galería</h2>
+    <div class="catalog-grid">
+${galleryItems}
+    </div>
+  </section>
+
+  <!-- ── Plan Cards ── -->
+  <section class="plan-cards-section">
+    <div class="plan-cards-inner">
+      <h2 class="plan-cards-title">Nuestros Planes</h2>
+      <div class="plan-cards-grid" id="planCardsContainer">
+        <div class="plans-empty">Cargando planes...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Aclaraciones ── -->
+  <section class="aclaraciones-section" id="aclaracionesSection">
+    <h2>Preguntas frecuentes</h2>
+    <div id="faqContainer">
+      <div class="aclaracion-item" style="opacity:0.4"><summary style="cursor:default">Cargando preguntas frecuentes...</summary></div>
+    </div>
+  </section>
+
+    <footer>
+    <div class="footer-inner">
+      <div class="footer-columns">
+        <div class="footer-col">
+          <h3 class="footer-col-title">Síguenos</h3>
+          <div class="social-icons">
+            <a class="social-icon" href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+            <a class="social-icon" href="https://www.tiktok.com/@jansphotograph" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75V.5h-3.86v14.3a2.58 2.58 0 01-2.59 2.2 2.58 2.58 0 01-2.59-2.58 2.58 2.58 0 012.59-2.58c.24 0 .47.04.69.09V8.05a6.49 6.49 0 00-.69-.04 6.44 6.44 0 00-6.44 6.44 6.44 6.44 0 006.44 6.44 6.44 6.44 0 006.44-6.44V8.69a8.65 8.65 0 005.06 1.62V6.46a4.84 4.84 0 01-1.28.23z"/></svg></a>
+            <a class="social-icon" href="https://www.pexels.com/@jansphotograph" target="_blank" rel="noopener" aria-label="Pexels"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.006 6.193A4.797 4.797 0 0 0 9.209 1.4H2.398v21.2h3.196v-6.394h3.615a4.797 4.797 0 0 0 4.797-4.797V6.193zm-3.196 5.215a1.6 1.6 0 0 1-1.601 1.601H5.594V4.596h3.615a1.6 1.6 0 0 1 1.601 1.597v5.215z"/></svg></a>
+            <a class="social-icon" href="https://www.pinterest.com/jansphotograph" target="_blank" rel="noopener" aria-label="Pinterest"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-col-title">Contáctanos</h3>
+          <div class="contact-items">
+            <a class="contact-item" href="https://wa.me/50768622402" target="_blank" rel="noopener"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span>+507 6862-2402</span></a>
+            <a class="contact-item" href="mailto:jansphotograph.contact@gmail.com"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><span>jansphotograph.contact@gmail.com</span></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3 class="footer-col-title">Conócenos</h3>
+          <p class="knowus-text">Somos apasionados de la fotografía. Cada sesión es una historia que merece ser contada.</p>
+          <a class="knowus-link" href="../nosotros.html">¡Conócenos dando clic aquí! →</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Ver Planes FAB ── -->
+  <button class="fab-ver-planes" onclick="document.getElementById('planCardsContainer').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Ver planes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    Ver Planes
+  </button>
+
+  <\/script>
+  <scr'+'ipt>
+    // ── Filter nav — only show categories with plans ──
+    (function() {
+      const OWNER    = 'jansphotograph';
+      const REPO     = 'jansphotograph.github.io';
+      const CURRENT  = '${slug}';
+
+      function filterNav(plans) {
+        const active = new Set(plans.map(p => p.categoria));
+        const todos  = plans.some(p => p.categoria === 'todos');
+        const nav    = document.getElementById('planesNav');
+        if (!nav) return;
+        nav.querySelectorAll('a[data-slug]').forEach(a => {
+          const slug = a.getAttribute('data-slug');
+          const show = active.has(slug) || todos;
+          a.style.display = show ? '' : 'none';
+        });
+        const currentHasPlans = active.has(CURRENT) || todos;
+        if (!currentHasPlans) {
+          const container = document.getElementById('planCardsContainer');
+          if (container) container.innerHTML = '<div class="plans-empty">Esta categoría no tiene planes disponibles aún.</div>';
+        }
+      }
+
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+        if (local.length) filterNav(local);
+      } catch(e) {}
+
+      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/planes.json?t=' + Date.now(), { cache:'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(plans => { if (plans && plans.length) { localStorage.setItem('jans_planes', JSON.stringify(plans)); filterNav(plans); } })
+        .catch(() => {});
+    })();
+  <\/script>
+  <scr'+'ipt>
+    // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
+    document.addEventListener('DOMContentLoaded', async function() {
+      const currentPlan = '${slug}';
+      const container   = document.getElementById('planCardsContainer');
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+
+      function renderPlans(allPlans, popularMap) {
+        popularMap = popularMap || {};
+        const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
+        if (!plans.length) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
+          return;
+        }
+        container.innerHTML = plans.map(p => {
+          const isPopular = !!popularMap[p.nombre] || !!p.popular;
+          return \`
+          <div class="plan-card-pub\${isPopular ? ' plan-popular' : ''}">
+            \${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
+            <div class="pc-name\${isPopular ? ' pc-name-popular' : ''}">\${p.nombre}</div>
+            <div class="pc-price">$\${p.precio}<span> USD</span></div>
+            <ul class="pc-includes">
+              \${(p.incluye || []).map(i => \`<li>\${i}</li>\`).join('')}
+            </ul>
+            <a href="../quotes/reservas.html?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}&personasIncluidas=\${p.personasIncluidas||1}&maxPersonasExtra=\${p.maxPersonasExtra||0}&precioPersonaExtra=\${p.precioPersonaExtra||0}&tipoUbicacion=\${encodeURIComponent(p.tipoUbicacion||'estudio')}"
+              class="btn-agendar">Agendar</a>
+          </div>\`;
+        }).join('');
+      }
+
+      try {
+        const local    = JSON.parse(localStorage.getItem('jans_planes')   || '[]');
+        const localPop = JSON.parse(localStorage.getItem('jans_popular')  || '{}');
+        if (local.length) { renderPlans(local, localPop); }
+      } catch(e) {}
+
+      try {
+        const BASE_URL = \`https://raw.githubusercontent.com/\${OWNER}/\${REPO}/main/data/socialmedia\`;
+        const [planesRes, popularRes] = await Promise.all([
+          fetch(\`\${BASE_URL}/planes.json?t=\${Date.now()}\`,  { cache: 'no-cache' }),
+          fetch(\`\${BASE_URL}/popular.json?t=\${Date.now()}\`, { cache: 'no-cache' })
+        ]);
+        const plans     = planesRes.ok  ? await planesRes.json()  : JSON.parse(localStorage.getItem('jans_planes')  || '[]');
+        const popularMap= popularRes.ok ? await popularRes.json() : JSON.parse(localStorage.getItem('jans_popular') || '{}');
+        if (plans.length) {
+          localStorage.setItem('jans_planes',  JSON.stringify(plans));
+          localStorage.setItem('jans_popular', JSON.stringify(popularMap));
+          renderPlans(plans, popularMap);
+        } else if (!document.querySelector('.plan-card-pub')) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+        }
+      } catch(e) {
+        if (!document.querySelector('.plan-card-pub')) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+        }
+      }
+    });
+  <\/script>
+  <scr'+'ipt>
+    // ── Auto-reload when master publishes an update ──
+    (function() {
+      const OWNER   = 'jansphotograph';
+      const REPO    = 'jansphotograph.github.io';
+      const VER_KEY = 'jans_site_version';
+
+      async function checkVersion() {
+        try {
+          const res = await fetch(
+            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
+            { cache: 'no-cache' }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          const current = localStorage.getItem(VER_KEY);
+          if (current && current !== String(data.v)) {
+            localStorage.setItem(VER_KEY, String(data.v));
+            window.location.reload(true);
+          } else {
+            localStorage.setItem(VER_KEY, String(data.v));
+          }
+        } catch(e) {}
+      }
+
+      checkVersion();
+      setInterval(checkVersion, 60000);
+    })();
+  <\/script>
+  <scr'+'ipt>
+    // ── Hide planes nav on scroll down, show on scroll up ──
+    (function() {
+      var nav      = document.querySelector('.planes-nav-wrap');
+      var lastY    = 0;
+      var ticking  = false;
+
+      function update() {
+        var y = window.scrollY || window.pageYOffset;
+        if (y > lastY && y > 150) {
+          nav.classList.add('nav-hidden');
+        } else {
+          nav.classList.remove('nav-hidden');
+        }
+        lastY   = y;
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+    })();
+  <\/script>
+  <scr'+'ipt>
+    // ── Load FAQs dynamically — same visual format as before ──
+    (function() {
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+
+      function renderFaqs(faqs) {
+        const container = document.getElementById('faqContainer');
+        if (!container) return;
+        if (!faqs || !faqs.length) {
+          container.innerHTML = '';
+          const section = document.getElementById('aclaracionesSection');
+          if (section) section.style.display = 'none';
+          return;
+        }
+        container.innerHTML = faqs.map(f => \`
+          <details class="aclaracion-item">
+            <summary>\${f.pregunta}</summary>
+            <p>\${f.respuesta}</p>
+          </details>\`).join('');
+      }
+
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_faqs') || '[]');
+        if (local.length) renderFaqs(local);
+      } catch(e) {}
+
+      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/faqs.json?t=' + Date.now(), { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(faqs => {
+          if (!faqs) return;
+          localStorage.setItem('jans_faqs', JSON.stringify(faqs));
+          renderFaqs(faqs);
+        })
+        .catch(() => {});
+    })();
+  <\/script>
+<\/body>
+<\/html>`;
+}
+function injectNavIntoPageHTML(html, navSlugs) {
+  const navLinksRegex = /(<nav class="planes-nav" id="planesNav"[^>]*>)([\s\S]*?)(<\/nav>)/;
+  const m = html.match(navLinksRegex);
+  if (!m) return html;
+  // Detect which slug is "active" in this page from existing markup
+  const activeMatch = html.match(/data-slug="([^"]+)"[^>]*class="active"|class="active"[^>]*data-slug="([^"]+)"/);
+  const currentSlug = activeMatch ? (activeMatch[1] || activeMatch[2]) : null;
+
+  const newLinks = navSlugs.map(s => {
+    const label  = CAT_LABELS[s] || s;
+    const active = (s === currentSlug) ? ' class="active"' : '';
+    return `        <a href="${s}.html"${active} data-slug="${s}">${label}</a>`;
+  }).join('\n');
+
+  return html.replace(navLinksRegex, `$1\n${newLinks}\n    $3`);
+}
+function addCategoryToSelects(slug, name) {
+  const categorySelectIds = ['filterPlanCat', 'ppCategoria'];
+  categorySelectIds.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    if (Array.from(sel.options).some(o => o.value === slug)) return; // already has it
+    const opt = document.createElement('option');
+    opt.value = slug;
+    opt.textContent = name;
+    const todosOpt = Array.from(sel.options).find(o => o.value === 'todos');
+    if (todosOpt) sel.insertBefore(opt, todosOpt);
+    else sel.appendChild(opt);
+  });
+}
+function loadBlogPosts() {
+  try { blogPosts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(e) { blogPosts = []; }
+}
+function renderBlogPosts() {
+  loadBlogPosts();
+  const container = document.getElementById('blogPostsList');
+  if (!container) return;
+  if (!blogPosts.length) {
+    container.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin publicaciones. Crea la primera haciendo clic en "Nueva publicación".</div>';
+    return;
+  }
+  container.innerHTML = blogPosts.map((p, i) => `
+    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start">
+      ${(p.imagePath||p.imagen) ? `<img src="${(p.imagePath||'').startsWith('http') ? (p.imagePath||p.imagen) : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/' + (p.imagePath||p.imagen)}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}
+      <div style="flex:1;min-width:0">
+        ${p.categoria ? `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink-l);margin-bottom:4px">${p.categoria}</div>` : ''}
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>
+        <div style="font-size:0.8rem;color:var(--gray-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.descripcion||''}</div>
+        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">${p.fecha||''} · ${p.layout==='cards'?'Tarjetas':'Cuadrícula'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},-1)" title="Subir" ${i===0?'disabled':''}>↑</button>
+        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},1)"  title="Bajar" ${i===blogPosts.length-1?'disabled':''}>↓</button>
+        <button class="btn btn-sm btn-outline" onclick="editBlogPost(${i})">✏</button>
+        <button class="btn btn-sm btn-red"     onclick="deleteBlogPost(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function moveBlogPost(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= blogPosts.length) return;
+  [blogPosts[idx], blogPosts[newIdx]] = [blogPosts[newIdx], blogPosts[idx]];
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  renderBlogPosts();
+}
+function openBlogModal() {
+  editingBlogIdx = null;
+  document.getElementById('blogModalTitle').textContent = 'Nueva publicación';
+  document.getElementById('bpTitulo').value      = '';
+  document.getElementById('bpCategoria').value   = '';
+  document.getElementById('bpLayout').value      = 'grid';
+  document.getElementById('bpDescripcion').value = '';
+  document.getElementById('bpEnlace').value      = '';
+  resetBlogImgField();
+  openModal('blogModal');
+}
+function editBlogPost(idx) {
+  editingBlogIdx = idx;
+  const p = blogPosts[idx];
+  document.getElementById('blogModalTitle').textContent = 'Editar publicación';
+  document.getElementById('bpTitulo').value      = p.titulo      || '';
+  document.getElementById('bpCategoria').value   = p.categoria   || '';
+  document.getElementById('bpLayout').value      = p.layout      || 'grid';
+  document.getElementById('bpDescripcion').value = p.descripcion || '';
+  document.getElementById('bpEnlace').value      = p.enlace      || '';
+  resetBlogImgField();
+  // Show current image if exists
+  if (p.imagePath) {
+    document.getElementById('bpImagen').value = p.imagePath;
+    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${p.imagePath}`;
+    document.getElementById('bpImgPreviewEl').src = rawUrl;
+    document.getElementById('bpImgPreview').style.display = 'block';
+    document.getElementById('bpDropLabel').textContent = '✓ Imagen actual: ' + p.imagePath.split('/').pop();
+    document.getElementById('bpDropZone').style.borderColor = 'rgba(34,197,94,0.4)';
+    setBpImgStatus('success', 'Imagen guardada en el repo. Sube una nueva para reemplazarla.');
+  }
+  openModal('blogModal');
+}
+function handleBlogImg(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    bpFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type, fileName: file.name };
+    document.getElementById('bpImgPreviewEl').src = e.target.result;
+    document.getElementById('bpImgPreview').style.display = 'block';
+    document.getElementById('bpDropLabel').textContent = '✓ ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+    document.getElementById('bpDropZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    setBpImgStatus('info', 'Imagen lista — se subirá al guardar');
+  };
+  reader.readAsDataURL(file);
+}
+async function saveBlogModal() {
+  const titulo = document.getElementById('bpTitulo').value.trim();
+  const desc   = document.getElementById('bpDescripcion').value.trim();
+  if (!titulo || !desc) { showToast('Completa título y descripción', 'error'); return; }
+
+  // Keep existing imagePath by default
+  let imagePath = editingBlogIdx !== null ? (blogPosts[editingBlogIdx].imagePath || '') : '';
+
+  // Upload new image if selected
+  if (bpFileData) {
+    setBpImgStatus('info', 'Subiendo imagen...');
+    const postId  = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now();
+    const imgName = `blog_${postId}.${bpFileData.extension}`;
+    imagePath     = `assets/images/blogs/${imgName}`;
+
+    try {
+      let sha = null;
+      const getRes = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+        { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+      const body = { message: `add blog image ${imgName}`, content: bpFileData.base64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+        { method:'PUT', headers:{ Authorization:`token ${CONFIG.GH_TOKEN}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+      );
+      if (res.ok) { setBpImgStatus('success', '✓ Imagen subida: ' + imagePath); }
+      else        { setBpImgStatus('error', 'Error al subir imagen'); imagePath = ''; }
+    } catch(e) {
+      setBpImgStatus('error', 'Sin conexión — imagen no subida');
+      imagePath = '';
+    }
+  }
+
+  const postId = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : 'b_' + Date.now();
+  const post = {
+    id:          postId,
+    titulo,
+    categoria:   document.getElementById('bpCategoria').value.trim(),
+    layout:      document.getElementById('bpLayout').value,
+    imagePath,   // path in repo e.g. assets/images/blogs/blog_xxx.jpg
+    descripcion: desc,
+    enlace:      document.getElementById('bpEnlace').value.trim(),
+    fecha:       editingBlogIdx !== null ? blogPosts[editingBlogIdx].fecha : new Date().toLocaleDateString('es-PA', {day:'numeric',month:'long',year:'numeric'})
+  };
+
+  if (editingBlogIdx !== null) blogPosts[editingBlogIdx] = post;
+  else                          blogPosts.unshift(post);
+
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  closeModal('blogModal');
+  renderBlogPosts();
+  showToast(editingBlogIdx !== null ? 'Publicación actualizada ✓' : 'Publicación creada ✓');
+}
+function deleteBlogPost(idx) {
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  blogPosts.splice(idx, 1);
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  renderBlogPosts();
+  showToast('Publicación eliminada', 'error');
+}
+async function saveBlogPosts() {
+  localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
+  const ok = await ghPutPublic('blogs.json', blogPosts);
+  if (ok) showToast('Blog publicado en GitHub ✓');
+  else    showToast('Guardado localmente ✓ (configura GitHub para publicar)', 'error');
+}
+async function loadServAdicionalesFromSupabase() {
+  if (!sbClient) return;
+  try {
+    const { data, error } = await sbClient.from('servicios_adicionales').select('*').order('nombre');
+    if (error || !data) return;
+    if (data.length > 0) {
+      const items = data.map(r => ({
+        id:          r.id,
+        nombre:      r.nombre,
+        precio:      parseFloat(r.precio) || 0,
+        descripcion: r.descripcion || '',
+        usaInsumo:   r.usa_insumo || false,
+        insumos:     r.insumos || [],
+      }));
+      const sbData = { items };
+      localStorage.setItem(SA_KEY, JSON.stringify(sbData));
+    }
+  } catch(e) { console.warn('loadServAdicionalesFromSupabase:', e); }
+}
+
+function loadServAdicionales() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    // Migrar formato antiguo (maquillaje/impresiones) al nuevo (lista plana)
+    if (Array.isArray(saved)) {
+      servData = { items: saved };
+    } else if (saved.items) {
+      servData = saved;
+    } else {
+      // Migrar desde formato viejo
+      const migrated = [];
+      (saved.maquillaje||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: false, insumos: [] }));
+      (saved.impresiones||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: true,  insumos: s.insumos||[] }));
+      servData = { items: migrated };
+    }
+  } catch(e) { servData = { items: [] }; }
+}
+function genServId() { return 'srv_' + Date.now() + '_' + Math.random().toString(36).slice(2,5); }
+function renderServAdicList() {
+  const el    = document.getElementById('servAdicList');
+  const empty = document.getElementById('servAdicEmpty');
+  if (!el) return;
+  const items = servData.items || [];
+  if (!items.length) {
+    el.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  el.innerHTML = items.map((s, i) => {
+    const insumoNames = (s.insumos||[]).map(v => {
+      loadInvData();
+      const inv = invItems.find(x=>x.id===v.insumoId);
+      return inv ? `${inv.titulo} (${v.unidades||0} un)` : '?';
+    }).join(', ');
+
+    return `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
+        <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
+        <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===items.length-1?'disabled':''}>▼</button>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre||'Sin nombre'}</div>
+        ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ''}
+        ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ''}
+        ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ''}
+      </div>
+      <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio||0).toFixed(2)}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>
+        <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openServModal(id) {
+  loadServAdicionales();
+  const s = id ? (servData.items||[]).find(x=>x.id===id) : null;
+  document.getElementById('servModalTitle').textContent  = s ? 'Editar servicio' : 'Nuevo servicio';
+  document.getElementById('servModalId').value           = s ? s.id : '';
+  document.getElementById('servModalNombre').value       = s ? s.nombre : '';
+  document.getElementById('servModalPrecio').value       = s ? s.precio : '';
+  document.getElementById('servModalDesc').value         = s ? (s.descripcion||'') : '';
+  const usaInsumo = s ? !!s.usaInsumo : false;
+  document.getElementById('servModalUsaInsumo').checked  = usaInsumo;
+  document.getElementById('servInsumosBlock').style.display = usaInsumo ? '' : 'none';
+  servTempInsumos = s ? JSON.parse(JSON.stringify(s.insumos||[])) : [];
+  renderServInsumosList();
+  openModal('servModal');
+}
+function toggleServInsumos(checked) {
+  document.getElementById('servInsumosBlock').style.display = checked ? '' : 'none';
+}
+function addServInsumoRow() {
+  servTempInsumos.push({ insumoId: '', unidades: 0 });
+  renderServInsumosList();
+}
+function renderServInsumosList() {
+  const el = document.getElementById('servInsumosList');
+  if (!el) return;
+  loadInvData();
+  const options = `<option value="">— Selecciona un insumo —</option>` +
+    invItems.map(x => `<option value="${x.id}">${x.titulo}</option>`).join('');
+
+  if (!servTempInsumos.length) {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--gray)">Sin insumos añadidos.</div>`;
+    return;
+  }
+
+  el.innerHTML = servTempInsumos.map((v, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--dark);border-radius:9px;padding:10px 12px;flex-wrap:wrap">
+      <select oninput="servTempInsumos[${i}].insumoId=this.value"
+        style="flex:2;min-width:140px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.82rem;padding:5px 8px;outline:none">
+        ${options.replace(`value="${v.insumoId}"`, `value="${v.insumoId}" selected`)}
+      </select>
+      <div style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
+        <span style="color:var(--gray)">Un:</span>
+        <input type="number" value="${v.unidades}" min="0" step="1" oninput="servTempInsumos[${i}].unidades=+this.value"
+          style="width:48px;background:var(--black);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem;padding:4px 6px;text-align:center;outline:none" />
+
+      </div>
+      <button onclick="servTempInsumos.splice(${i},1);renderServInsumosList()"
+        style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.9rem;padding:0 4px">✕</button>
+    </div>`).join('');
+}
+function saveServModal() {
+  const nombre = document.getElementById('servModalNombre').value.trim();
+  const precio = parseFloat(document.getElementById('servModalPrecio').value) || 0;
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  loadServAdicionales();
+  const existingId = document.getElementById('servModalId').value;
+  const usaInsumo  = document.getElementById('servModalUsaInsumo').checked;
+  const desc       = document.getElementById('servModalDesc').value.trim();
+  const insumos    = usaInsumo ? servTempInsumos.filter(v=>v.insumoId) : [];
+
+  if (existingId) {
+    const s = servData.items.find(x=>x.id===existingId);
+    if (s) Object.assign(s, { nombre, precio, descripcion: desc, usaInsumo, insumos });
+  } else {
+    servData.items.push({ id: genServId(), nombre, precio, descripcion: desc, usaInsumo, insumos });
+  }
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  closeModal('servModal');
+  renderServAdicList();
+  showToast('Servicio guardado ✓');
+}
+function deleteServAdic(id) {
+  if (!confirm('¿Eliminar este servicio?')) return;
+  loadServAdicionales();
+  servData.items = servData.items.filter(x=>x.id!==id);
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  renderServAdicList();
+  showToast('Servicio eliminado', 'error');
+}
+function moveServAdic(idx, dir) {
+  const arr = servData.items; const ni = idx+dir;
+  if (ni<0||ni>=arr.length) return;
+  [arr[idx],arr[ni]]=[arr[ni],arr[idx]];
+  renderServAdicList();
+}
+async function saveServAdicionales() {
+  loadServAdicionales();
+  localStorage.setItem(SA_KEY, JSON.stringify(servData));
+
+  if (!sbClient) { showToast('Guardados localmente — sin conexión Supabase', 'error'); return; }
+
+  try {
+    // Primero eliminar todos los existentes y reinsertar (sync completo)
+    await sbClient.from('servicios_adicionales').delete().neq('id', '___none___');
+    if (servData.items && servData.items.length > 0) {
+      const rows = servData.items.map(s => ({
+        id:          s.id || genServId(),
+        nombre:      s.nombre || '',
+        precio:      parseFloat(s.precio) || 0,
+        descripcion: s.descripcion || '',
+        usa_insumo:  s.usaInsumo || false,
+        insumos:     s.insumos || [],
+      }));
+      const { error } = await sbClient.from('servicios_adicionales').insert(rows);
+      if (error) { console.error('saveServAdicionales:', error); showToast('Error al guardar en Supabase', 'error'); return; }
+    }
+    showToast('Servicios adicionales guardados ✓');
+  } catch(e) {
+    console.error('saveServAdicionales:', e);
+    showToast('Guardados localmente — error Supabase', 'error');
+  }
+}
+async function initServAdicionales() {
+  await loadServAdicionalesFromSupabase();
+  loadServAdicionales();
+  renderServAdicList();
+}
+async function loadInvFromSupabase() {
+  if (!sbClient) return;
+  try {
+    // Cargar items
+    const { data: items, error: iErr } = await sbClient.from('inventario').select('*').order('nombre');
+    if (!iErr && items && items.length > 0) {
+      const mapped = items.map(r => ({
+        id:            r.id,
+        titulo:        r.nombre || '',
+        categoryId:    r.categoria_id || '',
+        descripcion:   r.notas || '',
+        stockUnidades: r.cantidad || 0,
+        barcodeValue:  r.codigo_barras || '',
+        unidad:        r.unidad || 'unidad',
+        precio:        parseFloat(r.precio) || 0,
+        tiendas:       [],
+        foto:          '',
+        creadoEn:      r.created_at ? new Date(r.created_at).toLocaleDateString('es-PA') : '',
+      }));
+      localStorage.setItem(INV_KEY, JSON.stringify(mapped));
+    }
+    // Cargar categorías
+    const cats = await sbGetConfig('inv_categorias');
+    if (cats && Array.isArray(cats)) {
+      localStorage.setItem(INV_CAT_KEY, JSON.stringify(cats));
+    }
+  } catch(e) { console.warn('loadInvFromSupabase:', e); }
+}
+
+function loadInvData() {
+  try { invItems      = JSON.parse(localStorage.getItem(INV_KEY)     || '[]'); } catch(e) { invItems      = []; }
+  try { invCategories = JSON.parse(localStorage.getItem(INV_CAT_KEY) || '[]'); } catch(e) { invCategories = []; }
+}
+async function saveInvData() {
+  const data = { categories: invCategories, items: invItems };
+  localStorage.setItem(INV_KEY,     JSON.stringify(invItems));
+  localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
+
+  if (!sbClient) { showToast('Guardado localmente — sin conexión Supabase', 'error'); return; }
+
+  try {
+    // Guardar categorías en config_sitio
+    await sbSetConfig('inv_categorias', invCategories);
+
+    // Guardar items en tabla inventario — sync completo
+    if (invItems.length > 0) {
+      await sbClient.from('inventario').delete().neq('id', '___none___');
+      const { error } = await sbClient.from('inventario').insert(invItems.map(i => ({
+        id:            i.id,
+        nombre:        i.titulo || i.name || i.nombre || '',
+        categoria_id:  i.categoryId || i.category || i.categoria_id || '',
+        categoria:     i.categoryId || i.category || i.categoria || '',
+        cantidad:      parseInt(i.stockUnidades || i.cantidad) || 0,
+        unidad:        i.unidad || 'unidad',
+        precio:        parseFloat(i.precio || i.price) || 0,
+        codigo_barras: i.barcodeValue || i.barcode || i.codigo_barras || '',
+        notas:         i.descripcion || i.notes || i.notas || ''
+      })));
+      if (error) { console.error('saveInvData:', error); showToast('Error al guardar inventario: ' + error.message, 'error'); return; }
+    } else {
+      await sbClient.from('inventario').delete().neq('id', '___none___');
+    }
+    showToast('Inventario guardado ✓');
+  } catch(e) {
+    console.error('saveInvData:', e);
+    showToast('Guardado localmente — error Supabase', 'error');
+  }
+}
+async function syncInvFromGitHub() {
+  if (!sbClient) { showToast('Supabase no disponible', 'error'); return; }
+  try {
+    // Cargar items
+    const { data: items, error: e1 } = await sbClient.from('inventario').select('*').order('nombre');
+    if (!e1 && items) {
+      invItems = items.map(i => ({
+        id:          i.id,
+        name:        i.nombre,
+        category:    i.categoria_id || i.categoria || '',
+        cantidad:    i.cantidad || 0,
+        unidad:      i.unidad || 'unidad',
+        precio:      i.precio || 0,
+        barcode:     i.codigo_barras || '',
+        notes:       i.notas || ''
+      }));
+      localStorage.setItem(INV_KEY, JSON.stringify(invItems));
+    }
+    // Cargar categorías
+    const { data: cats, error: e2 } = await sbClient.from('inventario').select('categoria_id, categoria').neq('categoria_id', '');
+    if (!e2 && cats) {
+      const unique = {};
+      cats.forEach(c => { if (c.categoria_id) unique[c.categoria_id] = { id: c.categoria_id, name: c.categoria || c.categoria_id }; });
+      invCategories = Object.values(unique);
+      localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
+    }
+    renderInvCategoryTabs();
+    showToast('Inventario sincronizado ✓');
+  } catch(e) { 
+    console.error('syncInv error:', e);
+    showToast('Error al sincronizar inventario', 'error'); 
+  }
+}
+function genInvId() { return 'inv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6); }
+async function initInventario() {
+  loadInvData();
+  renderInvCategoryTabs();
+  renderInvItems();
+  // Sincronizar desde GitHub en background
+  try {
+    await syncInvFromGitHub();
+    renderInvCategoryTabs();
+    renderInvItems();
+  } catch(e) { console.warn('Inventario: sync GitHub falló', e); }
+}
+function openInvCategoryModal(id) {
+  loadInvData();
+  const cat = id ? invCategories.find(c=>c.id===id) : null;
+  document.getElementById('invCategoryModalTitle').textContent = cat ? 'Editar categoría' : 'Nueva categoría';
+  document.getElementById('invCategoryId').value   = cat ? cat.id : '';
+  document.getElementById('invCategoryName').value = cat ? cat.nombre : '';
+  openModal('invCategoryModal');
+}
+async function saveInvCategory() {
+  const nombre = document.getElementById('invCategoryName').value.trim();
+  if (!nombre) { showToast('Escribe un nombre para la categoría', 'error'); return; }
+  loadInvData();
+  const existingId = document.getElementById('invCategoryId').value;
+  if (existingId) {
+    const cat = invCategories.find(c=>c.id===existingId);
+    if (cat) cat.nombre = nombre;
+  } else {
+    invCategories.push({ id: genInvId(), nombre });
+  }
+  saveInvData();
+  closeModal('invCategoryModal');
+  renderInvCategoryTabs();
+  renderInvItems();
+  showToast('Categoría guardada ✓');
+}
+async function deleteInvCategory(id) {
+  if (!confirm('¿Eliminar esta categoría? Los insumos de esta categoría quedarán sin categoría.')) return;
+  loadInvData();
+  invCategories = invCategories.filter(c=>c.id!==id);
+  invItems.forEach(it => { if (it.categoryId === id) it.categoryId = ''; });
+  saveInvData();
+  if (invActiveFilter === id) invActiveFilter = 'all';
+  renderInvCategoryTabs();
+  renderInvItems();
+  showToast('Categoría eliminada', 'error');
+}
+function renderInvCategoryTabs() {
+  loadInvData();
+  const container = document.getElementById('invCategoryTabs');
+  if (!container) return;
+  container.innerHTML = `
+    <button class="btn btn-sm ${invActiveFilter==='all'?'btn-pink':'btn-outline'}" onclick="filterInvCategory('all')">Todos</button>
+    ${invCategories.map(c => `
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="btn btn-sm ${invActiveFilter===c.id?'btn-pink':'btn-outline'}" onclick="filterInvCategory('${c.id}')">${c.nombre}</button>
+        <button onclick="openInvCategoryModal('${c.id}')" title="Editar" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.8rem;padding:2px 4px">✏</button>
+        <button onclick="deleteInvCategory('${c.id}')" title="Eliminar" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.8rem;padding:2px 4px">✕</button>
+      </div>`).join('')}`;
+}
+function filterInvCategory(id) {
+  invActiveFilter = id;
+  renderInvCategoryTabs();
+  renderInvItems();
+}
+function openInvItemModal(id) {
+  loadInvData();
+  const item = id ? invItems.find(x=>x.id===id) : null;
+  document.getElementById('invItemModalTitle').textContent = item ? 'Editar insumo' : 'Añadir insumo';
+  document.getElementById('invItemId').value    = item ? item.id : '';
+  document.getElementById('invItemTitle').value          = item ? item.titulo : '';
+  document.getElementById('invItemDesc').value           = item ? (item.descripcion||'') : '';
+  document.getElementById('invItemStockUnidades').value  = item ? (item.stockUnidades||0) : 0;
+
+
+  // Foto
+  invTempPhoto = null;
+  const preview = document.getElementById('invItemPhotoPreview');
+  const icon    = document.getElementById('invItemPhotoIcon');
+  if (item?.foto) {
+    preview.style.backgroundImage = `url(${item.foto})`;
+    preview.style.backgroundSize  = 'cover';
+    preview.style.backgroundPosition = 'center';
+    if (icon) icon.style.display = 'none';
+  } else {
+    preview.style.backgroundImage = '';
+    if (icon) icon.style.display = '';
+  }
+
+  // Categoría select
+  const catSel = document.getElementById('invItemCategory');
+  catSel.innerHTML = `<option value="">— Sin categoría —</option>` +
+    invCategories.map(c => `<option value="${c.id}" ${item?.categoryId===c.id?'selected':''}>${c.nombre}</option>`).join('');
+
+  // Tiendas
+  invTempStores = item ? JSON.parse(JSON.stringify(item.tiendas||[])) : [];
+  renderInvStoresList();
+
+  openModal('invItemModal');
+}
+function previewInvItemPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    invTempPhoto = e.target.result;
+    const preview = document.getElementById('invItemPhotoPreview');
+    const icon    = document.getElementById('invItemPhotoIcon');
+    preview.style.backgroundImage = `url(${invTempPhoto})`;
+    preview.style.backgroundSize  = 'cover';
+    preview.style.backgroundPosition = 'center';
+    if (icon) icon.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function addInvStore() {
+  invTempStores.push({ nombre: '', precio: '' });
+  renderInvStoresList();
+}
+function renderInvStoresList() {
+  const el = document.getElementById('invStoresList');
+  if (!el) return;
+  if (!invTempStores.length) {
+    el.innerHTML = `<div style="font-size:0.82rem;color:var(--gray);padding:6px 0">Sin tiendas añadidas aún.</div>`;
+    return;
+  }
+  el.innerHTML = invTempStores.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:var(--dark);border-radius:9px;padding:10px 12px">
+      <input type="text" value="${s.nombre}" placeholder="Nombre de tienda"
+        oninput="invTempStores[${i}].nombre=this.value"
+        style="flex:2;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.85rem;padding:3px 0;outline:none" />
+      <span style="color:var(--gray);font-size:0.85rem">$</span>
+      <input type="number" value="${s.precio}" placeholder="0.00" min="0" step="0.01"
+        oninput="invTempStores[${i}].precio=this.value"
+        style="width:80px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--white);font-family:var(--font);font-size:0.85rem;font-weight:700;padding:3px 0;outline:none;text-align:right" />
+      <button onclick="invTempStores.splice(${i},1);renderInvStoresList()"
+        style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1rem;padding:0;flex-shrink:0">✕</button>
+    </div>`).join('');
+}
+async function saveInvItem() {
+  const titulo = document.getElementById('invItemTitle').value.trim();
+  if (!titulo) { showToast('El título es obligatorio', 'error'); return; }
+  loadInvData();
+  const existingId  = document.getElementById('invItemId').value;
+  const categoryId  = document.getElementById('invItemCategory').value;
+  const descripcion = document.getElementById('invItemDesc').value.trim();
+  const tiendas     = invTempStores.filter(s => s.nombre.trim());
+
+  const stockUnidades = parseInt(document.getElementById('invItemStockUnidades').value) || 0;
+
+  if (existingId) {
+    const item = invItems.find(x=>x.id===existingId);
+    if (item) {
+      item.titulo        = titulo;
+      item.categoryId    = categoryId;
+      item.descripcion   = descripcion;
+      item.tiendas       = tiendas;
+      item.stockUnidades = stockUnidades;
+      if (invTempPhoto) item.foto = invTempPhoto;
+    }
+  } else {
+    const newId = genInvId();
+    invItems.push({
+      id: newId, titulo, categoryId, descripcion, tiendas,
+      foto: invTempPhoto || '',
+      stockUnidades,
+      barcodeValue: genBarcodeValue(titulo),
+      creadoEn: new Date().toLocaleDateString('es-PA'),
+    });
+  }
+  saveInvData();
+  closeModal('invItemModal');
+  renderInvItems();
+  showToast('Insumo guardado ✓');
+}
+async function deleteInvItem(id) {
+  if (!confirm('¿Eliminar este insumo?')) return;
+  loadInvData();
+  invItems = invItems.filter(x=>x.id!==id);
+  saveInvData();
+  renderInvItems();
+  showToast('Insumo eliminado', 'error');
+}
+function renderInvItems() {
+  loadInvData();
+  const grid  = document.getElementById('invItemsGrid');
+  const empty = document.getElementById('invEmptyState');
+  if (!grid) return;
+
+  const filtered = invActiveFilter === 'all'
+    ? invItems
+    : invItems.filter(x => x.categoryId === invActiveFilter);
+
+  if (!filtered.length) {
+    grid.style.display  = 'none';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  grid.style.display  = '';
+  if (empty) empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(item => {
+    const cat      = invCategories.find(c=>c.id===item.categoryId);
+    const bestPrice = item.tiendas?.length
+      ? Math.min(...item.tiendas.map(s=>parseFloat(s.precio)||Infinity))
+      : null;
+
+    return `
+    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden">
+      <!-- Foto -->
+      <div style="height:150px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
+        ${item.foto
+          ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}
+        ${cat ? `<span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.6);color:var(--white);font-size:0.7rem;font-weight:600;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)">${cat.nombre}</span>` : ''}
+      </div>
+      <!-- Info -->
+      <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-weight:700;font-size:0.95rem;color:var(--white)">${item.titulo}</div>
+        ${item.descripcion ? `<div style="font-size:0.8rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ''}
+        <!-- Stock -->
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <div style="font-size:0.8rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades||0)>0?'#86efac':'#fca5a5'}">${item.stockUnidades||0}</strong></div>
+        </div>
+        ${item.tiendas?.length ? `
+          <div style="margin-top:6px">
+            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:5px">Tiendas</div>
+            ${item.tiendas.map(s => `
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;padding:4px 0;border-top:1px solid rgba(255,255,255,0.04)">
+                <span style="color:var(--gray-l)">${s.nombre}</span>
+                <span style="font-weight:700;color:${parseFloat(s.precio)===bestPrice?'#86efac':'var(--white)'}">$${parseFloat(s.precio||0).toFixed(2)}</span>
+              </div>`).join('')}
+          </div>` : `<div style="font-size:0.8rem;color:var(--gray);margin-top:4px">Sin tiendas registradas</div>`}
+      </div>
+      <!-- Acciones -->
+      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>
+        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>
+        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function logInventoryMovement() {}
+function viewInvBarcode(id) {
+  loadInvData();
+  const item = invItems.find(x=>x.id===id);
+  if (!item) return;
+  currentBarcodeItem = item;
+
+  // Si no tiene código aún, generarlo y guardarlo
+  if (!item.barcodeValue) {
+    item.barcodeValue = genBarcodeValue(item.titulo);
+    saveInvData();
+  }
+
+  document.getElementById('invBarcodeModalTitle').textContent = item.titulo;
+  document.getElementById('invBarcodeCode').textContent       = item.barcodeValue;
+  document.getElementById('invBarcodeMsg').textContent        = '';
+
+  // Renderizar en el canvas del modal
+  const canvas = document.getElementById('invBarcodeCanvas');
+  JsBarcode(canvas, item.barcodeValue, {
+    format: 'CODE128',
+    width: 2.5, height: 90,
+    displayValue: true,
+    text: `${item.titulo}  |  ${item.barcodeValue}`,
+    font: 'monospace', fontSize: 12,
+    textMargin: 8, margin: 20,
+    background: '#ffffff', lineColor: '#000000',
+  });
+
+  openModal('invBarcodeModal');
+}
+function genBarcodeValue(titulo) {
+  const slug = titulo.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+  return `JANS-${slug}-${rand}`;
+}
+function initFaqs() {
+  loadFaqs();
+  renderFaqsList();
+}
+function loadFaqs() {
+  try { faqsData = JSON.parse(localStorage.getItem(FAQ_KEY) || '[]'); } catch(e) { faqsData = []; }
+}
+function renderFaqsList() {
+  const el = document.getElementById('faqsList');
+  if (!el) return;
+  if (!faqsData.length) {
+    el.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin preguntas. Haz clic en "Nueva pregunta".</div>';
+    return;
+  }
+  el.innerHTML = faqsData.map((f, i) => `
+    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:16px 18px">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;margin-top:6px">
+          <button onclick="moveFaq(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===0?'disabled':''}>▲</button>
+          <button onclick="moveFaq(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i===faqsData.length-1?'disabled':''}>▼</button>
+        </div>
+        <input type="text" value="${f.pregunta.replace(/"/g,'&quot;')}" placeholder="Pregunta"
+          oninput="faqsData[${i}].pregunta=this.value"
+          style="flex:1;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--white);font-family:var(--font);font-size:0.9rem;font-weight:600;outline:none" />
+        <button onclick="deleteFaq(${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:1.1rem;padding:4px;flex-shrink:0">✕</button>
+      </div>
+      <textarea placeholder="Respuesta" oninput="faqsData[${i}].respuesta=this.value"
+        style="width:100%;min-height:70px;background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--gray-l);font-family:var(--font);font-size:0.85rem;line-height:1.6;outline:none;resize:vertical">${f.respuesta}</textarea>
+    </div>`).join('');
+}
+async function saveFaqs() {
+  // Filter out empty entries
+  const valid = faqsData.filter(f => f.pregunta.trim() && f.respuesta.trim());
+  if (valid.length !== faqsData.length) {
+    showToast('Se omitieron preguntas vacías', 'error');
+  }
+  faqsData = valid;
+  localStorage.setItem(FAQ_KEY, JSON.stringify(faqsData));
+  const ok = await sbUpsert('faqs', faqsData.map((f,i)=>({id:f.id||'faq_'+i,pregunta:f.pregunta||f.question,respuesta:f.respuesta||f.answer,orden:i})));
+  renderFaqsList();
+  if (ok) showToast('Preguntas frecuentes publicadas ✓');
+  else    showToast('Guardadas localmente — verifica GitHub para publicar', 'error');
+}
+function deleteFaq(idx) {
+  if (!confirm('¿Eliminar esta pregunta?')) return;
+  faqsData.splice(idx, 1);
+  renderFaqsList();
+}
+function renderTeamList() {
+  loadTeamLocal();
+  const list  = document.getElementById('teamMembersList');
+  const empty = document.getElementById('teamEmptyState');
+
+  if (!list) return;
+  empty.style.display = 'none';
+  list.style.display = 'grid';
+
+  const AVATAR_COLORS = [
+    { bg:'rgba(212,83,126,0.15)', color:'#f472b6' },
+    { bg:'rgba(59,130,246,0.15)', color:'#60a5fa' },
+    { bg:'rgba(34,197,94,0.15)',  color:'#4ade80' },
+    { bg:'rgba(245,158,11,0.15)', color:'#fbbf24' },
+    { bg:'rgba(168,85,247,0.15)', color:'#c084fc' },
+    { bg:'rgba(20,184,166,0.15)', color:'#2dd4bf' },
+  ];
+
+  function getInitials(nombre) {
+    return (nombre || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+  }
+
+  const cards = teamMembers.map((m, i) => {
+    const av = AVATAR_COLORS[i % AVATAR_COLORS.length];
+    const rawUrl = (m.fotoPath && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github')
+      ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`
+      : null;
+
+    const avatarHtml = rawUrl
+      ? `<img src="${rawUrl}" alt="${m.nombre}"
+           style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+         <div style="display:none;width:72px;height:72px;border-radius:50%;background:${av.bg};align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>`
+      : `<div style="width:72px;height:72px;border-radius:50%;background:${av.bg};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>`;
+
+    return `
+    <div style="background:var(--dark);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+
+      <!-- Avatar strip -->
+      <div style="background:rgba(255,255,255,0.03);padding:20px 20px 16px;display:flex;align-items:center;gap:14px;position:relative;border-bottom:1px solid var(--border)">
+        <div style="flex-shrink:0;position:relative">${avatarHtml}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.rol || '—'}</div>
+          <div style="font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombre || '—'}</div>
+        </div>
+        <!-- Pink accent line bottom -->
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),#f472b6)"></div>
+      </div>
+
+      <!-- Bio -->
+      <div style="padding:14px 20px 16px;min-height:60px">
+        ${m.bio
+          ? `<p style="font-size:0.82rem;color:var(--gray-l);line-height:1.65;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${m.bio}</p>`
+          : `<p style="font-size:0.8rem;color:var(--gray);font-style:italic;margin:0">Sin descripción</p>`}
+      </div>
+
+      <!-- Actions -->
+      <div style="padding:0 14px 14px;display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline" onclick="openTeamMemberForm('${m.id}')" style="flex:1;justify-content:center;gap:6px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Editar
+        </button>
+        <button class="btn btn-sm" onclick="confirmDeleteTeamMember('${m.id}','${(m.nombre||'').replace(/'/g,"\\'")}')"
+          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5;padding:0 12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // "Add member" card at the end
+  const addCard = `
+    <div onclick="openTeamMemberForm()" style="background:transparent;border:1px dashed rgba(255,255,255,0.12);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:140px;cursor:pointer;transition:border-color 0.2s"
+      onmouseover="this.style.borderColor='rgba(233,30,140,0.4)'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
+      <div style="width:44px;height:44px;border-radius:50%;background:rgba(233,30,140,0.1);display:flex;align-items:center;justify-content:center">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.6)" stroke-width="2" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <span style="font-size:0.82rem;color:var(--gray-l);font-weight:600">Añadir miembro</span>
+    </div>`;
+
+  list.innerHTML = cards + addCard;
+}
+async function initTeam() {
+  loadTeamLocal();
+  // If local is empty, try loading from GitHub
+  if (!teamMembers.length) {
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/data/socialmedia/${TEAM_FILE}?t=${Date.now()}`;
+      const res = await fetch(rawUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          teamMembers = data;
+          localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+        }
+      }
+    } catch(e) {}
+  }
+  renderTeamList();
+}
+async function saveTeamMember() {
+  const msgEl  = document.getElementById('teamModalMsg');
+  const nombre = document.getElementById('teamMemberNombre').value.trim();
+  const rol    = document.getElementById('teamMemberRol').value.trim();
+  const bio    = document.getElementById('teamMemberBio').value.trim();
+  const editId = document.getElementById('teamMemberId').value;
+
+  if (!nombre) { showToast('El nombre es obligatorio', 'error'); return; }
+  if (!rol)    { showToast('El rol es obligatorio', 'error'); return; }
+
+  msgEl.style.display = 'none';
+  const id = editId || genTeamId();
+  loadTeamLocal();
+
+  // Find old extension if editing (to delete old photo if format changed)
+  const existing = teamMembers.find(x => x.id === id);
+  const oldExt   = existing?.fotoExt || null;
+
+  let fotoPath = existing?.fotoPath || null;
+  let fotoExt  = existing?.fotoExt  || null;
+
+  // Upload new photo if one was picked
+  if (teamPhotoFileData) {
+    showToast('Subiendo foto…');
+    const result = await uploadTeamPhoto(id, teamPhotoFileData.base64, teamPhotoFileData.extension, oldExt);
+    if (result) {
+      fotoPath = result.path;
+      fotoExt  = result.ext;
+    } else {
+      msgEl.style.display = 'block';
+      msgEl.style.background = 'rgba(239,68,68,0.1)';
+      msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
+      msgEl.style.color = '#fca5a5';
+      msgEl.textContent = 'No se pudo subir la foto. Los datos de texto se guardarán igual.';
+    }
+  }
+
+  const member = { id, nombre, rol, bio, fotoPath, fotoExt, updatedAt: new Date().toISOString() };
+
+  if (editId) {
+    const idx = teamMembers.findIndex(x => x.id === editId);
+    if (idx >= 0) teamMembers[idx] = member; else teamMembers.push(member);
+  } else {
+    teamMembers.push(member);
+  }
+
+  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+  // Publish team.json to the public repo so nosotros.html can read it
+  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  closeModal('teamMemberModal');
+  renderTeamList();
+  showToast(ok ? 'Miembro guardado y publicado ✓' : 'Guardado localmente — verifica GitHub', ok ? 'success' : 'error');
+}
+async function deleteTeamMember() {
+  const id = document.getElementById('teamMemberId').value;
+  if (!id) return;
+  loadTeamLocal();
+  const m = teamMembers.find(x => x.id === id);
+  if (!m) return;
+  if (!confirm(`¿Eliminar a "${m.nombre}" del equipo?`)) return;
+
+  // Delete photo from GitHub
+  if (m.fotoPath && m.fotoExt) await deleteTeamPhoto(id, m.fotoExt);
+
+  teamMembers = teamMembers.filter(x => x.id !== id);
+  localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  closeModal('teamMemberModal');
+  renderTeamList();
+  showToast(ok ? 'Miembro eliminado ✓' : 'Eliminado localmente — verifica GitHub', ok ? 'success' : 'error');
+}
+
+function showSection(name) {
+  ['planes','blog','serv','inventario','faqs','equipo'].forEach(s => {
+    const sec = document.getElementById('section-'+s);
+    const btn = document.getElementById('btn-'+s);
+    if(sec) sec.style.display = s===name ? 'block' : 'none';
+    if(btn) btn.classList.toggle('active', s===name);
+  });
+  if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
+  if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
+  if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
+  if(name==='inventario') { loadInvData(); initInventario(); }
+  if(name==='faqs')       initFaqs();
+  if(name==='equipo')     renderTeamList();
+}
+
+
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace('../master.html'); }
+
+function openBarcodeScanner() {
+  document.getElementById('barcodeScanResult').style.display  = 'none';
+  document.getElementById('barcodeScanActions').style.display = 'none';
+  openModal('barcodeScanner');
+  startZxingScanner('barcodeVideo', code => {
+    stopZxingScanner();
+    handleBarcodeScan(code);
+  });
+}
+
+function savePubPlanModal() {
+  const nombre    = document.getElementById('ppNombre').value.trim();
+  const precio    = parseFloat(document.getElementById('ppPrecio').value) || 0;
+  const categoria = document.getElementById('ppCategoria').value;
+  const incluye   = document.getElementById('ppIncluye').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!nombre || !categoria) { showToast('Completa nombre y categoría', 'error'); return; }
+  const plan = { nombre, precio, categoria, incluye, popular: editingPlanIdx !== null ? (publicPlans[editingPlanIdx].popular || false) : false };
+  if (editingPlanIdx !== null) {
+    publicPlans[editingPlanIdx] = plan;
+  } else {
+    publicPlans.push(plan);
+  }
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+  closeModal('pubPlanModal');
+  renderPublicPlans();
+  showToast(editingPlanIdx !== null ? 'Plan actualizado ✓' : 'Plan creado ✓');
+}
+
+function addFaqItem() {
+  faqsData.push({ pregunta: '', respuesta: '' });
+  renderFaqsList();
+}
+
+function openTeamMemberForm(id) {
+  loadTeamLocal();
+  teamPhotoFileData = null;
+  const isEdit = !!id;
+  document.getElementById('teamModalTitle').textContent = isEdit ? 'Editar miembro' : 'Añadir miembro del equipo';
+  document.getElementById('teamMemberId').value = id || '';
+  document.getElementById('teamMemberNombre').value = '';
+  document.getElementById('teamMemberRol').value = '';
+  document.getElementById('teamMemberBio').value = '';
+  document.getElementById('teamPhotoPreview').style.display = 'none';
+  document.getElementById('teamPhotoIcon').style.display = 'flex';
+  document.getElementById('teamPhotoLabel').textContent = 'Haz clic o arrastra una foto';
+  document.getElementById('teamPhotoZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById('teamDeleteBtn').style.display = isEdit ? 'flex' : 'none';
+  document.getElementById('teamModalMsg').style.display = 'none';
+
+  if (isEdit) {
+    const m = teamMembers.find(x => x.id === id);
+    if (m) {
+      document.getElementById('teamMemberNombre').value = m.nombre || '';
+      document.getElementById('teamMemberRol').value    = m.rol    || '';
+      document.getElementById('teamMemberBio').value    = m.bio    || '';
+      if (m.fotoPath) {
+        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          document.getElementById('teamPhotoPreview').src = rawUrl;
+          document.getElementById('teamPhotoPreview').style.display = 'block';
+          document.getElementById('teamPhotoIcon').style.display = 'none';
+          document.getElementById('teamPhotoLabel').textContent = '✓ Foto actual — haz clic para reemplazar';
+          document.getElementById('teamPhotoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+        };
+        testImg.src = rawUrl;
+      }
+    }
+  }
+  openModal('teamMemberModal');
+}
+
+
+function downloadBarcode() {
+  if (!currentBarcodeItem) return;
+  const canvas = document.getElementById('invBarcodeCanvas');
+  const link   = document.createElement('a');
+  const slug   = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  link.download = `${slug}.jpg`;
+  link.href     = canvas.toDataURL('image/jpeg', 0.95);
+  link.click();
+}
+
+async function uploadBarcodeToGitHub() {
+  if (!currentBarcodeItem) return;
+  const msg  = document.getElementById('invBarcodeMsg');
+  msg.textContent = 'Subiendo a GitHub...';
+  const canvas  = document.getElementById('invBarcodeCanvas');
+  const base64  = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+  const slug    = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  const path    = `assets/images/barcodes/${slug}.jpg`;
+  const ok      = await ghPutPublicFile(path, base64, `barcode: ${currentBarcodeItem.titulo}`);
+  if (ok) {
+    // Guardar la URL del barcode en el insumo
+    loadInvData();
+    const item = invItems.find(x=>x.id===currentBarcodeItem.id);
+    if (item) {
+      item.barcodePath = path;
+      item.barcodeUrl  = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+      await saveInvData();
+    }
+    msg.textContent = `✓ Subido: ${path}`;
+    msg.style.color = '#86efac';
+  } else {
+    msg.textContent = 'Error al subir. Verifica el token de GitHub.';
+    msg.style.color = '#fca5a5';
+  }
+}
+
+
+function closeBarcodeScanner() { closeModal('barcodeScanner'); }
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+function loadTeamLocal() {
+  try { teamMembers = JSON.parse(localStorage.getItem(TEAM_KEY) || '[]'); } catch(e) { teamMembers = []; }
+}
+
+function slugify(str) {
+  return str.toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+async function startZxingScanner(videoId, onDetect) {
+  if (zxingReader) { try { zxingReader.reset(); } catch(e){} }
+  zxingReader = new ZXing.BrowserMultiFormatReader();
+  try {
+    const devices = await zxingReader.listVideoInputDevices();
+    const camId   = devices.length > 1 ? devices[1].deviceId : devices[0]?.deviceId;
+    zxingReader.decodeFromVideoDevice(camId, videoId, (result, err) => {
+      if (result) onDetect(result.getText());
+    });
+  } catch(e) {
+    showToast('No se pudo acceder a la cámara: ' + e.message, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadPublicPlans(); renderPublicPlans(); });
+</script>
+</body>
+</html>

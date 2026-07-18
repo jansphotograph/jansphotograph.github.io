@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Configuracion - Jans Photograph</title>
+<link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-config.css" />
+</head>
+<body>
+<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();</script>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+      <img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+    </a>
+    <span class="master-badge">MASTER</span>
+    <span style="color:var(--gray);font-size:0.8rem">/ Configuracion</span>
+  </div>
+  <nav style="display:flex;gap:4px">
+    <a href="../master.html" class="topbar-link">Inicio</a>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+  </nav>
+</header>
+
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+<div class="subnav">
+  <button class="subnav-btn active" id="btn-company" onclick="showSection('company')">Empresa</button>
+  <button class="subnav-btn" id="btn-social" onclick="showSection('social')">Redes Sociales</button>
+  <button class="subnav-btn" id="btn-config" onclick="showSection('config')">Facturas</button>
+  <button class="subnav-btn" id="btn-recargar" onclick="showSection('recargar')">Acceso Remoto</button>
+</div>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<main class="main-content" style="padding-top:156px">
+<div id="section-company" style="display:block">
+<div id="view-company">
+        <div class="page-header">
+          <h2>Datos de Empresa</h2>
+          <p>Esta información aparece en tus cotizaciones y facturas en PDF</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+            Información General
+          </div>
+
+          <div class="field">
+            <label>Logo de la empresa</label>
+            <div id="compLogoZone" onclick="document.getElementById('compLogoInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:24px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="compLogoInput" accept="image/*" style="display:none" onchange="handleCompanyLogo(this.files[0])" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="compLogoLabel">Haz clic o arrastra tu logo aquí</div>
+            </div>
+            <div id="compLogoPreview" style="display:none;margin-top:10px;max-width:160px">
+              <img id="compLogoImg" src="" style="width:100%;border-radius:8px;display:block;background:#fff;padding:8px" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field"><label>Nombre de la empresa</label><input type="text" id="compNombre" placeholder="Jans Photograph" /></div>
+            <div class="field"><label>Teléfono</label><input type="text" id="compTelefono" placeholder="+507 6862-2402" /></div>
+          </div>
+
+          <div class="form-row">
+            <div class="field"><label>RUC</label><input type="text" id="compRuc" placeholder="8-888-8888" /></div>
+            <div class="field"><label>DV</label><input type="text" id="compDv" placeholder="00" /></div>
+          </div>
+
+          <div class="field"><label>Correo electrónico</label><input type="email" id="compEmail" placeholder="contacto@empresa.com" /></div>
+
+          <hr class="section-divider" />
+          <span class="section-label-sm">Ubicación</span>
+          <div class="form-row">
+            <div class="field"><label>Corregimiento</label><input type="text" id="compCorregimiento" placeholder="Ej. San Miguelito" /></div>
+            <div class="field"><label>Distrito</label><input type="text" id="compDistrito" placeholder="Ej. Panamá" /></div>
+          </div>
+          <div class="field"><label>Calle</label><input type="text" id="compCalle" placeholder="Ej. Calle 12, Edificio Plaza, Local 3" /></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveCompanyData()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+          </div>
+          <div id="compMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+
+        <!-- ── Yappy QR (uploaded directly to GitHub, same flow as the company logo) ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
+            Código QR de Yappy
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:16px">
+            Esta imagen se muestra en la página pública de abono (infoselect). Se sube directamente a tu repositorio de GitHub.
+          </p>
+
+          <div class="field">
+            <div id="qrZone" onclick="document.getElementById('qrInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:24px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="qrInput" accept="image/*" style="display:none" onchange="handleYappyQrFile(this.files[0])" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="qrZoneLabel">Haz clic o arrastra el QR de Yappy aquí</div>
+            </div>
+            <div id="qrPreviewWrap" style="display:none;margin-top:14px;max-width:160px">
+              <img id="qrPreviewImg" src="" style="width:100%;border-radius:8px;display:block;background:#fff;padding:8px" />
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveYappyQr()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar QR
+            </button>
+          </div>
+          <div id="qrMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+      </div>
+
+      <!-- ── EQUIPO ── -->
+</div>
+<div id="section-social" style="display:none">
+<div id="view-social">
+        <div class="page-header">
+          <h2>Redes Sociales</h2>
+          <p>Actualiza el enlace del último post de Instagram y el video de YouTube</p>
+        </div>
+
+        <!-- Instagram -->
+        <div class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:#e91e8c"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            Último Post de Instagram
+          </div>
+
+          <!-- URL del post -->
+          <div class="field">
+            <label>URL del post <span style="color:var(--gray);font-weight:400">(redirige al hacer clic en la imagen)</span></label>
+            <input type="url" id="igPostUrl" placeholder="https://www.instagram.com/p/XXXXXXXX/" />
+          </div>
+
+          <!-- Subir imagen -->
+          <div class="field">
+            <label>Imagen del post</label>
+            <div id="igDropZone" onclick="document.getElementById('igFileInput').click()"
+              style="border:2px dashed rgba(233,30,140,0.35);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="igFileInput" accept="image/*" style="display:none" onchange="handleIgFile(this.files[0])" />
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 10px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+              <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px">Haz clic o arrastra la imagen aquí</div>
+              <div style="font-size:0.75rem;color:var(--gray)">Se guardará con su formato original (jpg, jpeg, png o webp) como <code>lastpost.[ext]</code></div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div id="igPreviewWrap" style="display:none;margin:16px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:320px">
+            <img id="igPreviewImg" src="" alt="Preview"
+              style="width:100%;aspect-ratio:1;object-fit:cover;display:block" />
+          </div>
+
+          <!-- Status -->
+          <div id="igUploadStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:0.84rem;margin-bottom:12px"></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" id="igSaveBtn" onclick="saveIgLink()" disabled style="opacity:0.5;cursor:not-allowed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Subir y publicar
+            </button>
+            <a id="igOpenLink" href="#" target="_blank" rel="noopener" class="btn btn-outline" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Ver post
+            </a>
+          </div>
+        </div>
+
+                <!-- YouTube -->
+        <div class="card">
+          <div class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff0000"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+            Último Video de YouTube
+          </div>
+
+          <div class="field">
+            <label>URL o ID del video</label>
+            <input type="text" id="ytVideoUrl" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX  ó  XXXXXXXXXXX" oninput="previewYT()" />
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+              Pega la URL completa o el ID del video (11 caracteres después de <code>v=</code>).
+            </div>
+          </div>
+
+          <div class="field">
+            <label>URL de tu canal</label>
+            <input type="text" id="ytChannelUrl" placeholder="https://www.youtube.com/@jansphotograph" />
+          </div>
+
+          <!-- Custom Thumbnail Upload -->
+          <div class="field">
+            <label>Thumbnail personalizado <span style="color:var(--gray);font-weight:400">(opcional — se guarda en /assets/images/social/youtube/)</span></label>
+            <div id="ytThumbZone" onclick="document.getElementById('ytThumbInput').click()"
+              style="border:2px dashed rgba(255,0,0,0.3);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+              <input type="file" id="ytThumbInput" accept="image/*" style="display:none" onchange="handleYtThumb(this.files[0])" />
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff0000" opacity="0.5" style="margin:0 auto 8px;display:block"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75 12.08 12.08 0 00-8.64 0A4.83 4.83 0 013.41 6.69 51.15 51.15 0 002 12a51.15 51.15 0 001.41 5.31 4.83 4.83 0 003.77 2.75 12.08 12.08 0 008.64 0 4.83 4.83 0 003.77-2.75A51.15 51.15 0 0022 12a51.15 51.15 0 00-2.41-5.31zM10 15V9l5 3-5 3z"/></svg>
+              <div style="font-size:0.82rem;color:var(--gray-l)" id="ytThumbLabel">Haz clic o arrastra el thumbnail aquí</div>
+            </div>
+            <div id="ytThumbPreview" style="display:none;margin-top:10px;border-radius:10px;overflow:hidden;max-width:360px">
+              <img id="ytThumbImg" src="" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" />
+            </div>
+            <div id="ytThumbStatus" style="display:none;margin-top:6px;font-size:0.78rem"></div>
+          </div>
+
+          <!-- Video Preview (desktop) -->
+          <div id="ytPreviewWrap" style="margin:18px 0;border-radius:12px;overflow:hidden;border:1px solid var(--border);max-width:560px;display:none">
+            <iframe id="ytPreviewFrame" width="100%" style="aspect-ratio:16/9;border:none;display:block" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div id="ytNoPreview" style="margin:18px 0;background:var(--dark);border-radius:12px;padding:24px;text-align:center;color:var(--gray);font-size:0.85rem;max-width:560px">
+            La previsualización aparecerá aquí cuando ingreses la URL.
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveYtLink()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar y publicar
+            </button>
+            <a id="ytOpenLink" href="#" target="_blank" rel="noopener" class="btn btn-outline" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Ver en YouTube
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RESERVAS ── -->
+</div>
+<div id="section-config" style="display:none">
+<div id="view-config">
+        <div class="page-header">
+          <h2>Configuración GitHub</h2>
+          <p>Ingresa tu token para publicar cambios en el repositorio público del sitio</p>
+        </div>
+
+        <!-- ── GitHub Credentials Card ── -->
+        
+
+        <!-- ── Connection Status ── -->
+        
+
+
+        <!-- ── Setup móvil notice ── -->
+        
+
+        <!-- ── Credentials ── -->
+        
+
+        <!-- ── Sync ── -->
+        
+
+        <!-- ── Guide ── -->
+        
+
+        <!-- ── Invoice number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Control de Numeración de Facturas
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima factura que generes. El sistema siempre toma el número siguiente al que establezcas aquí como "último emitido". Útil para continuar una numeración de facturas preexistente.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de factura emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">Factura #</span>
+                <input type="number" id="facturaCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima factura será: <span id="facturaNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">Factura #001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveFacturaCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="facturaCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
+
+        <!-- ── Cotizaciones number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Control de Numeración de Cotizaciones
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima cotización manual (COT-). Útil para continuar una numeración preexistente.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de cotización emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">COT-</span>
+                <input type="number" id="cotCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" oninput="updateCotNextPreview()" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima cotización será: <span id="cotNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">COT-001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveCotCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="cotCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
+
+        <!-- ── Reservas Web number control ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Control de Numeración de Reservas Web
+          </div>
+          <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:20px;line-height:1.65">
+            Ajusta desde qué número continuará la próxima reserva recibida desde la página web (WEB-). Útil si migraste reservas previas a este sistema.
+          </p>
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div class="field" style="margin-bottom:0">
+              <label>Último número de reserva web emitido</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--pink-l);font-weight:700">WEB-</span>
+                <input type="number" id="webCounterInput" min="0" step="1"
+                  style="width:110px;background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:monospace;font-size:1.1rem;font-weight:700;padding:9px 12px;text-align:center;outline:none"
+                  placeholder="0" oninput="updateWebNextPreview()" />
+              </div>
+              <div style="font-size:0.76rem;color:var(--gray);margin-top:6px">
+                La próxima reserva web será: <span id="webNextPreview" style="color:var(--white);font-family:monospace;font-weight:700">WEB-001</span>
+              </div>
+            </div>
+            <button class="btn btn-pink" onclick="saveWebCounter()" style="margin-bottom:22px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Guardar
+            </button>
+          </div>
+          <div id="webCounterMsg" style="display:none;margin-top:8px;padding:8px 14px;border-radius:8px;font-size:0.82rem"></div>
+        </div>
+      </div>
+
+      <!-- ── SOCIAL LINKS ── -->
+</div>
+<div id="section-recargar" style="display:none">
+
+<div class="card" style="border-color:rgba(233,30,140,0.25)">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            Acceso desde otros dispositivos
+          </div>
+          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:16px">
+            Para acceder al Master desde tu celular u otro dispositivo, solo necesitas ingresar tu <strong style="color:var(--white)">usuario y contraseña</strong> en la pantalla de login. El token de GitHub se puede configurar después desde <strong style="color:var(--white)">Configuración → Token de GitHub</strong>.
+          </p>
+          <div style="background:var(--dark);border-radius:10px;padding:16px 18px;font-size:0.82rem;color:var(--gray-l)">
+            <div style="margin-bottom:8px;color:var(--white);font-weight:600">Sin token configurado puedes:</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span>✓ Ver y gestionar reservas</span>
+              <span>✓ Crear y editar planes, blogs</span>
+              <span>✓ Ver el calendario</span>
+              <span style="color:rgba(255,255,255,0.35)">✗ Publicar cambios al sitio web (requiere token)</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:0.78rem;color:var(--gray);background:rgba(233,30,140,0.07);border:1px solid rgba(233,30,140,0.15);border-radius:8px;padding:10px 14px">
+            🔐 El token se guarda <strong style="color:var(--pink-l)">cifrado con AES-256</strong> — nunca en texto plano. Es seguro guardarlo en el dispositivo.
+          </div>
+        </div>
+
+
+
+<div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            Credenciales de GitHub
+          </div>
+          <div class="field">
+            <label>Token Personal de GitHub *
+              <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener"
+                style="color:var(--pink-l);font-size:0.72rem;font-weight:400;margin-left:8px;text-decoration:underline">
+                ¿Cómo obtenerlo? →
+              </a>
+            </label>
+            <div style="position:relative">
+              <input type="password" id="cfgToken" placeholder="ghp_XXXXXXXXXXXXXXXXXXXX" style="padding-right:44px" />
+              <button onclick="toggleTokenVisibility()" title="Mostrar/ocultar token"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-l);cursor:pointer;padding:4px;display:flex;align-items:center">
+                <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+              El token necesita permiso <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">repo</code> para poder publicar cambios en el repositorio público del sitio. Se guarda localmente en tu navegador.
+            </div>
+          </div>
+          <hr class="section-divider" />
+          <span class="section-label-sm">Repositorio Público (GitHub Pages)</span>
+          <p style="font-size:0.78rem;color:var(--gray);margin-bottom:14px;line-height:1.6">
+            El repositorio donde está alojada tu página web. Los enlaces de Instagram y YouTube se guardan aquí en <code>data/socialmedia/</code> y son leídos por todos los visitantes sin necesidad de token.
+          </p>
+          <div class="form-row">
+            <div class="field">
+              <label>Usuario GitHub (página)</label>
+              <input type="text" id="cfgPublicOwner" placeholder="tu-usuario-github" oninput="savePublicRepoConfig()" />
+            </div>
+            <div class="field">
+              <label>Repositorio de la página</label>
+              <input type="text" id="cfgPublicRepo" placeholder="jans-photograph" oninput="savePublicRepoConfig()" />
+            </div>
+          </div>
+          <div style="background:var(--dark);border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:0.82rem;color:var(--gray-l);display:flex;align-items:center;gap:10px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray)" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            Repo público: <code id="ghPublicRepoDisplay" style="color:var(--white)">—</code>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveGithubConfig()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Guardar configuración
+            </button>
+            <button class="btn btn-outline" onclick="testGithubConnection()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Probar conexión
+            </button>
+            <button class="btn btn-red" onclick="clearGithubConfig()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+<div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Estado de Conexión
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div id="ghPublicStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
+              <span style="font-size:0.78rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em">Repo público</span>
+              <span id="ghPublicStatusText" style="font-size:0.88rem;color:var(--gray-l)">Sin verificar</span>
+            </div>
+          </div>
+          <div style="font-size:0.8rem;color:var(--gray);line-height:2;background:var(--dark);border-radius:10px;padding:14px 18px">
+            Archivos sincronizados:<br/>
+            <code style="color:var(--gray-l)">data/planes.json</code> ·
+            <code style="color:var(--gray-l)">data/popular.json</code> ·
+            <code style="color:var(--gray-l)">data/blogs.json</code> ·
+            <code style="color:var(--gray-l)">data/team.json</code> ·
+            <code style="color:var(--gray-l)">data/version.json</code>
+          </div>
+        </div>
+
+<div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Cambiar Usuario / Contraseña
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Usuario actual</label><input type="text" id="credCurrentUser" placeholder="Usuario actual" /></div>
+            <div class="field"><label>Contraseña actual</label><input type="password" id="credCurrentPass" placeholder="Contraseña actual" /></div>
+          </div>
+          <hr class="section-divider" />
+          <div class="form-row">
+            <div class="field"><label>Nuevo usuario</label><input type="text" id="credNewUser" placeholder="Nuevo usuario" /></div>
+            <div class="field"><label>Nueva contraseña</label><input type="password" id="credNewPass" placeholder="Nueva contraseña" /></div>
+          </div>
+          <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="credConfirmPass" placeholder="Repite la nueva contraseña" /></div>
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="changeCredentials()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              Actualizar credenciales
+            </button>
+          </div>
+          <div id="credMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+        </div>
+
+<div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Sincronización de Datos
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-outline" onclick="exportAllJSON()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar JSON local
+            </button>
+          </div>
+        </div>
+
+<div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Guía de configuración
+          </div>
+          <div style="font-size:0.85rem;color:var(--gray-l);line-height:2">
+            <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+              <span>Ve a <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--pink-l)">GitHub → Settings → Developer settings → Personal access tokens</a> y genera un token con permiso <code>repo</code></span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
+              <span>Ingresa el token y los datos del repositorio público arriba, guarda y prueba la conexión</span>
+            </div>
+          </div>
+        </div>
+
+
+<div id="view-recargar">
+        <div class="page-header">
+          <h2>Recargar Sitio</h2>
+          <p>Fuerza a todas las páginas públicas a cargar los últimos cambios</p>
+        </div>
+
+        <!-- ── Auto-sync polling ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Sincronización Automática
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
+            Cuando está activa, el Master revisa cada <strong style="color:var(--white)">60 segundos</strong> si hay
+            reservas nuevas (desde Supabase) o cambios publicados, y actualiza la pantalla automáticamente sin que tengas que recargar.
+          </p>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <button class="btn" id="pollToggleBtn" onclick="togglePolling()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="pollToggleLabel">Activar sincronización automática</span>
+            </button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="pollStatusDot" style="width:10px;height:10px;border-radius:50%;background:var(--gray);flex-shrink:0"></div>
+              <span id="pollStatusText" style="font-size:0.85rem;color:var(--gray-l)">Desactivada</span>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:12px" id="pollLastCheck"></div>
+        </div>
+
+        <!-- ── Calendar cleanup ── -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Limpiar Días y Horas Bloqueadas Sin Reservas
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:20px">
+            Si un día o un horario quedó marcado como "ocupado" pero ya no tiene ninguna reserva confirmada
+            respaldándolo (por ejemplo, si confirmaste y luego regresaste una reserva a pendiente), usa este
+            botón para liberarlo. También te muestra qué horas siguen bloqueadas en este momento.
+          </p>
+          <button class="btn btn-outline" onclick="cleanupStaleCalendarDays()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+            Revisar y liberar días y horas sin reservas
+          </button>
+          <div id="cleanupResult" style="font-size:0.82rem;color:var(--gray-l);margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Publicar actualización
+          </div>
+          <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:24px">
+            Al presionar <strong style="color:var(--white)">Recargar Sitio</strong>, se sube un nuevo <code>version.json</code> al repositorio público.
+            Todas las páginas del sitio detectan el cambio automáticamente y se recargan para mostrar
+            los últimos planes, precios, disponibilidad e imágenes.
+          </p>
+
+          <div class="field">
+            <label>Nota de actualización <span style="color:var(--gray);font-weight:400">(opcional)</span></label>
+            <input type="text" id="reloadNote" placeholder="Ej: Nuevos planes de boda, precios actualizados..." />
+          </div>
+
+          <!-- What gets updated -->
+          <div style="background:var(--dark);border-radius:12px;padding:20px;margin-bottom:24px">
+            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:14px">Al recargar se actualizará:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkPlanes" checked style="accent-color:var(--pink)"> Planes fotográficos
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkPopular" checked style="accent-color:var(--pink)"> Populares marcados
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkCalendar" checked style="accent-color:var(--pink)"> Calendario disponibilidad
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkInstagram" checked style="accent-color:var(--pink)"> Post de Instagram
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkYoutube" checked style="accent-color:var(--pink)"> Video de YouTube
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkNotas" checked style="accent-color:var(--pink)"> Notas de reservas
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkServAdic" checked style="accent-color:var(--pink)"> Servicios adicionales
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkFaqs" checked style="accent-color:var(--pink)"> Preguntas frecuentes
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--gray-l);cursor:pointer">
+                <input type="checkbox" id="chkCompany" checked style="accent-color:var(--pink)"> Datos de empresa
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-pink" id="btnReload" onclick="publishReload()" style="font-size:1rem;padding:14px 32px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Recargar Sitio
+          </button>
+
+          <!-- Status log -->
+          <div id="reloadLog" style="margin-top:24px;display:none">
+            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-l);margin-bottom:10px">Progreso</div>
+            <div id="reloadLogItems" style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem"></div>
+          </div>
+        </div>
+
+        <!-- Last reload info -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Última actualización publicada
+          </div>
+          <div id="lastReloadInfo" style="font-size:0.88rem;color:var(--gray-l)">Cargando...</div>
+        </div>
+      </div>
+</div>
+</main>
+<script>
+
+let toastTimer;
+const COMPANY_KEY     = 'jans_company';
+const SOCIAL_KEY      = 'jans_social';
+const GH_KEY          = 'jans_gh_config';
+const LS_KEY          = 'jans_gh_config';
+const LS_KEY_ENC      = 'jans_gh_token_enc';
+const REMOTE_PASS_KEY = 'jans_remote_pass';
+let yappyQrFileData   = null;
+let companyLogoFileData = null;
+
+const SESSION_KEY='jans_master_auth';
+const LS_SALT='jans-ph-2025-secure';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+const CONFIG_PUBLIC = {
+  get OWNER() { return localStorage.getItem('jans_public_owner') || 'jansphotograph'; },
+  get REPO()  { return localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io'; },
+};
+const GH_BASE_PUBLIC = () =>
+  `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data`;
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.');
+  }
+} catch(e) {
+  console.warn('No se pudo inicializar Supabase:', e);
+}
+const POLL_KEY = 'jans_polling_enabled';
+const POLL_INTERVAL_MS = 60000;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+function statusClassQ(s) {
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+}
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+async function ghPutPublic(file, data) {
+  const token = (getGHConfig().token || '').replace(/\s+/g, '');
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+
+  const url = `${GH_BASE_PUBLIC()}/${file}`;
+
+  // GET sin token — repo público no lo necesita, evita 401 por token inválido
+  let sha = null;
+  try {
+    const getRes = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+  } catch(e) {}
+
+  // PUT con Bearer token — escritura sí requiere autenticación
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  const body = { message: `update ${file}`, content };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  const resJson = await res.json().catch(()=>({}));
+  if (!res.ok) {
+    console.error('ghPutPublic FAILED:', res.status, JSON.stringify(resJson));
+    showToast('Error GitHub ' + res.status + ': ' + (resJson.message || 'sin detalle'), 'error');
+  }
+  return res.ok;
+}
+
+async function ghPutPublicFile(path, base64Content, commitMsg) {
+  const token = ((JSON.parse(localStorage.getItem('jans_gh_config')||'{}').token) || '').replace(/\s+/g,'');
+  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
+  let sha = null;
+  try {
+    const r = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github.v3+json' } });
+    if (r.ok) { const j = await r.json(); sha = j.sha; }
+  } catch(e) {}
+  const body = { message: commitMsg || `upload ${path}`, content: base64Content };
+  if (sha) body.sha = sha;
+  const res = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+let igFileData=null;let igFocusX=50;let igFocusY=50;
+function setIgFocus(e){const area=document.getElementById('igFocusArea');if(!area)return;const rect=area.getBoundingClientRect();igFocusX=Math.max(0,Math.min(100,Math.round(((e.clientX-rect.left)/rect.width)*100)));igFocusY=Math.max(0,Math.min(100,Math.round(((e.clientY-rect.top)/rect.height)*100)));const dot=document.getElementById('igFocusDot');if(dot){dot.style.left=igFocusX+'%';dot.style.top=igFocusY+'%';dot.style.display='';}const img=document.getElementById('igPreviewImg');if(img)img.style.objectPosition=igFocusX+'% '+igFocusY+'%';const lbl=document.getElementById('igFocusLabel');if(lbl)lbl.textContent='Centro: '+igFocusX+'% '+igFocusY+'%';const btn=document.getElementById('igFocusUpdateBtn');if(btn)btn.style.display='';}
+async function saveIgFocusOnly(){try{const existing=JSON.parse(localStorage.getItem('jans_ig_preview')||'{}');if(!existing.igImagePath){showToast('No hay imagen publicada','error');return;}const updated=Object.assign({},existing,{igFocusX,igFocusY,updatedAt:new Date().toISOString()});const ok=await ghPutPublic('instagram.json',updated);if(ok){localStorage.setItem('jans_ig_preview',JSON.stringify(updated));showToast('Focus actualizado');const btn=document.getElementById('igFocusUpdateBtn');if(btn)btn.style.display='none';}else showToast('Error','error');}catch(e){showToast('Error','error');}}
+function sanitizeCred(str) {
+  return String(str).replace(/[<>"'`;&\\]/g, '').trim().slice(0, 128);
+}
+// ── Manejo de logo de empresa ──
+function handleCompanyLogo(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Full = e.target.result; // data:image/png;base64,XXXX
+    const base64 = base64Full.split(',')[1];
+    companyLogoFileData = { base64, extension: ext };
+    // Preview
+    document.getElementById('compLogoImg').src = base64Full;
+    document.getElementById('compLogoPreview').style.display = 'block';
+    document.getElementById('compLogoLabel').textContent = '✓ Logo listo: ' + file.name;
+    document.getElementById('compLogoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Supabase config helpers ──
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    if (error) { console.warn('sbSetConfig error:', error.message); return false; }
+    return true;
+  } catch(e) { console.warn('sbSetConfig:', e); return false; }
+}
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).maybeSingle();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
+// Fix 2: loadCompanyUI — carga desde Supabase primero, fallback localStorage
+async function loadCompanyUI() {
+  let data = {};
+  // 1. Intentar Supabase
+  const sbData = await sbGetConfig('company');
+  if (sbData && typeof sbData === 'object') {
+    data = sbData;
+    // Sincronizar localStorage con lo que viene de Supabase
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(data));
+  } else {
+    // 2. Fallback localStorage
+    try { data = JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}'); } catch(e) {}
+  }
+  document.getElementById('compNombre').value        = data.nombre        || 'Jans Photograph';
+  document.getElementById('compTelefono').value      = data.telefono      || '';
+  document.getElementById('compRuc').value           = data.ruc           || '';
+  document.getElementById('compDv').value            = data.dv            || '';
+  document.getElementById('compEmail').value         = data.email         || '';
+  document.getElementById('compCorregimiento').value = data.corregimiento || '';
+  document.getElementById('compDistrito').value      = data.distrito      || '';
+  document.getElementById('compCalle').value         = data.calle         || '';
+
+  if (data.logoPath) {
+    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${data.logoPath}`;
+    document.getElementById('compLogoImg').src = rawUrl;
+    document.getElementById('compLogoPreview').style.display = 'block';
+    document.getElementById('compLogoLabel').textContent = '✓ Logo actual: ' + data.logoPath.split('/').pop();
+    document.getElementById('compLogoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+  }
+
+  loadYappyQrPreview();
+}
+async function saveCompanyData() {
+  const msgEl = document.getElementById('compMsg');
+  let logoPath = JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}').logoPath || '';
+
+  if (companyLogoFileData) {
+    const imgPath = `assets/images/company/logo.${companyLogoFileData.extension}`;
+    const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+    if (hasGH) {
+      try {
+        let sha = null;
+        const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
+        if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+        const body = { message: 'update company logo', content: companyLogoFileData.base64 };
+        if (sha) body.sha = sha;
+        const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+          { method:'PUT', headers:{ Authorization:`token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+        if (res.ok) { logoPath = imgPath; companyLogoFileData = null; }
+      } catch(e) {}
+    }
+  }
+
+  const data = {
+    nombre:        document.getElementById('compNombre').value.trim() || 'Jans Photograph',
+    telefono:      document.getElementById('compTelefono').value.trim(),
+    ruc:           document.getElementById('compRuc').value.trim(),
+    dv:            document.getElementById('compDv').value.trim(),
+    email:         document.getElementById('compEmail').value.trim(),
+    corregimiento: document.getElementById('compCorregimiento').value.trim(),
+    distrito:      document.getElementById('compDistrito').value.trim(),
+    calle:         document.getElementById('compCalle').value.trim(),
+    logoPath,
+    updatedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem(COMPANY_KEY, JSON.stringify(data));
+  const ok = await sbSetConfig('company', data);
+
+  msgEl.style.display    = 'block';
+  msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
+  msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(245,158,11,0.3)';
+  msgEl.style.color      = ok ? '#86efac' : '#fcd34d';
+  msgEl.textContent      = ok ? '✓ Datos de empresa publicados' : '✓ Guardados localmente (configura GitHub para publicar)';
+  showToast(ok ? 'Datos de empresa actualizados ✓' : 'Guardado localmente ✓');
+}
+async function loadSocialLinksUI() {
+  // Pre-fill URL if saved
+  try {
+    const ig = JSON.parse(localStorage.getItem('jans_ig_preview'));
+    if (ig && ig.igUrl) {
+      document.getElementById('igPostUrl').value = ig.igUrl;
+      updateIgOpenLink(ig.igUrl);
+    }
+    if (ig && ig.igImagePath) {
+      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${ig.igImagePath}`;
+      document.getElementById('igPreviewImg').src = rawUrl;
+      document.getElementById('igPreviewWrap').style.display = 'block';
+    }
+  } catch(e) {}
+  // Pre-fill YouTube
+  try {
+    const yt = JSON.parse(localStorage.getItem('jans_yt_preview'));
+    if (yt && yt.ytUrl) {
+      document.getElementById('ytVideoUrl').value = yt.ytUrl; previewYT();
+      if (yt.channelUrl && document.getElementById('ytChannelUrl')) document.getElementById('ytChannelUrl').value = yt.channelUrl;
+      if (yt.thumbPath) {
+        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${yt.thumbPath}`;
+        document.getElementById('ytThumbImg').src = rawUrl;
+        document.getElementById('ytThumbPreview').style.display = 'block';
+        document.getElementById('ytThumbLabel').textContent = '✓ Thumbnail actual: ' + yt.thumbPath.split('/').pop();
+        document.getElementById('ytThumbZone').style.borderColor = 'rgba(34,197,94,0.4)';
+      }
+    }
+  } catch(e) {}
+}
+function updateIgOpenLink(url) {
+  const btn = document.getElementById('igOpenLink');
+  if (url) { btn.href = url; btn.style.display = 'inline-flex'; }
+  else      { btn.style.display = 'none'; }
+}
+function handleIgFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    igFileData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type };
+    // Show preview
+    document.getElementById('igPreviewImg').src = e.target.result;
+    document.getElementById('igPreviewWrap').style.display = 'block';
+    igSetStatus('success', `✓ Lista: ${file.name} (${(file.size/1024).toFixed(0)}KB)`);
+    enableIgSave();
+  };
+  reader.readAsDataURL(file);
+}
+async function saveIgLink() {
+  if (!igFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
+  const igUrl = document.getElementById('igPostUrl').value.trim();
+
+  // Path includes the real extension of the uploaded file (jpg/jpeg/png/webp)
+  const imagePath = `assets/images/social/ig/lastpost.${igFileData.extension}`;
+
+  // Save URL + image path to localStorage immediately so index.html updates right away
+  const prevData = JSON.parse(localStorage.getItem('jans_ig_preview') || '{}');
+  localStorage.setItem('jans_ig_preview', JSON.stringify({
+    igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString()
+  }));
+  updateIgOpenLink(igUrl);
+
+  igSetStatus('info', 'Subiendo imagen...');
+
+  const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) {
+    igSetStatus('success', '✓ URL guardada. Configura GitHub para subir la imagen al repo.');
+    showToast('URL guardada ✓ — configura GitHub para la imagen');
+    igFileData = null;
+    return;
+  }
+
+  try {
+    // If the previous image had a DIFFERENT extension, delete the old file first
+    // so we don't leave orphaned images (e.g. lastpost.jpg when now using lastpost.png)
+    if (prevData.igImagePath && prevData.igImagePath !== imagePath) {
+      try {
+        const oldRes = await fetch(
+          `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
+        );
+        if (oldRes.ok) {
+          const oldJson = await oldRes.json();
+          await fetch(
+            `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`,
+            { method: 'DELETE', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'remove old instagram image', sha: oldJson.sha }) }
+          );
+        }
+      } catch(e) { /* non-fatal — continue with upload */ }
+    }
+
+    let sha = null;
+    const getRes = await fetch(
+      `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+      { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+    const body = { message: 'update lastpost instagram', content: igFileData.base64 };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(
+      `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`,
+      { method: 'PUT', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+
+    if (res.ok) {
+      // Also update instagram.json with the URL + correct image path/extension
+      await ghPutPublic('instagram.json', { igUrl, igImagePath: imagePath, updatedAt: new Date().toISOString() });
+      igSetStatus('success', `✓ Imagen publicada en ${imagePath}`);
+      showToast('Instagram publicado ✓');
+    } else {
+      igSetStatus('error', 'Error al subir — verifica token y repo');
+      showToast('Error al subir imagen', 'error');
+    }
+  } catch(e) {
+    igSetStatus('error', 'Sin conexión a GitHub');
+    showToast('Sin conexión', 'error');
+  }
+
+  igFileData = null;
+}
+async function saveYtLink() {
+  const input      = document.getElementById('ytVideoUrl').value.trim();
+  const channelUrl = (document.getElementById('ytChannelUrl')?.value.trim()) || 'https://www.youtube.com/@jansphotograph';
+  const id         = extractYtId(input);
+  if (!input) { showToast('Ingresa una URL o ID de YouTube', 'error'); return; }
+  if (!id)    { showToast('No se pudo detectar el ID del video — verifica la URL', 'error'); return; }
+
+  let thumbPath = null;
+
+  // Upload custom thumbnail if selected
+  if (ytThumbFileData) {
+    setYtThumbStatus('info', 'Subiendo thumbnail...');
+    const imgName  = `thumbnail.${ytThumbFileData.extension}`;
+    const imgPath  = `assets/images/social/youtube/${imgName}`;
+    try {
+      // Check if file exists to get SHA
+      let sha = null;
+      const getRes = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+        { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } }
+      );
+      if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+      const body = { message: 'update youtube thumbnail', content: ytThumbFileData.base64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(
+        `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+        { method:'PUT', headers:{ Authorization:`token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }, body:JSON.stringify(body) }
+      );
+      if (res.ok) {
+        thumbPath = imgPath;
+        setYtThumbStatus('success', '✓ Thumbnail subido');
+        ytThumbFileData = null;
+      } else {
+        setYtThumbStatus('error', 'Error al subir thumbnail');
+      }
+    } catch(e) { setYtThumbStatus('error', 'Sin conexión'); }
+  } else {
+    // Keep existing thumbPath from localStorage
+    try {
+      const existing = JSON.parse(localStorage.getItem('jans_yt_preview') || '{}');
+      thumbPath = existing.thumbPath || null;
+    } catch(e) {}
+  }
+
+  const payload = { ytUrl: input, ytId: id, channelUrl, thumbPath, updatedAt: new Date().toISOString() };
+  const ok = await ghPutPublic('youtube.json', payload);
+  localStorage.setItem('jans_yt_preview', JSON.stringify(payload));
+  if (ok) showToast('YouTube actualizado y publicado ✓');
+  else    showToast('Guardado localmente — verifica token para publicar', 'error');
+}
+async function loadLastReloadInfo() {
+  const el = document.getElementById('lastReloadInfo');
+  if (!el) return;
+  const gh = getGHConfig();
+  if (!gh.token) {
+    el.textContent = 'Configura el token de GitHub para ver el estado.';
+    return;
+  }
+  try {
+    const owner = gh.owner || 'jansphotograph';
+    const publicRepo = owner + '.github.io';
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${publicRepo}/contents/data/version.json`,
+      { headers: { Authorization: `token ${gh.token}`, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) { el.textContent = 'Sin publicaciones previas.'; return; }
+    const d = await res.json();
+    const data = JSON.parse(atob(d.content.replace(/\n/g, '')));
+    el.innerHTML = `Última publicación: <strong>${new Date(data.ts).toLocaleString('es-PA')}</strong> — ${data.note || 'Actualización general'}`;
+  } catch(e) {
+    el.textContent = 'No se pudo verificar la última publicación.';
+  }
+}
+function updatePollUI(active) {
+  const dot   = document.getElementById('pollStatusDot');
+  const text  = document.getElementById('pollStatusText');
+  const label = document.getElementById('pollToggleLabel');
+  const btn   = document.getElementById('pollToggleBtn');
+  if (!dot) return; // view not rendered yet
+  if (active) {
+    dot.style.background = '#22c55e';
+    text.textContent = 'Activa — revisando cada 60 segundos';
+    label.textContent = 'Desactivar sincronización automática';
+    btn.classList.remove('btn-pink'); btn.classList.add('btn-outline');
+  } else {
+    dot.style.background = 'var(--gray)';
+    text.textContent = 'Desactivada';
+    label.textContent = 'Activar sincronización automática';
+    btn.classList.remove('btn-outline'); btn.classList.add('btn-pink');
+  }
+}
+function togglePolling() {
+  if (isPollingEnabled()) stopPolling();
+  else startPolling();
+}
+function isPollingEnabled() {
+  return localStorage.getItem(POLL_KEY) === 'true';
+}
+function loadFacturaCounterUI() {
+  const current = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
+  const input   = document.getElementById('facturaCounterInput');
+  if (input) {
+    input.value = current;
+    updateFacturaNextPreview();
+    input.addEventListener('input', updateFacturaNextPreview);
+  }
+}
+function saveFacturaCounter() {
+  const input  = document.getElementById('facturaCounterInput');
+  const msgEl  = document.getElementById('facturaCounterMsg');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val < 0) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = 'rgba(239,68,68,0.1)';
+    msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
+    msgEl.style.color = '#fca5a5';
+    msgEl.textContent = 'Ingresa un número válido (0 o mayor).';
+    return;
+  }
+  localStorage.setItem('jans_factura_counter', String(val));
+  updateFacturaNextPreview();
+  msgEl.style.display = 'block';
+  msgEl.style.background = 'rgba(34,197,94,0.1)';
+  msgEl.style.border = '1px solid rgba(34,197,94,0.3)';
+  msgEl.style.color = '#86efac';
+  msgEl.textContent = `✓ Guardado. La próxima factura será #${String(val + 1).padStart(3, '0')}.`;
+  showToast(`Contador actualizado — próxima factura #${String(val + 1).padStart(3, '0')} ✓`);
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
+function resetFacturaCounter(){if(!confirm('Resetear a 0?'))return;localStorage.setItem('jans_factura_counter','0');loadFacturaCounterUI();showToast('Contador reseteado');}
+
+// ── COT counter ──
+function updateCotNextPreview() {
+  const input = document.getElementById('cotCounterInput');
+  const preview = document.getElementById('cotNextPreview');
+  if (!input || !preview) return;
+  const current = parseInt(input.value, 10);
+  const next = isNaN(current) || current < 0 ? 1 : current + 1;
+  preview.textContent = 'COT-' + String(next).padStart(3, '0');
+}
+function loadCotCounterUI() {
+  const current = parseInt(localStorage.getItem('jans_cot_counter') || '0', 10);
+  const input = document.getElementById('cotCounterInput');
+  if (input) { input.value = current; updateCotNextPreview(); }
+}
+function saveCotCounter() {
+  const input = document.getElementById('cotCounterInput');
+  const msgEl = document.getElementById('cotCounterMsg');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val < 0) {
+    msgEl.style.cssText = 'display:block;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5';
+    msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
+  }
+  localStorage.setItem('jans_cot_counter', String(val));
+  updateCotNextPreview();
+  msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
+  msgEl.textContent = '✓ Guardado. La próxima cotización será COT-' + String(val + 1).padStart(3, '0') + '.';
+  showToast('Contador COT actualizado — próxima COT-' + String(val + 1).padStart(3, '0') + ' ✓');
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
+
+// ── WEB counter ──
+function updateWebNextPreview() {
+  const input = document.getElementById('webCounterInput');
+  const preview = document.getElementById('webNextPreview');
+  if (!input || !preview) return;
+  const current = parseInt(input.value, 10);
+  const next = isNaN(current) || current < 0 ? 1 : current + 1;
+  preview.textContent = 'WEB-' + String(next).padStart(3, '0');
+}
+function loadWebCounterUI() {
+  const current = parseInt(localStorage.getItem('jans_web_counter') || '0', 10);
+  const input = document.getElementById('webCounterInput');
+  if (input) { input.value = current; updateWebNextPreview(); }
+}
+function saveWebCounter() {
+  const input = document.getElementById('webCounterInput');
+  const msgEl = document.getElementById('webCounterMsg');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val < 0) {
+    msgEl.style.cssText = 'display:block;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5';
+    msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
+  }
+  localStorage.setItem('jans_web_counter', String(val));
+  updateWebNextPreview();
+  msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
+  msgEl.textContent = '✓ Guardado. La próxima reserva web será WEB-' + String(val + 1).padStart(3, '0') + '.';
+  showToast('Contador WEB actualizado — próxima WEB-' + String(val + 1).padStart(3, '0') + ' ✓');
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+}
+async function changeCredentials() {
+  const curUser  = sanitizeCred(document.getElementById('credCurrentUser').value);
+  const curPass  = sanitizeCred(document.getElementById('credCurrentPass').value);
+  const newUser  = sanitizeCred(document.getElementById('credNewUser').value);
+  const newPass  = sanitizeCred(document.getElementById('credNewPass').value);
+  const confirmP = sanitizeCred(document.getElementById('credConfirmPass').value);
+  const msgEl    = document.getElementById('credMsg');
+
+  function showCredMsg(msg, ok) {
+    msgEl.style.display    = 'block';
+    msgEl.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+    msgEl.style.border     = ok ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)';
+    msgEl.style.color      = ok ? '#86efac' : '#fca5a5';
+    msgEl.textContent      = msg;
+  }
+
+  if (!curUser || !curPass) { showCredMsg('Completa las credenciales actuales.', false); return; }
+  if (!newUser || !newPass)  { showCredMsg('Completa el nuevo usuario y contraseña.', false); return; }
+  if (newPass !== confirmP)  { showCredMsg('Las contraseñas nuevas no coinciden.', false); return; }
+  if (newPass.length < 6)    { showCredMsg('La contraseña debe tener al menos 6 caracteres.', false); return; }
+
+  try {
+    // Hash current inputs and compare against stored hashes
+    const [curUserHash, curPassHash] = await Promise.all([sha256(curUser), sha256(curPass)]);
+    const stored = JSON.parse(localStorage.getItem('jans_auth_override') || '{}');
+
+    // Stored hashes or default hashes
+    const expectedUserHash = stored.userHash || await sha256('admin');
+    const expectedPassHash = stored.passHash || await sha256('jans2025');
+
+    if (curUserHash !== expectedUserHash || curPassHash !== expectedPassHash) {
+      showCredMsg('Usuario o contraseña actual incorrectos.', false);
+      return;
+    }
+
+    // Hash new credentials — NEVER store plaintext
+    const [newUserHash, newPassHash] = await Promise.all([sha256(newUser), sha256(newPass)]);
+
+    localStorage.setItem('jans_auth_override', JSON.stringify({
+      userHash: newUserHash,
+      passHash: newPassHash
+    }));
+
+    // Clear form
+    ['credCurrentUser','credCurrentPass','credNewUser','credNewPass','credConfirmPass']
+      .forEach(id => { document.getElementById(id).value = ''; });
+
+    showCredMsg('✓ Credenciales actualizadas. Usa las nuevas en tu próximo inicio de sesión.', true);
+    showToast('Credenciales actualizadas ✓');
+  } catch(e) {
+    showCredMsg('Error al procesar. Intenta de nuevo.', false);
+  }
+}
+function showSection(name){['company','social','config','recargar'].forEach(s=>{const sec=document.getElementById('section-'+s);const btn=document.getElementById('btn-'+s);if(sec)sec.style.display=s===name?'block':'none';if(btn)btn.classList.toggle('active',s===name);});if(name==='company')loadCompanyUI();if(name==='social')loadSocialLinksUI();if(name==='config'){loadFacturaCounterUI();loadCotCounterUI();loadWebCounterUI();}if(name==='recargar')loadLastReloadInfo();}
+
+async function saveGithubConfig() {
+  const publicOwner = document.getElementById('cfgPublicOwner').value.trim();
+  const publicRepo  = document.getElementById('cfgPublicRepo').value.trim();
+  // Si el input del token está vacío, usar el que ya está guardado
+  const _saved = getGHConfig();
+  const tokenInput = document.getElementById('cfgToken').value.replace(/\s+/g,'').trim();
+  const token = tokenInput || (_saved.token||'').replace(/\s+/g,'').trim() || '';
+  if (!token) { showToast('Completa el token de GitHub', 'error'); return; }
+
+  // Guardar en localStorage — token + repo público
+  const ghConfig = { token, publicOwner, publicRepo };
+  localStorage.setItem('jans_gh_config', JSON.stringify(ghConfig));
+  localStorage.setItem(LS_KEY, JSON.stringify({ publicOwner, publicRepo }));
+  localStorage.setItem(LS_KEY_ENC, btoa(token));
+  // Sincronizar claves que usa CONFIG_PUBLIC (ghPutPublic, ghPutPublicFile)
+  if (publicOwner) localStorage.setItem('jans_public_owner', publicOwner);
+  if (publicRepo)  localStorage.setItem('jans_public_repo',  publicRepo);
+
+  showToast('Configuración de GitHub guardada ✓');
+}
+
+async function saveYappyQr() {
+  const msgEl = document.getElementById('qrMsg');
+  if (!yappyQrFileData) { showToast('Selecciona una imagen primero', 'error'); return; }
+
+  const hasGH = (getGHConfig().token||'').replace(/\s+/g,'') && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) {
+    showToast('Configura tu conexión a GitHub primero (Configuración → GitHub)', 'error');
+    return;
+  }
+
+  // Publish under the image's REAL extension (jpg, png, webp, whatever was picked),
+  // so the file is always a valid, correctly-typed image — no more forcing
+  // everything to .png regardless of actual content. The public page is told
+  // exactly which extension to look for via yappyQrExt in company.json.
+  const ext = (yappyQrFileData.extension || 'png').toLowerCase();
+  const KNOWN_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'];
+  const safeExt = KNOWN_EXTS.includes(ext) ? ext : 'png';
+  const imgPath = `assets/images/company/yappy-qr.${safeExt}`;
+
+  try {
+    // Clean up any previously-published QR under a DIFFERENT extension, so
+    // switching formats doesn't leave stale orphaned files in the repo that
+    // could confuse a future lookup.
+    for (const oldExt of KNOWN_EXTS) {
+      if (oldExt === safeExt) continue;
+      const oldPath = `assets/images/company/yappy-qr.${oldExt}`;
+      try {
+        const checkRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+          { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
+        if (checkRes.ok) {
+          const j = await checkRes.json();
+          await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`,
+            { method: 'DELETE', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: 'remove stale yappy qr format', sha: j.sha }) });
+        }
+      } catch(e) { /* non-fatal — an old file lingering is harmless, just skip cleanup */ }
+    }
+
+    // Upload the new file
+    let sha = null;
+    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+      { headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json' } });
+    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
+
+    const body = { message: 'update yappy qr', content: yappyQrFileData.base64 };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`,
+      { method: 'PUT', headers: { Authorization: `token ${(getGHConfig().token||'').replace(/\s+/g,'')}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+    if (!res.ok) throw new Error('GitHub upload failed');
+
+    // Record the current extension publicly so infoselect.js knows exactly
+    // which file to request, instead of having to guess/probe formats.
+    const companyData = getCompanyData();
+    companyData.yappyQrExt = safeExt;
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(companyData));
+    await ghPutPublic('company.json', companyData);
+
+    yappyQrFileData = null;
+    document.getElementById('qrZoneLabel').textContent = '✓ QR publicado — haz clic para reemplazarlo';
+    document.getElementById('qrZone').style.borderColor = 'rgba(34,197,94,0.4)';
+
+    msgEl.style.display = 'block';
+    msgEl.style.background = 'rgba(34,197,94,0.1)';
+    msgEl.style.border = '1px solid rgba(34,197,94,0.3)';
+    msgEl.style.color = '#86efac';
+    msgEl.textContent = '✓ QR de Yappy publicado en GitHub — ya está visible en la página de abono.';
+    showToast('QR de Yappy publicado ✓');
+  } catch(e) {
+    msgEl.style.display = 'block';
+    msgEl.style.background = 'rgba(239,68,68,0.1)';
+    msgEl.style.border = '1px solid rgba(239,68,68,0.3)';
+    msgEl.style.color = '#fca5a5';
+    msgEl.textContent = 'No se pudo publicar el QR. Verifica tu conexión a GitHub en Configuración.';
+    showToast('Error al publicar el QR', 'error');
+  }
+}
+
+function handleLogout(){sessionStorage.removeItem(SESSION_KEY);window.location.replace('../master.html');}
+
+function clearGithubConfig() {
+  if (!confirm('¿Limpiar la configuración de GitHub guardada?')) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_KEY_ENC);
+  localStorage.removeItem('jans_public_owner');
+  localStorage.removeItem('jans_public_repo');
+  document.getElementById('cfgToken').value       = '';
+  document.getElementById('cfgPublicOwner').value = '';
+  document.getElementById('cfgPublicRepo').value  = '';
+  document.getElementById('ghPublicRepoDisplay').textContent = '—';
+  const pubDotEl = document.getElementById('ghPublicStatusDot');
+  const pubTxtEl = document.getElementById('ghPublicStatusText');
+  if (pubDotEl) pubDotEl.style.background = 'var(--gray)';
+  if (pubTxtEl) pubTxtEl.textContent = 'Sin verificar';
+  showToast('Configuración limpiada', 'error');
+}
+
+async function testGithubConnection() {
+  // ── Verificar repo público ──
+  const pubDot  = document.getElementById('ghPublicStatusDot');
+  const pubText = document.getElementById('ghPublicStatusText');
+  const pubOwner = document.getElementById('cfgPublicOwner')?.value.trim() || getGHConfig().publicOwner || '';
+  const pubRepo  = document.getElementById('cfgPublicRepo')?.value.trim()  || getGHConfig().publicRepo  || '';
+  if (pubOwner && pubRepo && pubDot && pubText) {
+    pubDot.style.background = 'var(--amber)';
+    pubText.textContent = 'Verificando repo público…';
+    try {
+      const pubRes = await fetch(`https://api.github.com/repos/${pubOwner}/${pubRepo}`);
+      if (pubRes.ok) {
+        const pd = await pubRes.json();
+        pubDot.style.background = 'var(--green)';
+        pubText.textContent = `Conectado ✓ — ${pd.full_name} (${pd.private ? 'Privado' : 'Público'})`;
+        showToast('GitHub conectado correctamente ✓');
+      } else {
+        pubDot.style.background = 'var(--red)';
+        pubText.textContent = `Error ${pubRes.status} — verifica usuario y repositorio público`;
+        showToast(`Error ${pubRes.status}: verifica el repositorio público`, 'error');
+      }
+    } catch(e) {
+      pubDot.style.background = 'var(--red)';
+      pubText.textContent = 'Sin conexión';
+      showToast('Sin conexión', 'error');
+    }
+  } else if (pubDot && pubText) {
+    pubDot.style.background = 'var(--gray)';
+    pubText.textContent = 'Configura el repo público para verificarlo';
+    showToast('Completa usuario y repositorio público primero', 'error');
+  }
+}
+
+async function cleanupStaleCalendarDays() {
+  const resultEl = document.getElementById('cleanupResult');
+  resultEl.textContent = 'Revisando...';
+
+  // ── 1. Release whole-day "booked" marks that no longer have a confirmed/completed
+  //       reserva backing them up (leftover from the old day-blocking behavior). ──
+  const calData = JSON.parse(localStorage.getItem('jans_calendar') || '{}');
+  let releasedDaysCount = 0;
+  const releasedDays = [];
+
+  Object.keys(calData).forEach(ds => {
+    if (calData[ds] !== 'booked') return;
+    const hasConfirmed = allReservas.some(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed'));
+    if (!hasConfirmed) {
+      calData[ds] = 'available';
+      releasedDaysCount++;
+      releasedDays.push(ds);
+    }
+  });
+
+  if (releasedDaysCount > 0) {
+    localStorage.setItem('jans_calendar', JSON.stringify(calData));
+    state.calendar = calData;
+    renderCalendar?.();
+    await ghPutPublic('calendar.json', calData);
+  }
+
+  // ── 2. Clear the orphaned blockedHours field on any reserva that is no longer
+  //       confirmed/completed — it isn't read anywhere for the actual hour-blocking
+  //       calculation (that's done live from status), but leaving stale data around
+  //       is confusing, so we clean it up for consistency. ──
+  let clearedHoursCount = 0;
+  const clearedReservas = [];
+  allReservas.forEach(r => {
+    if (r.status !== 'confirmed' && r.status !== 'completed' && r.blockedHours && r.blockedHours.length) {
+      r.blockedHours = [];
+      clearedHoursCount++;
+      clearedReservas.push(r);
+    }
+  });
+  if (clearedHoursCount > 0) {
+    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+    clearedReservas.forEach(r => pushReservaToSupabase(r));
+  }
+
+  // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
+  //       computed live from confirmed/completed reservas — so you can visually
+  //       confirm everything is correct, not just trust that cleanup ran. ──
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeBlocks = {};
+  allReservas
+    .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
+    .forEach(r => {
+      const hv = parseInt(r.horaVal);
+      if (isNaN(hv)) return;
+      if (!activeBlocks[r.fecha]) activeBlocks[r.fecha] = [];
+      for (let h = hv-2; h <= hv+2; h++) activeBlocks[r.fecha].push(h);
+    });
+
+  const summaryLines = Object.keys(activeBlocks).sort().map(ds => {
+    const hours = [...new Set(activeBlocks[ds])].sort((a,b)=>a-b);
+    const hourLabels = hours.map(h => (h % 12 || 12) + (h < 12 ? 'AM' : 'PM'));
+    return `${ds}: ${hourLabels.join(', ')}`;
+  });
+
+  // ── Render result ──
+  let msg = '';
+  if (releasedDaysCount > 0 || clearedHoursCount > 0) {
+    msg += `<div style="color:#86efac;margin-bottom:8px">✓ ${releasedDaysCount} día(s) liberado(s)${releasedDays.length ? ' (' + releasedDays.join(', ') + ')' : ''} · ${clearedHoursCount} registro(s) de horas limpiados</div>`;
+  } else {
+    msg += `<div style="margin-bottom:8px">No había días ni horas huérfanas que limpiar — todo estaba al día.</div>`;
+  }
+
+  if (summaryLines.length) {
+    msg += `<div style="font-weight:600;color:var(--white);margin-bottom:4px">Horas actualmente bloqueadas (por reservas confirmadas):</div>`;
+    msg += summaryLines.map(l => `<div style="margin-bottom:2px">• ${l}</div>`).join('');
+  } else {
+    msg += `<div style="color:var(--gray)">No hay ninguna hora bloqueada en fechas futuras en este momento.</div>`;
+  }
+
+  resultEl.innerHTML = msg;
+  showToast(
+    (releasedDaysCount > 0 || clearedHoursCount > 0)
+      ? `Limpieza completada ✓`
+      : 'Nada que limpiar ✓'
+  );
+}
+
+function exportAllJSON() {
+  const blob = new Blob([JSON.stringify({quotes:state.quotes,services:state.services,plans:state.plans,calendar:state.calendar},null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'jans_data_export.json'; a.click();
+  showToast('JSON exportado ✓');
+}
+
+async function publishReload() {
+  const btn     = document.getElementById('btnReload');
+  const log     = document.getElementById('reloadLog');
+  const logItems= document.getElementById('reloadLogItems');
+  const note    = document.getElementById('reloadNote').value.trim() || 'Actualización general';
+
+  btn.disabled = true;
+  btn.textContent = 'Publicando...';
+  log.style.display = 'block';
+  logItems.innerHTML = '';
+
+  function addLog(msg, ok) {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:' +
+      (ok === true ? 'rgba(34,197,94,0.1)' : ok === false ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)');
+    el.style.color = ok === true ? '#86efac' : ok === false ? '#fca5a5' : 'var(--gray-l)';
+    el.innerHTML = (ok === true ? '✓' : ok === false ? '✗' : '·') + ' ' + msg;
+    logItems.appendChild(el);
+    return el;
+  }
+
+  const tasks = [];
+
+  // 1. version.json — always
+  const versionPayload = {
+    v:    Date.now(),
+    ts:   new Date().toISOString(),
+    note
+  };
+  const vLog = addLog('Subiendo version.json...', null);
+  const vOk  = await ghPutPublic('version.json', versionPayload);
+  vLog.style.background = vOk ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+  vLog.style.color      = vOk ? '#86efac' : '#fca5a5';
+  vLog.innerHTML        = (vOk?'✓':'✗') + ' version.json — ' + (vOk ? 'OK' : 'Error');
+
+  // 2. Conditional publishes
+  const checks = {
+    chkPlanes:    { label:'planes.json',   data: publicPlans },
+    chkPopular:   { label:'popular.json',  data: (() => { const m={}; publicPlans.forEach(p=>{ if(p.popular) m[p.nombre]=true; }); return m; })() },
+    chkCalendar:  { label:'calendar.json', data: state.calendar },
+    chkInstagram: { label:'instagram.json',data: null }, // read from localStorage
+    chkYoutube:   { label:'youtube.json',  data: null },
+    chkNotas:     { label:'notas.json',    data: null },
+    chkServAdic:  { label:'servicios-adicionales.json', data: null },
+    chkFaqs:      { label:'faqs.json',     data: null },
+    chkCompany:   { label:'company.json',  data: null },
+  };
+
+  // Fill instagram / youtube from localStorage
+  try { checks.chkInstagram.data = JSON.parse(localStorage.getItem('jans_ig_preview') || 'null'); } catch(e) {}
+  try { checks.chkYoutube.data   = JSON.parse(localStorage.getItem('jans_yt_preview')  || 'null'); } catch(e) {}
+  try { checks.chkNotas.data     = JSON.parse(localStorage.getItem('jans_notas_reservas') || 'null'); } catch(e) {}
+  try { checks.chkServAdic.data  = JSON.parse(localStorage.getItem('jans_serv_adicionales') || 'null'); } catch(e) {}
+  try { checks.chkFaqs.data      = JSON.parse(localStorage.getItem('jans_faqs') || 'null'); } catch(e) {}
+  try { checks.chkCompany.data   = JSON.parse(localStorage.getItem('jans_company') || 'null'); } catch(e) {}
+
+  for (const [chkId, task] of Object.entries(checks)) {
+    const chk = document.getElementById(chkId);
+    if (!chk || !chk.checked) continue;
+    if (!task.data) { addLog(task.label + ' — sin datos locales, omitido', null); continue; }
+    const tLog = addLog('Subiendo ' + task.label + '...', null);
+    const ok   = await ghPutPublic(task.label, task.data);
+    tLog.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+    tLog.style.color      = ok ? '#86efac' : '#fca5a5';
+    tLog.innerHTML        = (ok?'✓':'✗') + ' ' + task.label + ' — ' + (ok ? 'OK' : 'Error');
+  }
+
+  addLog('¡Listo! El sitio se actualizará automáticamente.', true);
+  btn.disabled    = false;
+  btn.innerHTML   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg> Recargar Sitio';
+  document.getElementById('reloadNote').value = '';
+
+  // Update last reload info
+  loadLastReloadInfo();
+  showToast('Sitio actualizado y publicado ✓');
+}
+
+function toggleTokenVisibility() {
+  const inp  = document.getElementById('cfgToken');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+
+function loadYappyQrPreview() {
+  if (yappyQrFileData) return; // don't overwrite an unsaved pick
+  const hasGH = CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) return;
+  const ext = (getCompanyData().yappyQrExt || 'png').toLowerCase();
+  const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/assets/images/company/yappy-qr.${ext}?t=${Date.now()}`;
+  const img = document.getElementById('qrPreviewImg');
+  const testImg = new Image();
+  testImg.onload = () => {
+    img.src = rawUrl;
+    document.getElementById('qrPreviewWrap').style.display = 'block';
+    document.getElementById('qrZoneLabel').textContent = '✓ QR actual — haz clic para reemplazarlo';
+    document.getElementById('qrZone').style.borderColor = 'rgba(34,197,94,0.4)';
+  };
+  testImg.onerror = () => { /* no QR published yet — leave the zone empty, that's fine */ };
+  testImg.src = rawUrl;
+}
+
+function updateFacturaNextPreview() {
+  const input   = document.getElementById('facturaCounterInput');
+  const preview = document.getElementById('facturaNextPreview');
+  if (!input || !preview) return;
+  const current = parseInt(input.value, 10);
+  const next    = isNaN(current) || current < 0 ? 1 : current + 1;
+  preview.textContent = `Factura #${String(next).padStart(3, '0')}`;
+}
+
+function savePublicRepoConfig() {
+  const owner = document.getElementById('cfgPublicOwner').value.trim();
+  const repo  = document.getElementById('cfgPublicRepo').value.trim();
+  localStorage.setItem('jans_public_owner', owner);
+  localStorage.setItem('jans_public_repo',  repo);
+  document.getElementById('ghPublicRepoDisplay').textContent = (owner && repo) ? `${owner}/${repo}` : '—';
+}
+
+
+function getCompanyData() {
+  try { return JSON.parse(localStorage.getItem(COMPANY_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function getSocialData() {
+  try { return JSON.parse(localStorage.getItem(SOCIAL_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+
+function getGHConfig() {
+  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadCompanyUI();
+  // Cargar config de GitHub guardado
+  try {
+    const gh = JSON.parse(localStorage.getItem('jans_gh_config') || '{}');
+    if (gh.token)       { const el = document.getElementById('cfgToken');       if (el) el.value = gh.token; }
+    if (gh.publicOwner) {
+      const el = document.getElementById('cfgPublicOwner'); if (el) el.value = gh.publicOwner;
+      localStorage.setItem('jans_public_owner', gh.publicOwner);
+    }
+    if (gh.publicRepo)  {
+      const el = document.getElementById('cfgPublicRepo');  if (el) el.value = gh.publicRepo;
+      localStorage.setItem('jans_public_repo', gh.publicRepo);
+    }
+  } catch(e) {}
+});
+</script>
+</body>
+</html>

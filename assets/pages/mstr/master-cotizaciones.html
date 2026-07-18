@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cotizaciones - Jans Photograph</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-cotizaciones.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<script>
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();
+</script>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:12px">
+<a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+</a>
+<span class="master-badge">MASTER</span>
+<span style="color:var(--gray);font-size:0.8rem">/ Cotizaciones</span>
+</div>
+<nav style="display:flex;gap:4px">
+<a href="../master.html" class="topbar-link">Inicio</a>
+<button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+</nav>
+</header>
+
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+<div class="subnav">
+<button class="subnav-btn active" id="btn-quotes" onclick="showSection('quotes')">Cotizaciones</button>
+<button class="subnav-btn" id="btn-newquote" onclick="showSection('newquote')">Nueva Cotizacion</button>
+<button class="subnav-btn" id="btn-eventoForm" onclick="showSection('eventoForm')">Formulario Evento</button>
+</div>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal modal-flex" style="max-width:580px">
+    <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
+      <h3 id="quoteModalTitle">Detalle de Cotizacion</h3>
+      <button class="modal-close" onclick="closeModal('quoteModal')">x</button>
+    </div>
+    <div id="quoteModalBody" style="flex:1;overflow-y:auto;padding:0 32px 8px"></div>
+    <div id="quoteModalFooter" style="flex-shrink:0;padding:16px 32px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+</div>
+<main class="main-content">
+<div id="section-quotes" style="display:block">
+<div id="view-quotes">
+        <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2>Cotizaciones</h2>
+            <p>Registro de todas las cotizaciones</p>
+          </div>
+          <button class="btn btn-pink" onclick="showSection('newquote')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva
+          </button>
+        </div>
+        <div class="card">
+          <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+            <input type="text" id="searchQuotes" placeholder="Buscar cliente..." oninput="renderQuotesTable()" style="flex:1;min-width:180px;padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;" />
+            <select id="filterStatus" onchange="renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
+              <option value="">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="approved">Aprobada</option>
+              <option value="booked">Reservada</option>
+              <option value="rejected">Rechazada</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+              <tbody id="quotesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW QUOTE ── -->
+      <!-- ── FORMULARIO EVENTO ── -->
+</div>
+<div id="section-newquote" style="display:none">
+<div id="view-newquote">
+        <div class="page-header">
+          <h2>Nueva Cotización</h2>
+          <p>Completa los datos del cliente y selecciona los servicios</p>
+        </div>
+
+        <div class="card">
+          <span class="section-label-sm">Tipo de Cliente</span>
+          <div class="radio-group" style="margin-bottom:20px">
+            <div class="radio-btn selected" id="rNatural"   onclick="selectClientType('natural')">👤 Persona Natural</div>
+            <div class="radio-btn"          id="rJuridica"  onclick="selectClientType('juridica')">🏢 Persona Jurídica</div>
+          </div>
+
+          <span class="section-label-sm">Datos del Cliente</span>
+          <div class="form-row">
+            <div class="field"><label>Nombre Completo *</label><input type="text" id="qClientName" placeholder="Ej. Ana García" /></div>
+            <div class="field"><label>Cédula / RUC *</label><input type="text" id="qClientId" placeholder="8-888-8888" /></div>
+          </div>
+          <div class="form-row" id="juridicaFields" style="display:none">
+            <div class="field"><label>Razón Social</label><input type="text" id="qRazonSocial" placeholder="Nombre de la empresa" /></div>
+            <div class="field"><label>DV</label><input type="text" id="qDV" placeholder="Dígito verificador" maxlength="2" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Teléfono *</label><input type="tel" id="qPhone" placeholder="+507 6000-0000" /></div>
+            <div class="field"><label>Correo Electrónico</label><input type="email" id="qEmail" placeholder="cliente@correo.com" /></div>
+          </div>
+          <div class="field"><label>Dirección</label><input type="text" id="qAddress" placeholder="Ciudad, Provincia" /></div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Sesión Fotográfica</span>
+          <div class="form-row">
+            <div class="field"><label>Fecha de Sesión *</label><input type="date" id="qDate" /></div>
+            <div class="field"><label>Hora</label><input type="time" id="qTime" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Ubicación / Lugar</label><input type="text" id="qLocation" placeholder="Estudio / Exterior" /></div>
+            <div class="field"><label>Plan Fotográfico</label>
+              <select id="qPlan" onchange="updateTotal();toggleEventoPrecio(this.value)">
+                <option value="">— Seleccionar —</option>
+              </select>
+            </div>
+            <div class="field" id="fieldPrecioEvento" style="display:none">
+              <label>Precio del Evento ($)</label>
+              <input type="number" id="qPrecioEvento" placeholder="0.00" min="0" step="0.01" onchange="updateTotal()" style="background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-size:0.88rem;padding:10px 14px;width:100%" />
+            </div>
+          </div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Servicios Adicionales</span>
+          <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+          <hr class="section-divider"/>
+          <span class="section-label-sm">Resumen</span>
+          <div style="background:var(--dark);border-radius:var(--radius);padding:20px">
+            <div id="quoteSummary" style="font-size:0.88rem;color:var(--gray-l);margin-bottom:14px">Selecciona un plan para ver el resumen.</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:14px">
+              <span style="font-weight:700;font-size:1.05rem">Total Estimado</span>
+              <span style="font-weight:700;font-size:1.4rem;color:var(--pink-l)" id="qTotal">$0.00</span>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:16px"><label>Notas / Observaciones</label><textarea id="qNotes" placeholder="Detalles adicionales, requerimientos especiales..."></textarea></div>
+
+          <div class="btn-row">
+            <button class="btn btn-pink" onclick="saveQuote()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Guardar Cotización
+            </button>
+            <button class="btn btn-outline" onclick="clearQuoteForm()">Limpiar</button>
+          </div>
+        </div>
+</div>
+</div>
+
+<div id="section-eventoForm" style="display:none">
+  <div style="color:#fff">
+    <div style="margin-bottom:24px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:6px">Formulario de Cotización para Evento</h2>
+      <p style="color:#999;font-size:0.85rem">Selecciona el tipo de cliente para copiar el formulario y compartirlo</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin-bottom:28px">
+      <div onclick="copyEventoForm('natural')" style="background:#1c1c1c;border:2px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;cursor:pointer;text-align:center" onmouseenter="this.style.borderColor='#c71e5f'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(199,30,95,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e91e8c" stroke-width="1.8" width="26" height="26"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div style="font-weight:700;color:#fff;margin-bottom:6px">Persona Natural</div>
+        <div style="font-size:0.78rem;color:#999;margin-bottom:16px">Nombre, cédula, correo, fecha, lugar y hora</div>
+        <button class="btn btn-pink btn-sm" style="width:100%">Copiar formulario</button>
+        <div id="msgNatural" style="display:none;font-size:0.78rem;color:#86efac;margin-top:8px">✓ ¡Copiado!</div>
+      </div>
+      <div onclick="copyEventoForm('juridica')" style="background:#1c1c1c;border:2px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;cursor:pointer;text-align:center" onmouseenter="this.style.borderColor='#3b82f6'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)'">
+        <div style="width:52px;height:52px;border-radius:50%;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="1.8" width="26" height="26"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div style="font-weight:700;color:#fff;margin-bottom:6px">Persona Jurídica</div>
+        <div style="font-size:0.78rem;color:#999;margin-bottom:16px">Incluye RUC y DV</div>
+        <button class="btn btn-blue btn-sm" style="width:100%">Copiar formulario</button>
+        <div id="msgJuridica" style="display:none;font-size:0.78rem;color:#86efac;margin-top:8px">✓ ¡Copiado!</div>
+      </div>
+    </div>
+    <div style="max-width:700px">
+      <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:.07em;color:#666;margin-bottom:10px">Vista previa</div>
+      <div id="eventoFormPreview" style="background:#141414;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:20px 24px;font-size:0.85rem;color:#aaa;line-height:1.8;white-space:pre-wrap;font-family:monospace;min-height:200px"></div>
+    </div>
+  </div>
+</div>
+</main>
+<script>
+
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase conectado');
+    return true;
+  }
+  return false;
+}
+try {
+  if (!initSupabase()) {
+    window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
+  }
+} catch(e) { console.warn('Supabase init error:', e); }
+const SESSION_KEY = 'jans_master_auth';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+/* ═════════════════════════════════════ */
+
+// ── State ──
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+function statusClassQ(s) {
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+}
+function nextNumero(prefix) {
+  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  let counter = parseInt(localStorage.getItem(key) || '0', 10);
+  counter += 1;
+  localStorage.setItem(key, String(counter));
+  return prefix + '-' + String(counter).padStart(2, '0');
+}
+function nextFacturaNumero() {
+  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
+  counter += 1;
+  localStorage.setItem('jans_factura_counter', String(counter));
+  return String(counter).padStart(3, '0');
+}
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+let publicPlans = [];
+function loadPublicPlans() {
+  try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
+  // jans_planes already has the popular flag embedded — no need to re-apply from jans_popular
+  // jans_popular is only used as a source of truth for the PUBLIC pages
+}
+let servData = { items: [] };
+function loadServAdicionales() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    // Migrar formato antiguo (maquillaje/impresiones) al nuevo (lista plana)
+    if (Array.isArray(saved)) {
+      servData = { items: saved };
+    } else if (saved.items) {
+      servData = saved;
+    } else {
+      // Migrar desde formato viejo
+      const migrated = [];
+      (saved.maquillaje||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: false, insumos: [] }));
+      (saved.impresiones||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: true,  insumos: s.insumos||[] }));
+      servData = { items: migrated };
+    }
+  } catch(e) { servData = { items: [] }; }
+}
+
+let state = { quotes: [], plans: [], services: { makeup: [], print: [] } };
+let clientType = 'natural';
+
+function loadQuotes() {
+  try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
+}
+
+async function fetchQuotes() {
+  // 1. Intentar Supabase primero
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.from('cotizaciones').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) {
+        const mapped = data.map(r => ({
+          id:          r.id,
+          numero:      r.numero,
+          clientName:  r.client_name,
+          clientId:    r.client_id,
+          clientType:  r.client_type,
+          razonSocial: r.razon_social || '',
+          dv:          r.dv || '',
+          phone:       r.phone,
+          email:       r.email,
+          address:     r.address || '',
+          sessionDate: r.session_date || '',
+          sessionTime: r.session_time || '',
+          location:    r.location || '',
+          plan:        r.plan,
+          planPrice:   r.plan_price,
+          addons:      typeof r.addons === 'string' ? JSON.parse(r.addons || '[]') : (r.addons || []),
+          total:       r.total,
+          abono:       parseFloat(r.abono)  || 0,
+          pagado:      parseFloat(r.pagado) || 0,
+          notes:       r.notes || '',
+          status:      r.status,
+          createdAt:   (function(iso){
+            if(!iso) return '';
+            const d = new Date(iso);
+            if(isNaN(d.getTime())) return iso;
+            return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+          })(r.created_at),
+        }));
+        // Merge con locales
+        const local = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
+        const ids = new Set(mapped.map(q => q.id));
+        const merged = [...mapped, ...local.filter(q => !ids.has(q.id))];
+        state.quotes = merged;
+        localStorage.setItem('jans_quotes', JSON.stringify(merged));
+        renderQuotesTable();
+        return;
+      }
+    } catch(e) { console.warn('Supabase fetchQuotes error', e); }
+  }
+}
+
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("../master.html"); }
+function showSection(name) {
+  ['quotes','newquote','eventoForm'].forEach(s => {
+    const sec=document.getElementById('section-'+s);
+    const btn=document.getElementById('btn-'+s);
+    if(sec)sec.style.display=s===name?'block':'none';
+    if(btn)btn.classList.toggle('active',s===name);
+  });
+  if(name==='newquote'){loadPublicPlans();updateQPlanSelect();renderServiceChecks();}
+  if(name==='eventoForm')initEventoForm();
+}
+function renderQuotesTable() {
+  const search = (document.getElementById('searchQuotes').value||'').toLowerCase();
+  const filter = document.getElementById('filterStatus').value;
+  let quotes = state.quotes.filter(q => {
+    const matchSearch = !search || q.clientName.toLowerCase().includes(search);
+    const matchStatus = !filter || q.status===filter;
+    return matchSearch && matchStatus;
+  }).reverse();
+  const tbody = document.getElementById('quotesTable');
+  if(!quotes.length){tbody.innerHTML='<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';return;}
+  tbody.innerHTML = quotes.map((q,i)=>`
+    <tr>
+      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3,'0')}</td>
+      <td><div style="font-weight:600">${q.clientName}</div><div style="font-size:0.75rem;color:var(--gray-l)">${q.email||''}</div></td>
+      <td>${q.clientType==='juridica'?'Jurídica':'Natural'}</td>
+      <td>${q.plan||'—'}</td>
+      <td style="font-weight:700">$${(q.total||0).toFixed(2)}</td>
+      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
+      <td style="font-size:0.8rem;color:var(--gray-l)">${q.createdAt||'—'}</td>
+      <td>
+        <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
+      </td>
+    </tr>`).join('');
+}
+async function deleteQuote(id) {
+  if(!confirm('¿Eliminar esta cotización?')) return;
+  state.quotes = state.quotes.filter(x=>x.id!==id);
+  localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
+  if (sbClient) await sbDelete('cotizaciones', id);
+  closeModal('quoteModal'); updateDashboard(); renderQuotesTable();
+  showToast('Cotización eliminada', 'error');
+}
+function selectClientType(type) {
+  clientType = type;
+  document.getElementById('rNatural').classList.toggle('selected', type==='natural');
+  document.getElementById('rJuridica').classList.toggle('selected', type==='juridica');
+  document.getElementById('juridicaFields').style.display = type==='juridica'?'grid':'none';
+}
+function updateQPlanSelect() {
+  const sel = document.getElementById('qPlan');
+  const current = sel.value;
+  // Cargar planes públicos del catálogo
+  let plans = [];
+  try { plans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) {}
+  // Agrupar por categoría
+  const grouped = {};
+  plans.forEach(p => {
+    const cat = p.category || p.categoria || 'General';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(p);
+  });
+  let html = '<option value="">— Seleccionar —</option>';
+  // Agregar planes por categoría
+  Object.entries(grouped).forEach(([cat, ps]) => {
+    html += `<optgroup label="${cat}">`;
+    ps.forEach(p => {
+      html += `<option value="${p.name||p.nombre}" data-price="${p.price||p.precio||0}">${p.name||p.nombre} — $${p.price||p.precio||0}</option>`;
+    });
+    html += '</optgroup>';
+  });
+  // Agregar Cobertura de Evento siempre al final
+  html += '<optgroup label="Eventos"><option value="Cobertura de Evento" data-price="0">Cobertura de Evento — Precio personalizado</option></optgroup>';
+  sel.innerHTML = html;
+  sel.value = current;
+  // Si seleccionó Cobertura de Evento, mostrar campo de precio manual
+  toggleEventoPrecio(sel.value);
+  renderServiceChecks();
+}
+
+function toggleEventoPrecio(val) {
+  const field = document.getElementById('fieldPrecioEvento');
+  if (field) field.style.display = val === 'Cobertura de Evento' ? 'block' : 'none';
+}
+function renderServiceChecks() {
+  // Recargar servicios del localStorage por si no están en state
+  if (!state.services.makeup.length && !state.services.print.length) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+      state.services = {
+        makeup: Array.isArray(saved.makeup) ? saved.makeup : [],
+        print:  Array.isArray(saved.print)  ? saved.print  : []
+      };
+      // También soportar formato items plano
+      if (!state.services.makeup.length && !state.services.print.length && Array.isArray(saved.items)) {
+        saved.items.forEach(i => {
+          if (i.cat === 'makeup') state.services.makeup.push(i);
+          else state.services.print.push(i);
+        });
+      }
+    } catch(e) {}
+  }
+  const all = [...state.services.makeup, ...state.services.print];
+  if (!all.length) {
+    document.getElementById('qServicesCheck').innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
+    return;
+  }
+  document.getElementById('qServicesCheck').innerHTML = all.map(s=>`
+    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">
+      <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />
+      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>
+    </label>`).join('');
+}
+function updateTotal() {
+  const planSel = document.getElementById('qPlan');
+  const opt = planSel.options[planSel.selectedIndex];
+  let planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
+  // Si es Cobertura de Evento usar precio manual
+  if (opt && opt.value === 'Cobertura de Evento') {
+    planPrice = parseFloat(document.getElementById('qPrecioEvento')?.value || 0);
+  }
+  const planName  = opt ? opt.value : '';
+  const checks = document.querySelectorAll('#qServicesCheck input:checked');
+  let addonsTotal = 0;
+  let summaryHTML = '';
+  if(planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
+  checks.forEach(c => {
+    const [name, price] = c.value.split('||');
+    addonsTotal += parseFloat(price);
+    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
+  });
+  const total = planPrice + addonsTotal;
+  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
+  document.getElementById('qTotal').textContent = `$${total.toFixed(2)}`;
+}
+async function saveQuote() {
+  const name = document.getElementById('qClientName').value.trim();
+  const cid  = document.getElementById('qClientId').value.trim();
+  const phone= document.getElementById('qPhone').value.trim();
+  if(!name||!cid||!phone){showToast('Completa los campos obligatorios (*)','error');return;}
+
+  const planSel   = document.getElementById('qPlan');
+  const planOpt   = planSel.options[planSel.selectedIndex];
+  const planName  = planOpt ? planOpt.value : '';
+  let planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
+  // Si es Cobertura de Evento, usar el precio manual
+  if (planOpt && planOpt.value === 'Cobertura de Evento') {
+    const evPrice = parseFloat(document.getElementById('qPrecioEvento')?.value || 0);
+    planPrice = evPrice;
+  }
+  const checks    = document.querySelectorAll('#qServicesCheck input:checked');
+  const addons    = [];
+  checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
+  const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
+  const total = planPrice + addonsTotal;
+
+  const numero = nextNumero('COT');
+
+  const quote = {
+    id:         `q_${Date.now()}`,
+    numero,
+    clientType,
+    clientName: name,
+    clientId:   cid,
+    razonSocial:document.getElementById('qRazonSocial').value,
+    dv:         document.getElementById('qDV')?.value || '',
+    repLegal:   '',
+    phone,
+    email:      document.getElementById('qEmail').value,
+    address:    document.getElementById('qAddress').value,
+    sessionDate:document.getElementById('qDate').value,
+    sessionTime:document.getElementById('qTime').value,
+    location:   document.getElementById('qLocation').value,
+    plan:       planName,
+    planPrice,
+    addons,
+    total,
+    notes:      document.getElementById('qNotes').value,
+    status:     'pending',
+    createdAt:  (function(){ const d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); })(),
+  };
+
+  state.quotes.push(quote);
+  // Guardar en Supabase tabla cotizaciones
+  if (sbClient) {
+    sbClient.from('cotizaciones').upsert([{
+      id:           quote.id,
+      numero:       quote.numero,
+      client_name:  quote.clientName,
+      client_id:    quote.clientId,
+      client_type:  quote.clientType,
+      razon_social: quote.razonSocial || '',
+      dv:           quote.dv || '',
+      phone:        quote.phone,
+      email:        quote.email,
+      address:      quote.address || '',
+      session_date: quote.sessionDate || '',
+      session_time: quote.sessionTime || '',
+      location:     quote.location || '',
+      plan:         quote.plan,
+      plan_price:   quote.planPrice,
+      addons:       JSON.stringify(quote.addons || []),
+      total:        quote.total,
+      notes:        quote.notes || '',
+      status:       quote.status,
+      created_at:   quote.createdAt,
+    }]).then(({error}) => {
+      if (error) console.error('Supabase cotizacion error:', error);
+    });
+  }
+  localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
+
+  // Also feed into the unified reservas system so it appears in Reservas
+  // with the same control module (status, abono, PDFs)
+  try {
+    const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
+    const [y,m,d] = (quote.sessionDate || '').split('-');
+    const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
+    const reservaRecord = {
+      id:         quote.id,
+      numero,
+      nombre:     name,
+      tel:        phone,
+      email:      quote.email,
+      plan:       planName,
+      notas:      quote.notes,
+      fecha:      quote.sessionDate || '',
+      fechaLabel,
+      hora:       quote.sessionTime || '',
+      horaVal:    quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
+      status:     'pending',
+      abono:      0,
+      totalManual: total,
+      clientId:   cid,
+      clientType,
+      razonSocial: quote.razonSocial,
+    repLegal:    '',
+      address:     quote.address,
+      extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
+      origin:     'manual',
+      createdAt:  quote.createdAt,
+    };
+    reservas.push(reservaRecord);
+    localStorage.setItem('jans_reservas', JSON.stringify(reservas));
+    // Mirror to Supabase so it's visible from any device too
+    if (sbClient) {
+      sbClient.from('reservas').insert([reservaRecord]).then(({error}) => {
+        if (error) console.error('Supabase insert (manual quote) error:', error);
+      });
+    }
+  } catch(e) {}
+
+  showToast('Cotización ' + numero + ' guardada ✓');
+  clearQuoteForm();
+  updateDashboard(); renderQuotesTable();
+  showSection('quotes');
+}
+function clearQuoteForm() {
+  ['qClientName','qClientId','qRazonSocial','qDV','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('qPlan').value = '';
+  document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
+  selectClientType('natural'); updateTotal();
+}
+function pdfCompanyInfo() {
+  const c = getCompanyData();
+  const ubicacion = [c.corregimiento, c.distrito, c.calle].filter(Boolean).join(', ');
+  return {
+    nombre:    c.nombre || CONFIG.COMPANY_NAME || 'Jans Photograph',
+    telefono:  c.telefono || CONFIG.COMPANY_PHONE || '',
+    email:     c.email || CONFIG.COMPANY_EMAIL || '',
+    ruc:       c.ruc || '',
+    dv:        c.dv || '',
+    ubicacion: ubicacion || '',
+    logoPath:  c.logoPath || ''
+  };
+}
+async function loadImageAsDataUrl(path) {
+  if (!path) return null;
+  try {
+    const url = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) { return null; }
+}
+function pdfCompanyFooterLine(company) {
+  const parts = [company.telefono, company.email, company.ubicacion].filter(Boolean);
+  return parts.join(' · ');
+}
+async function copyEventoForm(tipo) {
+  const text  = tipo === 'natural' ? EVENTO_FORM_NATURAL : EVENTO_FORM_JURIDICA;
+  const msgId = tipo === 'natural' ? 'msgNatural' : 'msgJuridica';
+
+  // Actualizar preview
+  const preview = document.getElementById('eventoFormPreview');
+  if (preview) preview.textContent = text;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    const msg = document.getElementById(msgId);
+    if (msg) {
+      msg.style.display = '';
+      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+    showToast('Formulario copiado al portapapeles ✓');
+  } catch(e) {
+    // Fallback para browsers sin clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Formulario copiado ✓');
+  }
+}
+function initEventoForm() {
+  // Mostrar preview del formulario natural por defecto
+  const preview = document.getElementById('eventoFormPreview');
+  if (preview) preview.textContent = EVENTO_FORM_NATURAL;
+}
+const EVENTO_FORM_NATURAL = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH
+
+Hola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:
+
+👤 Nombre completo: 
+🪪 Cédula: 
+📧 Correo electrónico: 
+📅 Fecha del evento: 
+📍 Lugar del evento: 
+🕐 Hora estimada de inicio: 
+
+¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
+
+const EVENTO_FORM_JURIDICA = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH
+
+Hola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:
+
+👤 Nombre completo / Razón social: 
+🏢 RUC: 
+🔢 DV: 
+🪪 Cédula del representante: 
+📧 Correo electrónico: 
+📅 Fecha del evento: 
+📍 Lugar del evento: 
+🕐 Hora estimada de inicio: 
+
+¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
+
+// ── selectQuoteTipo ──
+let quoteTipo = 'fotografico';
+function selectQuoteTipo(tipo) {
+  quoteTipo = tipo;
+  document.getElementById('qTipoFoto').classList.toggle('selected', tipo==='fotografico');
+  document.getElementById('qTipoEvento').classList.toggle('selected', tipo==='evento');
+  document.getElementById('qBloqueFoto').style.display   = tipo==='fotografico' ? '' : 'none';
+  document.getElementById('qBloqueEvento').style.display = tipo==='evento'      ? '' : 'none';
+  updateTotal();
+}
+
+function onQPlanChange() {
+  const sel=document.getElementById('qPlan');
+  const opt=sel?.options[sel.selectedIndex];
+  const infoEl=document.getElementById('qPlanInfo');
+  const pb=document.getElementById('qFotoPersonasBlock');
+  const pl=document.getElementById('qFotoPersonasLabel');
+  if(opt&&opt.value){
+    const desc=opt.dataset.desc||'';
+    const maxX=parseInt(opt.dataset.maxExtra)||0;
+    const prX=parseFloat(opt.dataset.precioExtra)||0;
+    if(infoEl){infoEl.style.display=desc?'':'none';infoEl.textContent=desc;}
+    if(pb){
+      pb.style.display=maxX>0?'':'none';
+      if(pl)pl.textContent='Personas adicionales (max. '+maxX+' — $'+prX.toFixed(2)+' c/u)';
+      const pe=document.getElementById('qFotoPrecioPersona');if(pe)pe.value=prX;
+      const pa=document.getElementById('qFotoPersonas');if(pa){pa.max=maxX;pa.value=0;}
+    }
+  } else {
+    if(infoEl)infoEl.style.display='none';
+    if(pb)pb.style.display='none';
+  }
+  updateTotal();
+}
+
+function onQFotoExteriorChange() {
+  const checked=document.getElementById('qFotoExterior')?.checked;
+  const block=document.getElementById('qFotoExteriorBlock');
+  if(block)block.style.display=checked?'':'none';
+  if(!checked){
+    const t=document.getElementById('qFotoTransporte');if(t)t.value=0;
+    const l=document.getElementById('qFotoLugar');if(l)l.value='';
+  }
+  updateTotal();
+}
+
+function _renderQPlanOptions(sel, current) {
+  const cats={};
+  publicPlans.forEach(p=>{
+    const cat=p.categoria||p.category||'sin-categoria';
+    if(!cats[cat])cats[cat]=[];
+    cats[cat].push(p);
+  });
+  let html='<option value="">Seleccionar plan</option>';
+  if(!Object.keys(cats).length){
+    html='<option value="">Sin planes disponibles</option>';
+  } else {
+    Object.entries(cats).forEach(([cat,planes])=>{
+      const label=(typeof CAT_LABELS!=='undefined'&&CAT_LABELS[cat])?CAT_LABELS[cat]:cat;
+      html+='<optgroup label="'+label+'">';
+      planes.forEach(p=>{
+        const desc=(p.descripcion||'').replace(/"/g,'&quot;');
+        html+='<option value="'+p.nombre+'" data-price="'+p.precio+'" data-desc="'+desc+'" data-max-extra="'+(p.personasExtra||0)+'" data-precio-extra="'+(p.precioPersonaExtra||0)+'">'+p.nombre+' — $'+parseFloat(p.precio||0).toFixed(2)+'</option>';
+      });
+      html+='</optgroup>';
+    });
+  }
+  sel.innerHTML=html;
+  sel.value=current;
+  onQPlanChange();
+  renderServiceChecks();
+}
+
+function renderQFinancialSummary(total,abono,pagado,pendiente,prog){
+  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$'+total.toFixed(2)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$'+abono.toFixed(2)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:'+(pendiente>0?'#fca5a5':'#86efac')+'">$'+pendiente.toFixed(2)+'</span></div>'
+    +'<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+prog+'%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>'
+    +'<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">'+prog+'% pagado</div>';
+}
+
+function updateQFinancials(id){
+  const total=parseFloat(document.getElementById('qTotalInput')?.value)||0;
+  const abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
+  const pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
+  const pendiente=Math.max(0,total-abono-pagado);
+  const prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
+  const el=document.getElementById('qFinancialSummary');
+  if(el)el.innerHTML=renderQFinancialSummary(total,abono,pagado,pendiente,prog);
+}
+
+function changeQuoteStatus(id,status){
+  const q=state.quotes.find(x=>x.id===id);if(!q)return;
+  q.status=status;
+  // Persistir inmediatamente en localStorage y Supabase
+  localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
+  if(sbClient){
+    sbClient.from('cotizaciones').update({status:status}).eq('id',id)
+      .then(function(r){ if(r.error) console.warn('sbUpdate status:', r.error.message); });
+  }
+  const badge=document.getElementById('qStatusBadge');
+  if(badge){badge.className='badge-status '+statusClassQ(status);badge.textContent=statusLabel(status);}
+  ['pending','confirmed','completed','postponed','cancelled'].forEach(function(s){
+    const classes={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
+    const btn=document.querySelector('#quoteModalBody .btn[onclick*="changeQuoteStatus(\''+id+'\',\''+s+'\')"]');
+    if(btn)btn.className='btn btn-sm '+(s===status?classes[s]:'btn-outline');
+  });
+}
+
+async function blockCalendarForQuote(q){
+  try{
+    const parts=(q.sessionTime||'0:0').split(':');
+    const hh=parseInt(parts[0])||0;
+    const durHoras=q.eventoData?.horas||1;
+    const fecha=q.sessionDate;if(!fecha)return;
+    let cal={};
+    try{cal=JSON.parse(localStorage.getItem('jans_calendar')||'{}');}catch(e){}
+    if(!cal[fecha]||typeof cal[fecha]==='string')cal[fecha]={};
+    const horaInicio = Math.max(0,hh-2);
+    const horaFin = Math.min(23,hh+Math.ceil(durHoras)+1);
+    const titulo = 'Cotizacion '+(q.numero||'')+' - '+q.clientName;
+    cal[fecha]=Object.assign({},cal[fecha],{type:'event',blockType:'hours',horaInicio,horaFin,quoteLock:q.id,titulo});
+    localStorage.setItem('jans_calendar',JSON.stringify(cal));
+    if (sbClient) {
+      await sbUpsert('calendario', {
+        id: fecha,
+        fecha: fecha,
+        titulo,
+        notas: '',
+        color: '',
+        block_type: 'hours',
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
+        status: 'evento'
+      });
+    }
+    showToast('Calendario bloqueado: '+fecha+' OK');
+  }catch(e){console.warn('blockCalendar',e);}
+}
+
+async function saveQuoteChanges(id){
+  const q=state.quotes.find(x=>x.id===id);if(!q)return;
+  const newTotal=parseFloat(document.getElementById('qTotalInput')?.value);
+  if(!isNaN(newTotal))q.total=newTotal;
+  q.abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
+  q.pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
+  // Guardar extras editados desde el modal
+  if(Array.isArray(window._modalExtras)){q.addons=window._modalExtras.slice();}
+  // Guardar fecha de cotización editada
+  const newCat = document.getElementById('qCreatedAtInput')?.value;
+  if(newCat){
+    const [cy,cm,cd] = newCat.split('-');
+    q.createdAt = parseInt(cd)+'/'+parseInt(cm)+'/'+cy;
+  }
+  // Sincronizar Supabase — solo columnas que existen en cotizaciones
+  if(sbClient){
+    const sbPayload = { addons: JSON.stringify(q.addons||[]), total: q.total, status: q.status, abono: q.abono||0, pagado: q.pagado||0 };
+    sbClient.from('cotizaciones').update(sbPayload).eq('id', id)
+      .then(({error})=>{
+        if(error){
+          // Si falla por columnas faltantes, reintentar sin abono/pagado
+          console.warn('sbUpdate cotizacion:', error.message);
+          if(error.message && error.message.includes('column')){
+            sbClient.from('cotizaciones').update({ addons: sbPayload.addons, total: sbPayload.total, status: sbPayload.status }).eq('id', id)
+              .then(({error:e2})=>{ if(e2) console.warn('sbUpdate retry:', e2.message); });
+          }
+        }
+      });
+  }
+  if(q.status==='confirmed'&&q.sessionDate&&q.sessionTime)await blockCalendarForQuote(q);
+  localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
+  renderQuotesTable();
+  closeModal('quoteModal');
+  showToast('Cotizacion '+(q.numero||'')+' guardada ✓');
+}
+
+function sanitizeText(str){
+  if(!str)return'';
+  return String(str).replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();
+}
+
+// Convertir "dd/mm/yyyy" o ISO a "yyyy-mm-dd" para input type="date"
+function toDateInputVal(str) {
+  if (!str || str === '—') return '';
+  str = String(str).trim();
+  // ISO yyyy-mm-dd o yyyy-mm-ddT...
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const p = str.substring(0,10).split('-').map(Number);
+    // si el segundo segmento > 12 está invertido (yyyy-dd-mm)
+    if (p[1] > 12) return p[0]+'-'+String(p[2]).padStart(2,'0')+'-'+String(p[1]).padStart(2,'0');
+    return str.substring(0,10);
+  }
+  // Formato con barras: puede ser dd/mm/yyyy o mm/dd/yyyy
+  const parts = str.split('/').map(Number);
+  if (parts.length === 3) {
+    let [a, b, y] = parts;
+    // si el año está al final (dd/mm/yyyy o mm/dd/yyyy)
+    if (y > 31) {
+      // a > 12 → seguro que es día/mes
+      const day = a > 12 ? a : b;
+      const mon = a > 12 ? b : a;
+      return y+'-'+String(mon).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    }
+    // año al principio yyyy/mm/dd
+    return String(a)+'-'+String(b).padStart(2,'0')+'-'+String(y).padStart(2,'0');
+  }
+  return '';
+}
+
+function viewQuote(id){
+  const q=state.quotes.find(x=>x.id===id);if(!q)return;
+  const total=parseFloat(q.total)||0,abono=parseFloat(q.abono)||0,pagado=parseFloat(q.pagado)||0;
+  const pendiente=Math.max(0,total-abono-pagado),prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
+  document.getElementById('quoteModalTitle').textContent=(q.numero||'Cotizacion')+' - '+q.clientName;
+  
+  const addonsPos = (q.addons||[]).filter(function(a){return a.price>0;}).map(function(a){
+    return '<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ '+a.name+'</span><span>$'+parseFloat(a.price).toFixed(2)+'</span></div>';
+  }).join('');
+  const addonsZero = (q.addons||[]).filter(function(a){return !a.price||a.price===0;}).map(function(a){
+    return '<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">- '+a.name+'</div>';
+  }).join('');
+
+  const statusBtns = ['pending','confirmed','completed','postponed','cancelled'].map(function(s){
+    const labels={pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada'};
+    const cls={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
+    const active=q.status===s?cls[s]:'btn-outline';
+    return '<button class="btn btn-sm '+active+'" onclick="changeQuoteStatus(\''+q.id+'\',\''+s+'\')">'+labels[s]+'</button>';
+  }).join('');
+
+  // Cargar servicios adicionales de Supabase para el selector
+  let modalSAOptions = '<option value="">— Seleccionar servicio —</option>';
+  try {
+    loadServAdicionales();
+    (servData.items||[]).forEach(function(s){
+      modalSAOptions += '<option value="'+s.id+'" data-price="'+parseFloat(s.precio||0).toFixed(2)+'" data-name="'+s.nombre.replace(/"/g,'&quot;')+'">'+s.nombre+' — $'+parseFloat(s.precio||0).toFixed(2)+'</option>';
+    });
+  } catch(e){}
+
+  // Extras actuales de la cotización (para mostrar la lista editable)
+  const currentExtras = JSON.parse(JSON.stringify(q.addons || []));
+  window._modalExtras = currentExtras;
+  window._modalBaseTotal = parseFloat(q.planPrice)||0;
+
+  function _buildExtrasHTML() {
+    if(!window._modalExtras.length) return '<div id="extrasEmptyMsg" style="color:var(--gray);font-size:0.82rem;padding:8px 0">Sin extras añadidos aún.</div>';
+    return window._modalExtras.map(function(a,i){
+      return '<div id="extra-row-'+i+'" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--black);border-radius:8px;margin-bottom:6px">'
+        +'<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">'+a.name+'</span>'
+        +(a.price>0?'<span style="color:var(--pink-l);font-size:0.82rem;margin-left:8px">+$'+parseFloat(a.price).toFixed(2)+'</span>':'<span style="color:var(--gray);font-size:0.78rem;margin-left:8px">gratis</span>')+'</div>'
+        +'<button onclick="removeModalExtra('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px" title="Eliminar">✕</button>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.removeModalExtra = function(i){
+    window._modalExtras.splice(i,1);
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    _recalcModalTotal();
+  };
+  window.addModalSAExtra = function(){
+    const sel = document.getElementById('modalSASelect');
+    const opt = sel.options[sel.selectedIndex];
+    if(!opt||!opt.value) return;
+    const name  = opt.dataset.name;
+    const price = parseFloat(opt.dataset.price)||0;
+    window._modalExtras.push({name,price});
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    sel.value='';
+    _recalcModalTotal();
+  };
+  window.addModalCustomExtra = function(){
+    const nameEl  = document.getElementById('modalCustomName');
+    const priceEl = document.getElementById('modalCustomPrice');
+    const name    = (nameEl.value||'').trim();
+    const price   = parseFloat(priceEl.value)||0;
+    if(!name){nameEl.focus();return;}
+    window._modalExtras.push({name,price});
+    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+    nameEl.value=''; priceEl.value='';
+    _recalcModalTotal();
+  };
+  function _recalcModalTotal(){
+    const base = window._modalBaseTotal;
+    const extrasSum = window._modalExtras.reduce(function(s,a){return s+parseFloat(a.price||0);},0);
+    const newTotal  = base + extrasSum;
+    const inp = document.getElementById('qTotalInput');
+    if(inp){ inp.value = newTotal.toFixed(2); }
+    // Disparar actualización financiera sin pasar id (lee inputs directamente)
+    const qId = inp ? inp.dataset.qid : '';
+    updateQFinancials(qId);
+  }
+
+  document.getElementById('quoteModalBody').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
+    +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>'
+    +'<div style="font-weight:700">'+q.clientName+'</div>'
+    +'<div style="color:var(--gray-l);font-size:0.82rem">'+(q.clientType==='juridica'?'Juridica':'Natural')+' - '+(q.clientId||'')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>'
+    +'<span id="qStatusBadge" class="badge-status '+statusClassQ(q.status)+'">'+statusLabel(q.status)+'</span></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>'+(q.phone||'—')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>'+(q.email||'—')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>'
+    +'<input type="date" id="qCreatedAtInput" value="'+toDateInputVal(q.createdAt)+'" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />'
+    +'</div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">'+(q.sessionDate||'—')+' '+(q.sessionTime||'')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>'+(q.location||'—')+'</div></div>'
+    +'</div>'
+    +'<hr class="section-divider"/>'
+    +'<span class="section-label-sm">Plan &amp; Servicios</span>'
+    +'<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">'
+    +'<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>'+(q.plan||'Sin plan')+'</span><span>$'+(q.planPrice||0).toFixed(2)+'</span></div>'
+    +addonsPos+addonsZero
+    +'</div>'
+
+    // ── EXTRAS ADICIONALES ──
+    +'<hr class="section-divider"/>'
+    +'<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>'
+    // Lista de extras actuales
+    +'<div id="modalExtrasList" style="margin-bottom:12px">'+_buildExtrasHTML()+'</div>'
+    // Selector desde Supabase
+    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">'
+    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>'
+    +'<div style="display:flex;gap:8px;align-items:center">'
+    +'<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">'+modalSAOptions+'</select>'
+    +'<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>'
+    +'</div></div>'
+    // Item personalizado
+    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">'
+    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
+    +'<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
+    +'<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>'
+    +'</div></div>'
+
+    +'<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>'
+    +'<input type="number" id="qTotalInput" data-qid="'+q.id+'" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'<hr class="section-divider"/>'
+    +'<span class="section-label-sm">Control Financiero</span>'
+    +'<div class="form-row" style="margin-bottom:8px">'
+    +'<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="'+abono.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="'+pagado.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'</div>'
+    +'<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
+    +renderQFinancialSummary(total,abono,pagado,pendiente,prog)
+    +'</div>'
+    +'<hr class="section-divider"/>'
+    +'<span class="section-label-sm">Estado</span>'
+    +'<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">'+statusBtns+'</div>'
+    +(q.notes?'<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">'+q.notes+'</p>':'');
+
+  const fEl=document.getElementById('quoteModalFooter');
+  if(fEl)fEl.innerHTML=
+    '<button class="btn btn-pink" onclick="saveQuoteChanges(\''+q.id+'\')">'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar'
+    +'</button>'
+    +'<button class="btn btn-outline" onclick="generateQuotePDF(\''+q.id+'\')">PDF</button>'
+    +'<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\''+q.id+'\')">Factura</button>'
+    +'<button class="btn btn-ghost" onclick="closeModal(\'quoteModal\')">Cancelar</button>'
+    +'<button class="btn btn-red" onclick="deleteQuote(\''+q.id+'\')">Eliminar</button>';
+
+  openModal('quoteModal');
+}
+
+
+function showPDF(id) {
+  const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  state.currentPDFQuote = q;
+  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
+  document.getElementById('pdfPreview').innerHTML = `
+    <div class="pdf-header">
+      <div class="pdf-company">
+        <h1>${CONFIG.COMPANY_NAME}</h1>
+        <p>${CONFIG.COMPANY_PHONE}</p>
+        <p>${CONFIG.COMPANY_EMAIL}</p>
+        <p>${CONFIG.COMPANY_WEB}</p>
+      </div>
+      <div class="pdf-quote-info">
+        <h2>COTIZACIÓN</h2>
+        <p><strong>#${qNum}</strong></p>
+        <p>Fecha: ${q.createdAt}</p>
+        <p>Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}</p>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h3>Datos del Cliente</h3>
+      <div class="pdf-grid">
+        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${q.clientName}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${q.clientId||'—'}</div></div>
+        ${q.clientType==='juridica'?`
+        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${q.razonSocial||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${q.dv||'—'}</div></div>`:''}
+        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${q.phone||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${q.email||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${q.address||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${q.location||'—'}</div></div>
+      </div>
+    </div>
+    <div class="pdf-section">
+      <h3>Detalle de Servicios</h3>
+      <table class="pdf-table">
+        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>
+        <tbody>
+          ${q.plan?`<tr><td><strong>${q.plan}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
+          ${(q.addons||[]).map(a=>`<tr><td>${a.name}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
+          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total||0).toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${q.notes}</p></div>`:''}
+    <div class="pdf-footer">
+      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>
+      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}
+    </div>`;
+  openModal('pdfModal');
+}
+
+function downloadPDF() {
+  const q = state.currentPDFQuote; if(!q) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
+  const margin = 18; let y = 20;
+
+  // Header
+  doc.setFillColor(199,30,95); doc.rect(0,0,210,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`COTIZACIÓN #${qNum}`, 210-margin, 9.5, {align:'right'});
+
+  y = 24;
+  // Company info
+  doc.setTextColor(120,120,120); doc.setFontSize(8);
+  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y); y+=5;
+  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}`, margin, y); y+=8;
+
+  // Section: Client
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE', margin, y); y+=6;
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  const clientData = [
+    ['Nombre:', q.clientName], ['Cédula/RUC:', q.clientId||'—'],
+    ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['DV:', q.dv||'—']]:[]),
+    ['Teléfono:', q.phone||'—'], ['Email:', q.email||'—'],
+    ['Dirección:', q.address||'—'], ['Lugar:', q.location||'—'],
+  ];
+  clientData.forEach(([l,v],i) => {
+    const col = i%2===0?margin:110;
+    if(i%2===0) { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); }
+    else        { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); y+=5; }
+  });
+  if(clientData.length%2!==0) y+=5; y+=6;
+
+  // Section: Services
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DETALLE DE SERVICIOS', margin, y); y+=7;
+  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y+=4;
+  doc.line(margin, y, 210-margin, y); y+=4;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+  if(q.plan){ doc.setFont('helvetica','bold'); doc.text(q.plan, margin, y); doc.text(`$${(q.planPrice||0).toFixed(2)}`, 210-margin, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=5; }
+  (q.addons||[]).forEach(a => { doc.text(a.name, margin+4, y); doc.text(`$${a.price.toFixed(2)}`, 210-margin, y, {align:'right'}); y+=5; });
+  y+=2; doc.line(margin, y, 210-margin, y); y+=6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(199,30,95);
+  doc.text('TOTAL ESTIMADO', margin, y); doc.text(`$${(q.total||0).toFixed(2)}`, 210-margin, y, {align:'right'}); y+=10;
+
+  if(q.notes) { doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.text('NOTAS:', margin, y); y+=4; doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); const lines=doc.splitTextToSize(q.notes,170); doc.text(lines,margin,y); y+=lines.length*4+4; }
+
+  // Footer
+  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {align:'center'});
+
+  doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
+  showToast('PDF descargado ✓');
+}
+
+
+function getCompanyData() {
+  try { return JSON.parse(localStorage.getItem('jans_company') || '{}'); } catch(e) { return {}; }
+}
+
+async function loadLogoForPDF() {
+  // Intentar con loadImageAsDataUrl si CONFIG_PUBLIC está disponible
+  const base = (typeof CONFIG_PUBLIC !== 'undefined' && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO)
+    ? 'https://raw.githubusercontent.com/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/main/'
+    : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/';
+  const comp = pdfCompanyInfo();
+  const paths = [
+    comp.logoPath,
+    'assets/images/icons/Janssocialmedialogo.png',
+    'assets/images/icons/Janssocialmedialogo.jpg',
+    'assets/images/icons/Janssocialmedialogo.webp',
+  ].filter(Boolean);
+  for (const p of paths) {
+    try {
+      const url = base + p;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      const dataUrl = await new Promise(r => {
+        const fr = new FileReader();
+        fr.onloadend = () => r(fr.result);
+        fr.onerror  = () => r(null);
+        fr.readAsDataURL(blob);
+      });
+      if (dataUrl) return dataUrl;
+    } catch(e) { continue; }
+  }
+  return null;
+}
+
+// Formatear fecha "2026-06-26" o "26/6/2026" → "26 de Junio 2026"
+function fmtFechaPDF(str) {
+  if (!str || str === '—') return '—';
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  str = String(str).trim();
+  // ISO yyyy-mm-dd
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const [y,m,d] = str.substring(0,10).split('-').map(Number);
+    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+  }
+  // dd/mm/yyyy
+  const parts = str.split('/');
+  if (parts.length === 3) {
+    const [d,m,y] = parts.map(Number);
+    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+  }
+  return str;
+}
+
+// ════════════════════════════════════════════
+//  PDF CONFIRMACIÓN — modelo "RESERVA CONFIRMADA"
+// ════════════════════════════════════════════
+async function generateQuotePDF(id) {
+  const q = state.quotes.find(x => x.id === id); if (!q) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const comp = pdfCompanyInfo();
+  const footer = pdfCompanyFooterLine(comp);
+  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const margin = 14;
+  const pageW = 210;
+  const today = new Date().toLocaleDateString('es-PA');
+  let y = 0;
+
+  // ── HEADER OSCURO ──
+  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  const logo = await loadLogoForPDF();
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+  } else {
+    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('JP', margin+10, 18, {align:'center'});
+  }
+  // Empresa — izquierda
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(comp.nombre, 40, 13);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
+  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.text(comp.email, 40, 22);
+  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
+  // Derecha — número arriba, fecha abajo, RUC
+  doc.setTextColor(180,180,180); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 9, {align:'right'});
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('# ' + qNum, pageW-margin, 18, {align:'right'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text('Emitido: ' + today, pageW-margin, 24, {align:'right'});
+
+  y = 40;
+
+  // ── CINTILLO VERDE ──
+  doc.setFillColor(34,197,94); doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 12, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+  doc.text('COTIZACIÓN CONFIRMADA', pageW/2, y+8, {align:'center'});
+  y += 26;
+
+  // ── DATOS DE LA RESERVA ──
+  const col2 = 112;
+  const dataRows = [
+    ['Cliente',      q.clientName,            'Fecha de sesión', fmtFechaPDF(q.sessionDate)],
+    ['Teléfono',     q.phone || '—',          'Hora',            q.sessionTime || '—'],
+    ['Email',        q.email || '—',          'Plan',            q.plan || '—'],
+    ['# Cotización', qNum,                    'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+  ];
+  const dataH = 14 + dataRows.length * 9 + 4;
+  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, dataH, 3, 3, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DE LA RESERVA', margin+2, y); y += 9;
+
+  dataRows.forEach(([l1,v1,l2,v2]) => {
+    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l1 + ':', margin+2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(v1||'—'), margin+30, y);
+    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l2 + ':', col2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(v2||'—'), col2+34, y);
+    y += 9;
+  });
+  y += 14;
+
+  // ── RESUMEN DE PAGO ──
+  const total     = parseFloat(q.total)||0;
+  const abono     = parseFloat(q.abono)||0;
+  const pagado    = parseFloat(q.pagado)||0;
+  const pend      = Math.max(0, total - abono - pagado);
+  const planPrice = parseFloat(q.planPrice)||0;
+  const addonsPos = (q.addons||[]).filter(a => parseFloat(a.price||0) > 0);
+  const pagoH = 14 + 11 + (addonsPos.length*8) + 8 + (abono>0?8:0) + (pagado>0?8:0) + 12;
+
+  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, pagoH, 3, 3, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('RESUMEN DE PAGO', margin+2, y); y += 10;
+
+  // Plan
+  doc.setTextColor(20,20,20); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('Plan:', margin+4, y);
+  doc.text(q.plan || '—', margin+22, y);
+  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 9;
+
+  // Extras
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,70,70);
+  addonsPos.forEach(a => {
+    doc.text(a.name||'', margin+6, y);
+    doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+    y += 8;
+  });
+
+  y += 2;
+  doc.setDrawColor(220,220,220); doc.line(margin+4, y, pageW-margin-2, y); y += 8;
+
+  doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total:', margin+4, y);
+  doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20);
+  doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+
+  if (abono > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    doc.text('Abonado:', margin+4, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+  }
+  if (pagado > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    doc.text('Pago adicional:', margin+4, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text('$'+pagado.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+  }
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.setTextColor(199,30,95);
+  doc.text('Saldo pendiente:', margin+4, y);
+  doc.text('$'+pend.toFixed(2), pageW-margin, y, {align:'right'});
+
+  // ── FOOTER ──
+  doc.setFillColor(30,30,30); doc.rect(0, 272, pageW, 25, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 282, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180,180,180);
+  doc.text(footer, pageW/2, 290, {align:'center'});
+  doc.save('Confirmacion_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '_' + qNum + '.pdf');
+  showToast('PDF de confirmación descargado ✓');
+}
+
+// ════════════════════════════════════════════
+//  PDF FACTURA — modelo con constancia
+// ════════════════════════════════════════════
+async function generateQuoteInvoicePDF(id) {
+  const q = state.quotes.find(x => x.id === id); if (!q) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const comp = pdfCompanyInfo();
+  const footer = pdfCompanyFooterLine(comp);
+  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const margin = 14;
+  const pageW = 210;
+
+  // Número de factura correlativo
+  let facNum = parseInt(localStorage.getItem('jans_factura_counter')||'0') + 1;
+  localStorage.setItem('jans_factura_counter', String(facNum));
+  const facNumStr = String(facNum).padStart(3,'0');
+  const today = new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  let y = 0;
+
+  // ── HEADER OSCURO ──
+  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  const logo = await loadLogoForPDF();
+  if (logo) {
+    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+  } else {
+    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('JP', margin+10, 18, {align:'center'});
+  }
+  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(comp.nombre, 40, 13);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
+  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.text(comp.email, 40, 22);
+  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
+  // Derecha
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('FACTURA #' + facNumStr, pageW-margin, 13, {align:'right'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text('Emitida: ' + today, pageW-margin, 19, {align:'right'});
+  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 25, {align:'right'});
+
+  y = 42;
+
+  // ── DATOS DEL CLIENTE Y SESIÓN ──
+  doc.setFillColor(248,248,248); doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
+  doc.rect(margin-2, y-4, pageW-(margin*2)+4, 48, 'FD');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
+
+  const col2 = 115;
+  const clientRows = [
+    ['Nombre',    q.clientName,         'Fecha de sesión', q.sessionDate || '—'],
+    ['Cédula/RUC',q.clientId || '—',   'Hora',            q.sessionTime || '—'],
+    ['Teléfono',  q.phone || '—',       'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+    ['Email',     q.email || '—',       'Origen',          qNum],
+  ];
+  clientRows.forEach(([l1,v1,l2,v2]) => {
+    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(l1 + ':', margin, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
+    doc.text(String(v1||'—'), margin+26, y);
+    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
+    doc.text(l2 + ':', col2, y);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
+    doc.text(String(v2||'—'), col2+30, y);
+    y += 7;
+  });
+  y += 14;
+
+  // ── PLANES Y SERVICIOS ──
+  doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y-4, pageW-(margin*2)+4, 70, 3, 3, 'D');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('PLANES Y SERVICIOS', margin, y); y += 6;
+  // Encabezado tabla
+  doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text('DESCRIPCIÓN', margin+4, y); doc.text('PRECIO', pageW-margin, y, {align:'right'});
+  doc.setDrawColor(200,200,200); doc.line(margin+2, y+2, pageW-margin, y+2); y += 7;
+
+  // Plan
+  const planPrice = parseFloat(q.planPrice)||0;
+  doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+  doc.text(q.plan || '—', margin+4, y);
+  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 7;
+
+  // Extras con precio
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(60,60,60);
+  (q.addons||[]).forEach(a => {
+    if (parseFloat(a.price||0) > 0) {
+      doc.text(a.name||'', margin+4, y);
+      doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+      y += 5;
+    }
+  });
+  y += 4;
+
+  // Totales
+  const total  = parseFloat(q.total)||0;
+  const abono  = parseFloat(q.abono)||0;
+  const pagado = parseFloat(q.pagado)||0;
+  const pend   = Math.max(0, total - abono - pagado);
+
+  doc.setDrawColor(220,220,220); doc.line(margin+2, y, pageW-margin, y); y += 5;
+  doc.setTextColor(60,60,60); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Total de plan(es):', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20); doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+  if (abono > 0) {
+    doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+    doc.text('Abono realizado:', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(34,197,94); doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+  }
+  doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+  doc.text('Cancelación completa:', margin+4, y);
+  doc.setFont('helvetica','bold'); doc.setTextColor(199,30,95);
+  doc.text('Pendiente: $'+pend.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+
+  // Barra TOTAL FACTURADO
+  doc.setFillColor(199,30,95); doc.roundedRect(margin-2, y-4, pageW-(margin*2)+4, 11, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('TOTAL FACTURADO', margin+4, y+3);
+  doc.text('$'+total.toFixed(2), pageW-margin, y+3, {align:'right'});
+  y += 18;
+
+  // ── CAJA SELLO ──
+  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
+  doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 14, 2, 2, 'D');
+  doc.setTextColor(160,160,160); doc.setFontSize(8); doc.setFont('helvetica','italic');
+  doc.text('Factura que no presente sello es nula', pageW/2, y+9, {align:'center'});
+  y += 20;
+
+  // ── FOOTER fijo en la página ──
+  const footerY = 230;
+  doc.setFillColor(30,30,30); doc.rect(0, footerY, pageW, 18, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, footerY+7, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,180,180);
+  doc.text(footer, pageW/2, footerY+13, {align:'center'});
+
+  // ── LÍNEA PUNTEADA + CONSTANCIA — pegada debajo del footer ──
+  let cy = footerY + 22;
+  doc.setDrawColor(140,140,140); doc.setLineWidth(0.2);
+  for (let x = margin; x < pageW-margin; x += 4) doc.line(x, cy, x+2, cy);
+  doc.setTextColor(140,140,140); doc.setFontSize(7); doc.setFont('helvetica','italic');
+  doc.text("' Constancia — recortar y conservar", pageW/2, cy+5, {align:'center'});
+  cy += 10;
+
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('CONSTANCIA DE FACTURACIÓN', margin, cy); cy += 7;
+
+  doc.setTextColor(80,80,80); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  const constLeft  = [['Factura','#'+facNumStr],['Origen',qNum],['Plan', q.plan||'—']];
+  const constRight = [['Cliente',q.clientName],['Teléfono',q.phone||'—'],['Total','$'+total.toFixed(2)]];
+  constLeft.forEach(([l,v],i) => {
+    doc.setTextColor(120,120,120); doc.text(l+':', margin, cy);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(v||'—'), margin+20, cy);
+    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); doc.text(constRight[i][0]+':', col2, cy);
+    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(constRight[i][1]||'—'), col2+22, cy);
+    doc.setFont('helvetica','normal'); cy += 6;
+  });
+  cy += 4;
+  doc.setDrawColor(150,150,150); doc.line(margin, cy, margin+70, cy);
+  doc.setTextColor(120,120,120); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('Firma del cliente', margin, cy+4);
+
+  doc.save('Factura_' + facNumStr + '_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '.pdf');
+  showToast('Factura #' + facNumStr + ' descargada ✓');
+}
+
+
+// ── Supabase helpers ──
+
+async function sbUpsert(tabla, datos) {
+  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  try {
+    const { error } = await sbClient.from(tabla).upsert(
+      Array.isArray(datos) ? datos : [datos],
+      { onConflict: 'id' }
+    );
+    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    return true;
+  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+}
+
+async function sbDelete(tabla, id) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetAll(tabla, order='created_at') {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    if (error) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+// Guardar en config_sitio
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  loadQuotes();
+  renderQuotesTable();
+  loadPublicPlans();
+  // Cargar servicios adicionales en state
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    state.services = {
+      makeup: Array.isArray(saved.makeup) ? saved.makeup : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='makeup') : []),
+      print:  Array.isArray(saved.print)  ? saved.print  : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='print')  : [])
+    };
+  } catch(e) { state.services = { makeup: [], print: [] }; }
+  updateQPlanSelect();
+  fetchQuotes();
+  // Pre-inicializar el formulario de evento aunque no sea visible aún
+  initEventoForm();
+});
+</script>
+</body>
+</html>

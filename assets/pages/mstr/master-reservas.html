@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reservas - Jans Photograph</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-reservas.css" />
+</head>
+<body>
+<script>
+(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();
+</script>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:12px">
+<a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+</a>
+<span class="master-badge">MASTER</span>
+<span style="color:var(--gray);font-size:0.8rem">/ Reservas</span>
+</div>
+<nav style="display:flex;gap:4px">
+<a href="../master.html" class="topbar-link">Inicio</a>
+<button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+</nav>
+</header>
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<div class="modal-overlay" id="reservaModal">
+  <div class="modal" style="max-width:560px;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
+      <h3 id="reservaModalTitle">Detalle de Reserva</h3>
+      <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
+    </div>
+    <div id="reservaModalBody" style="flex:1;overflow-y:auto;padding:0 32px 8px"></div>
+    <div id="reservaModalFooter" style="flex-shrink:0;padding:16px 32px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+</div>
+
+<!-- ══ EDIT RESERVA MODAL ══ -->
+
+<!-- EDIT RESERVA MODAL -->
+<div class="modal-overlay" id="editReservaModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3>Editar Reserva <span id="editResNumero" style="color:var(--pink-l);font-family:monospace;font-size:0.85rem"></span></h3>
+      <button class="modal-close" onclick="closeModal('editReservaModal')">×</button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Nombre</label><input type="text" id="editResNombre" /></div>
+      <div class="field"><label>Teléfono</label><input type="text" id="editResTel" /></div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="editResEmail" /></div>
+    <div class="field">
+      <label>📋 Fecha de reservación</label>
+      <input type="date" id="editResCreatedAt" />
+      <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">Fecha en que el cliente realizó la reserva (afecta ingresos del mes)</div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>📸 Fecha de sesión</label><input type="date" id="editResDate" /></div>
+      <div class="field"><label>Hora</label>
+        <select id="editResHora">
+          <option value="8|8:00 AM">8:00 AM</option><option value="9|9:00 AM">9:00 AM</option>
+          <option value="10|10:00 AM">10:00 AM</option><option value="11|11:00 AM">11:00 AM</option>
+          <option value="12|12:00 PM">12:00 PM</option><option value="13|1:00 PM">1:00 PM</option>
+          <option value="14|2:00 PM">2:00 PM</option><option value="15|3:00 PM">3:00 PM</option>
+          <option value="16|4:00 PM">4:00 PM</option><option value="17|5:00 PM">5:00 PM</option>
+          <option value="18|6:00 PM">6:00 PM</option><option value="19|7:00 PM">7:00 PM</option>
+          <option value="20|8:00 PM">8:00 PM</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+    <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="saveEditReserva()">Guardar cambios</button>
+      <button class="btn btn-outline" onclick="closeModal('editReservaModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CALENDAR CONTEXT MENU ══ -->
+<div class="cal-ctx-menu" id="calCtxMenu">
+  <!-- Event info block (shown only when day has a calendar event) -->
+  <div id="ctxEventInfo" style="display:none;padding:10px 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span id="ctxEventDot" style="display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
+      <span id="ctxEventTitulo" style="font-weight:700;font-size:0.88rem;color:var(--white)"></span>
+    </div>
+    <div id="ctxEventDesc" style="font-size:0.76rem;color:var(--gray-l);line-height:1.4;padding-left:17px"></div>
+    <button onclick="closeCtxMenu();openCalEventEdit(ctxDay)" style="margin-top:8px;margin-left:17px;background:none;border:1px solid rgba(233,30,140,0.3);border-radius:6px;color:var(--pink-l);font-size:0.72rem;font-weight:600;padding:4px 10px;cursor:pointer;font-family:var(--font)">
+      ✏ Editar evento
+    </button>
+  </div>
+  <div class="ctx-item" onclick="ctxViewDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Ver reservas del día
+  </div>
+  <hr class="ctx-divider"/>
+  <div class="ctx-item ctx-success" onclick="ctxOpenDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Abrir disponibilidad
+  </div>
+  <div class="ctx-item ctx-danger" onclick="ctxCloseDay()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Cerrar disponibilidad
+  </div>
+</div>
+
+<!-- ══ CALENDAR EVENT MODALS ══ -->
+
+<!-- Modal 1: Action chooser (Crear / Editar / Eliminar) -->
+<main class="main-content" style="padding-top:120px">
+<div id="view-reservas">
+        <div class="page-header">
+          <h2>Reservas</h2>
+          <p>Solicitudes de sesiones recibidas desde la página web</p>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+          <select id="filterResStatus" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendiente</option>
+            <option value="confirmed">Confirmada</option>
+            <option value="declined">Declinada</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+          <input type="month" id="filterResMonth" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
+          <div style="flex:1"></div>
+          <button class="btn btn-sm btn-outline" onclick="hardSyncReservas()" title="Vuelve a traer todas las reservas desde Supabase, descartando la copia local">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+            Re-sincronizar
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="purgeSupabaseReservas()" title="Elimina en Supabase las reservas que ya no están en esta lista local (útil tras corregir permisos de borrado)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Limpiar fantasmas en Supabase
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Fecha</th>
+                  <th>Hora</th>
+                  <th>Plan</th>
+                  <th>Estado</th>
+                  <th>Pendiente</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="reservasTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOG ── -->
+
+</main>
+<script>
+const SESSION_KEY = 'jans_master_auth';
+const CONFIG = {
+  ADMIN_USER: 'admin',               // Usuario de acceso
+  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+
+  COMPANY_NAME:  'Jans Photograph',
+  COMPANY_PHONE: '+507 6862-2402',
+  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
+  COMPANY_WEB:   'jansphotograph.com',
+};
+/* ═════════════════════════════════════ */
+
+// ── State ──
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('✅ Supabase conectado');
+    return true;
+  }
+  return false;
+}
+try {
+  if (!initSupabase()) {
+    // Reintentar cuando el DOM esté listo
+    window.addEventListener('load', () => {
+      if (!sbClient) {
+        initSupabase();
+      }
+    });
+    console.warn('Supabase SDK no cargó a tiempo — reintentando en load...');
+  }
+
+} catch(e) { console.warn("Supabase error", e); }
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function statusLabel(s) {
+  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+}
+function statusClassQ(s) {
+  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+}
+function nextNumero(prefix) {
+  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  let counter = parseInt(localStorage.getItem(key) || '0', 10);
+  counter += 1;
+  localStorage.setItem(key, String(counter));
+  return prefix + '-' + String(counter).padStart(2, '0');
+}
+function nextFacturaNumero() {
+  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
+  counter += 1;
+  localStorage.setItem('jans_factura_counter', String(counter));
+  return String(counter).padStart(3, '0');
+}
+const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+function getCompanyData() {
+  try { return JSON.parse(localStorage.getItem('jans_company') || '{}'); } catch(e) { return {}; }
+}
+
+function pdfCompanyInfo() {
+  const c = getCompanyData();
+  const ubicacion = [c.corregimiento, c.distrito, c.calle].filter(Boolean).join(', ');
+  return {
+    nombre:    c.nombre || CONFIG.COMPANY_NAME || 'Jans Photograph',
+    telefono:  c.telefono || CONFIG.COMPANY_PHONE || '',
+    email:     c.email || CONFIG.COMPANY_EMAIL || '',
+    ruc:       c.ruc || '',
+    dv:        c.dv || '',
+    ubicacion: ubicacion || '',
+    logoPath:  c.logoPath || ''
+  };
+}
+async function loadImageAsDataUrl(path) {
+  const base = (typeof CONFIG_PUBLIC !== 'undefined' && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO)
+    ? 'https://raw.githubusercontent.com/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/main/'
+    : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/';
+  const paths = [
+    path,
+    'assets/images/icons/Janssocialmedialogo.png',
+    'assets/images/icons/Janssocialmedialogo.jpg',
+    'assets/images/icons/Janssocialmedialogo.webp',
+  ].filter(Boolean);
+  for (const p of paths) {
+    try {
+      const res = await fetch(base + p);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      const dataUrl = await new Promise(r => {
+        const fr = new FileReader();
+        fr.onloadend = () => r(fr.result);
+        fr.onerror  = () => r(null);
+        fr.readAsDataURL(blob);
+      });
+      if (dataUrl) return dataUrl;
+    } catch(e) { continue; }
+  }
+  return null;
+}
+function pdfCompanyFooterLine(company) {
+  const parts = [company.telefono, company.email, company.ubicacion].filter(Boolean);
+  return parts.join(' · ');
+}
+let allReservas  = [];
+let editingResId = null;
+
+function loadReservasLocal() {
+  try {
+    const raw = localStorage.getItem('jans_reservas');
+    if (!raw) { allReservas = []; return; }
+    // Intentar parsear (puede ser JSON plano o datos encriptados)
+    try { allReservas = JSON.parse(raw); } catch(e) { allReservas = []; }
+  } catch(e) { allReservas = []; }
+  let changed = false;
+  allReservas.forEach(r => {
+    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
+    if (r.abono === undefined) { r.abono = 0; changed = true; }
+  });
+  if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+}
+function resTotal(r) {
+  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
+    ? (parseFloat(r.totalManual) || 0)
+    : resPlanPrice(r);
+  const extras        = resExtrasTotal(r);
+  const personasExtra = parseFloat(r.costoPersonas) || 0;
+  const exterior      = parseFloat(r.costoExterior)      || 0;
+  return base + extras + personasExtra + exterior;
+}
+function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r) - resCancelado(r)); }
+function resStatusClass(s) {
+  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
+}
+function resStatusLabel(s) {
+  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
+}
+function getOrAssignFacturaNumero(r) {
+  if (r.facturaNumero) return r.facturaNumero; // already issued — reuse it
+  const idx = allReservas.findIndex(x => x.id === r.id);
+  const num = nextFacturaNumero();
+  if (idx >= 0) {
+    allReservas[idx].facturaNumero = num;
+    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  }
+  r.facturaNumero = num;
+  return num;
+}
+async function syncReservasFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    // Supabase es la fuente de verdad — excluir eliminadas directamente en el query
+    const { data, error } = await sbClient.from('reservas').select('*')
+      .neq('status','deleted').order('created_at', { ascending: true });
+    if (error) { console.error('Supabase fetch error:', error); return false; }
+    if (!data) return false;
+
+    // Preservar datos locales que Supabase no tiene (extras editados, facturaNumero, etc.)
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+    const localMap = {};
+    local.forEach(r => { localMap[r.id] = r; });
+
+    // Reconstruir desde Supabase — Supabase manda, local complementa
+    const synced = data.map(remote => {
+      const prev = localMap[remote.id] || {};
+      return {
+        id:            remote.id,
+        numero:        remote.numero        || prev.numero        || null,
+        nombre:        remote.nombre        || prev.nombre,
+        tel:           remote.tel           || prev.tel,
+        email:         remote.email         || prev.email,
+        plan:          remote.plan          || prev.plan,
+        notas:         remote.notas         || prev.notas,
+        fecha:         remote.fecha         || prev.fecha,
+        fechaLabel:    remote.fechaLabel    || prev.fechaLabel,
+        hora:          remote.hora          || prev.hora,
+        horaVal:       remote.horaVal       || prev.horaVal,
+        status:        remote.status        || prev.status || 'pending',
+        abono:         remote.abono         || prev.abono  || 0,
+        totalManual:   remote.totalManual   || prev.totalManual,
+        extras:        remote.extras        || prev.extras || [],
+        clientId:      remote.clientId      || prev.clientId,
+        clientType:    remote.clientType    || prev.clientType,
+        razonSocial:   remote.razonSocial   || prev.razonSocial,
+        repLegal:      remote.repLegal      || prev.repLegal,
+        address:       remote.address       || prev.address,
+        origin:        remote.origin        || prev.origin || 'web',
+        facturaNumero: remote.facturaNumero || prev.facturaNumero,
+        createdAt:     remote.createdAt     || prev.createdAt,
+        fechaEspecial:       remote.fecha_especial                                   || prev.fechaEspecial       || '',
+        exterior:            remote.exterior                                         || prev.exterior            || false,
+        lugar:               remote.lugar                                            || prev.lugar               || '',
+        personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || prev.personasAdicionales || 0,
+        costoPersonas:       remote.costo_personas       || remote.costoPersonas       || prev.costoPersonas       || 0,
+        cancelado:           remote.cancelado                                          || prev.cancelado           || 0,
+        costoExterior:       remote.costo_exterior        || remote.costoExterior       || prev.costoExterior       || 0,
+      };
+    });
+
+    // Guardar en localStorage — reemplaza completamente para reflejar Supabase
+    localStorage.setItem('jans_reservas', JSON.stringify(synced));
+    allReservas = synced;
+    return true;
+  } catch(e) {
+    console.error('Supabase sync exception:', e);
+    return false;
+  }
+}
+async function pushReservaToSupabase(r) {
+  if (!sbClient) return;
+  try {
+    const { error } = await sbClient.from('reservas').update({
+      numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
+      extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
+      nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
+      fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
+      fecha_especial: r.fechaEspecial || '', exterior: r.exterior || false, lugar: r.lugar || '',
+      personas_adicionales: r.personasAdicionales || 0,
+      costo_personas: r.costoPersonas || 0,
+      cancelado: r.cancelado || 0,
+      costo_exterior: r.costoExterior || 0,
+    }).eq('id', r.id);
+    if (error) console.error('Supabase update error:', error);
+  } catch(e) {
+    console.error('Supabase push exception:', e);
+  }
+}
+
+async function hardSyncReservas() {
+  if (!sbClient) { showToast('Sin conexion a Supabase', 'error'); return; }
+  showToast('Sincronizando...');
+  localStorage.removeItem('jans_reservas');
+  allReservas = [];
+  const ok = await syncReservasFromSupabase();
+  loadReservasLocal();
+  renderReservasTable();
+  showToast(ok ? 'Sincronizado — ' + allReservas.length + ' reserva(s)' : 'Error al sincronizar', ok ? '' : 'error');
+}
+
+async function purgeSupabaseReservas() {
+  if (!sbClient) { showToast('Sin conexion a Supabase', 'error'); return; }
+  showToast('Verificando...');
+  const { data, error } = await sbClient.from('reservas').select('id');
+  if (error) { showToast('Error al consultar Supabase', 'error'); return; }
+  const localIds = new Set(allReservas.map(r => r.id));
+  const toDelete = (data || []).filter(r => !localIds.has(r.id));
+  if (!toDelete.length) { showToast('Supabase ya esta sincronizado'); return; }
+  if (!localIds.size) {
+    if (!confirm('⚠ La lista local está vacía. Esto eliminaría TODAS las ' + toDelete.length + ' reserva(s) de Supabase. ¿Estás seguro?')) return;
+  } else if (!confirm('Se eliminarán ' + toDelete.length + ' reserva(s) de Supabase que ya no están en esta lista local. ¿Continuar?')) {
+    return;
+  }
+  let deleted = 0, failed = 0;
+  for (const r of toDelete) {
+    const { error: e } = await sbClient.from('reservas').delete().eq('id', r.id);
+    if (e) failed++; else deleted++;
+  }
+  showToast(failed > 0 ? deleted + ' eliminadas, ' + failed + ' fallaron' : deleted + ' reserva(s) eliminadas de Supabase', failed > 0 ? 'error' : '');
+}
+
+function renderReservasTable(highlightId) {
+  loadReservasLocal();
+  const filterStatus = document.getElementById('filterResStatus')?.value || '';
+  const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
+  let list = [...allReservas].reverse().filter(r => {
+    if(filterStatus && r.status !== filterStatus) return false;
+    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('reservasTableBody');
+  if(!tbody) return;
+  const pending = allReservas.filter(r=>r.status==='pending').length;
+  const badge   = document.getElementById('reservasBadge');
+  const badge2  = document.getElementById('reservasBadge2');
+  if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
+  if(badge2) { badge2.textContent = pending; badge2.style.display = pending > 0 ? '' : 'none'; }
+
+  if(!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(r => {
+    const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
+    return `
+    <tr id="resrow-${r.id}">
+      <td>
+        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span>
+        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${r.facturaNumero}</div>` : ''}
+      </td>
+      <td>
+        <div style="font-weight:600">${r.nombre}</div>
+        <div style="font-size:.75rem;color:var(--gray-l)">${r.tel}</div>
+      </td>
+      <td style="font-size:.88rem">${r.fechaLabel || r.fecha}</td>
+      <td style="font-size:.88rem">${r.hora || '—'}</td>
+      <td style="font-size:.82rem;color:var(--gray-l)">${r.plan || '—'}</td>
+      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
+      <td style="min-width:110px">
+        ${total > 0 ? `
+          <div style="font-size:.78rem;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}">$${pend.toFixed(2)}</div>
+          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">
+            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>
+          </div>
+        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}
+      </td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-outline" onclick="viewReserva('${r.id}')">Ver</button>
+          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${r.id}')">✏</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // ── Scroll to and highlight a specific row (used by the Dashboard's pending-list "Ver" button) ──
+  if (highlightId) {
+    const row = document.getElementById('resrow-' + highlightId);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.classList.add('row-highlight');
+      setTimeout(() => row.classList.remove('row-highlight'), 3500);
+    }
+  }
+}
+function viewReserva(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  document.getElementById('reservaModalTitle').textContent = (r.numero || '') + ' — ' + r.nombre;
+  const waMsg = encodeURIComponent(
+    '¡Hola ' + r.nombre + '! 📸\n' +
+    'Tu reserva ha sido confirmada:\n' +
+    'Fecha: ' + (r.fechaLabel||r.fecha) + '\n' +
+    'Hora: ' + r.hora + '\n' +
+    (r.plan ? 'Plan: ' + r.plan + '\n' : '') +
+    '\n¡Te esperamos! — Jans Photograph'
+  );
+
+  const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
+
+  document.getElementById('reservaModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resStatusBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
+      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${r.facturaNumero}</div></div>` : ''}
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
+      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
+      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${r.fechaEspecial}</div></div>` : ''}
+      ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${r.lugar || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
+      ${r.personasAdicionales > 0 ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">👥 Personas adicionales</div><div style="font-weight:600;color:#e91e8c">${r.personasAdicionales} persona${r.personasAdicionales>1?'s':''} — <span style="color:#86efac">+$${(r.costoPersonas||0).toFixed(2)}</span></div></div>` : ''}
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${r.createdAt||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
+      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
+    </div>
+    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Plan y Servicios Adicionales</span>
+    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0">
+        <span>${r.plan || 'Sin plan principal'}</span>
+        <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>
+      </div>
+      ${r.personasAdicionales > 0 ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
+        <span>+${r.personasAdicionales} persona(s) adicional(es)</span>
+        <span style="font-weight:700;color:#fbbf24">$${(r.costoPersonas||0).toFixed(2)}</span>
+      </div>` : ''}
+      ${r.exterior && r.costoExterior > 0 ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
+        <span>Sesión exterior — ${r.lugar||''}</span>
+        <span style="font-weight:700;color:#86efac">$${(r.costoExterior||0).toFixed(2)}</span>
+      </div>` : ''}
+      ${r.exterior && !r.costoExterior ? `
+      <div style="font-size:0.78rem;color:#fbbf24;margin-top:4px">⚠ Costo de exterior pendiente — edita la reserva para asignarlo</div>
+      ` : ''}
+      <div id="resExtrasList">${renderResExtrasList(r)}</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
+        <label>Añadir plan o servicio adicional</label>
+        <select id="resExtraSelect">${renderExtrasOptions()}</select>
+      </div>
+      <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
+    </div>
+    ${r.exterior ? `
+    <div class="field" style="margin-bottom:16px">
+      <label>Costo exterior ($) <span style="color:var(--gray);font-weight:400">(asignar valor)</span></label>
+      <input type="number" id="resCostoExterior" min="0" step="0.01" value="${r.costoExterior||0}" style="max-width:180px" />
+    </div>` : ''}
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Control Financiero</span>
+    <div class="form-row">
+      <div class="field">
+        <label>Total (auto-calculado) ($)</label>
+        <input type="number" id="resTotalInput" min="0" step="0.01" value="${total.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed" />
+      </div>
+      <div class="field">
+        <label>Abono realizado ($)</label>
+        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" oninput="updateResPendienteLive('${r.id}')" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Total cancelado ($)</label>
+        <input type="number" id="resCanceladoInput" min="0" step="0.01" value="${cancelado}" oninput="updateResPendienteLive('${r.id}')" />
+      </div>
+      <div class="field">
+        <label>Pendiente por pagar ($)</label>
+        <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
+      </div>
+    </div>
+    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      ${renderResFinancialSummary(total, abono, cancelado, pend, prog)}
+    </div>
+
+    <hr class="section-divider" />
+    <span class="section-label-sm">Cambiar Estado</span>
+    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-sm ${r.status==='pending'   ?'btn-pink'  :'btn-outline'}" data-status="pending"   onclick="changeResStatus('${r.id}','pending'   )">Pendiente</button>
+      <button class="btn btn-sm ${r.status==='confirmed' ?'btn-green' :'btn-outline'}" data-status="confirmed" onclick="changeResStatus('${r.id}','confirmed' )">Confirmada</button>
+      <button class="btn btn-sm ${r.status==='completed' ?'btn-green' :'btn-outline'}" data-status="completed" onclick="changeResStatus('${r.id}','completed' )">Completada</button>
+      <button class="btn btn-sm ${r.status==='postponed' ?'btn-amber' :'btn-outline'}" data-status="postponed" onclick="changeResStatus('${r.id}','postponed' )">Aplazada</button>
+      <button class="btn btn-sm ${r.status==='declined'  ?'btn-red'   :'btn-outline'}" data-status="declined"  onclick="changeResStatus('${r.id}','declined'  )">Declinada</button>
+      <button class="btn btn-sm ${r.status==='cancelled' ?'btn-red'   :'btn-outline'}" data-status="cancelled" onclick="changeResStatus('${r.id}','cancelled' )">Cancelada</button>
+    </div>
+
+    <!-- Sección aplazamiento -->
+    <div id="resPostponeBlock" style="display:${r.status==='postponed'?'':'none'}">
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:10px">
+          📅 Sesión aplazada
+          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${r.fechaOriginal}</span>` : ''}
+        </div>
+        <div class="form-row">
+          <div class="field" style="margin-bottom:0">
+            <label>Nueva fecha</label>
+            <input type="date" id="resNewFecha" value="${r.fechaNueva||r.fecha||''}" />
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Nueva hora</label>
+            <input type="time" id="resNewHora" value="${to24h(r.horaNueva||r.hora||'')}" />
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">El estado de la reserva se mantiene como <strong style="color:#fbbf24">Aplazada</strong>. Guarda los cambios para aplicar la nueva fecha.</div>
+        <div style="margin-top:12px">
+          <button class="btn btn-amber btn-sm" onclick="applyPostpone('${r.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Guardar nueva fecha
+          </button>
+        </div>
+`;
+
+  // Botones fijos en el footer del modal
+  document.getElementById('reservaModalFooter').innerHTML = `
+    <button class="btn btn-pink" onclick="saveReservaChanges('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      Guardar
+    </button>
+    <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      PDF
+    </button>
+    <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Factura
+    </button>
+    <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
+      Insumos
+    </button>
+    <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>
+    <button class="btn btn-ghost" onclick="closeModal('reservaModal')">Cancelar</button>
+    <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑</button>`;
+
+  openModal('reservaModal');
+}
+// updateDashboard no aplica en esta página separada — stub para evitar errores
+function updateDashboard() {}
+
+function changeResStatus(id, status) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  allReservas[idx].status = status;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
+  // Actualizar badge
+  const badge = document.getElementById('resStatusBadge');
+  if (badge) { badge.className = 'badge-status ' + resStatusClass(status); badge.textContent = resStatusLabel(status); }
+  // Actualizar botones — usar data-status, no el texto del onclick (evita fallos por espacios/formato)
+  const clsMap = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', declined:'btn-red', cancelled:'btn-red' };
+  const body = document.getElementById('reservaModalBody');
+  if (body) {
+    body.querySelectorAll('.btn[data-status]').forEach(function(btn) {
+      const s = btn.getAttribute('data-status');
+      btn.className = 'btn btn-sm ' + (s === status ? (clsMap[s] || 'btn-outline') : 'btn-outline');
+    });
+  }
+  // Mostrar/ocultar bloque de aplazamiento
+  const pb = document.getElementById('resPostponeBlock');
+  if (pb) pb.style.display = status === 'postponed' ? '' : 'none';
+  renderReservasTable();
+  updateDashboard();
+  showToast('Estado actualizado ✓');
+}
+
+
+function applyPostpone(id) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const r = allReservas[idx];
+  const nf = document.getElementById('resNewFecha')?.value;
+  const nh = document.getElementById('resNewHora')?.value;
+  if (!nf) { showToast('Ingresa una nueva fecha', 'error'); return; }
+  if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
+  r.fechaNueva = nf; r.horaNueva = nh || r.hora;
+  r.fecha = nf; r.hora = nh || r.hora;
+  const [y,m,d] = nf.split('-');
+  r.fechaLabel = parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y;
+  allReservas[idx] = r;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(r);
+  renderReservasTable();
+  showToast('Nueva fecha guardada ✓');
+}
+
+function openReservaScan(id) {
+  // Redirige a la sección de insumos/inventario filtrando por esta reserva
+  // Si tienes una sección de insumos en este archivo, ajusta el nombre de sección aquí
+  showToast('Función de insumos disponible en el Master principal', 'error');
+}
+
+async function saveReservaChanges(id) {
+  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const r = allReservas[idx];
+  const abonoEl      = document.getElementById('resAbonoInput');
+  const canceladoEl  = document.getElementById('resCanceladoInput');
+  const exteriorEl   = document.getElementById('resCostoExterior');
+  if (abonoEl)     r.abono        = parseFloat(abonoEl.value)     || 0;
+  if (canceladoEl) r.cancelado    = parseFloat(canceladoEl.value) || 0;
+  if (exteriorEl)  r.costoExterior = parseFloat(exteriorEl.value) || 0;
+  if (r.status === 'postponed') {
+    const nf = document.getElementById('resNewFecha')?.value;
+    const nh = document.getElementById('resNewHora')?.value;
+    if (nf) {
+      if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
+      r.fechaNueva = nf; r.horaNueva = nh||r.hora;
+      r.fecha = nf; r.hora = nh||r.hora;
+      r.fechaLabel = new Date(nf+'T12:00:00').toLocaleDateString('es-PA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    }
+  }
+  allReservas[idx] = r;
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(r);
+  renderReservasTable();
+  updateDashboard();
+  closeModal('reservaModal');
+  showToast('Reserva guardada ✓');
+}
+function openEditReserva(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  editingResId = id;
+  document.getElementById('editResNumero').textContent = r.numero ? ('— ' + r.numero) : '';
+  document.getElementById('editResNombre').value = r.nombre || '';
+  document.getElementById('editResTel').value    = r.tel || '';
+  document.getElementById('editResEmail').value  = r.email || '';
+  document.getElementById('editResDate').value   = r.fecha || '';
+  document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
+  document.getElementById('editResPlan').value   = r.plan || '';
+  document.getElementById('editResNotas').value  = r.notas || '';
+  // Convertir createdAt "dd/mm/yyyy" → "yyyy-mm-dd" para input type="date"
+  const cat = r.createdAt || '';
+  let catISO = '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(cat)) {
+    catISO = cat.substring(0, 10);
+  } else {
+    const parts = cat.split('/');
+    if (parts.length === 3) catISO = parts[2].padStart(4,'0') + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+  }
+  document.getElementById('editResCreatedAt').value = catISO;
+  openModal('editReservaModal');
+}
+function saveEditReserva() {
+  const idx = allReservas.findIndex(x=>x.id===editingResId); if(idx<0) return;
+  const horaRaw = document.getElementById('editResHora').value.split('|');
+  const fecha   = document.getElementById('editResDate').value;
+  const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
+  const newCreatedAt = document.getElementById('editResCreatedAt').value;
+  // Convertir "yyyy-mm-dd" → "dd/mm/yyyy" para mantener consistencia con el formato local
+  let createdAtFormatted = allReservas[idx].createdAt || '';
+  if (newCreatedAt) {
+    const [cy,cm,cd] = newCreatedAt.split('-');
+    createdAtFormatted = parseInt(cd) + '/' + parseInt(cm) + '/' + cy;
+  }
+  allReservas[idx] = {
+    ...allReservas[idx],
+    nombre:    document.getElementById('editResNombre').value,
+    tel:       document.getElementById('editResTel').value,
+    email:     document.getElementById('editResEmail').value,
+    fecha,
+    fechaLabel: d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
+    horaVal:   horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
+    hora:      horaRaw[1] || allReservas[idx].hora,
+    plan:      document.getElementById('editResPlan').value,
+    notas:     document.getElementById('editResNotas').value,
+    createdAt: createdAtFormatted,
+  };
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  pushReservaToSupabase(allReservas[idx]);
+  closeModal('editReservaModal');
+  renderReservasTable();
+  showToast('Reserva actualizada ✓');
+}
+async function deleteReserva(id) {
+  if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
+  // 1. Eliminar de Supabase primero
+  let sbOk = true;
+  if (sbClient) {
+    const { error } = await sbClient.from('reservas').delete().eq('id', id);
+    if (error) { console.error('Supabase delete error:', error); sbOk = false; }
+  }
+  if (!sbOk) {
+    showToast('No se pudo eliminar en línea — revisa la conexión o los permisos en Supabase', 'error');
+    return;
+  }
+  // 2. Eliminar del array local y localStorage
+  allReservas = allReservas.filter(x => x.id !== id);
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  closeModal('reservaModal');
+  renderReservasTable();
+  updateDashboard();
+  showToast('Reserva eliminada', 'error');
+}
+function goToReservaInTable(id) {
+  const filterStatus = document.getElementById('filterResStatus');
+  const filterMonth  = document.getElementById('filterResMonth');
+  if (filterStatus) filterStatus.value = '';
+  if (filterMonth)  filterMonth.value  = '';
+
+  switchView('reservas', document.querySelector('.sidebar-item[onclick*=\'reservas\']'));
+  // switchView already calls renderReservasTable() with no args; re-render with
+  // the highlight target right after so the row gets the highlight + scroll treatment.
+  setTimeout(() => renderReservasTable(id), 80);
+}
+function sanitizeText(str){if(!str)return "";return String(str).trim();}
+async function generateConfirmationPDF(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const company = pdfCompanyInfo();
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath || 'assets/images/icons/Janssocialmedialogo.png');
+  const margin = 18;
+  const pageW  = 210;
+  const colW   = (pageW - margin*2 - 8) / 2; // two columns with 8mm gutter
+  const col1X  = margin;
+  const col2X  = margin + colW + 8;
+
+  // ── Black header with logo + company data ──
+  const headerH = 38;
+  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
+
+  let logoTextX = margin;
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      logoTextX = margin + 28;
+    } catch(e) {}
+  }
+
+  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, logoTextX, 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  let companyLineY = 22;
+  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
+  if (company.ruc) {
+    doc.setFontSize(7.5); doc.setTextColor(180,180,180);
+    doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'});
+  }
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text(`# ${r.numero||'—'}`, pageW-margin, 22, {align:'right'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Emitido: ${new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
+
+  let y = headerH + 12;
+
+  // ── Green "CONFIRMADA" banner ──
+  doc.setFillColor(22,163,74); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('RESERVA CONFIRMADA', pageW/2, y+9, {align:'center'});
+  y += 24;
+
+  // ── Two-column client + session data ──
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
+  doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DE LA RESERVA', margin, y); y += 9;
+
+  const leftRows  = [['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—']];
+  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Plan:', r.plan||'—'], ['Estado:', resStatusLabel(r.status)]];
+
+  const startY = y;
+  let yL = startY, yR = startY;
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  leftRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-30);
+    doc.text(lines, col1X+30, yL);
+    doc.setFont('helvetica','normal');
+    yL += Math.max(6, lines.length*5);
+  });
+  rightRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-30);
+    doc.text(lines, col2X+30, yR);
+    doc.setFont('helvetica','normal');
+    yR += Math.max(6, lines.length*5);
+  });
+  y = Math.max(yL, yR) + 6;
+
+  // ── Boxed payment summary ──
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
+  if (total > 0) {
+    const boxItems = [];
+    if (r.plan) boxItems.push(['Plan', r.plan, resPlanPrice(r)]);
+    (r.extras || []).forEach(e => boxItems.push(['Adicional', e.nombre, parseFloat(e.precio)||0]));
+    if (r.personasAdicionales > 0 && r.costoPersonas > 0)
+      boxItems.push(['Personas extra', `+${r.personasAdicionales} persona(s)`, parseFloat(r.costoPersonas)||0]);
+    if (r.exterior && r.costoExterior > 0)
+      boxItems.push(['Sesión exterior', r.lugar||'Exterior', parseFloat(r.costoExterior)||0]);
+
+    const lineH   = 6;
+    const boxPadY = 8;
+    const boxH    = boxPadY*2 + 7 /*title*/ + (boxItems.length * lineH) + 4 /*divider gap*/ + lineH*2 /*total+abono*/ + 9 /*saldo*/;
+
+    doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
+    doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
+
+    let by = y + boxPadY;
+    doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('RESUMEN DE PAGO', margin+6, by); by += 8;
+
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    boxItems.forEach(([tag, name, price]) => {
+      doc.setTextColor(140,140,140); doc.text(tag+':', margin+6, by);
+      doc.setTextColor(30,30,30); doc.text(name, margin+28, by);
+      doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+      by += lineH;
+    });
+
+    by += 2;
+    doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+    doc.line(margin+6, by, pageW-margin-6, by); by += 6;
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(80,80,80); doc.text('Total:', margin+6, by);
+    doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+    doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH;
+
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); doc.text('Abonado:', margin+6, by);
+    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+    doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH + 2;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
+    doc.text('Saldo pendiente:', margin+6, by);
+    doc.text(`$${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+
+    y += boxH + 10;
+  }
+
+  if (r.notas) {
+    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
+    doc.text('NOTAS:', margin, y); y += 4;
+    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+    const lines = doc.splitTextToSize(r.notas, pageW-(margin*2)); doc.text(lines, margin, y); y += lines.length*4+4;
+  }
+
+  // ── Footer ──
+  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
+  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
+
+  doc.save(`Confirmacion_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  showToast('PDF de confirmación descargado ✓');
+}
+async function generateInvoicePDF(id) {
+  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const facturaNum = getOrAssignFacturaNumero(r);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const company = pdfCompanyInfo();
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
+  const margin = 18;
+  const pageW  = 210;
+  const colW   = (pageW - margin*2 - 8) / 2;
+  const col1X  = margin;
+  const col2X  = margin + colW + 8;
+
+  const now = new Date();
+  const fechaHora = now.toLocaleDateString('es-PA') + '  ' + now.toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
+
+  // ── Black header with logo + company data ──
+  const headerH = 38;
+  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
+
+  let logoTextX = margin;
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      logoTextX = margin + 28;
+    } catch(e) {}
+  }
+
+  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text(company.nombre, logoTextX, 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  let companyLineY = 22;
+  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
+  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
+
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text(`FACTURA #${facturaNum}`, pageW-margin, 16, {align:'right'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+  doc.text(`Emitida: ${fechaHora}`, pageW-margin, 22, {align:'right'});
+  if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 26.5, {align:'right'});
+
+  let y = headerH + 12;
+
+  // ── Two-column client + session data ──
+  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
+
+  const leftRows = [['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—']];
+  if (r.razonSocial) leftRows.push(['Razón Social:', r.razonSocial]);
+  if (r.address)     leftRows.push(['Dirección:', r.address]);
+
+  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['Origen:', r.numero||'—']];
+
+  const startY = y;
+  let yL = startY, yR = startY;
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  leftRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-32);
+    doc.text(lines, col1X+32, yL);
+    doc.setFont('helvetica','normal');
+    yL += Math.max(6, lines.length*5);
+  });
+  rightRows.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
+    const lines = doc.splitTextToSize(String(v), colW-32);
+    doc.text(lines, col2X+32, yR);
+    doc.setFont('helvetica','normal');
+    yR += Math.max(6, lines.length*5);
+  });
+  y = Math.max(yL, yR) + 6;
+
+  // ── Boxed items table ──
+  const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
+  const items = [];
+  if (r.plan) items.push([r.plan, resPlanPrice(r)]);
+  (r.extras || r.addons || []).forEach(a => {
+    items.push([a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0]);
+  });
+  if (r.personasAdicionales > 0 && r.costoPersonas > 0)
+    items.push([`Personas adicionales (+${r.personasAdicionales})`, parseFloat(r.costoPersonas)||0]);
+  if (r.exterior && r.costoExterior > 0)
+    items.push([`Sesión exterior — ${r.lugar||''}`, parseFloat(r.costoExterior)||0]);
+
+  const rowH    = 6.5;
+  const boxPadY = 8;
+  const tableH  = 8 /*header row*/ + (items.length * rowH) + 4;
+  const totalsH = rowH*3 + 6 /*spacing*/ + 12 /*grand total box*/;
+  const boxH    = boxPadY*2 + 7 /*title*/ + tableH + totalsH;
+
+  doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
+  doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
+
+  let by = y + boxPadY;
+  doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('PLANES Y SERVICIOS', margin+6, by); by += 8;
+
+  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
+  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by += 3;
+  doc.line(margin+6, by, pageW-margin-6, by); by += 5;
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+  items.forEach(([name, price], i) => {
+    if (i === 0 && r.plan) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
+    doc.text(name, margin+6, by);
+    doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+    by += rowH;
+  });
+
+  by += 1;
+  doc.setDrawColor(230,230,230);
+  doc.line(margin+6, by, pageW-margin-6, by); by += 7;
+
+  doc.setFontSize(9.5);
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Total de plan(es):', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
+
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Abono realizado:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
+  doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
+
+  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Cancelación completa:', margin+6, by); doc.setFont('helvetica','bold');
+  doc.setTextColor(pend <= 0 ? 22 : 220, pend <= 0 ? 163 : 38, pend <= 0 ? 74 : 38);
+  doc.text(pend <= 0 ? 'PAGADO EN TOTALIDAD' : `Pendiente: $${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+  by += 9;
+
+  // Grand total bar inside the box
+  doc.setFillColor(199,30,95); doc.roundedRect(margin+4, by-5.5, pageW-(margin*2)-8, 11, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('TOTAL FACTURADO', margin+10, by+1.5);
+  doc.text(`$${total.toFixed(2)}`, pageW-margin-10, by+1.5, {align:'right'});
+
+  y += boxH + 6;
+
+  // ── Seal box — fija antes del footer ──
+  const sealY = 196;
+  doc.setDrawColor(199,30,95); doc.setLineWidth(0.5);
+  doc.roundedRect(margin, sealY, pageW-(margin*2), 16, 2, 2, 'S');
+  doc.setGState(new doc.GState({ opacity: 0.22 }));
+  doc.setTextColor(120,120,120); doc.setFontSize(8.5); doc.setFont('helvetica','bolditalic');
+  doc.text('Factura que no presente sello es nula', pageW/2, sealY+10, {align:'center'});
+  doc.setGState(new doc.GState({ opacity: 1 }));
+
+  // ── Footer fijo ──
+  const footerY = 216;
+  doc.setFillColor(20,20,20); doc.rect(0, footerY, pageW, 18, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('Gracias por confiar en nosotros', pageW/2, footerY+7, {align:'center'});
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
+  doc.text(pdfCompanyFooterLine(company), pageW/2, footerY+13, {align:'center'});
+
+  // ── Constancia pegada al footer ──
+  let cy = footerY + 22;
+  doc.setDrawColor(150,150,150); doc.setLineWidth(0.2);
+  doc.setLineDashPattern([2,2], 0);
+  doc.line(margin, cy, pageW-margin, cy);
+  doc.setLineDashPattern([], 0);
+  cy += 4;
+  doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(150,150,150);
+  doc.text("' Constancia — recortar y conservar", pageW/2, cy, {align:'center'});
+  cy += 7;
+
+  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('CONSTANCIA DE FACTURACIÓN', margin, cy); cy += 7;
+
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  const stubLeft = [['Factura:', '#'+facturaNum], ['Origen:', r.numero||'—']];
+  const stubRight = [['Cliente:', r.nombre], ['Plan:', r.plan||'—']];
+  let syL = cy, syR = cy;
+  stubLeft.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col1X, syL);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.text(String(v), col1X+22, syL);
+    doc.setFont('helvetica','normal'); syL += 6;
+  });
+  stubRight.forEach(([l,v]) => {
+    doc.setTextColor(120,120,120); doc.text(l, col2X, syR);
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.text(String(v), col2X+22, syR);
+    doc.setFont('helvetica','normal'); syR += 6;
+  });
+  cy = Math.max(syL, syR) + 5;
+  doc.setDrawColor(180,180,180); doc.setLineWidth(0.3);
+  doc.line(margin, cy, margin+80, cy);
+  doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
+  doc.text('Firma del cliente', margin, cy+4.5);
+
+  doc.save(`Factura_${facturaNum}_${r.nombre.replace(/\s/g,'_')}.pdf`);
+  showToast('Factura descargada ✓');
+}
+function handleLogout() { sessionStorage.removeItem(SESSION_KEY); window.location.replace("../master.html"); }
+
+function resPlanPrice(r) {
+  // Resolve the MAIN plan's price by name match from publicPlans.
+  // r.plan may come as "Plan Kids" (exact) or "Plan Kids ($45)" (from the public
+  // reservation form, which embeds the price in the displayed/stored string) —
+  // try exact match first, then fall back to matching the name with the price suffix stripped.
+  try {
+    const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+    if (!r.plan) return 0;
+
+    let match = plans.find(p => p.nombre === r.plan);
+    if (match) return parseFloat(match.precio) || 0;
+
+    // Strip a trailing " ($XX)" / " ($XX.XX)" suffix and retry
+    const cleanName = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    match = plans.find(p => p.nombre === cleanName);
+    if (match) return parseFloat(match.precio) || 0;
+
+    // Last resort: if the plan string itself contains a price like "($45)", use that
+    // directly as the price, even if the plan name no longer matches the current catalog
+    // (e.g. the plan was renamed/removed after the reserva was made).
+    const priceMatch = r.plan.match(/\(\$([\d.,]+)\)/);
+    if (priceMatch) return parseFloat(priceMatch[1].replace(',', '')) || 0;
+  } catch(e) {}
+  return 0;
+}
+
+// Convertir hora "6:00 PM" / "14:00" a "HH:mm" para input type="time"
+function to24h(horaStr) {
+  if (!horaStr) return '';
+  horaStr = String(horaStr).trim();
+  // Ya está en formato HH:mm o HH:mm:ss
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(horaStr)) {
+    const parts = horaStr.split(':');
+    return parts[0].padStart(2,'0') + ':' + parts[1];
+  }
+  // Formato 12h: "6:00 PM", "11:30 AM"
+  const m = horaStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (m) {
+    let h = parseInt(m[1]);
+    const min = m[2];
+    const ampm = m[3].toUpperCase();
+    if (ampm === 'PM' && h !== 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return String(h).padStart(2,'0') + ':' + min;
+  }
+  return '';
+}
+
+// ══════════════════════════════════════════════════════
+//  EXTRAS — funciones que faltaban en master-reservas
+// ══════════════════════════════════════════════════════
+
+// servData y loader (referenciados desde restoreInventoryForReserva)
+let servData = { items: [], maquillaje: [], impresiones: [] };
+const SA_KEY = 'jans_serv_adicionales';
+function loadServAdicionales() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    if (saved.items) {
+      servData = saved;
+    } else {
+      servData = {
+        items:       [],
+        maquillaje:  Array.isArray(saved.maquillaje)  ? saved.maquillaje  : [],
+        impresiones: Array.isArray(saved.impresiones) ? saved.impresiones : [],
+      };
+    }
+  } catch(e) { servData = { items: [], maquillaje: [], impresiones: [] }; }
+}
+
+// Catálogo plano de todos los servicios adicionales disponibles
+function getExtrasCatalog() {
+  loadServAdicionales();
+  const all = [];
+  // Formato nuevo (items plano)
+  if (Array.isArray(servData.items) && servData.items.length) {
+    servData.items.forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: s.cat||s.categoria||'Servicios' }));
+    return all;
+  }
+  // Formato antiguo (maquillaje + impresiones)
+  (servData.maquillaje  || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Maquillaje' }));
+  (servData.impresiones || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Impresiones' }));
+  return all;
+}
+
+// Renderizar la lista de extras ya añadidos en el modal
+function renderResExtrasList(r) {
+  const extras = r.extras || [];
+  if (!extras.length) return '<div style="font-size:0.78rem;color:var(--gray);padding:6px 0">Sin servicios adicionales</div>';
+  return extras.map((e, i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
+      <span style="color:var(--gray-l)">+ ${e.nombre}</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
+        <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0" title="Eliminar">✕</button>
+      </span>
+    </div>`).join('');
+}
+
+// Selector de servicios adicionales disponibles en Supabase/localStorage
+function renderExtrasOptions() {
+  const catalog = getExtrasCatalog();
+  if (!catalog.length) return '<option value="">— Sin servicios configurados —</option>';
+  const groups = {};
+  catalog.forEach(item => { (groups[item.grupo] = groups[item.grupo] || []).push(item); });
+  let html = '<option value="">— Seleccionar —</option>';
+  Object.entries(groups).forEach(([grupo, items]) => {
+    html += `<optgroup label="${grupo}">`;
+    items.forEach(it => { html += `<option value="${it.nombre}||${it.precio}">${it.nombre} — $${it.precio.toFixed(2)}</option>`; });
+    html += '</optgroup>';
+  });
+  return html;
+}
+
+// Añadir un extra desde el selector
+function addResExtra(id) {
+  const sel = document.getElementById('resExtraSelect');
+  if (!sel || !sel.value) { showToast('Selecciona un servicio primero', 'error'); return; }
+  const [nombre, precio] = sel.value.split('||');
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!allReservas[idx].extras) allReservas[idx].extras = [];
+  allReservas[idx].extras.push({ nombre, precio: parseFloat(precio) || 0 });
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  sel.value = '';
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  showToast('Servicio añadido ✓');
+}
+
+// Eliminar un extra por índice
+function removeResExtra(id, extraIdx) {
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!allReservas[idx].extras) return;
+  allReservas[idx].extras.splice(extraIdx, 1);
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  showToast('Servicio eliminado', 'error');
+}
+
+// Resumen financiero HTML (barra de progreso + totales)
+function renderResFinancialSummary(total, abono, cancelado, pend, prog) {
+  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$' + total.toFixed(2) + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$' + abono.toFixed(2) + '</span></div>'
+    + (cancelado > 0 ? '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Cancelado</span><span style="font-weight:700;color:#86efac">$' + cancelado.toFixed(2) + '</span></div>' : '')
+    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:' + (pend > 0 ? '#fca5a5' : '#86efac') + '">$' + pend.toFixed(2) + '</span></div>'
+    + '<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>'
+    + '<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">' + prog + '% pagado</div>';
+}
+
+// Refrescar solo el bloque financiero del modal sin cerrarlo
+function refreshResFinancialBlock(id) {
+  const r = allReservas.find(x => x.id === id); if (!r) return;
+  const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
+  const extrasList = document.getElementById('resExtrasList');
+  if (extrasList) extrasList.innerHTML = renderResExtrasList(r);
+  const totalInput = document.getElementById('resTotalInput');
+  if (totalInput) totalInput.value = total.toFixed(2);
+  const pendInput = document.getElementById('resPendienteInput');
+  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend > 0 ? '#fca5a5' : '#86efac'; }
+  const summary = document.getElementById('resFinancialSummary');
+  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
+}
+
+// Recalcular "Pendiente por pagar" mientras el usuario escribe en Abono/Cancelado,
+// usando los valores actuales de los campos (aún sin guardar).
+function updateResPendienteLive(id) {
+  const r = allReservas.find(x => x.id === id); if (!r) return;
+  const total = resTotal(r);
+  const abono     = parseFloat(document.getElementById('resAbonoInput')?.value)     || 0;
+  const cancelado = parseFloat(document.getElementById('resCanceladoInput')?.value) || 0;
+  const pend = Math.max(0, total - abono - cancelado);
+  const prog = total > 0 ? Math.min(100, Math.round(((abono + cancelado) / total) * 100)) : 0;
+  const pendInput = document.getElementById('resPendienteInput');
+  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend > 0 ? '#fca5a5' : '#86efac'; }
+  const summary = document.getElementById('resFinancialSummary');
+  if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
+}
+
+function resExtrasTotal(r) {
+  // Sum of additional plans/services added manually in the modal
+  return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
+}
+
+
+function resAbono(r)     { return parseFloat(r.abono)     || 0; }
+
+function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
+
+
+function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round(((resAbono(r)+resCancelado(r))/t)*100)) : 0; }
+
+function restoreInventoryForReserva(r) {
+  loadServAdicionales();
+  loadPaperTypes();
+  const impresiones = servData.impresiones || [];
+  if (!impresiones.length || !paperTypes.length) return;
+
+  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
+
+  let changed = false;
+  lineItems.forEach(itemName => {
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
+    if (!match || !match.papelTipoId) return;
+
+    const paper = paperTypes.find(p => p.id === match.papelTipoId);
+    if (!paper) return;
+
+    const sheets = match.hojasPorVenta || 1;
+    paper.stock = paper.stock + sheets;
+    logInventoryMovement(paper.nombre, 'entrada', sheets, `Reserva revertida: ${r.nombre} (${r.numero||r.id})`);
+    changed = true;
+  });
+
+  if (changed) {
+    localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
+    checkLowStock();
+  }
+}
+
+function resetBlogImgField() {
+  bpFileData = null;
+  document.getElementById('bpFileInput').value      = '';
+  document.getElementById('bpImagen').value         = '';
+  document.getElementById('bpImgPreview').style.display = 'none';
+  document.getElementById('bpImgStatus').style.display  = 'none';
+  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
+  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+}
+
+
+// ── Supabase helpers ──
+
+async function sbUpsert(tabla, datos) {
+  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  try {
+    const { error } = await sbClient.from(tabla).upsert(
+      Array.isArray(datos) ? datos : [datos],
+      { onConflict: 'id' }
+    );
+    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    return true;
+  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+}
+
+async function sbDelete(tabla, id) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetAll(tabla, order='created_at') {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    if (error) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+// Guardar en config_sitio
+async function sbSetConfig(clave, valor) {
+  if (!sbClient) return false;
+  try {
+    const { error } = await sbClient.from('config_sitio').upsert(
+      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
+      { onConflict: 'clave' }
+    );
+    return !error;
+  } catch(e) { return false; }
+}
+
+async function sbGetConfig(clave) {
+  if (!sbClient) return null;
+  try {
+    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    if (error || !data) return null;
+    return JSON.parse(data.valor);
+  } catch(e) { return null; }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await syncReservasFromSupabase();
+  loadReservasLocal();
+  renderReservasTable();
+});
+</script>
+</body>
+</html>

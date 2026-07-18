@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master — Jans Photograph</title>
+  <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../css/master-nuevo.css" />
+</head>
+<body>
+
+<script>
+(function() {
+  const raw = sessionStorage.getItem('jans_master_auth');
+  if (!raw) { window.location.replace('auth/auth.html'); return; }
+  try {
+    // Aceptar solo tokens con expiry válido — rechazar el string 'true' legacy
+    const s = JSON.parse(raw);
+    if (!s || !s.token || !s.expiry || s.expiry < Date.now()) {
+      sessionStorage.removeItem('jans_master_auth');
+      window.location.replace('auth/auth.html');
+    }
+  } catch(e) {
+    // Si no es JSON válido (ej. el string 'true' del auth viejo) → redirigir
+    sessionStorage.removeItem('jans_master_auth');
+    window.location.replace('auth/auth.html');
+  }
+})();
+</script>
+
+<!-- HEADER -->
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <img src="../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+    <span class="master-badge">MASTER</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="welcomeUser" style="color:#666;font-size:0.8rem"></span>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline" style="padding:5px 12px">Salir</button>
+  </div>
+</header>
+
+<!-- ── Master Nav ── -->
+<nav class="master-nav" id="masterNav">
+  <a href="master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="mstr/master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="mstr/master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="mstr/master-cotizaciones.html" id="nav-cotizaciones">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+  </a>
+  <a href="mstr/master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="mstr/master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <div class="nav-sep"></div>
+  <a href="mstr/master-catalogo.html" id="nav-catalogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+  </a>
+  <a href="mstr/master-config.html" id="nav-config">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </a>
+</nav>
+<script>
+// Marcar el link activo según la página actual
+(function() {
+  const page = window.location.pathname.split('/').pop().replace('.html','');
+  const map = {
+    'master-dashboard':    'nav-dashboard',
+    'master-reservas':     'nav-reservas',
+    'master-cotizaciones': 'nav-cotizaciones',
+    'master-calendario':   'nav-calendario',
+    'master-panel':        'nav-panel',
+    'master-catalogo':     'nav-catalogo',
+    'master-config':       'nav-config',
+    'master':              'nav-inicio',
+  };
+  const id = map[page];
+  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
+})();
+</script>
+
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<main style="padding-top:120px;padding-left:24px;padding-right:24px;padding-bottom:60px;max-width:1200px;margin:0 auto">
+
+<!-- WELCOME -->
+<div class="home-welcome">
+  <h1>Jans Photograph</h1>
+  <p>Panel administrativo — selecciona una sección</p>
+</div>
+
+<!-- GRID DE SECCIONES -->
+<div class="home-grid">
+
+  <!-- Dashboard -->
+  <a href="mstr/master-dashboard.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Dashboard</div>
+    <div class="home-card-desc">Resumen general — ingresos, reservas, cotizaciones y estadísticas.</div>
+  </a>
+
+  <!-- Reservas -->
+  <a href="mstr/master-reservas.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Reservas</div>
+    <div class="home-card-desc">Gestiona las solicitudes de sesión recibidas desde la página web.</div>
+    <span class="home-card-badge" id="badgeReservas">Cargando...</span>
+  </a>
+
+  <!-- Cotizaciones -->
+  <a href="mstr/master-cotizaciones.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Cotizaciones</div>
+    <div class="home-card-desc">Crea y gestiona cotizaciones para clientes, planes y eventos.</div>
+    <span class="home-card-badge" id="badgeQuotes">Cargando...</span>
+  </a>
+
+  <!-- Calendario -->
+  <a href="mstr/master-calendario.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Calendario</div>
+    <div class="home-card-desc">Vista mensual, semanal y diaria de reservas y eventos.</div>
+  </a>
+
+  <!-- Panel -->
+  <a href="mstr/master-panel.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Panel Administrativo</div>
+    <div class="home-card-desc">Ingresos, estadísticas por mes, planes más solicitados y top clientes.</div>
+  </a>
+
+  <!-- Catálogo -->
+  <a href="mstr/master-catalogo.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Catálogo</div>
+    <div class="home-card-desc">Planes públicos, servicios adicionales, inventario, blog, FAQ y equipo.</div>
+  </a>
+
+  <!-- Configuración -->
+  <a href="mstr/master-config.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Configuración</div>
+    <div class="home-card-desc">Empresa, redes sociales, credenciales, GitHub token y numeración de facturas.</div>
+  </a>
+
+  <!-- Notas -->
+  <a href="mstr/master-notas.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Notas</div>
+    <div class="home-card-desc">Bloc de notas rápidas visible en la página principal.</div>
+  </a>
+
+</div>
+
+<script>
+const SESSION_KEY = 'jans_master_auth';
+
+function handleLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.replace('auth/auth.html');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toastMsg');
+  if(!t||!m) return;
+  m.textContent = msg;
+  t.className = 'toast show' + (type === 'error' ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// Mostrar badges con conteos
+function updateBadges() {
+  try {
+    const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
+    const pending  = reservas.filter(r => r.status === 'pending').length;
+    const el = document.getElementById('badgeReservas');
+    if (el) el.textContent = pending > 0 ? pending + ' pendiente(s)' : 'Al día';
+  } catch(e) {}
+
+  try {
+    const quotes  = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
+    const pending = quotes.filter(q => q.status === 'pending').length;
+    const el = document.getElementById('badgeQuotes');
+    if (el) el.textContent = pending > 0 ? pending + ' pendiente(s)' : 'Al día';
+  } catch(e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateBadges();
+});
+</script>
+</main>
+</body>
+</html>
