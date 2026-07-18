@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════
+   INFOSELECT — Página de Abono (50%)
+   Usa los design tokens definidos en style.css
+   ═══════════════════════════════════════════ */
+
+.info-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 140px 24px 100px;
+}
+
+/* ── Hero ── */
+.info-hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.info-eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pink);
+  margin-bottom: 14px;
+}
+.info-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+.info-hero h1 span { color: var(--pink); }
+.info-hero-sub {
+  color: #c9c9c9;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* ── Featured Yappy card ── */
+.pay-card {
+  background: var(--dark);
+  border: 1px solid rgba(233,30,140,0.18);
+  border-radius: 20px;
+  padding: 36px 32px;
+  text-align: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+.pay-card-featured {
+  border: 1px solid rgba(233,30,140,0.4);
+  background: linear-gradient(180deg, rgba(233,30,140,0.07), var(--dark) 60%);
+  box-shadow: 0 0 0 1px rgba(233,30,140,0.08), 0 20px 60px -20px rgba(233,30,140,0.3);
+}
+.pay-card-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--pink);
+  color: var(--white);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 16px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.pay-card-icon {
+  width: 54px;
+  height: 54px;
+  margin: 8px auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(233,30,140,0.12);
+  border-radius: 14px;
+  color: var(--pink);
+}
+.pay-card-icon svg { width: 26px; height: 26px; }
+.pay-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+.pay-card-text {
+  color: var(--gray);
+  font-size: 0.92rem;
+  margin-bottom: 26px;
+}
+
+/* ── QR frame ── */
+.qr-frame {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 22px;
+  background: var(--white);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+}
+.qr-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  display: none; /* hidden until loadYappyQrImage() confirms a working format */
+}
+.qr-frame.qr-loaded img { display: block; }
+.qr-missing-msg {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray);
+  text-align: center;
+  font-size: 0.82rem;
+  padding: 0 12px;
+}
+.qr-frame.qr-missing img { display: none; }
+.qr-frame.qr-missing .qr-missing-msg { display: flex; }
+
+.pay-card-foot {
+  font-size: 0.82rem;
+  color: var(--gray);
+  margin-bottom: 16px;
+}
+
+.btn-pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25D366;
+  color: #0a0a0a;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-pay:hover { background: #2fe077; transform: translateY(-1px); }
+
+/* ── Phone number quick-copy card ── */
+.phone-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--dark);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 22px 26px;
+  margin-bottom: 56px;
+}
+.phone-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.phone-card-label {
+  font-size: 0.78rem;
+  color: var(--gray);
+}
+.phone-card-number {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.btn-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(233,30,140,0.1);
+  border: 1px solid rgba(233,30,140,0.3);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 11px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-copy:hover { background: rgba(233,30,140,0.2); border-color: var(--pink); }
+.btn-copy.copied { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #86efac; }
+
+/* ── Alternative methods ── */
+.alt-methods-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.alt-methods-sub {
+  text-align: center;
+  color: var(--gray);
+  font-size: 0.9rem;
+  max-width: 480px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+.alt-methods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.alt-method-card {
+  background: var(--dark);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 26px 22px;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  color: var(--white);
+  transition: all 0.22s ease;
+}
+.alt-method-card:hover {
+  border-color: rgba(233,30,140,0.4);
+  transform: translateY(-3px);
+  background: rgba(233,30,140,0.05);
+}
+.alt-method-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  border-radius: 11px;
+  color: var(--pink-l, #f472b6);
+  margin-bottom: 14px;
+}
+.alt-method-icon svg { width: 21px; height: 21px; }
+.alt-method-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.alt-method-card p {
+  font-size: 0.84rem;
+  color: var(--gray);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.alt-method-cta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pink);
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .info-main { padding: 120px 18px 80px; }
+  .pay-card { padding: 28px 20px; }
+  .qr-frame { width: 190px; height: 190px; }
+  .phone-card { flex-direction: column; align-items: stretch; text-align: center; }
+  .phone-card-text { align-items: center; }
+  .btn-copy { justify-content: center; }
+  .alt-methods-grid { grid-template-columns: 1fr; }
+}
