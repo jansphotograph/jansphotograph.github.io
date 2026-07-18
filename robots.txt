@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /assets/pages/auth/
+Disallow: /assets/pages/master.html
+
+Sitemap: https://jansphotograph.github.io/sitemap.xml
