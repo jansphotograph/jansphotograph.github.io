@@ -1320,10 +1320,17 @@ async function generateQuotePDF(id) {
 
   y = 40;
 
-  // ── CINTILLO VERDE ──
-  doc.setFillColor(34,197,94); doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 12, 2, 2, 'F');
+  // ── CINTILLO DE ESTADO — color y texto según el estado real de la cotización ──
+  const statusBanner = {
+    pending:   { color: [245,158,11], text: 'COTIZACIÓN PENDIENTE'   },
+    confirmed: { color: [34,197,94],  text: 'COTIZACIÓN CONFIRMADA'  },
+    completed: { color: [34,197,94],  text: 'COTIZACIÓN COMPLETADA'  },
+    postponed: { color: [139,92,246], text: 'COTIZACIÓN APLAZADA'    },
+    cancelled: { color: [239,68,68],  text: 'COTIZACIÓN CANCELADA'   },
+  }[q.status] || { color: [245,158,11], text: 'COTIZACIÓN PENDIENTE' };
+  doc.setFillColor(...statusBanner.color); doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 12, 2, 2, 'F');
   doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
-  doc.text('COTIZACIÓN CONFIRMADA', pageW/2, y+8, {align:'center'});
+  doc.text(statusBanner.text, pageW/2, y+8, {align:'center'});
   y += 26;
 
   // ── DATOS DE LA RESERVA ──
@@ -1332,7 +1339,7 @@ async function generateQuotePDF(id) {
     ['Cliente',      q.clientName,            'Fecha de sesión', fmtFechaPDF(q.sessionDate)],
     ['Teléfono',     q.phone || '—',          'Hora',            q.sessionTime || '—'],
     ['Email',        q.email || '—',          'Plan',            q.plan || '—'],
-    ['# Cotización', qNum,                    'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+    ['# Cotización', qNum,                    'Estado',          statusLabel(q.status)],
   ];
   const dataH = 14 + dataRows.length * 9 + 4;
   doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
@@ -1472,7 +1479,7 @@ async function generateQuoteInvoicePDF(id) {
   const clientRows = [
     ['Nombre',    q.clientName,         'Fecha de sesión', q.sessionDate || '—'],
     ['Cédula/RUC',q.clientId || '—',   'Hora',            q.sessionTime || '—'],
-    ['Teléfono',  q.phone || '—',       'Estado',          q.status === 'confirmed' ? 'Confirmada' : q.status === 'completed' ? 'Completada' : 'Pendiente'],
+    ['Teléfono',  q.phone || '—',       'Estado',          statusLabel(q.status)],
     ['Email',     q.email || '—',       'Origen',          qNum],
   ];
   clientRows.forEach(([l1,v1,l2,v2]) => {
