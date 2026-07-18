@@ -1,0 +1,210 @@
+[
+  {
+    "nombre": "Plan Basico",
+    "precio": 35,
+    "categoria": "retratos",
+    "incluye": [
+      "5 fotos editadas",
+      "1 Vestuario",
+      "En estudio",
+      "Sesión de 30 minutos",
+      "Asesoramiento completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Zafiro",
+    "precio": 55,
+    "categoria": "retratos",
+    "incluye": [
+      "8 fotos editadas",
+      "1 vestuario",
+      "Sesión Individual",
+      "En estudio",
+      "Sesión de 45 minutos",
+      "Asesoramiento completo"
+    ],
+    "popular": true
+  },
+  {
+    "nombre": "Plan Ruby",
+    "precio": 75,
+    "categoria": "retratos",
+    "incluye": [
+      "10 fotos editadas",
+      "1 foto impresa tamaño (8x10)",
+      "2 vestuarios",
+      "2 acompañantes máximo",
+      "Sesión de 60 minutos",
+      "En estudio o exterior",
+      "Asesoramiento completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Diamante",
+    "precio": 133,
+    "categoria": "retratos",
+    "incluye": [
+      "16 fotos editadas",
+      "3 fotos impresas (8x10)",
+      "1 Cuadro",
+      "3 vestuarios",
+      "4 acompañantes máximo",
+      "Sesión de 90 minutos",
+      "2 ubicaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Condesa",
+    "precio": 35,
+    "categoria": "xv-anos",
+    "incluye": [
+      "6 Fotos Editadas",
+      "1 Vestuario",
+      "Individual",
+      "Sesión de 30 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Marquesa",
+    "precio": 68,
+    "categoria": "xv-anos",
+    "incluye": [
+      "10 Fotos Editadas",
+      "1 Foto Impresa (8x10)",
+      "1 Vestuario",
+      "2 Acompañantes Máximo",
+      "Sesión de 45 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": true
+  },
+  {
+    "nombre": "Plan Princess",
+    "precio": 96,
+    "categoria": "xv-anos",
+    "incluye": [
+      "14 Fotos Editadas",
+      "3 Fotos Impresas (8x10)",
+      "1 Cuadro",
+      "2 Vestuario",
+      "5 Acompañantes máximo",
+      "Sesión de 1 hora",
+      "2 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Queen",
+    "precio": 140,
+    "categoria": "xv-anos",
+    "incluye": [
+      "18 Fotos Editadas",
+      "5 Foto Impresa (8x10)",
+      "1 Cuadro",
+      "3 Vestuario",
+      "Sin límite de acompañantes",
+      "Sesión de 2 horas",
+      "2 a 3 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Mini",
+    "precio": 30,
+    "categoria": "infantiles",
+    "incluye": [
+      "4 Fotos Editadas",
+      "1 Vestuario",
+      "Individual",
+      "Sesión de 30 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Kids",
+    "precio": 45,
+    "categoria": "infantiles",
+    "incluye": [
+      "8 Fotos Editadas",
+      "1 Foto Impresa (8x10)",
+      "2 Vestuario",
+      "2 Acompañantes Máximo",
+      "Sesión de 1 hora",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": true
+  },
+  {
+    "nombre": "Plan Super Junior",
+    "precio": 90,
+    "categoria": "infantiles",
+    "incluye": [
+      "14 Fotos Editadas",
+      "3 Fotos Impresas (8x10)",
+      "1 Cuadro",
+      "2 Vestuario",
+      "hasta 6 acompañantes",
+      "Sesión de 2 horas",
+      "2 Locaciones",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Juniors",
+    "precio": 25,
+    "categoria": "graduacion",
+    "incluye": [
+      "4 Fotos Editadas",
+      "Solo Toga",
+      "Individual",
+      "Sesión de 30 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  },
+  {
+    "nombre": "Plan Senior",
+    "precio": 45,
+    "categoria": "graduacion",
+    "incluye": [
+      "8 Fotos Editadas",
+      "1 Foto Impresa (8x10)",
+      "Toga + Gala",
+      "2 Acompañantes Máximo",
+      "Sesión de 45 minutos",
+      "En Estudio",
+      "Asesoramiento Completo"
+    ],
+    "popular": true
+  },
+  {
+    "nombre": "Plan Master",
+    "precio": 75,
+    "categoria": "graduacion",
+    "incluye": [
+      "12 Fotos Editadas",
+      "2 Fotos Impresas (8x10)",
+      "2 Vestuario",
+      "Foto Familiar o Amistades",
+      "Sesión de 90 minutos",
+      "1 Locación",
+      "Asesoramiento Completo"
+    ],
+    "popular": false
+  }
+]

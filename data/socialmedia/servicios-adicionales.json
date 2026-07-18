@@ -1,0 +1,79 @@
+{
+  "maquillaje": [],
+  "impresiones": [
+    {
+      "nombre": "6 FOTOS TAMAÑO CARNET",
+      "precio": 1.5
+    },
+    {
+      "nombre": "10 FOTOS TAMAÑO CARTERA",
+      "precio": 2.5
+    },
+    {
+      "nombre": "1 FOTO 4X6 PULGADAS",
+      "precio": 1
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 4X6 PULGADAS",
+      "precio": 2
+    },
+    {
+      "nombre": "1 FOTO 5X7 PULGADAS",
+      "precio": 1.5
+    },
+    {
+      "nombre": "COMBO 2 FOTOS 5X7 PULGADAS",
+      "precio": 2
+    },
+    {
+      "nombre": "1 FOTO 8X10 PULGADAS",
+      "precio": 2
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 8X10 PULGADAS",
+      "precio": 5
+    }
+  ],
+  "all": [
+    {
+      "nombre": "6 FOTOS TAMAÑO CARNET",
+      "precio": 1.5,
+      "descripcion": ""
+    },
+    {
+      "nombre": "10 FOTOS TAMAÑO CARTERA",
+      "precio": 2.5,
+      "descripcion": ""
+    },
+    {
+      "nombre": "1 FOTO 4X6 PULGADAS",
+      "precio": 1,
+      "descripcion": ""
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 4X6 PULGADAS",
+      "precio": 2,
+      "descripcion": ""
+    },
+    {
+      "nombre": "1 FOTO 5X7 PULGADAS",
+      "precio": 1.5,
+      "descripcion": ""
+    },
+    {
+      "nombre": "COMBO 2 FOTOS 5X7 PULGADAS",
+      "precio": 2,
+      "descripcion": ""
+    },
+    {
+      "nombre": "1 FOTO 8X10 PULGADAS",
+      "precio": 2,
+      "descripcion": ""
+    },
+    {
+      "nombre": "COMBO 3 FOTOS 8X10 PULGADAS",
+      "precio": 5,
+      "descripcion": ""
+    }
+  ]
+}
