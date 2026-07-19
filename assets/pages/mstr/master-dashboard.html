@@ -342,7 +342,7 @@ function updateDashboard() {
       <td><span class="badge-status status-pending" style="font-size:0.72rem">${item.tipo}</span></td>
       <td>${item.plan}</td><td>${item.fecha}</td><td>${item.hora}</td>
       <td style="font-weight:700">$${item.total.toFixed(2)}</td>
-      <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\"quotes\"]'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
+      <td><button class="btn btn-sm btn-pink" onclick="${item.isReserva?`goToReservaInTable('${item.id}')`:`switchView('quotes',document.querySelector('.sidebar-item[onclick*=\\'quotes\\']'));setTimeout(()=>viewQuote('${item.id}'),300)`}">Ver</button></td>
     </tr>`).join('');
   } else { if(pendingCard)pendingCard.style.display='none'; }
 
@@ -368,7 +368,6 @@ async function fetchDashboardData() {
         let local = [];
         try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
         const remoteIds = new Set(data.map(r => r.id));
-        local = local.filter(r => remoteIds.has(r.id));
         const byId = new Map(local.map(r => [r.id, r]));
         data.forEach(remote => {
           const loc = byId.get(remote.id) || {};
@@ -388,6 +387,8 @@ async function fetchDashboardData() {
             numero: remote.numero || loc.numero || null,
           }));
         });
+        // Las reservas que solo existen localmente (aún no sincronizadas a Supabase)
+        // se mantienen también, en vez de descartarse.
         const merged = Array.from(byId.values());
         localStorage.setItem('jans_reservas', JSON.stringify(merged));
         allReservas = merged; // actualizar en memoria
@@ -399,7 +400,41 @@ async function fetchDashboardData() {
     try {
       const { data, error } = await sbClient.from('cotizaciones').select('*').order('created_at', { ascending: false });
       if (!error && data) {
-        state.quotes = data;
+        const mapped = data.map(r => ({
+          id:          r.id,
+          numero:      r.numero,
+          clientName:  r.client_name,
+          clientId:    r.client_id,
+          clientType:  r.client_type,
+          razonSocial: r.razon_social || '',
+          dv:          r.dv || '',
+          phone:       r.phone,
+          email:       r.email,
+          address:     r.address || '',
+          sessionDate: r.session_date || '',
+          sessionTime: r.session_time || '',
+          location:    r.location || '',
+          plan:        r.plan,
+          planPrice:   r.plan_price,
+          addons:      typeof r.addons === 'string' ? JSON.parse(r.addons || '[]') : (r.addons || []),
+          total:       r.total,
+          abono:       parseFloat(r.abono)  || 0,
+          pagado:      parseFloat(r.pagado) || 0,
+          notes:       r.notes || '',
+          status:      r.status,
+          createdAt:   (function(iso){
+            if(!iso) return '';
+            const d = new Date(iso);
+            if(isNaN(d.getTime())) return iso;
+            return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+          })(r.created_at),
+        }));
+        // Las cotizaciones que solo existen localmente (aún no sincronizadas)
+        // se mantienen también, en vez de perderse al reemplazar con Supabase.
+        let local = [];
+        try { local = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) {}
+        const ids = new Set(mapped.map(q => q.id));
+        state.quotes = [...mapped, ...local.filter(q => !ids.has(q.id))];
         localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
       }
     } catch(e) { console.warn('fetchQuotes error:', e); }

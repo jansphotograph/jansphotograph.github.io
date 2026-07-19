@@ -423,8 +423,6 @@ async function fetchPanelData() {
       if (!error && data) {
         let local = [];
         try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-        const remoteIds = new Set(data.map(r => r.id));
-        local = local.filter(r => remoteIds.has(r.id));
         const byId = new Map(local.map(r => [r.id, r]));
         data.forEach(remote => {
           const loc = byId.get(remote.id) || {};
