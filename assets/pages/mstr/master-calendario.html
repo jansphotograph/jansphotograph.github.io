@@ -993,7 +993,6 @@ function loadReservasLocal() {
   } catch(e) { allReservas = []; }
   let changed = false;
   allReservas.forEach(r => {
-    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
     if (r.abono === undefined) { r.abono = 0; changed = true; }
   });
   if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));

@@ -1148,16 +1148,21 @@ function togglePolling() {
 function isPollingEnabled() {
   return localStorage.getItem(POLL_KEY) === 'true';
 }
-function loadFacturaCounterUI() {
-  const current = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
-  const input   = document.getElementById('facturaCounterInput');
-  if (input) {
-    input.value = current;
-    updateFacturaNextPreview();
-    input.addEventListener('input', updateFacturaNextPreview);
+async function loadFacturaCounterUI() {
+  const input = document.getElementById('facturaCounterInput');
+  if (!input) return;
+  let current = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.from('contadores').select('valor').eq('clave', 'factura').maybeSingle();
+      if (!error && data) { current = data.valor; localStorage.setItem('jans_factura_counter', String(current)); }
+    } catch(e) {}
   }
+  input.value = current;
+  updateFacturaNextPreview();
+  input.addEventListener('input', updateFacturaNextPreview);
 }
-function saveFacturaCounter() {
+async function saveFacturaCounter() {
   const input  = document.getElementById('facturaCounterInput');
   const msgEl  = document.getElementById('facturaCounterMsg');
   if (!input) return;
@@ -1171,6 +1176,9 @@ function saveFacturaCounter() {
     return;
   }
   localStorage.setItem('jans_factura_counter', String(val));
+  if (sbClient) {
+    try { await sbClient.rpc('establecer_contador', { p_clave: 'factura', p_valor: val }); } catch(e) {}
+  }
   updateFacturaNextPreview();
   msgEl.style.display = 'block';
   msgEl.style.background = 'rgba(34,197,94,0.1)';
@@ -1180,7 +1188,13 @@ function saveFacturaCounter() {
   showToast(`Contador actualizado — próxima factura #${String(val + 1).padStart(3, '0')} ✓`);
   setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
 }
-function resetFacturaCounter(){if(!confirm('Resetear a 0?'))return;localStorage.setItem('jans_factura_counter','0');loadFacturaCounterUI();showToast('Contador reseteado');}
+async function resetFacturaCounter(){
+  if(!confirm('Resetear a 0?'))return;
+  localStorage.setItem('jans_factura_counter','0');
+  if (sbClient) { try { await sbClient.rpc('establecer_contador', { p_clave: 'factura', p_valor: 0 }); } catch(e) {} }
+  loadFacturaCounterUI();
+  showToast('Contador reseteado');
+}
 
 // ── COT counter ──
 function updateCotNextPreview() {
@@ -1191,12 +1205,20 @@ function updateCotNextPreview() {
   const next = isNaN(current) || current < 0 ? 1 : current + 1;
   preview.textContent = 'COT-' + String(next).padStart(3, '0');
 }
-function loadCotCounterUI() {
-  const current = parseInt(localStorage.getItem('jans_cot_counter') || '0', 10);
+async function loadCotCounterUI() {
   const input = document.getElementById('cotCounterInput');
-  if (input) { input.value = current; updateCotNextPreview(); }
+  if (!input) return;
+  let current = parseInt(localStorage.getItem('jans_cot_counter') || '0', 10);
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.from('contadores').select('valor').eq('clave', 'cotizacion').maybeSingle();
+      if (!error && data) { current = data.valor; localStorage.setItem('jans_cot_counter', String(current)); }
+    } catch(e) {}
+  }
+  input.value = current;
+  updateCotNextPreview();
 }
-function saveCotCounter() {
+async function saveCotCounter() {
   const input = document.getElementById('cotCounterInput');
   const msgEl = document.getElementById('cotCounterMsg');
   if (!input) return;
@@ -1206,6 +1228,9 @@ function saveCotCounter() {
     msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
   }
   localStorage.setItem('jans_cot_counter', String(val));
+  if (sbClient) {
+    try { await sbClient.rpc('establecer_contador', { p_clave: 'cotizacion', p_valor: val }); } catch(e) {}
+  }
   updateCotNextPreview();
   msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
   msgEl.textContent = '✓ Guardado. La próxima cotización será COT-' + String(val + 1).padStart(3, '0') + '.';
@@ -1222,12 +1247,20 @@ function updateWebNextPreview() {
   const next = isNaN(current) || current < 0 ? 1 : current + 1;
   preview.textContent = 'WEB-' + String(next).padStart(3, '0');
 }
-function loadWebCounterUI() {
-  const current = parseInt(localStorage.getItem('jans_web_counter') || '0', 10);
+async function loadWebCounterUI() {
   const input = document.getElementById('webCounterInput');
-  if (input) { input.value = current; updateWebNextPreview(); }
+  if (!input) return;
+  let current = parseInt(localStorage.getItem('jans_web_counter') || '0', 10);
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.from('contadores').select('valor').eq('clave', 'reserva').maybeSingle();
+      if (!error && data) { current = data.valor; localStorage.setItem('jans_web_counter', String(current)); }
+    } catch(e) {}
+  }
+  input.value = current;
+  updateWebNextPreview();
 }
-function saveWebCounter() {
+async function saveWebCounter() {
   const input = document.getElementById('webCounterInput');
   const msgEl = document.getElementById('webCounterMsg');
   if (!input) return;
@@ -1237,6 +1270,9 @@ function saveWebCounter() {
     msgEl.textContent = 'Ingresa un número válido (0 o mayor).'; return;
   }
   localStorage.setItem('jans_web_counter', String(val));
+  if (sbClient) {
+    try { await sbClient.rpc('establecer_contador', { p_clave: 'reserva', p_valor: val }); } catch(e) {}
+  }
   updateWebNextPreview();
   msgEl.style.cssText = 'display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#86efac';
   msgEl.textContent = '✓ Guardado. La próxima reserva web será WEB-' + String(val + 1).padStart(3, '0') + '.';

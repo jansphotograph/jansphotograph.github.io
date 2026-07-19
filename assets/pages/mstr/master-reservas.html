@@ -277,16 +277,35 @@ function statusLabel(s) {
 function statusClassQ(s) {
   return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
 }
-function nextNumero(prefix) {
-  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
-  let counter = parseInt(localStorage.getItem(key) || '0', 10);
-  counter += 1;
-  localStorage.setItem(key, String(counter));
+// ── Contadores centralizados en Supabase — numeración compartida entre todos los dispositivos ──
+async function nextNumero(prefix) {
+  const clave    = prefix === 'WEB' ? 'reserva' : 'cotizacion';
+  const localKey = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: clave });
+      if (!error && data != null) {
+        localStorage.setItem(localKey, String(data));
+        return prefix + '-' + String(data).padStart(2, '0');
+      }
+    } catch(e) { console.warn('nextNumero RPC error:', e); }
+  }
+  // Fallback local si no hay conexión (puede repetirse si dos dispositivos están offline a la vez)
+  let counter = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
+  localStorage.setItem(localKey, String(counter));
   return prefix + '-' + String(counter).padStart(2, '0');
 }
-function nextFacturaNumero() {
-  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
-  counter += 1;
+async function nextFacturaNumero() {
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: 'factura' });
+      if (!error && data != null) {
+        localStorage.setItem('jans_factura_counter', String(data));
+        return String(data).padStart(3, '0');
+      }
+    } catch(e) { console.warn('nextFacturaNumero RPC error:', e); }
+  }
+  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10) + 1;
   localStorage.setItem('jans_factura_counter', String(counter));
   return String(counter).padStart(3, '0');
 }
@@ -350,10 +369,21 @@ function loadReservasLocal() {
   } catch(e) { allReservas = []; }
   let changed = false;
   allReservas.forEach(r => {
-    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
     if (r.abono === undefined) { r.abono = 0; changed = true; }
   });
   if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+}
+// Asigna número (WEB-XX) a las reservas que aún no tienen uno, usando el
+// contador atómico centralizado en Supabase — evita números repetidos
+// aunque varios dispositivos sincronicen al mismo tiempo.
+async function backfillReservaNumeros() {
+  const pending = allReservas.filter(r => !r.numero);
+  if (!pending.length) return;
+  for (const r of pending) {
+    r.numero = await nextNumero('WEB');
+    pushReservaToSupabase(r);
+  }
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
 }
 function resTotal(r) {
   const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
@@ -371,10 +401,10 @@ function resStatusClass(s) {
 function resStatusLabel(s) {
   return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
 }
-function getOrAssignFacturaNumero(r) {
+async function getOrAssignFacturaNumero(r) {
   if (r.facturaNumero) return r.facturaNumero; // already issued — reuse it
   const idx = allReservas.findIndex(x => x.id === r.id);
-  const num = nextFacturaNumero();
+  const num = await nextFacturaNumero();
   if (idx >= 0) {
     allReservas[idx].facturaNumero = num;
     localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
@@ -470,6 +500,7 @@ async function hardSyncReservas() {
   allReservas = [];
   const ok = await syncReservasFromSupabase();
   loadReservasLocal();
+  await backfillReservaNumeros();
   renderReservasTable();
   showToast(ok ? 'Sincronizado — ' + allReservas.length + ' reserva(s)' : 'Error al sincronizar', ok ? '' : 'error');
 }
@@ -1028,7 +1059,7 @@ async function generateConfirmationPDF(id) {
 }
 async function generateInvoicePDF(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
-  const facturaNum = getOrAssignFacturaNumero(r);
+  const facturaNum = await getOrAssignFacturaNumero(r);
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
@@ -1511,6 +1542,7 @@ async function sbGetConfig(clave) {
 document.addEventListener('DOMContentLoaded', async () => {
   await syncReservasFromSupabase();
   loadReservasLocal();
+  await backfillReservaNumeros();
   renderReservasTable();
 });
 </script>

@@ -252,7 +252,6 @@ function loadReservasLocal() {
   } catch(e) { allReservas = []; }
   let changed = false;
   allReservas.forEach(r => {
-    if (!r.numero) { r.numero = nextNumero('WEB'); changed = true; }
     if (r.abono === undefined) { r.abono = 0; changed = true; }
   });
   if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
@@ -477,11 +476,21 @@ function resExtrasTotal(r) {
 
 
 
-function nextNumero(prefix) {
-  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
-  let counter = parseInt(localStorage.getItem(key) || '0', 10);
-  counter += 1;
-  localStorage.setItem(key, String(counter));
+// ── Contador centralizado en Supabase — numeración compartida entre todos los dispositivos ──
+async function nextNumero(prefix) {
+  const clave    = prefix === 'WEB' ? 'reserva' : 'cotizacion';
+  const localKey = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: clave });
+      if (!error && data != null) {
+        localStorage.setItem(localKey, String(data));
+        return prefix + '-' + String(data).padStart(2, '0');
+      }
+    } catch(e) { console.warn('nextNumero RPC error:', e); }
+  }
+  let counter = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
+  localStorage.setItem(localKey, String(counter));
   return prefix + '-' + String(counter).padStart(2, '0');
 }
 

@@ -295,16 +295,34 @@ function statusLabel(s) {
 function statusClassQ(s) {
   return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
 }
-function nextNumero(prefix) {
-  const key = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
-  let counter = parseInt(localStorage.getItem(key) || '0', 10);
-  counter += 1;
-  localStorage.setItem(key, String(counter));
+// ── Contadores centralizados en Supabase — numeración compartida entre todos los dispositivos ──
+async function nextNumero(prefix) {
+  const clave    = prefix === 'WEB' ? 'reserva' : 'cotizacion';
+  const localKey = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: clave });
+      if (!error && data != null) {
+        localStorage.setItem(localKey, String(data));
+        return prefix + '-' + String(data).padStart(2, '0');
+      }
+    } catch(e) { console.warn('nextNumero RPC error:', e); }
+  }
+  let counter = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
+  localStorage.setItem(localKey, String(counter));
   return prefix + '-' + String(counter).padStart(2, '0');
 }
-function nextFacturaNumero() {
-  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10);
-  counter += 1;
+async function nextFacturaNumero() {
+  if (sbClient) {
+    try {
+      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: 'factura' });
+      if (!error && data != null) {
+        localStorage.setItem('jans_factura_counter', String(data));
+        return String(data).padStart(3, '0');
+      }
+    } catch(e) { console.warn('nextFacturaNumero RPC error:', e); }
+  }
+  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10) + 1;
   localStorage.setItem('jans_factura_counter', String(counter));
   return String(counter).padStart(3, '0');
 }
@@ -545,7 +563,7 @@ async function saveQuote() {
   const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
   const total = planPrice + addonsTotal;
 
-  const numero = nextNumero('COT');
+  const numero = await nextNumero('COT');
 
   const quote = {
     id:         `q_${Date.now()}`,
@@ -1437,10 +1455,8 @@ async function generateQuoteInvoicePDF(id) {
   const margin = 14;
   const pageW = 210;
 
-  // Número de factura correlativo
-  let facNum = parseInt(localStorage.getItem('jans_factura_counter')||'0') + 1;
-  localStorage.setItem('jans_factura_counter', String(facNum));
-  const facNumStr = String(facNum).padStart(3,'0');
+  // Número de factura correlativo (contador centralizado en Supabase)
+  const facNumStr = await nextFacturaNumero();
   const today = new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   let y = 0;
 
