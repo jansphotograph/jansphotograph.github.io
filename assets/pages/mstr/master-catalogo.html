@@ -1069,7 +1069,7 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
 
   const title = `Fotografía de ${name} en Panamá | Jans Photograph`;
   const desc  = subtitle || `Sesiones de ${name.toLowerCase()} profesionales en Panamá. Ve nuestros planes y precios.`;
-  const url   = `https://jansphotograph.github.io/assets/pages/planes/${slug}.html`;
+  const url   = `https://jansphotograph.com/assets/pages/planes/${slug}.html`;
   const navSlugsList = navSlugs.map(s => `'${s}'`).join(',');
 
   return `<!DOCTYPE html>
@@ -1090,7 +1090,7 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   <meta property="og:title"       content="${title}" />
   <meta property="og:description" content="${desc}" />
   <meta property="og:url"         content="${url}" />
-  <meta property="og:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
@@ -1098,7 +1098,7 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="${title}" />
   <meta name="twitter:description" content="${desc}" />
-  <meta name="twitter:image"       content="https://jansphotograph.github.io/assets/images/icons/Janssocialmedialogo.png" />
+  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   <!-- Geo -->
   <meta name="geo.region"      content="PA" />
