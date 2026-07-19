@@ -968,6 +968,15 @@ async function generateConfirmationPDF(id) {
 
   const leftRows  = [['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—']];
   const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Plan:', r.plan||'—'], ['Estado:', resStatusLabel(r.status)]];
+  // Datos complementarios: sesión exterior, ubicación y personas adicionales
+  if (r.exterior) {
+    rightRows.push(['Sesión exterior:', 'Sí' + (r.lugar ? ' — ' + r.lugar : '')]);
+  } else if (r.lugar) {
+    rightRows.push(['Ubicación:', r.lugar]);
+  }
+  if (r.personasAdicionales > 0) {
+    rightRows.push(['Personas adicionales:', String(r.personasAdicionales) + ' persona(s)']);
+  }
 
   const startY = y;
   let yL = startY, yR = startY;
@@ -1112,6 +1121,14 @@ async function generateInvoicePDF(id) {
   if (r.address)     leftRows.push(['Dirección:', r.address]);
 
   const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['Origen:', r.numero||'—']];
+  if (r.exterior) {
+    rightRows.push(['Sesión exterior:', 'Sí' + (r.lugar ? ' — ' + r.lugar : '')]);
+  } else if (r.lugar) {
+    rightRows.push(['Ubicación:', r.lugar]);
+  }
+  if (r.personasAdicionales > 0) {
+    rightRows.push(['Personas adicionales:', String(r.personasAdicionales) + ' persona(s)']);
+  }
 
   const startY = y;
   let yL = startY, yR = startY;
