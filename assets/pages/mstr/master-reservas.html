@@ -90,8 +90,12 @@
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div class="modal-overlay" id="reservaModal">
   <div class="modal" style="max-width:560px;display:flex;flex-direction:column;padding:0;overflow:hidden">
-    <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0">
-      <h3 id="reservaModalTitle">Detalle de Reserva</h3>
+    <div class="modal-header" style="padding:24px 32px 20px;flex-shrink:0;display:flex;align-items:center;gap:10px">
+      <h3 id="reservaModalTitle" style="flex:1">Detalle de Reserva</h3>
+      <button id="reservaCopyAllBtn" class="copy-all-btn" title="Copiar todos los datos del cliente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar datos
+      </button>
       <button class="modal-close" onclick="closeModal('reservaModal')">×</button>
     </div>
     <div id="reservaModalBody" style="flex:1;overflow-y:auto;padding:0 32px 8px"></div>
@@ -271,6 +275,29 @@ function showToast(msg, type='success') {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function copyToClipboard(text, label) {
+  if (!text) { showToast('Nada que copiar', 'error'); return; }
+  const done = () => showToast((label ? label + ' copiado' : 'Copiado') + ' al portapapeles', 'success');
+  const fail = () => showToast('No se pudo copiar', 'error');
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(fail);
+  } else {
+    // Fallback para navegadores/contextos sin Clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+    document.body.removeChild(ta);
+  }
+}
+const COPY_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+// Genera el HTML de un botoncito de copiar seguro para insertar en template strings con onclick
+function copyBtnHTML(text, label) {
+  const raw = (text === null || text === undefined) ? '' : String(text);
+  const jsEscaped = raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+  const attrEscaped = jsEscaped.replace(/"/g, '&quot;');
+  return `<button type="button" class="copy-mini-btn" onclick="copyToClipboard('${attrEscaped}','${label}')" title="Copiar ${label}">${COPY_ICON_SVG}</button>`;
+}
 function statusLabel(s) {
   return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
 }
@@ -594,6 +621,24 @@ function renderReservasTable(highlightId) {
 function viewReserva(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
   document.getElementById('reservaModalTitle').textContent = (r.numero || '') + ' — ' + r.nombre;
+
+  // Botón "Copiar datos" del header — copia toda la info del cliente en un bloque
+  const copyAllBtn = document.getElementById('reservaCopyAllBtn');
+  if (copyAllBtn) {
+    copyAllBtn.onclick = () => {
+      const lines = [
+        r.numero ? `# ${r.numero}` : null,
+        `Cliente: ${r.nombre}`,
+        r.tel ? `Teléfono: ${r.tel}` : null,
+        r.email ? `Email: ${r.email}` : null,
+        `Fecha de sesión: ${r.fechaLabel || r.fecha || '—'}`,
+        `Hora: ${r.hora || '—'}`,
+        r.plan ? `Plan: ${r.plan}` : null,
+      ].filter(Boolean).join('\n');
+      copyToClipboard(lines, 'Datos del cliente');
+    };
+  }
+
   const waMsg = encodeURIComponent(
     '¡Hola ' + r.nombre + '! 📸\n' +
     'Tu reserva ha sido confirmada:\n' +
@@ -610,9 +655,9 @@ function viewReserva(id) {
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resStatusBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
       ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${r.facturaNumero}</div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre} ${copyBtnHTML(r.nombre,'Nombre')}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel||'—'} ${r.tel?copyBtnHTML(r.tel,'Teléfono'):''}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'} ${r.email?copyBtnHTML(r.email,'Email'):''}</div></div>
       ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
       ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${r.fechaEspecial}</div></div>` : ''}
       ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${r.lugar || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
