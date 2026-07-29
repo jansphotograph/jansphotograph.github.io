@@ -383,3 +383,25 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* Padding para header(64) + master-nav(44) */
 .main-content { padding-top: 120px; }
+
+/* Botón mini de copiar al portapapeles (detalle de reserva) */
+.copy-mini-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; margin-left: 6px; padding: 0;
+  background: transparent; border: 1px solid var(--border); border-radius: 5px;
+  color: var(--gray-l); cursor: pointer; vertical-align: middle;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.copy-mini-btn svg { width: 11px; height: 11px; pointer-events: none; }
+.copy-mini-btn:hover {
+  color: var(--pink-l); border-color: var(--pink-l); background: rgba(233,30,140,0.08);
+}
+.copy-all-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; font-size: 0.75rem; font-weight: 600;
+  background: rgba(233,30,140,0.08); border: 1px solid rgba(233,30,140,0.25);
+  border-radius: 7px; color: var(--pink-l); cursor: pointer;
+  font-family: var(--font); transition: background .15s;
+}
+.copy-all-btn:hover { background: rgba(233,30,140,0.16); }
+.copy-all-btn svg { width: 12px; height: 12px; }
