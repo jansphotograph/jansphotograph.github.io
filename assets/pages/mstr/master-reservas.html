@@ -137,6 +137,15 @@
       </div>
     </div>
     <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+    <div class="field">
+      <label>👥 Personas adicionales</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button type="button" onclick="changeEditPersonas(-1)" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">−</button>
+        <input type="number" id="editResPersonas" min="0" step="1" style="max-width:80px;text-align:center" oninput="updateEditPersonasCosto()" />
+        <button type="button" onclick="changeEditPersonas(1)" style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</button>
+        <span style="font-size:0.82rem;color:var(--gray)">× $<span id="editResPersonaPrecio">5.00</span> c/u = <span id="editResPersonasCosto" style="color:#e91e8c;font-weight:700">$0.00</span></span>
+      </div>
+    </div>
     <div class="field"><label>Notas</label><textarea id="editResNotas" style="min-height:72px"></textarea></div>
     <div class="btn-row">
       <button class="btn btn-pink" onclick="saveEditReserva()">Guardar cambios</button>
@@ -386,6 +395,20 @@ function pdfCompanyFooterLine(company) {
 }
 let allReservas  = [];
 let editingResId = null;
+const EDIT_PRECIO_PERSONA = 5;
+function changeEditPersonas(delta) {
+  const input = document.getElementById('editResPersonas');
+  const next = Math.max(0, (parseInt(input.value, 10) || 0) + delta);
+  input.value = next;
+  updateEditPersonasCosto();
+}
+function updateEditPersonasCosto() {
+  const input = document.getElementById('editResPersonas');
+  let n = parseInt(input.value, 10);
+  if (isNaN(n) || n < 0) n = 0;
+  input.value = n;
+  document.getElementById('editResPersonasCosto').textContent = '$' + (n * EDIT_PRECIO_PERSONA).toFixed(2);
+}
 
 function loadReservasLocal() {
   try {
@@ -882,6 +905,9 @@ function openEditReserva(id) {
   document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
   document.getElementById('editResPlan').value   = r.plan || '';
   document.getElementById('editResNotas').value  = r.notas || '';
+  document.getElementById('editResPersonas').value = r.personasAdicionales || 0;
+  document.getElementById('editResPersonaPrecio').textContent = EDIT_PRECIO_PERSONA.toFixed(2);
+  updateEditPersonasCosto();
   // Convertir createdAt "dd/mm/yyyy" → "yyyy-mm-dd" para input type="date"
   const cat = r.createdAt || '';
   let catISO = '';
@@ -900,6 +926,9 @@ function saveEditReserva() {
   const fecha   = document.getElementById('editResDate').value;
   const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
   const newCreatedAt = document.getElementById('editResCreatedAt').value;
+  let personasAdicionales = parseInt(document.getElementById('editResPersonas').value, 10);
+  if (isNaN(personasAdicionales) || personasAdicionales < 0) personasAdicionales = 0;
+  const costoPersonas = personasAdicionales * EDIT_PRECIO_PERSONA;
   // Convertir "yyyy-mm-dd" → "dd/mm/yyyy" para mantener consistencia con el formato local
   let createdAtFormatted = allReservas[idx].createdAt || '';
   if (newCreatedAt) {
@@ -918,6 +947,8 @@ function saveEditReserva() {
     plan:      document.getElementById('editResPlan').value,
     notas:     document.getElementById('editResNotas').value,
     createdAt: createdAtFormatted,
+    personasAdicionales,
+    costoPersonas,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
