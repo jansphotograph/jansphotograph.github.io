@@ -35,14 +35,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* ── Comentarios de clientes ── */
-    .testi-header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:28px; }
-    .testi-cta {
-      display:inline-flex; align-items:center; gap:8px; padding:11px 20px;
-      background:rgba(233,30,140,.1); border:1px solid rgba(233,30,140,.3); border-radius:50px;
-      color:#e91e8c; font-size:.85rem; font-weight:700; text-decoration:none; white-space:nowrap;
-      transition:background .2s, transform .15s;
-    }
-    .testi-cta:hover { background:rgba(233,30,140,.2); transform:translateY(-1px); }
     .testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
     .testi-card {
       background:#1c1c1c; border:1px solid rgba(255,255,255,.07); border-radius:14px;
@@ -128,15 +120,9 @@
 
     <!-- Comentarios de clientes -->
     <section style="margin-top:60px" aria-label="Comentarios de clientes">
-      <div class="testi-header">
-        <div>
-          <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:16px">Lo que dicen de nosotros</span>
-          <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;color:#fff">Comentarios de nuestros clientes</h2>
-        </div>
-        <a href="comments.html" class="testi-cta">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Déjanos tu reseña
-        </a>
+      <div style="margin-bottom:28px">
+        <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:16px">Lo que dicen de nosotros</span>
+        <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;color:#fff">Comentarios de nuestros clientes</h2>
       </div>
       <div id="testiGrid" class="testi-grid">
         <div class="testi-empty">Cargando comentarios...</div>
