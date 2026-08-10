@@ -72,6 +72,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Panel
   </a>
+  <a href="mstr/master-comentarios.html" id="nav-comentarios">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Comentarios
+  </a>
   <div class="nav-sep"></div>
   <a href="mstr/master-catalogo.html" id="nav-catalogo">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -91,7 +95,7 @@
     'master-reservas':     'nav-reservas',
     'master-cotizaciones': 'nav-cotizaciones',
     'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel',
+    'master-panel':        'nav-panel', 'master-comentarios': 'nav-comentarios',
     'master-catalogo':     'nav-catalogo',
     'master-config':       'nav-config',
     'master':              'nav-inicio',
@@ -221,6 +225,18 @@
     <div class="home-card-desc">Bloc de notas rápidas visible en la página principal.</div>
   </a>
 
+  <!-- Comentarios -->
+  <a href="mstr/master-comentarios.html" class="home-card">
+    <div class="home-card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </div>
+    <div class="home-card-title">Comentarios</div>
+    <div class="home-card-desc">Reseñas de clientes — revisa y publícalas en la página de Servicios.</div>
+    <span class="home-card-badge" id="badgeComentarios">Cargando...</span>
+  </a>
+
 </div>
 
 <script>
@@ -254,6 +270,13 @@ function updateBadges() {
     const pending = quotes.filter(q => q.status === 'pending').length;
     const el = document.getElementById('badgeQuotes');
     if (el) el.textContent = pending > 0 ? pending + ' pendiente(s)' : 'Al día';
+  } catch(e) {}
+
+  try {
+    const comentarios = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
+    const sinPublicar  = comentarios.filter(c => !c.publicado).length;
+    const el = document.getElementById('badgeComentarios');
+    if (el) el.textContent = sinPublicar > 0 ? sinPublicar + ' sin publicar' : 'Al día';
   } catch(e) {}
 }
 

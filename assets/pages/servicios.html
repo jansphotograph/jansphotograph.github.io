@@ -32,6 +32,29 @@
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/pages.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ── Comentarios de clientes ── */
+    .testi-header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:28px; }
+    .testi-cta {
+      display:inline-flex; align-items:center; gap:8px; padding:11px 20px;
+      background:rgba(233,30,140,.1); border:1px solid rgba(233,30,140,.3); border-radius:50px;
+      color:#e91e8c; font-size:.85rem; font-weight:700; text-decoration:none; white-space:nowrap;
+      transition:background .2s, transform .15s;
+    }
+    .testi-cta:hover { background:rgba(233,30,140,.2); transform:translateY(-1px); }
+    .testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+    .testi-card {
+      background:#1c1c1c; border:1px solid rgba(255,255,255,.07); border-radius:14px;
+      padding:22px; display:flex; flex-direction:column; gap:12px;
+    }
+    .testi-quote-icon { color:rgba(233,30,140,.4); }
+    .testi-text { color:rgba(255,255,255,.78); font-size:.9rem; line-height:1.7; flex:1; }
+    .testi-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.06); }
+    .testi-name { font-family:'Playfair Display',Georgia,serif; font-size:.95rem; color:#fff; font-weight:700; }
+    .testi-plan { font-size:.7rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#e91e8c; background:rgba(233,30,140,.1); border-radius:50px; padding:3px 10px; white-space:nowrap; }
+    .testi-empty { color:rgba(255,255,255,0.3); font-size:0.85rem; padding:20px; grid-column:1/-1; }
+  </style>
 </head>
 <body>
 
@@ -100,6 +123,23 @@
             <div class="service-row"><span class="service-name">Combo (3 fotos 8x10)</span><span class="service-price">$5.00</span></div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Comentarios de clientes -->
+    <section style="margin-top:60px" aria-label="Comentarios de clientes">
+      <div class="testi-header">
+        <div>
+          <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:16px">Lo que dicen de nosotros</span>
+          <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;color:#fff">Comentarios de nuestros clientes</h2>
+        </div>
+        <a href="comments.html" class="testi-cta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Déjanos tu reseña
+        </a>
+      </div>
+      <div id="testiGrid" class="testi-grid">
+        <div class="testi-empty">Cargando comentarios...</div>
       </div>
     </section>
   </div>
@@ -245,6 +285,70 @@
       // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
+    })();
+  </script>
+  <script>
+    // ── Comentarios de clientes (publicados desde el Master) ──
+    (function() {
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+      let sbClient = null;
+      function initSupabase() {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          return true;
+        }
+        return false;
+      }
+
+      function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      }
+
+      function renderTestimonios(comentarios) {
+        const grid = document.getElementById('testiGrid');
+        if (!grid) return;
+        const published = (comentarios || []).filter(c => c.publicado);
+        if (!published.length) {
+          grid.innerHTML = '<div class="testi-empty">Todavía no hay comentarios publicados. ¡Sé el primero en dejarnos tu reseña!</div>';
+          return;
+        }
+        grid.innerHTML = published.slice(0, 12).map(c => `
+          <div class="testi-card">
+            <svg class="testi-quote-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/></svg>
+            <div class="testi-text">${escapeHtml(c.comentario)}</div>
+            <div class="testi-footer">
+              <span class="testi-name">${escapeHtml(c.nombre)}</span>
+              ${c.plan ? `<span class="testi-plan">${escapeHtml(c.plan)}</span>` : ''}
+            </div>
+          </div>`).join('');
+      }
+
+      // 1. localStorage first (instant — shared cache with the review form / Master panel)
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
+        if (local.length) renderTestimonios(local);
+      } catch(e) {}
+
+      // 2. Supabase for the latest, cross-device
+      function loadFromSupabase() {
+        if (!sbClient) return;
+        sbClient.from('comentarios').select('*').eq('publicado', true).order('created_at', { ascending: false })
+          .then(({ data, error }) => {
+            if (error || !data) return;
+            renderTestimonios(data);
+            try {
+              // Merge into the shared local cache without dropping unpublished entries the Master may need
+              const cached = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
+              const byId = new Map(cached.map(c => [c.id, c]));
+              data.forEach(c => byId.set(c.id, c));
+              localStorage.setItem('jans_comentarios', JSON.stringify([...byId.values()]));
+            } catch(e) {}
+          })
+          .catch(() => {});
+      }
+      if (!initSupabase()) window.addEventListener('load', () => { if (initSupabase()) loadFromSupabase(); });
+      else loadFromSupabase();
     })();
   </script>
   <script>
