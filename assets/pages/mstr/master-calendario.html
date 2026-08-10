@@ -557,11 +557,15 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   <a href="master-cotizaciones.html" id="nav-cotizaciones">Cotizaciones</a>
   <a href="master-calendario.html" id="nav-calendario">Calendario</a>
   <a href="master-panel.html" id="nav-panel">Panel</a>
+  <a href="master-comentarios.html" id="nav-comentarios">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Comentarios
+  </a>
   <div class="nav-sep"></div>
   <a href="master-catalogo.html" id="nav-catalogo">Catálogo</a>
   <a href="master-config.html" id="nav-config">Config</a>
 </nav>
-<script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
+<script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel', 'master-comentarios': 'nav-comentarios','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div id="calCtxMenu" style="display:none;position:fixed;background:#1c1c1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px;z-index:500;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
   <button onclick="closeCalCtxMenu();openCalEventModal()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#fff;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">+ Nuevo evento</button>
