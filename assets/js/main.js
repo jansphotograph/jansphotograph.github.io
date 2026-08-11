@@ -27,48 +27,68 @@ hamburger?.addEventListener('click', () => {
 navOverlay?.addEventListener('click', closeNav);
 document.querySelectorAll('.nav-drawer a').forEach(a => a.addEventListener('click', closeNav));
 
-// ── Slider — Ping-pong (1→2→3→4→5→4→3→2→1→2…) ──
-const slider = document.getElementById('sliderTrack');
-if (slider) {
-  const slides = slider.querySelectorAll('.slide');
-  const dots   = document.querySelectorAll('.slider-dots button');
-  const total  = slides.length;
-  let current   = 0;
-  let direction = 1;   // +1 forward, -1 backward
-  let autoTimer;
+// ── Slider — Ping-pong (1→2→3→...→N→...→2→1→2…) ──
+// Reescrito para soportar cualquier cantidad de slides (antes estaba fijo a 5).
+// initSlider() es reutilizable: index.html la llama cada vez que renderiza
+// los slides (caché local y luego datos frescos desde GitHub).
+window.__sliderState = { current: 0, direction: 1, total: 0, timer: null };
+
+window.initSlider = function initSlider() {
+  const slider = document.getElementById('sliderTrack');
+  if (!slider) return;
+  const dots  = document.querySelectorAll('.slider-dots button');
+  const total = slider.querySelectorAll('.slide').length;
+  const st = window.__sliderState;
+  st.total = total;
+  st.current = 0;
+  st.direction = 1;
+  if (!total) return;
 
   function goTo(idx) {
-    current = Math.max(0, Math.min(idx, total - 1));
-    slider.style.transform = `translateX(-${current * 20}%)`;
-    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    st.current = Math.max(0, Math.min(idx, st.total - 1));
+    slider.style.transform = `translateX(-${st.current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === st.current));
   }
 
   function pingPongNext() {
-    // Flip direction at the ends
-    if (current >= total - 1) direction = -1;
-    if (current <= 0)         direction =  1;
-    goTo(current + direction);
+    if (st.current >= st.total - 1) st.direction = -1;
+    if (st.current <= 0)            st.direction =  1;
+    goTo(st.current + st.direction);
   }
 
   function resetAuto() {
-    clearInterval(autoTimer);
-    autoTimer = setInterval(pingPongNext, 5200);
+    clearInterval(st.timer);
+    st.timer = setInterval(pingPongNext, 5200);
   }
+
+  // Expuestas para el listener de swipe (bindeado una sola vez más abajo)
+  window.__sliderGoTo = goTo;
+  window.__sliderResetAuto = resetAuto;
 
   resetAuto();
   goTo(0);
 
-  // Touch / swipe
-  let touchStartX = 0;
-  slider.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-  slider.addEventListener('touchend',   e => {
-    const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      goTo(current + (diff > 0 ? 1 : -1));
-      resetAuto();
-    }
-  });
-}
+  // Touch / swipe — se enlaza una sola vez; siempre usa la versión
+  // más reciente de goTo/resetAuto vía window.__slider*.
+  if (!slider.dataset.touchBound) {
+    slider.dataset.touchBound = '1';
+    let touchStartX = 0;
+    slider.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    slider.addEventListener('touchend',   e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50 && window.__sliderGoTo) {
+        window.__sliderGoTo(window.__sliderState.current + (diff > 0 ? 1 : -1));
+        window.__sliderResetAuto();
+      }
+    });
+  }
+};
+
+// Fallback: si el slider ya trae slides estáticos en el HTML (páginas que no
+// los cargan dinámicamente), inicializar al cargar el DOM.
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.querySelectorAll('#sliderTrack .slide').length) window.initSlider();
+});
 
 // ── Shared "Regresar" button handler — used by the .btn-back button on public pages ──
 // Goes back in browser history if there's a same-site page to return to;
