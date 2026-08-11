@@ -129,6 +129,19 @@ header {
 }
 .nav-drawer.open { right: 0; }
 
+.nav-drawer-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.04em;
+  padding: 0 40px 20px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-drawer-title span { color: var(--pink); }
+
+
 .nav-overlay {
   position: fixed;
   inset: 0;
