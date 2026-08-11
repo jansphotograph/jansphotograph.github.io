@@ -30,7 +30,7 @@
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="assets/images/icons/JansBlackBag.png" />
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/style.css?v=2" />
   <!-- Structured Data — Local Business -->
   <script type="application/ld+json">
   {
@@ -115,65 +115,12 @@
   <!-- ═══ SLIDER ═══ -->
   <section class="slider-section" aria-label="Galería de sesiones">
     <div class="slider-track" id="sliderTrack">
-
-      <!-- Slide 1 -->
-      <div class="slide">
-        <img class="slide-bg" src="assets/images/slider/slider_1.webp" alt="Sesión fotográfica" loading="eager" />
-        <div class="slide-content">
-          <h2>¿Te gustaría hacerte una sesión fotográfica?</h2>
-          <p>Capturamos tus momentos más especiales con luz, emoción y arte.</p>
-          <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
-        </div>
-      </div>
-
-      <!-- Slide 2 -->
-      <div class="slide">
-        <img class="slide-bg" src="assets/images/slider/slider_2.jpeg" alt="Sesiones de parejas" loading="lazy" />
-        <div class="slide-content">
-          <h2>Sesiones de parejas</h2>
-          <p>Amor eterno en cada encuadre. Historias de dos, contadas con imágenes.</p>
-          <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
-        </div>
-      </div>
-
-      <!-- Slide 3 -->
-      <div class="slide">
-        <img class="slide-bg" src="assets/images/slider/slider_3.jpeg" alt="Sesiones familiares" loading="lazy" />
-        <div class="slide-content">
-          <h2>Sesiones familiares</h2>
-          <p>Tu familia, tu historia. Fotos que perduran generaciones.</p>
-          <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
-        </div>
-      </div>
-
-      <!-- Slide 4 -->
-      <div class="slide">
-        <img class="slide-bg" src="assets/images/slider/slider_4.jpeg" alt="Sesiones individuales" loading="lazy" />
-        <div class="slide-content">
-          <h2>Sesiones individuales</h2>
-          <p>Tú en el centro. Retratos que revelan tu esencia y personalidad única.</p>
-          <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
-        </div>
-      </div>
-
-      <!-- Slide 5 -->
-      <div class="slide">
-        <img class="slide-bg" src="assets/images/slider/slider_5.jpeg" alt="Sesiones de maternidad" loading="lazy" />
-        <div class="slide-content">
-          <h2>Sesiones de maternidad</h2>
-          <p>El milagro de la vida, inmortalizado. Belleza que merece ser recordada.</p>
-          <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
-        </div>
-      </div>
-
+      <!-- Los slides se cargan dinámicamente desde data/socialmedia/slider.json
+           (editable desde el panel Master → Slider). -->
     </div><!-- /slider-track -->
 
-    <div class="slider-dots" role="tablist" aria-label="Slides">
-      <button class="active" aria-label="Slide 1"></button>
-      <button aria-label="Slide 2"></button>
-      <button aria-label="Slide 3"></button>
-      <button aria-label="Slide 4"></button>
-      <button aria-label="Slide 5"></button>
+    <div class="slider-dots" id="sliderDots" role="tablist" aria-label="Slides">
+      <!-- Generados dinámicamente junto con los slides -->
     </div>
   </section>
 
@@ -350,7 +297,82 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js"></script>
+  <script src="assets/js/main.js?v=2"></script>
+  <script>
+    // ── Slider — carga dinámica desde data/socialmedia/slider.json ──
+    // Editable desde el panel Master → Slider (añadir/quitar/reordenar
+    // slides, cambiar título, descripción y foto).
+    (function() {
+      const OWNER = 'jansphotograph';
+      const REPO  = 'jansphotograph.github.io';
+      const LS_KEY = 'jans_slider';
+
+      const track = document.getElementById('sliderTrack');
+      const dotsWrap = document.getElementById('sliderDots');
+      if (!track || !dotsWrap) return;
+
+      function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      }
+
+      function resolveImg(path) {
+        if (!path) return '';
+        if (/^https?:\/\//i.test(path)) return path;
+        // Rutas relativas al root del repo (ej. "assets/images/slider/x.jpg")
+        return path;
+      }
+
+      function renderSlides(slides) {
+        if (!Array.isArray(slides) || !slides.length) return;
+        track.innerHTML = slides.map((s, i) => `
+          <div class="slide">
+            <img class="slide-bg" src="${resolveImg(s.imagen)}" alt="${escapeHtml(s.titulo)}" loading="${i === 0 ? 'eager' : 'lazy'}" />
+            <div class="slide-content">
+              <h2>${escapeHtml(s.titulo)}</h2>
+              <p>${escapeHtml(s.descripcion)}</p>
+              <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
+            </div>
+          </div>`).join('');
+
+        dotsWrap.innerHTML = slides.map((s, i) =>
+          `<button class="${i === 0 ? 'active' : ''}" aria-label="Slide ${i + 1}"></button>`
+        ).join('');
+
+        if (window.initSlider) window.initSlider();
+      }
+
+      // 1. Caché local — instantáneo
+      try {
+        const local = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+        if (local.length) renderSlides(local);
+      } catch(e) {}
+
+      // 2. Archivo local (mismo origen) — funciona en pruebas locales
+      //    (VS Code Live Server, etc.) antes de publicar en GitHub, y también
+      //    una vez publicado (más rápido que esperar el CDN de GitHub raw).
+      fetch(`data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(slides => {
+          if (!slides || !slides.length) return null;
+          localStorage.setItem(LS_KEY, JSON.stringify(slides));
+          renderSlides(slides);
+          return true;
+        })
+        .catch(() => null)
+        .then(gotLocal => {
+          if (gotLocal) return;
+          // 3. Si no hay archivo local disponible, intenta GitHub
+          fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
+            .then(r => r.ok ? r.json() : null)
+            .then(slides => {
+              if (!slides || !slides.length) return;
+              localStorage.setItem(LS_KEY, JSON.stringify(slides));
+              renderSlides(slides);
+            })
+            .catch(() => {});
+        });
+    })();
+  </script>
   <script>
     // ── Social links — actualiza URL del post e caption desde localStorage ──
     document.addEventListener('DOMContentLoaded', function() {
