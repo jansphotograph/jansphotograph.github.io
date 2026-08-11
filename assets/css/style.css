@@ -626,6 +626,13 @@ footer {
 @media (max-width: 640px) {
   header { padding: 0 20px; }
   .header-title { font-size: 1.1rem; }
+
+  /* En el Home mostramos icono + nombre + hamburguesa.
+     En el resto de páginas (identificadas por traer el botón "Regresar"
+     dentro del header) ocultamos el nombre: solo icono a la izquierda
+     y hamburguesa a la derecha. */
+  .header-logo:has(.btn-back) ~ .header-title { display: none; }
+
   .footer-columns { grid-template-columns: 1fr; }
   .slider-btn { width: 40px; height: 40px; font-size: 1.1rem; }
   .slider-btn.prev { left: 14px; }
