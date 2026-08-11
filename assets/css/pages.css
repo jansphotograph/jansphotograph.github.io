@@ -62,6 +62,9 @@
   border-bottom: 1px solid rgba(255,255,255,0.07);
   position: sticky;
   top: 72px;
+  margin-top: 72px; /* reserva su propio espacio bajo el header en vez de depender
+                        de la posición "stuck" (evita que el contenido siguiente
+                        se solape con el nav cuando éste crece a varias filas) */
   z-index: 90;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
