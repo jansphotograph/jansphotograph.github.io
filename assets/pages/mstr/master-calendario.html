@@ -575,6 +575,21 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   <button onclick="closeCalCtxMenu();openCalEventModal()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#fff;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">+ Nuevo evento</button>
   <button onclick="closeCalCtxMenu()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#999;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">Cerrar</button>
 </div>
+<!-- Info de un evento ya agendado (click en día con evento, vista mensual/semanal) -->
+<div class="modal-overlay" id="calEventInfoModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3 id="calEvInfoTitle">Evento</h3>
+      <button class="modal-close" onclick="closeModal('calEventInfoModal')">×</button>
+    </div>
+    <div id="calEvInfoBody"></div>
+    <div class="btn-row" style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline" id="calEvInfoEditBtn">✏ Editar</button>
+      <button class="btn btn-red" id="calEvInfoDeleteBtn">✕ Eliminar</button>
+      <button class="btn btn-outline" onclick="closeModal('calEventInfoModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="calEventActionModal">
   <div class="modal" style="max-width:380px">
     <div class="modal-header">
@@ -695,6 +710,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
     <input type="hidden" id="calEvEditDs" />
+    <input type="hidden" id="calEvEditId" />
     <div style="display:flex;gap:10px;margin-top:20px;justify-content:space-between;flex-wrap:wrap;align-items:center">
       <button id="calEvDeleteBtn" style="display:none" class="btn" onclick="deleteCalEventFromForm()"
         style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5">
@@ -825,6 +841,22 @@ function loadCalendar() {
   try { state.calendar = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) { state.calendar = {}; }
 }
 
+// Devuelve SIEMPRE un array con los eventos agendados para una fecha —
+// soporta tanto el formato nuevo (array de eventos) como el formato legado
+// de un único objeto por día, para no perder datos ya guardados.
+function getDayEvents(ds) {
+  const v = state.calendar[ds];
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(e => e && typeof e === 'object' && e.type === 'event');
+  if (typeof v === 'object' && v.type === 'event') return [v];
+  return []; // 'booked' | 'available' (strings legados) — no son eventos
+}
+
+function setDayEvents(ds, events) {
+  if (!events || !events.length) delete state.calendar[ds];
+  else state.calendar[ds] = events;
+}
+
 async function syncCalendarFromSupabase() {
   if (!sbClient) return;
   try {
@@ -832,11 +864,14 @@ async function syncCalendarFromSupabase() {
     if (error) { console.error('syncCalendarFromSupabase error:', error); return; }
     if (!data || data.length === 0) { console.log('syncCalendarFromSupabase: sin datos'); return; }
     console.log('syncCalendarFromSupabase: cargando', data.length, 'eventos', data.map(r=>r.fecha));
-    // Reconstruir state.calendar desde Supabase — es la fuente de verdad
+    // Reconstruir state.calendar desde Supabase — es la fuente de verdad.
+    // Varias filas pueden compartir la misma fecha (varios eventos el mismo día),
+    // así que se agrupan en un array por fecha.
     const cal = {};
     data.forEach(row => {
       if (!row.fecha) return;
-      cal[row.fecha] = {
+      const ev = {
+        id:          row.id,
         type:        'event',  // siempre 'event' — renderCalendar filtra por este valor
         titulo:      row.titulo || '',
         descripcion: row.notas || '',
@@ -846,6 +881,8 @@ async function syncCalendarFromSupabase() {
         horaFin:     row.hora_fin    != null ? parseInt(row.hora_fin)    : null,
         status:      row.status || 'evento',
       };
+      if (!cal[row.fecha]) cal[row.fecha] = [];
+      cal[row.fecha].push(ev);
     });
     // Mergear: Supabase tiene prioridad sobre localStorage para las fechas que conoce
     // pero preservar eventos locales que aún no están en Supabase
@@ -864,6 +901,7 @@ function openCalEventForm() {
   document.getElementById('calEvTitulo').value = '';
   document.getElementById('calEvDesc').value   = '';
   document.getElementById('calEvEditDs').value = '';
+  document.getElementById('calEvEditId').value = '';
   document.getElementById('calEvNuevaFecha') && (document.getElementById('calEvNuevaFecha').value = '');
   // Fecha del día seleccionado
   const fd = document.getElementById('calEvFecha');
@@ -908,8 +946,10 @@ async function fetchCalendarData() {
       }
     } catch(e) {}
   }
-  // Supabase es la fuente de verdad para el calendario
+  // Supabase es la fuente de verdad — reservas, cotizaciones y calendario
+  await syncReservasFromSupabase();
   await syncCalendarFromSupabase();
+  renderCalendar();
   showToast('Calendario sincronizado');
 }
 
@@ -973,14 +1013,62 @@ async function sbGetConfig(clave) {
   } catch(e) { return null; }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
+// El Calendario antes solo leía las reservas que ya estuvieran en localStorage
+// (cacheadas al visitar la página de Reservas). Ahora las trae directamente
+// de Supabase, igual que ya hace con cotizaciones y eventos, para que se vean
+// aunque no hayas abierto Reservas antes en este navegador.
+async function syncReservasFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const { data, error } = await sbClient.from('reservas').select('*')
+      .neq('status', 'deleted').order('created_at', { ascending: true });
+    if (error || !data) return false;
+
+    // Preservar datos locales que Supabase no tenga (ediciones offline, etc.)
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+    const localMap = {};
+    local.forEach(r => { localMap[r.id] = r; });
+
+    const synced = data.map(remote => {
+      const prev = localMap[remote.id] || {};
+      return {
+        id: remote.id, numero: remote.numero || prev.numero || null,
+        nombre: remote.nombre || prev.nombre, tel: remote.tel || prev.tel, email: remote.email || prev.email,
+        plan: remote.plan || prev.plan, notas: remote.notas || prev.notas,
+        fecha: remote.fecha || prev.fecha, fechaLabel: remote.fechaLabel || prev.fechaLabel,
+        hora: remote.hora || prev.hora, horaVal: remote.horaVal || prev.horaVal,
+        status: remote.status || prev.status || 'pending', abono: remote.abono || prev.abono || 0,
+        totalManual: remote.totalManual || prev.totalManual, extras: remote.extras || prev.extras || [],
+        clientId: remote.clientId || prev.clientId, clientType: remote.clientType || prev.clientType,
+        razonSocial: remote.razonSocial || prev.razonSocial, repLegal: remote.repLegal || prev.repLegal,
+        address: remote.address || prev.address, origin: remote.origin || prev.origin || 'web',
+        facturaNumero: remote.facturaNumero || prev.facturaNumero, createdAt: remote.createdAt || prev.createdAt,
+        fechaEspecial: remote.fecha_especial || prev.fechaEspecial || '',
+        exterior: remote.exterior || prev.exterior || false, lugar: remote.lugar || prev.lugar || '',
+        personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || prev.personasAdicionales || 0,
+        costoPersonas: remote.costo_personas || remote.costoPersonas || prev.costoPersonas || 0,
+        cancelado: remote.cancelado || prev.cancelado || 0,
+        costoExterior: remote.costo_exterior || remote.costoExterior || prev.costoExterior || 0,
+      };
+    });
+
+    localStorage.setItem('jans_reservas', JSON.stringify(synced));
+    allReservas = synced;
+    return true;
+  } catch(e) { console.warn('syncReservasFromSupabase:', e); return false; }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   window.scrollTo(0,0);
   loadCalendar();
   try{allReservas=JSON.parse(localStorage.getItem('jans_reservas')||'[]');}catch(e){allReservas=[];}
   try{state.quotes=JSON.parse(localStorage.getItem('jans_quotes')||'[]');}catch(e){state.quotes=[];}
   renderCalendar();
-  // Sincronizar desde Supabase (fuente de verdad para calendario)
-  syncCalendarFromSupabase();
+  // Sincronizar desde Supabase (fuente de verdad)
+  await syncReservasFromSupabase();
+  await syncCalendarFromSupabase();
+  renderCalendar();
 });
 
 function showToast(msg, type='success') {
@@ -1057,15 +1145,19 @@ function renderMonthView(todayStr) {
   for(let d=1;d<=daysInMonth;d++) {
     const ds  = state.calYear+'-'+String(state.calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const st  = state.calendar[ds];
+    const dayEvents = getDayEvents(ds);
     const evs = getEventsForDate(ds);
     const el  = document.createElement('div');
     el.className = 'cal-day';
     if(ds===todayStr) el.classList.add('today');
 
-    // st can be 'booked', 'available', or an event object {type:'event', titulo, color, ...}
-    if (st && typeof st === 'object' && st.type === 'event') {
-      el.classList.add('booked', 'cal-event', `ev-${st.color || 'pink'}`);
-      el.title = st.titulo || 'Evento';
+    const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+
+    // st puede ser 'booked', 'available', o (legado) un objeto de evento único.
+    // dayEvents ya normaliza ambos formatos a un array — puede tener 0, 1 o más.
+    if (dayEvents.length) {
+      el.classList.add('booked', 'cal-event');
+      el.title = dayEvents.length === 1 ? (dayEvents[0].titulo || 'Evento') : `${dayEvents.length} eventos`;
     } else if(st==='booked')    { el.classList.add('booked'); }
       else if(st==='available') { el.classList.add('available'); }
 
@@ -1075,13 +1167,24 @@ function renderMonthView(todayStr) {
     ).join('');
     const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
 
-    // Calendar event label (if it's an event object, show the title below the day number)
-    const evLabel = (st && typeof st === 'object' && st.type === 'event')
-      ? `<div style="font-size:0.6rem;color:var(--ev-color,var(--pink));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;line-height:1.1;margin-top:1px">${st.titulo||'Evento'}</div>`
-      : '';
+    // Cada evento de calendario es su propia etiqueta clickeable — con su
+    // propio color y su propia info al hacer click (no se mezclan entre sí).
+    const evTags = dayEvents.map(ev => {
+      const c = colorHex[ev.color] || colorHex.pink;
+      const safeTitle = (ev.titulo || 'Evento').replace(/"/g,'&quot;');
+      return `<div class="cal-event-tag" data-ev-id="${ev.id||''}" style="background:${c}22;color:${c};border:1px solid ${c}55" title="${safeTitle}">${safeTitle}</div>`;
+    }).join('');
 
-    el.innerHTML = `<span class="day-num">${d}</span>${evLabel}<div class="day-events">${pills}${more}</div>`;
+    el.innerHTML = `<span class="day-num">${d}</span><div class="cal-event-tags">${evTags}</div><div class="day-events">${pills}${more}</div>`;
+    // Click en el resto del día (fuera de una etiqueta de evento) → crear uno nuevo
     el.addEventListener('click', e => openCtxMenu(e, ds));
+    // Click en la etiqueta de UN evento específico → info de ESE evento (no crea uno nuevo)
+    el.querySelectorAll('.cal-event-tag').forEach(tagEl => {
+      tagEl.addEventListener('click', e => {
+        e.stopPropagation();
+        openCalEventInfo(ds, tagEl.dataset.evId);
+      });
+    });
     g.appendChild(el);
   }
 }
@@ -1100,11 +1203,22 @@ function renderWeekView(todayStr) {
 
   // Header row
   const cornerEl = document.createElement('div'); cornerEl.className='week-header-cell'; g.appendChild(cornerEl);
+  const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
   days.forEach(d => {
     const ds  = d.toISOString().split('T')[0];
     const el  = document.createElement('div');
     el.className = 'week-header-cell' + (ds===todayStr?' today-col':'');
-    el.innerHTML = DAYS_ES[d.getDay()] + '<br><strong style="font-size:0.95rem">' + d.getDate() + '</strong>';
+    const dayEvents = getDayEvents(ds);
+    const evBanners = dayEvents.map(ev => {
+      const evColor = colorHex[ev.color] || colorHex.pink;
+      const safeTitle = (ev.titulo || 'Evento').replace(/"/g,'&quot;');
+      return `<div class="week-day-event" data-ev-id="${ev.id||''}" style="background:${evColor}22;color:${evColor};border:1px solid ${evColor}55" title="${safeTitle}">${safeTitle}</div>`;
+    }).join('');
+    el.innerHTML = DAYS_ES[d.getDay()] + '<br><strong style="font-size:0.95rem">' + d.getDate() + '</strong>' + evBanners;
+    el.querySelectorAll('.week-day-event').forEach(bEl => {
+      bEl.style.cursor = 'pointer';
+      bEl.addEventListener('click', e => { e.stopPropagation(); openCalEventInfo(ds, bEl.dataset.evId); });
+    });
     g.appendChild(el);
   });
 
@@ -1116,6 +1230,20 @@ function renderWeekView(todayStr) {
       const evs = getEventsForDate(ds).filter(e=>e.horaVal===h);
       const cell= document.createElement('div');
       cell.className = 'week-cell' + (ds===todayStr?' today-col':'');
+
+      // Si el día tiene algún evento de calendario que bloquea esta hora, tiñe la celda
+      let matchedEvent = null;
+      getDayEvents(ds).forEach(dayEvent => {
+        const isDayBlock  = !dayEvent.blockType || dayEvent.blockType === 'day';
+        const inHourRange = isDayBlock || (h >= dayEvent.horaInicio && h < dayEvent.horaFin);
+        if (inHourRange) {
+          if (!matchedEvent) matchedEvent = dayEvent;
+          const evColor = colorHex[dayEvent.color] || colorHex.pink;
+          cell.style.background = evColor + '10';
+        }
+      });
+      if (matchedEvent) { cell.style.cursor = 'pointer'; cell.title = matchedEvent.titulo || 'Evento'; }
+
       evs.forEach(e => {
         const pill = document.createElement('div');
         pill.className = 'week-event';
@@ -1124,7 +1252,10 @@ function renderWeekView(todayStr) {
         pill.title = e.name + ' — ' + e.plan + ' @ ' + e.hora;
         cell.appendChild(pill);
       });
-      cell.addEventListener('click', ev => openCtxMenu(ev, ds));
+      cell.addEventListener('click', ev => {
+        if (matchedEvent) openCalEventInfo(ds, matchedEvent.id);
+        else openCtxMenu(ev, ds);
+      });
       g.appendChild(cell);
     });
   });
@@ -1139,9 +1270,9 @@ function renderDayView(todayStr) {
   const evs = getEventsForDate(calViewDay);
   const tl  = document.getElementById('dayTimeline'); tl.innerHTML = '';
 
-  // ── Calendar event info banner (shown when the day has a scheduled event) ──
-  const daySt = state.calendar[calViewDay];
-  if (daySt && typeof daySt === 'object' && daySt.type === 'event') {
+  // ── Calendar event info banners (uno por cada evento agendado ese día) ──
+  const dayEvts = getDayEvents(calViewDay);
+  dayEvts.forEach(daySt => {
     const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
     const evColor  = colorHex[daySt.color] || colorHex.pink;
     const fmtH = h => { const s = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:00 ${s}`; };
@@ -1160,10 +1291,10 @@ function renderDayView(todayStr) {
         <div style="font-size:0.78rem;color:${evColor};font-weight:600;margin-bottom:${daySt.descripcion ? '4px' : '0'}">${blockLabel}</div>
         ${daySt.descripcion ? `<div style="font-size:0.82rem;color:var(--gray-l);line-height:1.5">${daySt.descripcion}</div>` : ''}
       </div>
-      <button onclick="openCalEventEdit('${calViewDay}')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>
-      <button onclick="openCalEventDeleteDirect('${calViewDay}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:6px">✕ Eliminar</button>`;
+      <button onclick="openCalEventEdit('${calViewDay}','${daySt.id||''}')" style="background:none;border:1px solid ${evColor}55;border-radius:8px;color:${evColor};font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0">✏ Editar</button>
+      <button onclick="openCalEventDeleteDirect('${calViewDay}','${daySt.id||''}')" style="background:none;border:1px solid rgba(239,68,68,0.3);border-radius:8px;color:#fca5a5;font-family:var(--font);font-size:0.76rem;font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:6px">✕ Eliminar</button>`;
     tl.appendChild(banner);
-  }
+  });
 
   HOURS_CAL.forEach((h, hi) => {
     const tlEl = document.createElement('div'); tlEl.className='day-time-label'; tlEl.style.cssText='padding-top:14px;'; tlEl.textContent=HOUR_LABELS[hi]; tl.appendChild(tlEl);
@@ -1183,8 +1314,7 @@ function renderDayView(todayStr) {
   if(!evs.length) {
     const noEvEl = document.createElement('div');
     noEvEl.style.cssText = 'grid-column:2;padding:20px;color:var(--gray);font-size:0.88rem;';
-    const daySt2 = state.calendar[calViewDay];
-    const hasCalEvent = daySt2 && typeof daySt2 === 'object' && daySt2.type === 'event';
+    const hasCalEvent = getDayEvents(calViewDay).length > 0;
     noEvEl.textContent = hasCalEvent
       ? 'Día reservado para el evento — sin solicitudes de clientes.'
       : 'Sin reservas ni cotizaciones para este día.';
@@ -1242,16 +1372,47 @@ function openCalEventModal() {
   openModal('calEventActionModal');
 }
 
-// ── Editar evento desde vista de día ──
-function openCalEventEdit(ds) {
-  const ev = state.calendar[ds];
-  if (!ev || typeof ev !== 'object') return;
+// ── Info de un evento ya agendado (click en un día con evento, vista mensual/semanal) ──
+function openCalEventInfo(ds, id) {
+  const list = getDayEvents(ds);
+  const ev = id ? list.find(e => e.id === id) : list[0];
+  if (!ev) return;
+
+  const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
+  const evColor  = colorHex[ev.color] || colorHex.pink;
+  const fmtH = h => { const s = h < 12 ? 'AM' : 'PM'; return `${h % 12 || 12}:00 ${s}`; };
+  const blockLabel = (!ev.blockType || ev.blockType === 'day')
+    ? 'Día completo bloqueado'
+    : `Horas bloqueadas: ${fmtH(ev.horaInicio)} – ${fmtH(ev.horaFin)}`;
+
+  const [y, m, d] = ds.split('-');
+  const dateObj   = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  const dateLabel = DAYS_ES[dateObj.getDay()] + ', ' + parseInt(d) + ' de ' + MONTHS_ES[parseInt(m) - 1] + ' ' + y;
+
+  document.getElementById('calEvInfoTitle').innerHTML =
+    `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${evColor};margin-right:8px;vertical-align:middle"></span>${ev.titulo || 'Evento'}`;
+  document.getElementById('calEvInfoBody').innerHTML = `
+    <div style="font-size:0.78rem;color:var(--gray-l);margin-bottom:10px">${dateLabel}</div>
+    <div style="font-size:0.82rem;font-weight:600;color:${evColor};margin-bottom:${ev.descripcion ? '8px' : '0'}">${blockLabel}</div>
+    ${ev.descripcion ? `<div style="font-size:0.85rem;color:var(--gray-l);line-height:1.6">${ev.descripcion}</div>` : ''}
+  `;
+  document.getElementById('calEvInfoEditBtn').onclick   = () => { closeModal('calEventInfoModal'); openCalEventEdit(ds, ev.id); };
+  document.getElementById('calEvInfoDeleteBtn').onclick = () => { closeModal('calEventInfoModal'); openCalEventDeleteDirect(ds, ev.id); };
+  openModal('calEventInfoModal');
+}
+
+// ── Editar un evento específico (por id) ──
+function openCalEventEdit(ds, id) {
+  const list = getDayEvents(ds);
+  const ev = id ? list.find(e => e.id === id) : list[0];
+  if (!ev) return;
 
   // Rellenar el formulario con los datos del evento
   document.getElementById('calEvTitulo').value  = ev.titulo || '';
   document.getElementById('calEvFecha').value   = ds;
   document.getElementById('calEvDesc').value    = ev.descripcion || '';
   document.getElementById('calEvEditDs').value  = ds;
+  document.getElementById('calEvEditId').value  = ev.id || '';
 
   // Color
   const colorRadio = document.querySelector('[name="calEvColor"][value="' + (ev.color||'pink') + '"]');
@@ -1273,17 +1434,22 @@ function openCalEventEdit(ds) {
   initBlockTypeUI();
 }
 
-// ── Eliminar evento desde vista de día ──
-async function openCalEventDeleteDirect(ds) {
-  if (!confirm('¿Eliminar este evento del ' + ds + '?')) return;
-  if (sbClient) await sbClient.from('calendario').delete().eq('fecha', ds);
-  // Eliminar del estado local
-  delete state.calendar[ds];
+// ── Eliminar un evento específico (por id) — no afecta a otros eventos del mismo día ──
+async function openCalEventDeleteDirect(ds, id) {
+  const list = getDayEvents(ds);
+  const ev = id ? list.find(e => e.id === id) : list[0];
+  if (!ev) return;
+  if (!confirm(`¿Eliminar "${ev.titulo || 'este evento'}"?`)) return;
+
+  const remaining = list.filter(e => e.id !== ev.id);
+  setDayEvents(ds, remaining);
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
   // Si estamos en vista día, actualizar la vista
   if (typeof renderDayView === 'function') renderDayView();
   else if (typeof renderCalView === 'function') renderCalView();
+
+  if (sbClient && ev.id) await sbClient.from('calendario').delete().eq('id', ev.id);
   showToast('Evento eliminado ✓');
 }
 
@@ -1317,6 +1483,7 @@ async function saveCalEvent() {
   const color      = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
   const blockType  = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
   const editDs     = document.getElementById('calEvEditDs').value;
+  const editId     = document.getElementById('calEvEditId').value;
 
   const horaInicio = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraInicio').value, 10) : null;
   const horaFin    = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraFin').value,    10) : null;
@@ -1328,21 +1495,31 @@ async function saveCalEvent() {
   }
 
   const newDs = editDs ? (nuevaFecha || editDs) : fecha;
+  // Cada evento tiene su propio id único — así varios eventos pueden convivir
+  // el mismo día y cada uno se edita/elimina por separado sin afectar a los demás.
+  const evId  = editId || ('ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
 
-  const evObj = { type: 'event', titulo, descripcion: desc, color, blockType };
+  const evObj = { id: evId, type: 'event', titulo, descripcion: desc, color, blockType };
   if (blockType === 'hours') { evObj.horaInicio = horaInicio; evObj.horaFin = horaFin; }
 
-  // If rescheduling to a different date, release the original day first
-  if (editDs && newDs !== editDs) state.calendar[editDs] = 'available';
+  // Si se está reagendando a otra fecha, sacarlo del día original
+  if (editDs && newDs !== editDs) {
+    setDayEvents(editDs, getDayEvents(editDs).filter(e => e.id !== evId));
+  }
 
-  state.calendar[newDs] = evObj;
+  // Insertar o reemplazar (por id) en el día destino, preservando los demás
+  // eventos que ya hubiera ese día.
+  const list = getDayEvents(newDs).filter(e => e.id !== evId);
+  list.push(evObj);
+  setDayEvents(newDs, list);
+
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
   closeModal('calEventFormModal');
 
-  // Guardar en Supabase — id = fecha para garantizar un solo registro por día
+  // Guardar en Supabase — id único por evento (permite varios eventos el mismo día)
   const sbOk = await sbUpsert('calendario', {
-    id: newDs,
+    id: evId,
     fecha: newDs,
     titulo,
     notas: desc,
@@ -1360,24 +1537,34 @@ async function saveCalEvent() {
 
   showToast(editDs ? (newDs !== editDs ? `Evento aplazado al ${newDs} ✓` : `Evento actualizado ${label} ✓`) : `Evento creado — bloqueado ${label} ✓`);
 }
+// Nota: se mantiene por compatibilidad si algo externo la invoca — elimina
+// TODOS los eventos de esa fecha. El flujo normal (picker, info modal) usa
+// openCalEventDeleteDirect(ds, id), que borra un evento puntual sin afectar
+// a los demás que compartan el mismo día.
 async function deleteCalEvent(ds) {
   closeModal('calEventPickerModal');
-  if (!ds || !state.calendar[ds] || typeof state.calendar[ds] !== 'object') return;
+  const list = getDayEvents(ds);
+  if (!list.length) return;
 
-  const titulo = state.calendar[ds].titulo || 'este evento';
-  if (!confirm(`¿Eliminar "${titulo}" (${ds}) y liberar ese día?`)) return;
+  if (!confirm(`¿Eliminar ${list.length > 1 ? 'los ' + list.length + ' eventos' : '"' + (list[0].titulo || 'este evento') + '"'} del ${ds} y liberar ese día?`)) return;
 
   delete state.calendar[ds];
   localStorage.setItem('jans_calendar', JSON.stringify(state.calendar));
   renderCalendar();
 
-  if (sbClient) await sbClient.from('calendario').delete().eq('fecha', ds);
-  showToast(`"${titulo}" eliminado — día liberado ✓`);
+  if (sbClient) {
+    for (const ev of list) {
+      if (ev.id) await sbClient.from('calendario').delete().eq('id', ev.id);
+    }
+  }
+  showToast('Eventos eliminados — día liberado ✓');
 }
 function openCalEventPicker(mode) {
-  const eventDays = Object.entries(state.calendar)
-    .filter(([, v]) => v && typeof v === 'object' && v.type === 'event')
-    .sort(([a],[b]) => a.localeCompare(b));
+  const eventDays = [];
+  Object.keys(state.calendar).forEach(ds => {
+    getDayEvents(ds).forEach(ev => eventDays.push([ds, ev]));
+  });
+  eventDays.sort(([a],[b]) => a.localeCompare(b));
 
   if (!eventDays.length) {
     showToast('No hay eventos en el calendario todavía', 'error');
@@ -1391,8 +1578,11 @@ function openCalEventPicker(mode) {
   document.getElementById('calEventPickerList').innerHTML = eventDays.map(([ds, ev]) => {
     const fechaFmt = new Date(ds + 'T00:00:00').toLocaleDateString('es-PA', { weekday:'short', day:'numeric', month:'long', year:'numeric' });
     const color = colorHex[ev.color] || colorHex.pink;
+    const action = isDelete
+      ? `openCalEventDeleteDirect('${ds}','${ev.id||''}');closeModal('calEventPickerModal')`
+      : `closeModal('calEventPickerModal');openCalEventEdit('${ds}','${ev.id||''}')`;
     return `
-      <div onclick="${isDelete ? `deleteCalEvent('${ds}')` : `openCalEventForm('${ds}')`}"
+      <div onclick="${action}"
         style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all 0.18s"
         onmouseover="this.style.borderColor='rgba(233,30,140,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0"></div>
