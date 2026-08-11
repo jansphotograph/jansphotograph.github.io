@@ -646,6 +646,13 @@ footer {
      y hamburguesa a la derecha. */
   .header-logo:has(.btn-back) ~ .header-title { display: none; }
 
+  /* El slider a 100vh en móvil es demasiado alto/angosto: fuerza un recorte
+     extremo en fotos horizontales (se ven "expandidas"/muy zoomeadas) y un
+     recorte lateral fuerte en fotos verticales (se ven "apretadas"). Una
+     altura más moderada suaviza el recorte para cualquier tipo de foto. */
+  .slider-section { height: 70vh; min-height: 460px; max-height: 620px; }
+  .slide-bg { object-position: center 30%; }
+
   .footer-columns { grid-template-columns: 1fr; }
   .slider-btn { width: 40px; height: 40px; font-size: 1.1rem; }
   .slider-btn.prev { left: 14px; }
