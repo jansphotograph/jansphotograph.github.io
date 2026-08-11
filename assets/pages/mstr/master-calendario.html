@@ -561,11 +561,15 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     Comentarios
   </a>
+  <a href="master-slider.html" id="nav-slider">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    Slider
+  </a>
   <div class="nav-sep"></div>
   <a href="master-catalogo.html" id="nav-catalogo">Catálogo</a>
   <a href="master-config.html" id="nav-config">Config</a>
 </nav>
-<script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel', 'master-comentarios': 'nav-comentarios','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
+<script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div id="calCtxMenu" style="display:none;position:fixed;background:#1c1c1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px;z-index:500;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
   <button onclick="closeCalCtxMenu();openCalEventModal()" style="display:block;width:100%;text-align:left;padding:8px 14px;background:transparent;border:none;color:#fff;font-family:Inter,sans-serif;font-size:0.85rem;cursor:pointer;border-radius:6px;">+ Nuevo evento</button>
