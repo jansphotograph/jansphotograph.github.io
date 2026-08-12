@@ -656,10 +656,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       <label>Fecha *</label>
       <input type="date" id="calEvFecha" />
     </div>
-    <div class="field" id="calEvNewFechaField" style="display:none">
-      <label>Nueva fecha (aplazar a)</label>
-      <input type="date" id="calEvNuevaFecha" />
-    </div>
 
     <!-- Block type toggle -->
     <div class="field">
@@ -911,12 +907,12 @@ async function syncCalendarFromSupabase() {
 
 function openCalEventForm() {
   closeModal('calEventActionModal');
+  document.getElementById('calEventFormTitle').textContent = 'Nuevo Evento';
   // Reset completo del formulario
   document.getElementById('calEvTitulo').value = '';
   document.getElementById('calEvDesc').value   = '';
   document.getElementById('calEvEditDs').value = '';
   document.getElementById('calEvEditId').value = '';
-  document.getElementById('calEvNuevaFecha') && (document.getElementById('calEvNuevaFecha').value = '');
   // Fecha del día seleccionado
   const fd = document.getElementById('calEvFecha');
   if (fd && ctxDs) fd.value = ctxDs;
@@ -1493,6 +1489,7 @@ function openCalEventEdit(ds, id) {
   const ev = id ? list.find(e => e.id === id) : list[0];
   if (!ev) return;
 
+  document.getElementById('calEventFormTitle').textContent = 'Editar Evento';
   // Rellenar el formulario con los datos del evento
   document.getElementById('calEvTitulo').value  = ev.titulo || '';
   document.getElementById('calEvFecha').value   = ds;
@@ -1564,7 +1561,6 @@ function initBlockTypeUI() {
 async function saveCalEvent() {
   const titulo     = document.getElementById('calEvTitulo').value.trim();
   const fecha      = document.getElementById('calEvFecha').value;
-  const nuevaFecha = document.getElementById('calEvNuevaFecha').value;
   const desc       = document.getElementById('calEvDesc').value.trim();
   const color      = document.querySelector('[name="calEvColor"]:checked')?.value || 'pink';
   const blockType  = document.querySelector('[name="calEvBlockType"]:checked')?.value || 'day';
@@ -1575,12 +1571,14 @@ async function saveCalEvent() {
   const horaFin    = blockType === 'hours' ? parseInt(document.getElementById('calEvHoraFin').value,    10) : null;
 
   if (!titulo) { showToast('El título es obligatorio', 'error'); document.getElementById('calEvTitulo').focus(); return; }
-  if (!fecha && !editDs) { showToast('La fecha es obligatoria', 'error'); document.getElementById('calEvFecha').focus(); return; }
+  if (!fecha) { showToast('La fecha es obligatoria', 'error'); document.getElementById('calEvFecha').focus(); return; }
   if (blockType === 'hours' && horaInicio >= horaFin) {
     showToast('La hora de inicio debe ser anterior a la hora de fin', 'error'); return;
   }
 
-  const newDs = editDs ? (nuevaFecha || editDs) : fecha;
+  // La fecha del campo "Fecha *" es siempre la fecha destino — tanto al crear
+  // como al editar (si el usuario la cambió al editar, se reagenda a esa fecha).
+  const newDs = fecha;
   // Cada evento tiene su propio id único — así varios eventos pueden convivir
   // el mismo día y cada uno se edita/elimina por separado sin afectar a los demás.
   const evId  = editId || ('ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
