@@ -886,19 +886,36 @@ async function blockCalendarForQuote(q){
     const fecha=q.sessionDate;if(!fecha)return;
     let cal={};
     try{cal=JSON.parse(localStorage.getItem('jans_calendar')||'{}');}catch(e){}
-    if(!cal[fecha]||typeof cal[fecha]==='string')cal[fecha]={};
     const horaInicio = Math.max(0,hh-2);
     const horaFin = Math.min(23,hh+Math.ceil(durHoras)+1);
     const titulo = 'Cotizacion '+(q.numero||'')+' - '+q.clientName;
-    cal[fecha]=Object.assign({},cal[fecha],{type:'event',blockType:'hours',horaInicio,horaFin,quoteLock:q.id,titulo});
+    // Id estable por cotización — si se reconfirma o se edita la fecha/hora,
+    // reemplaza el bloqueo anterior de ESTA cotización sin tocar otros
+    // eventos (manuales u otras cotizaciones) que compartan el mismo día.
+    const evId = 'q_' + q.id;
+
+    // Normaliza el valor guardado en esa fecha a un array de eventos —
+    // soporta tanto el formato legado (un objeto único) como el actual (array).
+    function dayEventsOf(v){
+      if(!v) return [];
+      if(Array.isArray(v)) return v.filter(e=>e&&typeof e==='object'&&e.type==='event');
+      if(typeof v==='object'&&v.type==='event') return [v];
+      return [];
+    }
+
+    const evObj = { id:evId, type:'event', blockType:'hours', horaInicio, horaFin, quoteLock:q.id, titulo, color:'pink' };
+    const list = dayEventsOf(cal[fecha]).filter(e=>e.id!==evId);
+    list.push(evObj);
+    cal[fecha]=list;
+
     localStorage.setItem('jans_calendar',JSON.stringify(cal));
     if (sbClient) {
       await sbUpsert('calendario', {
-        id: fecha,
+        id: evId,
         fecha: fecha,
         titulo,
         notas: '',
-        color: '',
+        color: 'pink',
         block_type: 'hours',
         hora_inicio: horaInicio,
         hora_fin: horaFin,
@@ -1685,6 +1702,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   fetchQuotes();
   // Pre-inicializar el formulario de evento aunque no sea visible aún
   initEventoForm();
+  // Si se llega desde otro módulo (ej. Calendario) con ?highlight=id, abre esa cotización
+  const highlightId = new URLSearchParams(location.search).get('highlight');
+  if (highlightId) setTimeout(() => viewQuote(highlightId), 300);
 });
 </script>
 </body>

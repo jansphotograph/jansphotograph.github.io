@@ -590,6 +590,20 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
   </div>
 </div>
+<!-- Info de una reserva o cotización (click en su etiqueta, vista mensual/semanal/diaria) -->
+<div class="modal-overlay" id="reservaInfoModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3 id="resInfoTitle">Reserva</h3>
+      <button class="modal-close" onclick="closeModal('reservaInfoModal')">×</button>
+    </div>
+    <div id="resInfoBody"></div>
+    <div class="btn-row" style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+      <a id="resInfoLinkBtn" class="btn btn-pink" href="#">Ver detalle →</a>
+      <button class="btn btn-outline" onclick="closeModal('reservaInfoModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="calEventActionModal">
   <div class="modal" style="max-width:380px">
     <div class="modal-header">
@@ -1050,6 +1064,8 @@ async function syncReservasFromSupabase() {
         costoPersonas: remote.costo_personas || remote.costoPersonas || prev.costoPersonas || 0,
         cancelado: remote.cancelado || prev.cancelado || 0,
         costoExterior: remote.costo_exterior || remote.costoExterior || prev.costoExterior || 0,
+        bloqueoAntes:   remote.bloqueo_antes   != null ? remote.bloqueo_antes   : (prev.bloqueoAntes   != null ? prev.bloqueoAntes   : 2),
+        bloqueoDespues: remote.bloqueo_despues != null ? remote.bloqueo_despues : (prev.bloqueoDespues != null ? prev.bloqueoDespues : 2),
       };
     });
 
@@ -1103,8 +1119,8 @@ function getEventsForDate(ds) {
   const res  = (JSON.parse(localStorage.getItem('jans_reservas')||'[]')).filter(r=>r.fecha===ds && r.status!=='deleted');
   const quot = state.quotes.filter(q=>q.sessionDate===ds);
   const evs  = [];
-  res.forEach(r  => evs.push({ name: r.nombre,         plan: r.plan||'—',   hora: r.hora||'',  horaVal: r.horaVal||0, status: r.status,   type:'res'   }));
-  quot.forEach(q => evs.push({ name: q.clientName,     plan: q.plan||'—',   hora: q.sessionTime||'', horaVal: parseInt((q.sessionTime||'0').split(':')[0])||0, status: q.status, type:'quote' }));
+  res.forEach(r  => evs.push({ id: r.id, name: r.nombre,     plan: r.plan||'—',   hora: r.hora||'',  horaVal: r.horaVal||0, status: r.status,   type:'res',   tel: r.tel||'',    email: r.email||'',    notas: r.notas||'' }));
+  quot.forEach(q => evs.push({ id: q.id, name: q.clientName, plan: q.plan||'—',   hora: q.sessionTime||'', horaVal: parseInt((q.sessionTime||'0').split(':')[0])||0, status: q.status, type:'quote', tel: q.phone||'',  email: q.email||'',    notas: '' }));
   return evs;
 }
 function evClass(status) {
@@ -1163,7 +1179,7 @@ function renderMonthView(todayStr) {
 
     // Reserva event pills (max 3)
     const pills = evs.slice(0,3).map(e =>
-      `<div class="ev-pill ${evClass(e.status)}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
+      `<div class="ev-pill ${evClass(e.status)}" data-res-type="${e.type}" data-res-id="${e.id||''}" title="${e.name} — ${e.plan}">${e.name.split(' ')[0]}</div>`
     ).join('');
     const more  = evs.length > 3 ? `<div class="ev-pill ev-pending">+${evs.length-3}</div>` : '';
 
@@ -1183,6 +1199,13 @@ function renderMonthView(todayStr) {
       tagEl.addEventListener('click', e => {
         e.stopPropagation();
         openCalEventInfo(ds, tagEl.dataset.evId);
+      });
+    });
+    // Click en una reserva/cotización específica → su info (no crea un evento nuevo)
+    el.querySelectorAll('.ev-pill[data-res-id]').forEach(pillEl => {
+      pillEl.addEventListener('click', e => {
+        e.stopPropagation();
+        openReservaInfo(pillEl.dataset.resType, pillEl.dataset.resId);
       });
     });
     g.appendChild(el);
@@ -1250,6 +1273,7 @@ function renderWeekView(todayStr) {
         pill.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
         pill.textContent = e.name.split(' ')[0] + (e.plan ? ' · ' + e.plan.substring(0,10) : '');
         pill.title = e.name + ' — ' + e.plan + ' @ ' + e.hora;
+        pill.addEventListener('click', ev => { ev.stopPropagation(); openReservaInfo(e.type, e.id); });
         cell.appendChild(pill);
       });
       cell.addEventListener('click', ev => {
@@ -1303,8 +1327,9 @@ function renderDayView(todayStr) {
     slotEvs.forEach(e => {
       const ev = document.createElement('div');
       ev.className = 'day-event';
-      ev.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'');
+      ev.style.cssText = 'background:'+evBg(e.status)+';color:'+evColor(e.status)+(e.status==='cancelled'?';text-decoration:line-through':'')+';cursor:pointer';
       ev.innerHTML = '<div class="de-time">'+e.hora+'</div><div class="de-name">'+e.name+'</div><div class="de-plan">'+e.plan+'</div>';
+      ev.addEventListener('click', evt => { evt.stopPropagation(); openReservaInfo(e.type, e.id); });
       cell.appendChild(ev);
     });
     tl.appendChild(cell);
@@ -1370,6 +1395,67 @@ function setCalView(v) {
 }
 function openCalEventModal() {
   openModal('calEventActionModal');
+}
+
+function escHtmlCal(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ── Info de una reserva o cotización (click en su etiqueta, vista mensual/semanal/diaria) ──
+function openReservaInfo(type, id) {
+  let item;
+  if (type === 'res') {
+    item = (JSON.parse(localStorage.getItem('jans_reservas')||'[]')).find(r => r.id === id);
+  } else {
+    item = state.quotes.find(q => q.id === id);
+  }
+  if (!item) { showToast('No se encontró el detalle', 'error'); return; }
+
+  const statusMap = {
+    pending:   { label:'Pendiente',  color:'#999'    },
+    confirmed: { label:'Confirmada', color:'#22c55e' },
+    completed: { label:'Completada', color:'#22c55e' },
+    postponed: { label:'Aplazada',   color:'#f59e0b' },
+    declined:  { label:'Declinada',  color:'#ef4444' },
+    cancelled: { label:'Cancelada',  color:'#ef4444' },
+  };
+  const st = statusMap[item.status] || { label: item.status || '—', color:'#999' };
+
+  const nombre = type === 'res' ? item.nombre : item.clientName;
+  const plan   = item.plan || '—';
+  const fecha  = type === 'res' ? item.fecha : item.sessionDate;
+  const hora   = type === 'res' ? item.hora  : item.sessionTime;
+  const tel    = item.tel || item.phone || '';
+  const email  = item.email || '';
+  const notas  = item.notas || '';
+
+  let dateLabel = '—';
+  if (fecha) {
+    const [y,m,d] = fecha.split('-');
+    const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+    dateLabel = DAYS_ES[dateObj.getDay()] + ', ' + parseInt(d) + ' de ' + MONTHS_ES[parseInt(m)-1] + ' ' + y;
+  }
+
+  document.getElementById('resInfoTitle').innerHTML =
+    `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${st.color};margin-right:8px;vertical-align:middle"></span>${escHtmlCal(nombre || 'Cliente')}`;
+
+  document.getElementById('resInfoBody').innerHTML = `
+    <div style="font-size:0.78rem;color:var(--gray-l);margin-bottom:10px">${dateLabel}${hora ? ' · ' + escHtmlCal(hora) : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <span style="display:inline-block;background:rgba(233,30,140,.1);color:#e91e8c;border:1px solid rgba(233,30,140,.25);border-radius:50px;padding:2px 10px;font-size:.72rem;font-weight:600">${escHtmlCal(plan)}</span>
+      <span style="display:inline-block;background:${st.color}22;color:${st.color};border-radius:50px;padding:2px 10px;font-size:.72rem;font-weight:700">${st.label}</span>
+      <span style="display:inline-block;background:rgba(255,255,255,.06);color:var(--gray-l);border-radius:50px;padding:2px 10px;font-size:.7rem;font-weight:600">${type === 'res' ? 'Reserva' : 'Cotización'}</span>
+    </div>
+    ${tel   ? `<div style="font-size:0.82rem;color:var(--gray-l);margin-bottom:4px">📞 ${escHtmlCal(tel)}</div>` : ''}
+    ${email ? `<div style="font-size:0.82rem;color:var(--gray-l);margin-bottom:4px">✉ ${escHtmlCal(email)}</div>` : ''}
+    ${notas ? `<div style="font-size:0.85rem;color:var(--gray-l);line-height:1.6;margin-top:8px">${escHtmlCal(notas)}</div>` : ''}
+  `;
+
+  const link = document.getElementById('resInfoLinkBtn');
+  link.href = type === 'res' ? ('master-reservas.html?highlight=' + encodeURIComponent(item.id)) : ('master-cotizaciones.html?highlight=' + encodeURIComponent(item.id));
+  link.textContent = type === 'res' ? 'Ver en Reservas →' : 'Ver en Cotizaciones →';
+
+  openModal('reservaInfoModal');
 }
 
 // ── Info de un evento ya agendado (click en un día con evento, vista mensual/semanal) ──

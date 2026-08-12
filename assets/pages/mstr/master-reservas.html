@@ -145,6 +145,11 @@
       </div>
     </div>
     <div class="field"><label>Plan</label><input type="text" id="editResPlan" /></div>
+    <div class="form-row">
+      <div class="field" style="margin-bottom:0"><label>🔒 Horas antes</label><input type="number" id="editResBloqueoAntes" min="0" max="12" step="1" /></div>
+      <div class="field" style="margin-bottom:0"><label>🔒 Horas después</label><input type="number" id="editResBloqueoDespues" min="0" max="12" step="1" /></div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--gray);margin:-6px 0 14px">Rango de horas a bloquear alrededor de la sesión (solo aplica si la reserva está Confirmada o Completada).</div>
     <div class="field">
       <label>👥 Personas adicionales</label>
       <div style="display:flex;align-items:center;gap:10px">
@@ -519,6 +524,8 @@ async function syncReservasFromSupabase() {
         costoPersonas:       remote.costo_personas       || remote.costoPersonas       || prev.costoPersonas       || 0,
         cancelado:           remote.cancelado                                          || prev.cancelado           || 0,
         costoExterior:       remote.costo_exterior        || remote.costoExterior       || prev.costoExterior       || 0,
+        bloqueoAntes:        remote.bloqueo_antes   != null ? remote.bloqueo_antes   : (prev.bloqueoAntes   != null ? prev.bloqueoAntes   : 2),
+        bloqueoDespues:      remote.bloqueo_despues != null ? remote.bloqueo_despues : (prev.bloqueoDespues != null ? prev.bloqueoDespues : 2),
       };
     });
 
@@ -544,6 +551,8 @@ async function pushReservaToSupabase(r) {
       costo_personas: r.costoPersonas || 0,
       cancelado: r.cancelado || 0,
       costo_exterior: r.costoExterior || 0,
+      bloqueo_antes: r.bloqueoAntes != null ? r.bloqueoAntes : 2,
+      bloqueo_despues: r.bloqueoDespues != null ? r.bloqueoDespues : 2,
     }).eq('id', r.id);
     if (error) console.error('Supabase update error:', error);
   } catch(e) {
@@ -772,6 +781,24 @@ function viewReserva(id) {
       <button class="btn btn-sm ${r.status==='cancelled' ?'btn-red'   :'btn-outline'}" data-status="cancelled" onclick="changeResStatus('${r.id}','cancelled' )">Cancelada</button>
     </div>
 
+    <!-- Rango de horas a bloquear en el calendario de reservas -->
+    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:10px">
+        🔒 Bloqueo de horas alrededor de la sesión (${r.hora||'—'})
+      </div>
+      <div class="form-row">
+        <div class="field" style="margin-bottom:0">
+          <label>Horas antes</label>
+          <input type="number" id="resBloqueoAntes" min="0" max="12" step="1" value="${r.bloqueoAntes != null ? r.bloqueoAntes : 2}" />
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label>Horas después</label>
+          <input type="number" id="resBloqueoDespues" min="0" max="12" step="1" value="${r.bloqueoDespues != null ? r.bloqueoDespues : 2}" />
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--gray);margin-top:8px">Solo aplica cuando la reserva está <strong>Confirmada</strong> o <strong>Completada</strong>. Por defecto se bloquean 2 horas antes y 2 después de la hora de sesión — ajústalo si la sesión necesita más o menos tiempo de preparación/traslado. Recuerda pulsar <strong style="color:var(--white)">Guardar</strong>.</div>
+    </div>
+
     <!-- Sección aplazamiento -->
     <div id="resPostponeBlock" style="display:${r.status==='postponed'?'':'none'}">
       <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
@@ -881,9 +908,13 @@ async function saveReservaChanges(id) {
   const abonoEl      = document.getElementById('resAbonoInput');
   const canceladoEl  = document.getElementById('resCanceladoInput');
   const exteriorEl   = document.getElementById('resCostoExterior');
+  const bloqAntesEl   = document.getElementById('resBloqueoAntes');
+  const bloqDespuesEl = document.getElementById('resBloqueoDespues');
   if (abonoEl)     r.abono        = parseFloat(abonoEl.value)     || 0;
   if (canceladoEl) r.cancelado    = parseFloat(canceladoEl.value) || 0;
   if (exteriorEl)  r.costoExterior = parseFloat(exteriorEl.value) || 0;
+  if (bloqAntesEl)   r.bloqueoAntes   = Math.max(0, parseInt(bloqAntesEl.value,   10) || 0);
+  if (bloqDespuesEl) r.bloqueoDespues = Math.max(0, parseInt(bloqDespuesEl.value, 10) || 0);
   if (r.status === 'postponed') {
     const nf = document.getElementById('resNewFecha')?.value;
     const nh = document.getElementById('resNewHora')?.value;
@@ -912,6 +943,8 @@ function openEditReserva(id) {
   document.getElementById('editResDate').value   = r.fecha || '';
   document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
   document.getElementById('editResPlan').value   = r.plan || '';
+  document.getElementById('editResBloqueoAntes').value   = r.bloqueoAntes   != null ? r.bloqueoAntes   : 2;
+  document.getElementById('editResBloqueoDespues').value = r.bloqueoDespues != null ? r.bloqueoDespues : 2;
   document.getElementById('editResNotas').value  = r.notas || '';
   document.getElementById('editResPersonas').value = r.personasAdicionales || 0;
   document.getElementById('editResPersonaPrecio').textContent = EDIT_PRECIO_PERSONA.toFixed(2);
@@ -937,6 +970,10 @@ function saveEditReserva() {
   let personasAdicionales = parseInt(document.getElementById('editResPersonas').value, 10);
   if (isNaN(personasAdicionales) || personasAdicionales < 0) personasAdicionales = 0;
   const costoPersonas = personasAdicionales * EDIT_PRECIO_PERSONA;
+  let bloqueoAntes   = parseInt(document.getElementById('editResBloqueoAntes').value,   10);
+  let bloqueoDespues = parseInt(document.getElementById('editResBloqueoDespues').value, 10);
+  if (isNaN(bloqueoAntes)   || bloqueoAntes   < 0) bloqueoAntes   = 2;
+  if (isNaN(bloqueoDespues) || bloqueoDespues < 0) bloqueoDespues = 2;
   // Convertir "yyyy-mm-dd" → "dd/mm/yyyy" para mantener consistencia con el formato local
   let createdAtFormatted = allReservas[idx].createdAt || '';
   if (newCreatedAt) {
@@ -957,6 +994,8 @@ function saveEditReserva() {
     createdAt: createdAtFormatted,
     personasAdicionales,
     costoPersonas,
+    bloqueoAntes,
+    bloqueoDespues,
   };
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
@@ -1644,7 +1683,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await syncReservasFromSupabase();
   loadReservasLocal();
   await backfillReservaNumeros();
-  renderReservasTable();
+  // Si se llega desde otro módulo (ej. Calendario) con ?highlight=id, resalta esa reserva
+  const highlightId = new URLSearchParams(location.search).get('highlight');
+  renderReservasTable(highlightId);
+  if (highlightId) viewReserva(highlightId);
 });
 </script>
 </body>
