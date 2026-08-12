@@ -172,6 +172,7 @@
   </header>
   <div class="nav-overlay" id="navOverlay"></div>
   <nav class="nav-drawer" id="navDrawer">
+    <div class="nav-drawer-title">Jans <span>Photograph</span></div>
     <ul>
       <li><a href="../../index.html">Home</a></li>
       <li><a href="../servicios.html">Servicios</a></li>
@@ -462,22 +463,34 @@
     async function syncAvailabilityFromSupabase() {
       if (!sbClient) return;
       try {
+        // select('*') en vez de nombrar columnas puntuales — así, si la tabla
+        // todavía no tiene bloqueo_antes/bloqueo_despues (falta correr la
+        // migración SQL), la consulta no falla por completo; simplemente esos
+        // campos vienen undefined y se usa el valor por defecto (2).
         const { data, error } = await sbClient
           .from('reservas')
-          .select('id,fecha,horaVal,status')
+          .select('*')
           .in('status', ['confirmed', 'completed']);
-        if (error || !data) return;
+        if (error) { console.error('syncAvailabilityFromSupabase error:', error); return; }
+        if (!data) return;
 
         // Merge: keep any local-only entries, but Supabase is authoritative for status
         const byId = new Map(reservas.map(r => [r.id, r]));
         data.forEach(remote => {
           const existing = byId.get(remote.id);
+          const bloqueoAntes   = remote.bloqueo_antes   != null ? remote.bloqueo_antes   : 2;
+          const bloqueoDespues = remote.bloqueo_despues != null ? remote.bloqueo_despues : 2;
           if (existing) {
             existing.status  = remote.status;
             existing.fecha   = remote.fecha;
             existing.horaVal = remote.horaVal;
+            existing.bloqueoAntes   = bloqueoAntes;
+            existing.bloqueoDespues = bloqueoDespues;
           } else {
-            byId.set(remote.id, { id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status });
+            byId.set(remote.id, {
+              id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status,
+              bloqueoAntes, bloqueoDespues,
+            });
           }
         });
         reservas = Array.from(byId.values());
@@ -513,14 +526,19 @@
       renderCal();
 
       // ── Sync calendario desde Supabase ──
+      let calendarSyncedFromSupabase = false;
       if (sbClient) {
         try {
           const { data: calRows, error: calErr } = await sbClient
             .from('calendario').select('*').order('fecha', { ascending: true });
           if (!calErr && calRows) {
+            // Varias filas pueden compartir la misma fecha (varios eventos el
+            // mismo día) — se agrupan en un array por fecha, sin perder ninguno.
+            const cal = {};
             calRows.forEach(row => {
               if (!row.fecha) return;
-              calData[row.fecha] = {
+              const ev = {
+                id:          row.id,
                 type:        'event',
                 titulo:      row.titulo || '',
                 descripcion: row.notas || '',
@@ -530,9 +548,13 @@
                 horaFin:     row.hora_fin    != null ? parseInt(row.hora_fin)    : null,
                 status:      row.status || 'evento',
               };
+              if (!cal[row.fecha]) cal[row.fecha] = [];
+              cal[row.fecha].push(ev);
             });
+            calData = cal;
             localStorage.setItem('jans_calendar', JSON.stringify(calData));
             renderCal();
+            calendarSyncedFromSupabase = true;
           }
         } catch(e) { console.warn('sync calendario:', e); }
       }
@@ -577,18 +599,24 @@
         }
       });
 
-      // Respaldo desde GitHub para visitantes nuevos
-      try {
-        const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' });
-        if (calRes.ok) {
-          const ghCal = await calRes.json();
-          if (Object.keys(ghCal).length >= Object.keys(calData).length) {
-            calData = ghCal;
-            localStorage.setItem('jans_calendar', JSON.stringify(calData));
-            renderCal();
+      // Respaldo desde GitHub (archivo estático calendar.json) — SOLO para
+      // cuando Supabase no está disponible (ej. sin conexión). Supabase es
+      // la fuente de verdad y ya soporta varios eventos por día; este archivo
+      // estático usa un formato más viejo (un evento por día) y podría ser
+      // una foto vieja, así que nunca debe pisar datos ya sincronizados.
+      if (!calendarSyncedFromSupabase) {
+        try {
+          const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' });
+          if (calRes.ok) {
+            const ghCal = await calRes.json();
+            if (Object.keys(ghCal).length >= Object.keys(calData).length) {
+              calData = ghCal;
+              localStorage.setItem('jans_calendar', JSON.stringify(calData));
+              renderCal();
+            }
           }
-        }
-      } catch(e) {}
+        } catch(e) {}
+      }
     });
 
     // ── Calendar ──
@@ -645,27 +673,42 @@
       updateSubmitBtn();
     }
 
+    // Devuelve SIEMPRE un array con los eventos de calendario para una fecha —
+    // soporta tanto el formato nuevo (array) como el legado (un solo objeto).
+    function getDayEvents(ds) {
+      const v = calData[ds];
+      if (!v) return [];
+      if (Array.isArray(v)) return v.filter(e => e && typeof e === 'object' && e.type === 'event');
+      if (typeof v === 'object' && v.type === 'event') return [v];
+      return [];
+    }
+
     // ── Time Slots ──
     function getBlockedHours(ds) {
-      // Find confirmed/completed reservas on this day and block ±2 hours
+      // Find confirmed/completed reservas on this day and block ±N hours
+      // (N configurable por reserva desde el Master; 2 horas por defecto).
       const blocked = new Set();
       if (!ds) return blocked;
       reservas.filter(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed')).forEach(r => {
         const h = parseInt(r.horaVal);
         if (isNaN(h)) return;
-        for(let i = h-2; i <= h+2; i++) blocked.add(i);
+        const antes    = r.bloqueoAntes    != null ? parseInt(r.bloqueoAntes)    : 2;
+        const despues  = r.bloqueoDespues  != null ? parseInt(r.bloqueoDespues)  : 2;
+        for(let i = h-antes; i <= h+despues; i++) blocked.add(i);
       });
 
-      // Also block hours from any hour-range calendar event on this day
-      const st = calData[ds];
-      if (st && typeof st === 'object' && st.type === 'event' && st.blockType === 'hours') {
+      // Bloquea las horas de CADA evento de calendario de tipo 'hours' ese
+      // día — varios eventos manuales (o cotizaciones) el mismo día deben
+      // sumar sus rangos, no reemplazarse entre sí.
+      getDayEvents(ds).forEach(st => {
+        if (st.blockType !== 'hours') return;
         const ini = parseInt(st.horaInicio, 10);
         const fin = parseInt(st.horaFin,    10);
         if (!isNaN(ini) && !isNaN(fin)) {
           // Inclusive of fin: a client selecting the end hour would overlap with the event
           for (let h = ini; h <= fin; h++) blocked.add(h);
         }
-      }
+      });
       return blocked;
     }
 
@@ -680,27 +723,24 @@
     // Hour-range events NEVER block the full day — they only block specific hours in the
     // time slot picker (handled by getBlockedHours above). Only full-day events and
     // manual 'booked' closures lock the calendar day itself.
-    // Verificar si todas las horas disponibles están bloqueadas por eventos de calendario de tipo 'hours'
+    // Verificar si la UNIÓN de todos los eventos de tipo 'hours' cubre todas las horas disponibles
     function isDayFullByCalEvent(ds) {
-      const st = calData[ds];
-      if (!st || typeof st !== 'object' || st.blockType !== 'hours') return false;
-      const ini = parseInt(st.horaInicio, 10);
-      const fin = parseInt(st.horaFin, 10);
-      if (isNaN(ini) || isNaN(fin)) return false;
-      // Si el rango del evento cubre todas las horas disponibles
-      return HOUR_VALS.every(hv => hv >= ini && hv <= fin);
+      const hourEvents = getDayEvents(ds).filter(st => st.blockType === 'hours');
+      if (!hourEvents.length) return false;
+      return HOUR_VALS.every(hv => hourEvents.some(st => {
+        const ini = parseInt(st.horaInicio, 10);
+        const fin = parseInt(st.horaFin, 10);
+        return !isNaN(ini) && !isNaN(fin) && hv >= ini && hv <= fin;
+      }));
     }
 
     function isDayBlocked(ds) {
       const st = calData[ds];
       if (st === 'booked') return true;
-      if (st && typeof st === 'object' && st.type === 'event') {
-        // Only block the full day when blockType is 'day' (or missing for legacy events)
-        if (!st.blockType || st.blockType === 'day') return true;
-        // blockType === 'hours': day stays selectable, only specific hours are blocked
-        return false;
-      }
-      // No event — block si todas las horas están tomadas por reservas o por evento de horas
+      const dayEvents = getDayEvents(ds);
+      // Si CUALQUIER evento de ese día bloquea el día completo (o es legado sin blockType), se cierra el día.
+      if (dayEvents.some(ev => !ev.blockType || ev.blockType === 'day')) return true;
+      // No hay evento de día completo — block si todas las horas están tomadas por reservas o por eventos de horas
       return isDayFull(ds) || isDayFullByCalEvent(ds);
     }
 
