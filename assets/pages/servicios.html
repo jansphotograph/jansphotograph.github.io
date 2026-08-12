@@ -46,6 +46,61 @@
     .testi-name { font-family:'Playfair Display',Georgia,serif; font-size:.95rem; color:#fff; font-weight:700; }
     .testi-plan { font-size:.7rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#e91e8c; background:rgba(233,30,140,.1); border-radius:50px; padding:3px 10px; white-space:nowrap; }
     .testi-empty { color:rgba(255,255,255,0.3); font-size:0.85rem; padding:20px; grid-column:1/-1; }
+
+    /* ── Botón flotante "Ver comentarios" ── */
+    .reviews-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 998;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px 12px 14px;
+      background: linear-gradient(135deg, #e6ac1f, #b8730a);
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(212,146,10,0.5);
+      transition: transform 0.2s, box-shadow 0.2s;
+      max-width: 260px;
+      overflow: hidden; /* recorta la barra de brillo dentro de la forma de píldora */
+    }
+    .reviews-fab:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(212,146,10,0.65); }
+    .reviews-fab-icon {
+      width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+    .reviews-fab-icon svg { width: 18px; height: 18px; color: #fff; }
+    .reviews-fab-text { color: #2b1c00; font-size: 0.8rem; font-weight: 700; line-height: 1.25; position: relative; z-index: 1; }
+
+    /* Brillo que recorre el botón de izquierda a derecha cada 15s, para llamar la atención */
+    .reviews-fab-shine {
+      position: absolute;
+      top: 0;
+      left: -60%;
+      width: 28%;
+      height: 100%;
+      background: linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-20deg);
+      pointer-events: none;
+      animation: reviewsFabShine 15s ease-in-out infinite;
+    }
+    @keyframes reviewsFabShine {
+      0%   { left: -60%; }
+      9%   { left: 140%; }
+      100% { left: 140%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reviews-fab-shine { animation: none; display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .reviews-fab { bottom: 84px; right: 14px; max-width: 210px; padding: 10px 16px 10px 12px; gap: 8px; }
+      .reviews-fab-icon { width: 28px; height: 28px; }
+      .reviews-fab-icon svg { width: 16px; height: 16px; }
+      .reviews-fab-text { font-size: 0.72rem; }
+    }
   </style>
 </head>
 <body>
@@ -120,7 +175,7 @@
     </section>
 
     <!-- Comentarios de clientes -->
-    <section style="margin-top:60px" aria-label="Comentarios de clientes">
+    <section id="comentarios-clientes" style="margin-top:60px" aria-label="Comentarios de clientes">
       <div style="margin-bottom:28px">
         <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:16px">Lo que dicen de nosotros</span>
         <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:1.8rem;color:#fff">Comentarios de nuestros clientes</h2>
@@ -130,6 +185,15 @@
       </div>
     </section>
   </div>
+
+  <!-- Botón flotante — invita a ver los comentarios de clientes -->
+  <a href="#comentarios-clientes" class="reviews-fab" id="reviewsFab" aria-label="Ver comentarios de nuestros clientes">
+    <span class="reviews-fab-shine" aria-hidden="true"></span>
+    <span class="reviews-fab-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    </span>
+    <span class="reviews-fab-text">Mira los comentarios<br>de nuestros clientes</span>
+  </a>
 
   <footer>
     <div class="footer-inner">
@@ -164,6 +228,18 @@
   </footer>
 
   <script src="../js/main.js"></script>
+  <script>
+    // ── Botón flotante de comentarios: al hacer click, centra la sección en pantalla ──
+    (function() {
+      const fab = document.getElementById('reviewsFab');
+      const target = document.getElementById('comentarios-clientes');
+      if (!fab || !target) return;
+      fab.addEventListener('click', function(e) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    })();
+  </script>
   <script>
     // ── Show only categories that have plans ──
     document.addEventListener('DOMContentLoaded', async function() {
