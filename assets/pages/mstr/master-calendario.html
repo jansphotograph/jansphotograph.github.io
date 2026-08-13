@@ -377,6 +377,102 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   flex-shrink: 0;
 }
 
+/* ── Master Nav toggle (hamburger) — solo en móvil ── */
+.master-nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-l);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.master-nav-toggle:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
+.master-nav-toggle svg { width: 18px; height: 18px; }
+
+@media (max-width: 768px) {
+  .master-nav-toggle { display: flex; }
+  .topbar-link { display: none; }
+  .master-nav {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 16px;
+    transition: max-height 0.25s ease, padding 0.25s ease;
+    gap: 2px;
+  }
+  .master-nav.nav-open {
+    max-height: 75vh;
+    overflow-y: auto;
+    padding: 10px 16px 14px;
+  }
+  .master-nav a { padding: 10px 12px; white-space: normal; }
+  .master-nav .nav-sep { display: none; }
+}
+
+/* ── Submenú anidado dentro del menú hamburguesa principal (móvil) ──
+   Cotizaciones / Catálogo / Config muestran sus propias secciones sin
+   necesidad de navegar primero — la flechita está siempre visible. */
+.nav-sub-chevron { margin-left: auto; transition: transform 0.2s; flex-shrink: 0; }
+.nav-submenu { display: none; }
+
+@media (max-width: 768px) {
+  .master-nav a.nav-has-sub { justify-content: space-between; }
+  .master-nav a.nav-has-sub.nav-sub-open .nav-sub-chevron { transform: rotate(180deg); }
+  .nav-submenu {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    margin-bottom: 2px;
+  }
+  .nav-submenu.open { max-height: 320px; }
+  .nav-submenu-item {
+    display: block;
+    padding: 9px 12px 9px 34px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gray-l);
+    text-decoration: none;
+    border-radius: 6px;
+  }
+  .nav-submenu-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .nav-submenu-item.active { color: var(--pink-l); background: rgba(199,30,95,0.12); }
+}
+
+/* ── Botón "Salir" — se quita del header en móvil y se muestra al fondo
+   del menú hamburguesa, con el rosa representativo de la marca. ── */
+.nav-logout { display: none; }
+
+@media (max-width: 768px) {
+  .topbar-logout-btn { display: none; }
+  .nav-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: var(--pink);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .nav-logout:hover { background: var(--pink-l); }
+}
+
 
 /* master-calendario.html */
 .cal-grid {
@@ -546,7 +642,10 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <a href="../master.html" class="topbar-link">Inicio</a>
-    <button onclick="handleLogout()" class="btn btn-sm btn-outline">Salir</button>
+    <button onclick="handleLogout()" class="btn btn-sm btn-outline topbar-logout-btn">Salir</button>
+<button class="master-nav-toggle" id="masterNavToggle" onclick="toggleMasterNav()" aria-label="Menu" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
   </div>
 </header>
 <nav class="master-nav" id="masterNav">
@@ -554,7 +653,16 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="nav-sep"></div>
   <a href="master-dashboard.html" id="nav-dashboard">Dashboard</a>
   <a href="master-reservas.html" id="nav-reservas">Reservas</a>
-  <a href="master-cotizaciones.html" id="nav-cotizaciones">Cotizaciones</a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubCotizaciones')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubCotizaciones">
+    <a href="master-cotizaciones.html?section=quotes" class="nav-submenu-item" data-section="quotes" onclick="return navSubmenuClick(event,'quotes')">Cotizaciones</a>
+    <a href="master-cotizaciones.html?section=newquote" class="nav-submenu-item" data-section="newquote" onclick="return navSubmenuClick(event,'newquote')">Nueva Cotización</a>
+    <a href="master-cotizaciones.html?section=eventoForm" class="nav-submenu-item" data-section="eventoForm" onclick="return navSubmenuClick(event,'eventoForm')">Formulario Evento</a>
+  </div>
   <a href="master-calendario.html" id="nav-calendario">Calendario</a>
   <a href="master-panel.html" id="nav-panel">Panel</a>
   <a href="master-comentarios.html" id="nav-comentarios">
@@ -566,9 +674,82 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
     Slider
   </a>
   <div class="nav-sep"></div>
-  <a href="master-catalogo.html" id="nav-catalogo">Catálogo</a>
-  <a href="master-config.html" id="nav-config">Config</a>
+  <a href="master-catalogo.html" id="nav-catalogo" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubCatalogo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubCatalogo">
+    <a href="master-catalogo.html?section=planes" class="nav-submenu-item" data-section="planes" onclick="return navSubmenuClick(event,'planes')">Planes Públicos</a>
+    <a href="master-catalogo.html?section=blog" class="nav-submenu-item" data-section="blog" onclick="return navSubmenuClick(event,'blog')">Blog</a>
+    <a href="master-catalogo.html?section=serv" class="nav-submenu-item" data-section="serv" onclick="return navSubmenuClick(event,'serv')">Servicios Adicionales</a>
+    <a href="master-catalogo.html?section=inventario" class="nav-submenu-item" data-section="inventario" onclick="return navSubmenuClick(event,'inventario')">Inventario</a>
+    <a href="master-catalogo.html?section=faqs" class="nav-submenu-item" data-section="faqs" onclick="return navSubmenuClick(event,'faqs')">FAQ</a>
+    <a href="master-catalogo.html?section=equipo" class="nav-submenu-item" data-section="equipo" onclick="return navSubmenuClick(event,'equipo')">Equipo</a>
+  </div>
+  <a href="master-config.html" id="nav-config" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubConfig')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubConfig">
+    <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
+    <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
+    <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Acceso Remoto</a>
+  </div>
+  <button class="nav-logout" onclick="handleLogout()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
 </nav>
+<script>
+function toggleMasterNav() {
+  const nav = document.getElementById('masterNav');
+  const btn = document.getElementById('masterNavToggle');
+  if (!nav) return;
+  const isOpen = nav.classList.toggle('nav-open');
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
+// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
+// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
+// en escritorio se comporta como un link normal).
+function toggleNavSub(event, id) {
+  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  event.preventDefault();
+  const sub = document.getElementById(id);
+  const link = event.currentTarget;
+  if (!sub) return false;
+  const isOpen = sub.classList.toggle('open');
+  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  return false;
+}
+// Click en un ítem del submenú: si ya estamos en esa página (existe
+// showSection y la sección), cambia de sección sin recargar. Si estamos en
+// otra página, navega normalmente hacia allá con la sección en la URL.
+function navSubmenuClick(event, section) {
+  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+    event.preventDefault();
+    showSection(section);
+    const nav = document.getElementById('masterNav');
+    if (nav) nav.classList.remove('nav-open');
+    const btn = document.getElementById('masterNavToggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    return false;
+  }
+  return true;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const nav = document.getElementById('masterNav');
+  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
+  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
+  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
+    nav.classList.remove('nav-open');
+    const btn = document.getElementById('masterNavToggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }));
+});
+</script>
 <script>(function(){const page=window.location.pathname.split('/').pop().replace('.html','');const map={'master-dashboard':'nav-dashboard','master-reservas':'nav-reservas','master-cotizaciones':'nav-cotizaciones','master-calendario':'nav-calendario','master-panel':'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider','master-catalogo':'nav-catalogo','master-config':'nav-config','master':'nav-inicio'};const id=map[page];if(id){const el=document.getElementById(id);if(el)el.classList.add('active');}})();</script>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div id="calCtxMenu" style="display:none;position:fixed;background:#1c1c1c;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:6px;z-index:500;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
