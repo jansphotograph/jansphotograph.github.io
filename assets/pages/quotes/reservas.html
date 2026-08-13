@@ -479,11 +479,28 @@
         // todavía no tiene bloqueo_antes/bloqueo_despues (falta correr la
         // migración SQL), la consulta no falla por completo; simplemente esos
         // campos vienen undefined y se usa el valor por defecto (2).
-        const { data, error } = await sbClient
+        let { data, error } = await sbClient
           .from('reservas')
           .select('*')
           .in('status', ['confirmed', 'completed']);
-        if (error) { console.error('syncAvailabilityFromSupabase error:', error); return; }
+
+        if (error) {
+          // select('*') puede fallar por razones ajenas a las columnas de bloqueo
+          // (ej. permisos de columna en Supabase) — reintenta con la consulta
+          // más acotada que ya sabíamos que funcionaba antes, para no perder
+          // la disponibilidad por completo.
+          console.warn('select(*) falló en syncAvailabilityFromSupabase, reintentando con columnas básicas:', error.message || JSON.stringify(error));
+          const fallback = await sbClient
+            .from('reservas')
+            .select('id,fecha,horaVal,status')
+            .in('status', ['confirmed', 'completed']);
+          data = fallback.data;
+          error = fallback.error;
+          if (error) {
+            console.error('syncAvailabilityFromSupabase error:', error.message || JSON.stringify(error), '| code:', error.code, '| details:', error.details, '| hint:', error.hint);
+            return;
+          }
+        }
         if (!data) return;
 
         // Merge: keep any local-only entries, but Supabase is authoritative for status
@@ -989,6 +1006,13 @@
       }
 
       // Build WhatsApp message with all data
+      const fechaEspecialLabel = (() => {
+        if (!fechaEspecial) return '';
+        const [ey, em, ed] = fechaEspecial.split('-');
+        if (!ey || !em || !ed) return fechaEspecial;
+        return parseInt(ed) + ' de ' + MONTHS[parseInt(em)-1] + ' ' + ey;
+      })();
+
       const msg = encodeURIComponent(
         '¡Hola Jans Photograph! 📸\n' +
         'Quiero solicitar una reserva:\n\n' +
@@ -997,6 +1021,11 @@
         '📅 Fecha: '     + fechaLabel + '\n' +
         '🕐 Hora: '      + hora   + '\n' +
         (plan  ? '📋 Plan: '  + plan  + '\n' : '') +
+        (exterior
+          ? '📍 Lugar: Sesión exterior' + (lugar ? ' — ' + lugar : '') + '\n'
+          : '📍 Lugar: En estudio\n') +
+        (personasAdicionales > 0 ? '👥 Personas adicionales: ' + personasAdicionales + ' (+$' + costoPersonas.toFixed(2) + ')\n' : '') +
+        (fechaEspecialLabel ? '🎂 Fecha especial (cumpleaños): ' + fechaEspecialLabel + '\n' : '') +
         (email ? '✉️ Email: ' + email + '\n' : '') +
         (notas ? '📝 Notas: ' + notas + '\n' : '') +
         '\n¡Gracias!'
