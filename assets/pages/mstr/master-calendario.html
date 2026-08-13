@@ -796,6 +796,17 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 </main>
 <script>
 const SESSION_KEY='jans_master_auth';
+
+// Formatea una fecha como YYYY-MM-DD usando la ZONA HORARIA LOCAL del
+// navegador (no UTC). Usar .toISOString() para esto es un bug clásico:
+// convierte a UTC, así que cerca de medianoche en Panamá (UTC-5) el
+// calendario "salta" al día siguiente varias horas antes de tiempo.
+function toLocalDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 const CONFIG = {
   ADMIN_USER: 'admin',               // Usuario de acceso
   ADMIN_PASS: 'jans2025',            // Contraseña de acceso
@@ -1124,7 +1135,7 @@ function evClass(status) {
 }
 function renderCalendar() {
   try {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = toLocalDateStr(new Date());
     if(calView==='month')  renderMonthView(todayStr);
     else if(calView==='week') renderWeekView(todayStr);
     else if(calView==='day')  renderDayView(todayStr);
@@ -1135,7 +1146,7 @@ function renderCalendar() {
       g.innerHTML = '<div style="color:#999;padding:20px;grid-column:span 7">Cargando calendario...</div>';
       setTimeout(() => {
         g.innerHTML = '';
-        renderMonthView(new Date().toISOString().split('T')[0]);
+        renderMonthView(toLocalDateStr(new Date()));
       }, 100);
     }
   } catch(err) {
@@ -1213,8 +1224,8 @@ function renderWeekView(todayStr) {
   const dayOfWeek = refDate.getDay(); // 0=Sun
   const monday    = new Date(refDate); monday.setDate(refDate.getDate() - dayOfWeek);
   const days = Array.from({length:7}, (_,i) => { const d=new Date(monday); d.setDate(monday.getDate()+i); return d; });
-  const startStr = days[0].toISOString().split('T')[0];
-  const endStr   = days[6].toISOString().split('T')[0];
+  const startStr = toLocalDateStr(days[0]);
+  const endStr   = toLocalDateStr(days[6]);
   document.getElementById('calMonthLabel').textContent = MONTHS_ES[days[0].getMonth()] + ' ' + days[0].getDate() + ' – ' + MONTHS_ES[days[6].getMonth()] + ' ' + days[6].getDate() + ', ' + days[6].getFullYear();
   document.getElementById('calSubtitle').textContent = 'Vista semanal';
 
@@ -1224,7 +1235,7 @@ function renderWeekView(todayStr) {
   const cornerEl = document.createElement('div'); cornerEl.className='week-header-cell'; g.appendChild(cornerEl);
   const colorHex = { pink:'#e91e8c', blue:'#3b82f6', green:'#22c55e', amber:'#f59e0b', purple:'#a855f7' };
   days.forEach(d => {
-    const ds  = d.toISOString().split('T')[0];
+    const ds  = toLocalDateStr(d);
     const el  = document.createElement('div');
     el.className = 'week-header-cell' + (ds===todayStr?' today-col':'');
     const dayEvents = getDayEvents(ds);
@@ -1245,7 +1256,7 @@ function renderWeekView(todayStr) {
   HOURS_CAL.forEach((h, hi) => {
     const tlEl = document.createElement('div'); tlEl.className='week-time-label'; tlEl.style.cssText='display:flex;align-items:flex-start;padding:4px 8px 0 0;border-bottom:1px solid rgba(255,255,255,0.05)'; tlEl.textContent=HOUR_LABELS[hi]; g.appendChild(tlEl);
     days.forEach(d => {
-      const ds  = d.toISOString().split('T')[0];
+      const ds  = toLocalDateStr(d);
       const evs = getEventsForDate(ds).filter(e=>e.horaVal===h);
       const cell= document.createElement('div');
       cell.className = 'week-cell' + (ds===todayStr?' today-col':'');
@@ -1351,7 +1362,7 @@ function calNext() {
   }
   else if(calView==='day' && calViewDay) {
     const d = new Date(calViewDay); d.setDate(d.getDate()+1);
-    calViewDay = d.toISOString().split('T')[0];
+    calViewDay = toLocalDateStr(d);
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
   }
@@ -1366,7 +1377,7 @@ function calPrev() {
   }
   else if(calView==='day' && calViewDay) {
     const d = new Date(calViewDay); d.setDate(d.getDate()-1);
-    calViewDay = d.toISOString().split('T')[0];
+    calViewDay = toLocalDateStr(d);
     state.calYear  = d.getFullYear();
     state.calMonth = d.getMonth();
   }
@@ -1377,7 +1388,7 @@ function calGoToday() {
   state.calYear  = now.getFullYear();
   state.calMonth = now.getMonth();
   if(calView==='day') {
-    calViewDay = now.toISOString().split('T')[0];
+    calViewDay = toLocalDateStr(now);
   }
   renderCalendar();
 }

@@ -728,6 +728,15 @@ const CONFIG_PUBLIC = {
 const GH_BASE_PUBLIC = () =>
   `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data`;
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+// Formatea una fecha como YYYY-MM-DD usando la ZONA HORARIA LOCAL del
+// navegador (no UTC) — evita que cerca de medianoche en Panamá (UTC-5)
+// el cálculo de "hoy" salte al día siguiente antes de tiempo.
+function toLocalDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 let sbClient = null;
 try {
@@ -1548,7 +1557,7 @@ async function cleanupStaleCalendarDays() {
   // ── 3. Build a real summary of which hours are CURRENTLY blocked (today onward),
   //       computed live from confirmed/completed reservas — so you can visually
   //       confirm everything is correct, not just trust that cleanup ran. ──
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = toLocalDateStr(new Date());
   const activeBlocks = {};
   allReservas
     .filter(r => (r.status === 'confirmed' || r.status === 'completed') && r.fecha && r.fecha >= todayStr)
