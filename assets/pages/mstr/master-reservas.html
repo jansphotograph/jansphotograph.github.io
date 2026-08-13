@@ -1037,6 +1037,24 @@ function goToReservaInTable(id) {
 function sanitizeText(str){if(!str)return "";return String(str).trim();}
 async function generateConfirmationPDF(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
+
+  // Contenido del PDF según el estado actual de la reserva — cada estado
+  // tiene su propio color y encabezado, para no mostrar "CONFIRMADA" en
+  // una reserva que en realidad está Pendiente, Aplazada, etc.
+  const STATUS_PDF = {
+    pending:   { label: 'SOLICITUD PENDIENTE DE CONFIRMACIÓN', color: [156,163,175], file: 'Pendiente' },
+    confirmed: { label: 'RESERVA CONFIRMADA',                  color: [22,163,74],   file: 'Confirmacion' },
+    completed: { label: 'SESIÓN COMPLETADA',                   color: [59,130,246],  file: 'Completada' },
+    postponed: { label: 'RESERVA APLAZADA',                    color: [245,158,11],  file: 'Aplazada' },
+    declined:  { label: 'SOLICITUD DECLINADA',                 color: [239,68,68],   file: 'Declinada' },
+    cancelled: { label: 'RESERVA CANCELADA',                   color: [239,68,68],   file: 'Cancelada' },
+  };
+  const st = STATUS_PDF[r.status] || STATUS_PDF.pending;
+
+  // Verificación antes de generar — así no se genera un PDF por error con
+  // el estado equivocado sin que el admin lo confirme primero.
+  if (!confirm(`Esta reserva está en estado "${resStatusLabel(r.status)}".\n\nSe generará el PDF reflejando ese estado. ¿Continuar?`)) return;
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   const company = pdfCompanyInfo();
@@ -1078,15 +1096,15 @@ async function generateConfirmationPDF(id) {
 
   let y = headerH + 12;
 
-  // ── Green "CONFIRMADA" banner ──
-  doc.setFillColor(22,163,74); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
+  // ── Banner de estado (color y texto según el estado real de la reserva) ──
+  doc.setFillColor(...st.color); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
   doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text('RESERVA CONFIRMADA', pageW/2, y+9, {align:'center'});
+  doc.text(st.label, pageW/2, y+9, {align:'center'});
   y += 24;
 
   // ── Two-column client + session data ──
   doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
-  doc.setTextColor(22,163,74); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.setTextColor(...st.color); doc.setFontSize(8); doc.setFont('helvetica','bold');
   doc.text('DATOS DE LA RESERVA', margin, y); y += 9;
 
   const leftRows  = [['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—']];
@@ -1186,8 +1204,8 @@ async function generateConfirmationPDF(id) {
   doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
   doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
 
-  doc.save(`Confirmacion_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
-  showToast('PDF de confirmación descargado ✓');
+  doc.save(`${st.file}_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  showToast(`PDF (${resStatusLabel(r.status)}) descargado ✓`);
 }
 async function generateInvoicePDF(id) {
   const r = allReservas.find(x=>x.id===id); if(!r) return;
