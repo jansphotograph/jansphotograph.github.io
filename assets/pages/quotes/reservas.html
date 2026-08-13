@@ -436,6 +436,18 @@
     let calYear   = new Date().getFullYear();
     let calMonth  = new Date().getMonth();
     let calData   = {};       // { 'YYYY-MM-DD': 'available'|'booked' }
+
+    // Formatea una fecha como YYYY-MM-DD usando la ZONA HORARIA LOCAL del
+    // navegador (no UTC). Usar .toISOString() para esto es un bug clásico:
+    // convierte a UTC, así que cerca de medianoche en Panamá (UTC-5) la
+    // página "cree" que ya es el día siguiente varias horas antes de tiempo
+    // — pudiendo bloquear que un cliente reserve el día de hoy.
+    function toLocalDateStr(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
     let reservas  = [];       // confirmed reservas with time blocks
     let selectedDate = null;
     let selectedHour = null;
@@ -518,7 +530,7 @@
         document.getElementById('rPlan').value = p.get('plan') + (p.get('precio') ? ' ($' + p.get('precio') + ')' : '');
         window._planPrecio = parseFloat(p.get('precio') || '0') || 0;
       }
-      document.getElementById('rFecha').min = new Date().toISOString().split('T')[0];
+      document.getElementById('rFecha').min = toLocalDateStr(new Date());
 
       // Lee del localStorage (mismo dominio que el Master) — respaldo instantáneo
       try { calData  = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
@@ -630,7 +642,7 @@
       DAYS.forEach(d => { const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
       const firstDay    = new Date(calYear, calMonth, 1).getDay();
       const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-      const todayStr    = new Date().toISOString().split('T')[0];
+      const todayStr    = toLocalDateStr(new Date());
 
       for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='cal-day';grid.appendChild(el);}
       for(let d=1;d<=daysInMonth;d++){
@@ -774,7 +786,7 @@
       const ds = document.getElementById('rFecha').value;
       if(!ds) return;
       const st = calData[ds];
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateStr(new Date());
 
       // Block past dates and fully-booked dates (manually closed OR every hour taken)
       if(ds < today) {
