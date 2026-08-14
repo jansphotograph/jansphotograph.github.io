@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="page-header">
     <div>
       <h2>Slider del Inicio</h2>
-      <p>Controla las fotos, títulos y descripciones que se muestran en el carrusel principal.</p>
+      <p>Controla las fotos, títulos y descripciones que se muestran en el carrusel principal. Los cambios se guardan al instante.</p>
     </div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="syncSlider()">
@@ -225,21 +225,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <div class="card" style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-    <div style="font-size:.85rem;color:var(--gray-l)">
-      Los cambios se guardan primero en este navegador. Cuando estés conforme, pulsa <strong style="color:#fff">Publicar cambios</strong> para que se reflejen en la página web para todos.
-    </div>
-    <button class="btn btn-green" onclick="publishSlider()" id="publishBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v14"/></svg>
-      Publicar cambios
-    </button>
-  </div>
-
   <div class="slide-list" id="slideList">
     <div class="empty-state">Cargando slider...</div>
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SESSION_KEY = 'jans_master_auth';
 const LS_KEY = 'jans_slider';
@@ -251,33 +242,23 @@ const CONFIG_PUBLIC = {
 function getGHConfig() {
   try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
 }
-const GH_BASE_PUBLIC = () =>
-  `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data`;
 
-async function ghPutPublic(file, data) {
-  const token = (getGHConfig().token || '').replace(/\s+/g, '');
-  if (!token) { showToast('Configura el token de GitHub primero (Config → Token de GitHub)', 'error'); return false; }
-  const url = `${GH_BASE_PUBLIC()}/${file}`;
-  let sha = null;
-  try {
-    const getRes = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
-    if (getRes.ok) { const j = await getRes.json(); sha = j.sha; }
-  } catch(e) {}
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const body = { message: `update ${file}`, content };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const resJson = await res.json().catch(()=>({}));
-  if (!res.ok) {
-    console.error('ghPutPublic FAILED:', res.status, JSON.stringify(resJson));
-    showToast('Error GitHub ' + res.status + ': ' + (resJson.message || 'sin detalle'), 'error');
+// ── Supabase — fuente de verdad de los datos del slider (título/descripción/
+// orden), para que la edición se refleje al instante sin depender de que
+// GitHub Pages reconstruya el sitio. ──
+const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+let sbClient = null;
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
   }
-  return res.ok;
+  return false;
 }
+try {
+  if (!initSupabase()) window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
+} catch(e) {}
 
 async function ghPutPublicFile(path, base64Content, commitMsg) {
   const token = (getGHConfig().token || '').replace(/\s+/g, '');
@@ -344,47 +325,27 @@ function loadSlidesLocal() {
   catch(e) { slides = []; }
 }
 
-// Lee el slider.json que está sirviendo el navegador ahora mismo (mismo origen).
-// Funciona tanto probando en local (VS Code Live Server, etc.) como ya
-// publicado en GitHub Pages — y es más rápido/fresco que raw.githubusercontent.com
-// porque no depende del CDN de GitHub ni de que ya hayas hecho push.
-async function syncSliderFromSameOrigin() {
+// ── Supabase es la fuente de verdad — se lee directo, sin depender de que
+// GitHub Pages reconstruya el sitio (evita el problema de datos "viejos"). ──
+async function syncSliderFromSupabase() {
+  if (!sbClient) return false;
   try {
-    const res = await fetch(`../../../data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' });
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (Array.isArray(data) && data.length) {
+    const { data, error } = await sbClient.from('sliders').select('*').order('orden', { ascending: true });
+    if (error) { console.error('syncSliderFromSupabase error:', error.message || JSON.stringify(error)); return false; }
+    if (data) {
       slides = data;
       localStorage.setItem(LS_KEY, JSON.stringify(slides));
       return true;
     }
-  } catch(e) {}
-  return false;
-}
-
-async function syncSliderFromGitHub() {
-  try {
-    const res = await fetch(`https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' });
-    if (!res.ok) return false;
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      slides = data;
-      localStorage.setItem(LS_KEY, JSON.stringify(slides));
-      return true;
-    }
-  } catch(e) {}
+  } catch(e) { console.error('syncSliderFromSupabase:', e); }
   return false;
 }
 
 async function syncSlider() {
   showToast('Sincronizando...');
-  // 1. GitHub raw — refleja lo publicado casi al instante (más confiable que
-  //    esperar a que GitHub Pages reconstruya el sitio, que puede tardar).
-  let ok = await syncSliderFromGitHub();
-  // 2. Si GitHub no responde (ej. sin conexión), intenta el archivo local
-  if (!ok) ok = await syncSliderFromSameOrigin();
+  const ok = await syncSliderFromSupabase();
   renderSlides();
-  showToast(ok ? 'Sincronizado — ' + slides.length + ' slide(s)' : 'Sin conexión — mostrando datos locales', ok ? '' : 'error');
+  showToast(ok ? 'Sincronizado — ' + slides.length + ' slide(s)' : 'Sin conexión con Supabase — mostrando datos locales', ok ? '' : 'error');
 }
 
 function renderSlides() {
@@ -399,7 +360,7 @@ function renderSlides() {
         ${s.imagen ? `<img src="${imgUrl(s.imagen)}" alt="${escapeHtml(s.titulo)}" onerror="this.style.display='none'" />` : '<div class="thumb-empty">📷</div>'}
       </div>
       <div class="slide-main">
-        <div class="slide-title">${escapeHtml(s.titulo || 'Sin título')}</div>
+        <div class="slide-title">${escapeHtml(s.titulo || 'Sin título')} <span style="color:var(--gray);font-weight:400;font-size:.72rem">#${s.numero}</span></div>
         <div class="slide-desc">${escapeHtml(s.descripcion || '')}</div>
       </div>
       <div class="slide-order">
@@ -413,12 +374,21 @@ function renderSlides() {
     </div>`).join('');
 }
 
-function moveSlide(idx, dir) {
+// Intercambia el "orden" (posición visual) de dos slides — el "numero" fijo
+// de cada uno (usado para el nombre de su imagen) NO cambia al reordenar.
+async function moveSlide(idx, dir) {
   const ni = idx + dir;
   if (ni < 0 || ni >= slides.length) return;
+  const a = slides[idx], b = slides[ni];
+  const ordenA = a.orden, ordenB = b.orden;
+  a.orden = ordenB; b.orden = ordenA;
   [slides[idx], slides[ni]] = [slides[ni], slides[idx]];
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
   renderSlides();
+  if (sbClient) {
+    await sbClient.from('sliders').update({ orden: a.orden }).eq('id', a.id);
+    await sbClient.from('sliders').update({ orden: b.orden }).eq('id', b.id);
+  }
 }
 
 function resetSlidePhotoField() {
@@ -493,6 +463,11 @@ async function saveSlide() {
   if (!slidePhotoData && !existing?.imagen) { setSlideModalMsg('Selecciona una foto para el slide.', 'error'); return; }
 
   const slideId = editingSlideId || ('s_' + Date.now());
+  // Número fijo del slide — asignado UNA sola vez al crearlo. Se usa para
+  // nombrar su imagen (slider_7, etc.) y nunca cambia, aunque luego lo
+  // reordenes con las flechas ↑ ↓ (eso solo cambia "orden", no "numero").
+  const numero = existing?.numero || (Math.max(0, ...slides.map(s => s.numero || 0)) + 1);
+  const orden  = existing ? existing.orden : slides.length;
   let imagen = existing?.imagen || '';
 
   const saveBtn = document.getElementById('slideSaveBtn');
@@ -508,14 +483,17 @@ async function saveSlide() {
       return;
     }
     setSlideModalMsg('Subiendo foto...', 'info');
-    const newPath = `assets/images/slider/${slideId}.${slidePhotoData.extension}`;
+    // Nombre fijo y predecible: slider_{numero}.{extensión} — así siempre
+    // se sabe qué imagen le pertenece a cada slide, sin importar cuántas
+    // veces se reemplace.
+    const newPath = `assets/images/slider/slider_${numero}.${slidePhotoData.extension}`;
 
     // Si la extensión cambió respecto a la imagen anterior, elimina el archivo viejo
     if (existing?.imagen && existing.imagen !== newPath) {
-      await ghDeletePublicFile(existing.imagen, `remove old slider image ${slideId}`);
+      await ghDeletePublicFile(existing.imagen, `remove old slider image ${numero}`);
     }
 
-    const ok = await ghPutPublicFile(newPath, slidePhotoData.base64, `slider: ${titulo}`);
+    const ok = await ghPutPublicFile(newPath, slidePhotoData.base64, `slider_${numero}: ${titulo}`);
     if (!ok) {
       setSlideModalMsg('Error al subir la foto. Verifica el token de GitHub.', 'error');
       saveBtn.disabled = false;
@@ -525,7 +503,25 @@ async function saveSlide() {
     imagen = newPath;
   }
 
-  const slide = { id: slideId, titulo, descripcion, imagen };
+  const slide = { id: slideId, numero, orden, titulo, descripcion, imagen };
+
+  // Guardar directo en Supabase — se refleja al instante, sin pasos extra.
+  if (sbClient) {
+    const { error } = await sbClient.from('sliders').upsert([slide], { onConflict: 'id' });
+    if (error) {
+      console.error('saveSlide Supabase error:', error.message || JSON.stringify(error));
+      setSlideModalMsg('No se pudo guardar en Supabase: ' + (error.message || 'error desconocido'), 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Guardar slide';
+      return;
+    }
+  } else {
+    setSlideModalMsg('Sin conexión con Supabase — no se pudo guardar.', 'error');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Guardar slide';
+    return;
+  }
+
   if (editingSlideId) {
     const idx = slides.findIndex(x => x.id === editingSlideId);
     if (idx !== -1) slides[idx] = slide;
@@ -538,7 +534,7 @@ async function saveSlide() {
   saveBtn.textContent = 'Guardar slide';
   closeModal('slideModal');
   renderSlides();
-  showToast(editingSlideId ? 'Slide actualizado — recuerda Publicar cambios' : 'Slide creado — recuerda Publicar cambios');
+  showToast(editingSlideId ? '✓ Slide actualizado' : '✓ Slide creado');
 }
 
 async function deleteSlide(id) {
@@ -549,31 +545,19 @@ async function deleteSlide(id) {
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
   renderSlides();
   if (s.imagen && (getGHConfig().token || '').trim()) {
-    await ghDeletePublicFile(s.imagen, `remove slider image ${id}`);
+    await ghDeletePublicFile(s.imagen, `remove slider image ${s.numero}`);
   }
-  showToast('Slide eliminado — recuerda Publicar cambios');
-}
-
-async function publishSlider() {
-  if (!slides.length) { showToast('No hay slides que publicar', 'error'); return; }
-  const btn = document.getElementById('publishBtn');
-  btn.disabled = true;
-  btn.textContent = 'Publicando...';
-  const ok = await ghPutPublic('slider.json', slides);
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v14"/></svg> Publicar cambios';
-  if (ok) showToast('✓ Slider publicado — ya se ve en la web');
-  else    showToast('Guardado local — configura el token de GitHub para publicar', 'error');
+  if (sbClient) {
+    const { error } = await sbClient.from('sliders').delete().eq('id', id);
+    if (error) console.error('deleteSlide Supabase error:', error.message || JSON.stringify(error));
+  }
+  showToast('Slide eliminado ✓');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   loadSlidesLocal();
   renderSlides();
-  // 1. GitHub raw — refleja lo publicado casi al instante (evita mostrar
-  //    datos viejos si GitHub Pages todavía no terminó de reconstruir el sitio).
-  let ok = await syncSliderFromGitHub();
-  // 2. Si GitHub no responde (ej. probando en local sin conexión), intenta el archivo local
-  if (!ok) ok = await syncSliderFromSameOrigin();
+  const ok = await syncSliderFromSupabase();
   if (ok) renderSlides();
 });
 </script>

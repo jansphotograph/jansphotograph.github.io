@@ -298,14 +298,18 @@
   </footer>
 
   <script src="assets/js/main.js?v=2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ── Slider — carga dinámica desde data/socialmedia/slider.json ──
+    // ── Slider — carga dinámica desde Supabase ──
     // Editable desde el panel Master → Slider (añadir/quitar/reordenar
-    // slides, cambiar título, descripción y foto).
+    // slides, cambiar título, descripción y foto). Se lee directo de
+    // Supabase (no de un archivo publicado en GitHub) para que las
+    // ediciones se vean al instante, sin esperar a que GitHub Pages
+    // reconstruya el sitio.
     (function() {
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
       const LS_KEY = 'jans_slider';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 
       const track = document.getElementById('sliderTrack');
       const dotsWrap = document.getElementById('sliderDots');
@@ -347,30 +351,20 @@
         if (local.length) renderSlides(local);
       } catch(e) {}
 
-      // 2. GitHub raw — refleja lo publicado casi al instante, evitando
-      //    mostrar datos viejos mientras GitHub Pages termina de reconstruir
-      //    el sitio (puede tardar hasta un par de minutos tras publicar).
-      fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(slides => {
-          if (!slides || !slides.length) return null;
-          localStorage.setItem(LS_KEY, JSON.stringify(slides));
-          renderSlides(slides);
-          return true;
-        })
-        .catch(() => null)
-        .then(gotFresh => {
-          if (gotFresh) return;
-          // 3. Si GitHub no responde, intenta el archivo local (pruebas sin conexión)
-          fetch(`data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
-            .then(r => r.ok ? r.json() : null)
-            .then(slides => {
-              if (!slides || !slides.length) return;
-              localStorage.setItem(LS_KEY, JSON.stringify(slides));
-              renderSlides(slides);
-            })
-            .catch(() => {});
-        });
+      // 2. Supabase — datos frescos, se reflejan al instante tras publicar
+      function loadFromSupabase() {
+        if (!window.supabase || typeof window.supabase.createClient !== 'function') return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('sliders').select('*').order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data || !data.length) return;
+            localStorage.setItem(LS_KEY, JSON.stringify(data));
+            renderSlides(data);
+          })
+          .catch(() => {});
+      }
+      if (window.supabase) loadFromSupabase();
+      else window.addEventListener('load', loadFromSupabase);
     })();
   </script>
   <script>
