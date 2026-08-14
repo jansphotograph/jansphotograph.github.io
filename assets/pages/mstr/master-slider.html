@@ -378,10 +378,11 @@ async function syncSliderFromGitHub() {
 
 async function syncSlider() {
   showToast('Sincronizando...');
-  // 1. Intenta el archivo local (funciona sin depender de GitHub)
-  let ok = await syncSliderFromSameOrigin();
-  // 2. Si no hay local (ej. abierto con file:// sin servidor), intenta GitHub
-  if (!ok) ok = await syncSliderFromGitHub();
+  // 1. GitHub raw — refleja lo publicado casi al instante (más confiable que
+  //    esperar a que GitHub Pages reconstruya el sitio, que puede tardar).
+  let ok = await syncSliderFromGitHub();
+  // 2. Si GitHub no responde (ej. sin conexión), intenta el archivo local
+  if (!ok) ok = await syncSliderFromSameOrigin();
   renderSlides();
   showToast(ok ? 'Sincronizado — ' + slides.length + ' slide(s)' : 'Sin conexión — mostrando datos locales', ok ? '' : 'error');
 }
@@ -568,10 +569,11 @@ async function publishSlider() {
 document.addEventListener('DOMContentLoaded', async () => {
   loadSlidesLocal();
   renderSlides();
-  // 1. Archivo local (mismo origen) — funciona en pruebas locales y ya publicado
-  let ok = await syncSliderFromSameOrigin();
-  // 2. Si no hay local, intenta GitHub (ej. abierto con file:// sin servidor)
-  if (!ok) ok = await syncSliderFromGitHub();
+  // 1. GitHub raw — refleja lo publicado casi al instante (evita mostrar
+  //    datos viejos si GitHub Pages todavía no terminó de reconstruir el sitio).
+  let ok = await syncSliderFromGitHub();
+  // 2. Si GitHub no responde (ej. probando en local sin conexión), intenta el archivo local
+  if (!ok) ok = await syncSliderFromSameOrigin();
   if (ok) renderSlides();
 });
 </script>

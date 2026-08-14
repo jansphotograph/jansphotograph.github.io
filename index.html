@@ -347,10 +347,10 @@
         if (local.length) renderSlides(local);
       } catch(e) {}
 
-      // 2. Archivo local (mismo origen) — funciona en pruebas locales
-      //    (VS Code Live Server, etc.) antes de publicar en GitHub, y también
-      //    una vez publicado (más rápido que esperar el CDN de GitHub raw).
-      fetch(`data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
+      // 2. GitHub raw — refleja lo publicado casi al instante, evitando
+      //    mostrar datos viejos mientras GitHub Pages termina de reconstruir
+      //    el sitio (puede tardar hasta un par de minutos tras publicar).
+      fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
         .then(r => r.ok ? r.json() : null)
         .then(slides => {
           if (!slides || !slides.length) return null;
@@ -359,10 +359,10 @@
           return true;
         })
         .catch(() => null)
-        .then(gotLocal => {
-          if (gotLocal) return;
-          // 3. Si no hay archivo local disponible, intenta GitHub
-          fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
+        .then(gotFresh => {
+          if (gotFresh) return;
+          // 3. Si GitHub no responde, intenta el archivo local (pruebas sin conexión)
+          fetch(`data/socialmedia/slider.json?t=${Date.now()}`, { cache: 'no-cache' })
             .then(r => r.ok ? r.json() : null)
             .then(slides => {
               if (!slides || !slides.length) return;
