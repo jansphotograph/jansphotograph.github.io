@@ -1,0 +1,32 @@
+[
+  {
+    "id": "s1",
+    "titulo": "¿Te gustaría hacerte una sesión fotográfica?",
+    "descripcion": "Capturamos tus momentos más especiales con luz, emoción y arte.",
+    "imagen": "assets/images/slider/slider_1.webp"
+  },
+  {
+    "id": "s2",
+    "titulo": "Sesiones de parejas",
+    "descripcion": "Amor eterno en cada encuadre. Historias de dos, contadas con imágenes.",
+    "imagen": "assets/images/slider/slider_2.jpeg"
+  },
+  {
+    "id": "s3",
+    "titulo": "Sesiones de Graduación",
+    "descripcion": "Recuerdos que celebran tu éxito.",
+    "imagen": "assets/images/slider/s3.jpeg"
+  },
+  {
+    "id": "s4",
+    "titulo": "Sesiones individuales",
+    "descripcion": "Tú en el centro. Retratos que revelan tu esencia y personalidad única.",
+    "imagen": "assets/images/slider/slider_4.jpeg"
+  },
+  {
+    "id": "s5",
+    "titulo": "Sesiones de maternidad",
+    "descripcion": "El milagro de la vida, inmortalizado. Belleza que merece ser recordada.",
+    "imagen": "assets/images/slider/slider_5.jpeg"
+  }
+]
