@@ -186,7 +186,7 @@ function showSection(name) {
     if(btn) btn.classList.toggle('active', s===name);
   });
   try {
-    if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
+    if(name==='planes')     { refreshPublicPlans(); }
     if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
     if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
     if(name==='inventario') { loadInvFromSupabase().then(() => { loadInvData(); initInventario(); }); }
@@ -513,6 +513,76 @@ function showSection(name) {
   </div>
 </div>
 
+<div class="modal-overlay" id="manageCategoriesModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3>Gestionar Categorías</h3>
+      <button class="modal-close" onclick="closeModal('manageCategoriesModal')">×</button>
+    </div>
+    <div id="manageCategoriesList" style="display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editCategoryModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3>Editar Categoría</h3>
+      <button class="modal-close" onclick="closeModal('editCategoryModal')">×</button>
+    </div>
+    <input type="hidden" id="editCatSlug" />
+    <div class="field">
+      <label>Nombre de la categoría *</label>
+      <input type="text" id="editCatName" />
+    </div>
+    <div class="field">
+      <label>Ícono <span style="color:var(--gray);font-weight:400">(emoji, se usa en Servicios)</span></label>
+      <input type="text" id="editCatIcon" maxlength="4" />
+    </div>
+    <div class="field">
+      <label>Subtítulo del hero</label>
+      <input type="text" id="editCatSubtitle" />
+    </div>
+    <div class="field">
+      <label>Foto de portada <span style="color:var(--gray);font-weight:400">(déjalo así para no cambiarla)</span></label>
+      <div id="editCatDropZone" onclick="document.getElementById('editCatFileInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+        <input type="file" id="editCatFileInput" accept="image/*" style="display:none" onchange="handleEditCatPhoto(this.files[0])" />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+        <div style="font-size:0.82rem;color:var(--gray-l)" id="editCatDropLabel">Haz clic o arrastra una foto nueva aquí</div>
+      </div>
+      <div id="editCatImgPreview" style="margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
+        <img id="editCatImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      </div>
+    </div>
+
+    <div id="editCatStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-pink" id="editCatBtn" onclick="saveEditedCategory()">Guardar Cambios</button>
+      <button class="btn btn-outline" onclick="closeModal('editCategoryModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="galleryManageModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h3 id="galleryManageTitle">Galería</h3>
+      <button class="modal-close" onclick="closeModal('galleryManageModal')">×</button>
+    </div>
+    <input type="hidden" id="galleryManageSlug" />
+
+    <div id="galleryAddZone" onclick="document.getElementById('galleryAddInput').click()"
+      style="border:2px dashed rgba(233,30,140,0.35);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark);margin-bottom:16px">
+      <input type="file" id="galleryAddInput" accept="image/*" style="display:none" onchange="handleGalleryUpload(this.files[0])" />
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 6px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div style="font-size:0.82rem;color:var(--gray-l)" id="galleryAddLabel">Haz clic para añadir una foto nueva a la galería</div>
+    </div>
+
+    <div id="galleryManageGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;max-height:50vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="newCategoryModal">
   <div class="modal" style="max-width:520px">
     <div class="modal-header">
@@ -543,6 +613,21 @@ function showSection(name) {
     <div class="field">
       <label>Subtítulo del hero</label>
       <input type="text" id="newCatSubtitle" placeholder="Ej. Sesiones especiales para capturar momentos únicos." />
+    </div>
+    <div class="field">
+      <label>Foto de portada de la categoría *</label>
+      <div id="newCatDropZone" onclick="document.getElementById('newCatFileInput').click()"
+        style="border:2px dashed rgba(233,30,140,0.35);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--dark)">
+        <input type="file" id="newCatFileInput" accept="image/*" style="display:none" onchange="handleNewCatPhoto(this.files[0])" />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
+        <div style="font-size:0.82rem;color:var(--gray-l)" id="newCatDropLabel">Haz clic o arrastra la foto aquí</div>
+      </div>
+      <div id="newCatImgPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
+        <img id="newCatImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      </div>
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
+        Se muestra como fondo de la tarjeta de la categoría en la página de Servicios.
+      </div>
     </div>
 
     <div id="newCatStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
@@ -584,9 +669,13 @@ function showSection(name) {
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
             <h2>Planes Públicos</h2>
-            <p>Tarjetas que se muestran en las páginas de cada categoría</p>
+            <p>Tarjetas que se muestran en las páginas de cada categoría. Los cambios se guardan al instante.</p>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="openManageCategoriesModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Gestionar Categorías
+            </button>
             <button class="btn btn-outline" onclick="openNewCategoryModal()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
               Nueva Categoría
@@ -616,13 +705,6 @@ function showSection(name) {
         </div>
 
         <div id="publicPlansGrid" style="display:grid;grid-template-columns:1fr;gap:0;margin-bottom:24px"></div>
-
-        <div class="btn-row">
-          <button class="btn btn-pink" onclick="savePublicPlans()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-            Guardar todos los planes
-          </button>
-        </div>
       </div>
 
       <!-- ── DATOS DE EMPRESA ── -->
@@ -787,6 +869,21 @@ const CONFIG = {
   COMPANY_PHONE: '+507 6862-2402',
   COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
   COMPANY_WEB:   'jansphotograph.com',
+
+  // El token de GitHub se configura en Config → Token de GitHub y se guarda
+  // en localStorage — este getter lo expone aquí para las funciones que
+  // usan CONFIG.GH_TOKEN directamente (ghGetFile, ghPutFile, etc.).
+  get GH_TOKEN() {
+    try { return (JSON.parse(localStorage.getItem('jans_gh_config') || '{}').token || '').replace(/\s+/g, ''); }
+    catch(e) { return ''; }
+  },
+};
+// Repositorio público de GitHub donde se suben imágenes/páginas (Config →
+// Token de GitHub). Antes no estaba definido en este archivo, rompiendo
+// silenciosamente la subida de fotos de planes, blog, equipo, etc.
+const CONFIG_PUBLIC = {
+  get OWNER() { return localStorage.getItem('jans_public_owner') || 'jansphotograph'; },
+  get REPO()  { return localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io'; },
 };
 const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
@@ -807,6 +904,10 @@ let publicPlans = [];
 
 const CAT_ORDER   = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia','infantiles','todos'];
 const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+// Lista de slugs de categorías reales (excluye el pseudo-filtro 'todos',
+// que no tiene página propia). Usada al crear una categoría nueva para
+// saber cuáles páginas ya existen y actualizar su menú.
+const ALL_PLAN_SLUGS = CAT_ORDER.filter(s => s !== 'todos');
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -907,8 +1008,29 @@ async function ghGetFile(path) {
 }
 function loadPublicPlans() {
   try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
-  // jans_planes already has the popular flag embedded — no need to re-apply from jans_popular
-  // jans_popular is only used as a source of truth for the PUBLIC pages
+}
+// Supabase es la fuente de verdad de los planes — se lee directo, sin
+// depender de que GitHub Pages reconstruya el sitio.
+async function syncPlanesFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const { data, error } = await sbClient.from('planes_publicos').select('*').order('orden', { ascending: true });
+    if (error) { console.error('syncPlanesFromSupabase error:', error.message || JSON.stringify(error)); return false; }
+    if (data) {
+      publicPlans = data;
+      localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+      return true;
+    }
+  } catch(e) { console.error('syncPlanesFromSupabase:', e); }
+  return false;
+}
+// Render instantáneo (caché) + sincroniza en segundo plano y vuelve a
+// renderizar si llegan datos frescos — usar esto al ENTRAR a la sección,
+// no dentro de guardar/eliminar (ahí ya tenemos el dato fresco nosotros mismos).
+async function refreshPublicPlans() {
+  renderPublicPlans();
+  const ok = await syncPlanesFromSupabase();
+  if (ok) renderPublicPlans();
 }
 function renderPublicPlans() {
   loadPublicPlans();
@@ -971,26 +1093,42 @@ function renderPublicPlans() {
     container.appendChild(catGrid);
   });
 }
-async function savePublicPlans() {
-  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
-  // Also sync popular map
-  const popularMap = {};
-  publicPlans.forEach(p => { if (p.popular) popularMap[p.nombre] = true; });
-  localStorage.setItem('jans_popular', JSON.stringify(popularMap));
-
-  const [ok1, ok2] = await Promise.all([
-    ghPutPublic('planes.json', publicPlans),
-    ghPutPublic('popular.json', popularMap)
-  ]);
-  if (ok1 && ok2) showToast('Planes y populares guardados en GitHub ✓');
-  else            showToast('Guardados localmente ✓ (GitHub pendiente)', 'error');
-}
-function deletePubPlan(idx) {
+async function deletePubPlan(idx) {
   if (!confirm('¿Eliminar este plan?')) return;
+  const plan = publicPlans[idx];
   publicPlans.splice(idx, 1);
   localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
   renderPublicPlans();
-  showToast('Plan eliminado');
+  if (sbClient && plan?.id) {
+    const { error } = await sbClient.from('planes_publicos').delete().eq('id', plan.id);
+    if (error) console.error('deletePubPlan Supabase error:', error.message || JSON.stringify(error));
+  }
+  showToast('Plan eliminado ✓');
+}
+// Editar un plan existente — abre el modal precargado con sus datos.
+function editPubPlan(idx) {
+  const p = publicPlans[idx];
+  if (!p) return;
+  editingPlanIdx = idx;
+  document.getElementById('pubPlanModalTitle').textContent = 'Editar Plan';
+  document.getElementById('ppNombre').value    = p.nombre || '';
+  document.getElementById('ppPrecio').value    = p.precio || '';
+  document.getElementById('ppCategoria').value = p.categoria || '';
+  document.getElementById('ppIncluye').value   = (p.incluye || []).join('\n');
+  openModal('pubPlanModal');
+}
+// Marcar/desmarcar un plan como "Más Popular" — se guarda al instante.
+async function togglePopular(idx) {
+  const p = publicPlans[idx];
+  if (!p) return;
+  p.popular = !p.popular;
+  localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+  renderPublicPlans();
+  if (sbClient && p.id) {
+    const { error } = await sbClient.from('planes_publicos').update({ popular: p.popular }).eq('id', p.id);
+    if (error) { console.error('togglePopular Supabase error:', error.message || JSON.stringify(error)); showToast('No se pudo guardar en Supabase', 'error'); return; }
+  }
+  showToast(p.popular ? '⭐ Marcado como Más Popular' : 'Ya no es "Más Popular"');
 }
 function openNewPlanModal() {
   editingPlanIdx = null;
@@ -1006,11 +1144,57 @@ function openNewCategoryModal() {
   document.getElementById('newCatSlug').value     = '';
   document.getElementById('newCatIcon').value     = '📸';
   document.getElementById('newCatSubtitle').value = '';
+  newCatFileData = null;
+  document.getElementById('newCatFileInput').value = '';
+  document.getElementById('newCatImgPreview').style.display = 'none';
+  document.getElementById('newCatDropLabel').textContent = 'Haz clic o arrastra la foto aquí';
+  document.getElementById('newCatDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
   document.getElementById('newCatStatus').style.display = 'none';
   document.getElementById('newCatBtn').disabled = false;
   document.getElementById('newCatBtn').textContent = 'Crear Categoría';
   previewCatSlug();
   openModal('newCategoryModal');
+}
+let newCatFileData = null;
+function handleNewCatPhoto(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // La tarjeta de categoría en Servicios espera siempre "foto_01.jpeg" —
+    // convertimos aquí a JPEG para que cualquier formato subido (png, webp...)
+    // funcione igual, sin tener que tocar el código de la tarjeta.
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      newCatFileData = { base64: jpegDataUrl.split(',')[1], extension: 'jpeg', mimeType: 'image/jpeg', fileName: file.name };
+      document.getElementById('newCatImgPreviewEl').src = jpegDataUrl;
+      document.getElementById('newCatImgPreview').style.display = 'block';
+      document.getElementById('newCatDropLabel').textContent = '✓ ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
+      document.getElementById('newCatDropZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+// Sube contenido BINARIO (imágenes) a GitHub — a diferencia de ghPutFile,
+// que está pensado para texto (HTML/JSON) y corrompería una foto.
+async function ghPutBinaryFile(path, base64Content, message) {
+  let sha = null;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+      { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+    if (r.ok) { const j = await r.json(); sha = j.sha; }
+  } catch(e) {}
+  const body = { message: message || `upload ${path}`, content: base64Content };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`,
+    { method: 'PUT', headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return res.ok;
 }
 async function createNewCategory() {
   const name     = document.getElementById('newCatName').value.trim();
@@ -1022,6 +1206,7 @@ async function createNewCategory() {
   if (!name || !slug) { setCatStatus('error', 'Completa el nombre de la categoría.'); return; }
   if (ALL_PLAN_SLUGS.includes(slug)) { setCatStatus('error', 'Ya existe una categoría con ese identificador.'); return; }
   if (!/^[a-z0-9-]+$/.test(slug)) { setCatStatus('error', 'El identificador solo puede tener letras minúsculas, números y guiones.'); return; }
+  if (!newCatFileData) { setCatStatus('error', 'Selecciona una foto de portada para la categoría.'); return; }
 
   const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
   if (!hasGH) { setCatStatus('error', 'Configura tu token de GitHub en Configuración antes de crear categorías.'); return; }
@@ -1040,9 +1225,11 @@ async function createNewCategory() {
     const ok1 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, null, `create category page: ${slug}`);
     if (!ok1) throw new Error('No se pudo crear la página de la categoría.');
 
-    // 3. Create the images folder placeholder (.gitkeep) so the folder exists in the repo
-    setCatStatus('info', `Creando carpeta assets/images/planes/${slug}/...`);
-    await ghPutFile(`assets/images/planes/${slug}/.gitkeep`, '', null, `create images folder: ${slug}`);
+    // 3. Subir la foto de portada — el mismo nombre que usa la tarjeta en
+    //    Servicios (foto_01.jpeg), así la carpeta ya no queda vacía.
+    setCatStatus('info', 'Subiendo foto de portada...');
+    const ok2 = await ghPutBinaryFile(`assets/images/planes/${slug}/foto_01.jpeg`, newCatFileData.base64, `cover photo: ${slug}`);
+    if (!ok2) throw new Error('No se pudo subir la foto de portada.');
 
     // 4. Update nav in all existing category pages
     setCatStatus('info', 'Actualizando menú en las páginas existentes...');
@@ -1075,6 +1262,26 @@ async function createNewCategory() {
     if (!CAT_ORDER.includes(slug)) CAT_ORDER.splice(CAT_ORDER.length-1, 0, slug); // before 'todos'
     addCategoryToSelects(slug, name);
 
+    // 6.5. Guardar en Supabase — fuente de verdad que lee Servicios (nombre,
+    //      ícono, subtítulo, imagen, visibilidad), para que "editar" y
+    //      "ocultar" funcionen sin tener que volver a tocar archivos de GitHub.
+    if (sbClient) {
+      const { error } = await sbClient.from('categorias').upsert([{
+        slug, nombre: name, icono: icon, subtitulo: subtitle,
+        imagen: `assets/images/planes/${slug}/foto_01.jpeg`,
+        oculta: false, orden: ALL_PLAN_SLUGS.length - 1,
+      }], { onConflict: 'slug' });
+      if (error) console.error('createNewCategory Supabase error:', error.message || JSON.stringify(error));
+
+      // Sembrar la galería con la misma foto de portada como primera imagen,
+      // para que no arranque vacía — desde aquí ya se puede administrar.
+      const { error: galError } = await sbClient.from('galeria_categoria').insert([{
+        id: 'gal_' + Date.now() + '_seed', categoria: slug,
+        imagen: `assets/images/planes/${slug}/foto_01.jpeg`, orden: 0,
+      }]);
+      if (galError) console.error('createNewCategory gallery seed error:', galError.message || JSON.stringify(galError));
+    }
+
     // 7. Bump version.json so all pages auto-reload with the new nav
     await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `Nueva categoría: ${name}` });
 
@@ -1088,6 +1295,403 @@ async function createNewCategory() {
     btn.disabled = false; btn.textContent = 'Crear Categoría';
   }
 }
+
+// ══════════ Gestionar Categorías (Editar / Ocultar / Eliminar) ══════════
+
+let categoriasList = [];
+let editCatFileData = null;
+
+async function syncCategoriasFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const { data, error } = await sbClient.from('categorias').select('*').order('orden', { ascending: true });
+    if (error) { console.error('syncCategoriasFromSupabase error:', error.message || JSON.stringify(error)); return false; }
+    if (data) { categoriasList = data; localStorage.setItem('jans_categorias', JSON.stringify(data)); return true; }
+  } catch(e) { console.error('syncCategoriasFromSupabase:', e); }
+  return false;
+}
+
+async function openManageCategoriesModal() {
+  const list = document.getElementById('manageCategoriesList');
+  list.innerHTML = '<div class="empty-state">Cargando categorías...</div>';
+  openModal('manageCategoriesModal');
+  try { categoriasList = JSON.parse(localStorage.getItem('jans_categorias') || '[]'); } catch(e) { categoriasList = []; }
+  renderManageCategoriesList();
+  const ok = await syncCategoriasFromSupabase();
+  if (ok) renderManageCategoriesList();
+}
+
+function renderManageCategoriesList() {
+  const list = document.getElementById('manageCategoriesList');
+  if (!categoriasList.length) {
+    list.innerHTML = '<div class="empty-state">No hay categorías en Supabase todavía. Crea una con "+ Nueva Categoría", o corre el SQL de siembra si ya tenías categorías desde antes.</div>';
+    return;
+  }
+  list.innerHTML = categoriasList.map(c => `
+    <div style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 14px;${c.oculta ? 'opacity:0.55' : ''}">
+      <div style="width:44px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#111;display:flex;align-items:center;justify-content:center;font-size:1.3rem">
+        ${c.imagen ? `<img src="https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${c.imagen}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${c.icono||'📸'}'" />` : (c.icono || '📸')}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px">
+          ${escapeHtmlCat(c.nombre)}
+          ${c.oculta ? '<span style="font-size:.68rem;font-weight:600;color:var(--gray);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:50px">Oculta</span>' : ''}
+        </div>
+        <div style="font-size:.76rem;color:var(--gray-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtmlCat(c.subtitulo || '')}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-sm btn-outline" onclick="openEditCategoryModal('${c.slug}')" title="Editar">✏</button>
+        <button class="btn btn-sm btn-outline" onclick="openGalleryManageModal('${c.slug}')" title="Galería de fotos">🖼</button>
+        <button class="btn btn-sm btn-outline" onclick="toggleCategoryHidden('${c.slug}')" title="${c.oculta ? 'Mostrar' : 'Ocultar'}">${c.oculta ? '👁' : '🙈'}</button>
+        <button class="btn btn-sm btn-red" onclick="deleteCategory('${c.slug}')" title="Eliminar">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function escapeHtmlCat(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function openEditCategoryModal(slug) {
+  const c = categoriasList.find(x => x.slug === slug);
+  if (!c) return;
+  editCatFileData = null;
+  document.getElementById('editCatSlug').value = slug;
+  document.getElementById('editCatName').value = c.nombre || '';
+  document.getElementById('editCatIcon').value = c.icono || '📸';
+  document.getElementById('editCatSubtitle').value = c.subtitulo || '';
+  document.getElementById('editCatFileInput').value = '';
+  document.getElementById('editCatImgPreviewEl').src = c.imagen
+    ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${c.imagen}?t=${Date.now()}` : '';
+  document.getElementById('editCatDropLabel').textContent = 'Haz clic o arrastra una foto nueva aquí';
+  document.getElementById('editCatDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById('editCatStatus').style.display = 'none';
+  document.getElementById('editCatBtn').disabled = false;
+  document.getElementById('editCatBtn').textContent = 'Guardar Cambios';
+  closeModal('manageCategoriesModal');
+  openModal('editCategoryModal');
+}
+
+function handleEditCatPhoto(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      editCatFileData = { base64: jpegDataUrl.split(',')[1] };
+      document.getElementById('editCatImgPreviewEl').src = jpegDataUrl;
+      document.getElementById('editCatDropLabel').textContent = '✓ ' + file.name + ' — se sube al guardar';
+      document.getElementById('editCatDropZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setEditCatStatus(type, msg) {
+  const el = document.getElementById('editCatStatus');
+  el.style.display = 'block';
+  el.className = type === 'error' ? 'modal-msg error' : (type === 'success' ? '' : '');
+  el.style.background = type === 'error' ? 'rgba(239,68,68,.12)' : (type === 'success' ? 'rgba(34,197,94,.12)' : 'rgba(255,255,255,.06)');
+  el.style.color = type === 'error' ? '#fca5a5' : (type === 'success' ? '#86efac' : 'var(--gray-l)');
+  el.textContent = msg;
+}
+
+async function saveEditedCategory() {
+  const slug     = document.getElementById('editCatSlug').value;
+  const name     = document.getElementById('editCatName').value.trim();
+  const icon     = document.getElementById('editCatIcon').value.trim() || '📸';
+  const subtitle = document.getElementById('editCatSubtitle').value.trim();
+  const btn      = document.getElementById('editCatBtn');
+  const existing = categoriasList.find(c => c.slug === slug);
+  if (!name)  { setEditCatStatus('error', 'Completa el nombre de la categoría.'); return; }
+  if (!existing) { setEditCatStatus('error', 'No se encontró la categoría.'); return; }
+
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) { setEditCatStatus('error', 'Configura tu token de GitHub en Configuración.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  setEditCatStatus('info', 'Actualizando categoría...');
+
+  try {
+    // 1. Reflejar el nuevo nombre en CAT_LABELS para que la página propia y
+    //    el menú de las demás páginas usen el texto actualizado.
+    CAT_LABELS[slug] = name;
+
+    // 2. Si se subió una foto nueva, reemplaza la existente (mismo nombre de archivo)
+    let imagen = existing.imagen || `assets/images/planes/${slug}/foto_01.jpeg`;
+    if (editCatFileData) {
+      setEditCatStatus('info', 'Subiendo nueva foto...');
+      const ok = await ghPutBinaryFile(imagen, editCatFileData.base64, `update cover photo: ${slug}`);
+      if (!ok) throw new Error('No se pudo subir la nueva foto.');
+    }
+
+    // 3. Regenerar y re-commitear la página propia de la categoría con los
+    //    datos actualizados (título, ícono, subtítulo).
+    setEditCatStatus('info', 'Actualizando página de la categoría...');
+    const file = await ghGetFile(`assets/pages/planes/${slug}.html`);
+    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, ALL_PLAN_SLUGS);
+    const ok2 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, file?.sha, `edit category: ${slug}`);
+    if (!ok2) throw new Error('No se pudo actualizar la página de la categoría.');
+
+    // 4. Si cambió el nombre, actualiza el texto del menú en TODAS las páginas
+    setEditCatStatus('info', 'Actualizando menú en las demás páginas...');
+    for (const otherSlug of ALL_PLAN_SLUGS) {
+      if (otherSlug === slug) continue;
+      try {
+        const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
+        if (!f) continue;
+        const updated = injectNavIntoPageHTML(f.content, ALL_PLAN_SLUGS);
+        if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `update nav label: ${slug}`);
+      } catch(e) {}
+    }
+
+    // 5. Guardar en Supabase — de aquí lee Servicios en vivo
+    if (sbClient) {
+      const { error } = await sbClient.from('categorias').update({
+        nombre: name, icono: icon, subtitulo: subtitle, imagen,
+      }).eq('slug', slug);
+      if (error) console.error('saveEditedCategory Supabase error:', error.message || JSON.stringify(error));
+    }
+
+    // 6. Bump version.json
+    await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `Categoría editada: ${name}` });
+
+    setEditCatStatus('success', `✓ Categoría "${name}" actualizada.`);
+    showToast(`Categoría "${name}" actualizada ✓`);
+    setTimeout(() => { closeModal('editCategoryModal'); openManageCategoriesModal(); renderPublicPlans(); }, 1000);
+  } catch(e) {
+    setEditCatStatus('error', 'Error: ' + (e.message || 'no se pudo guardar.'));
+    btn.disabled = false; btn.textContent = 'Guardar Cambios';
+  }
+}
+
+// Ocultar/mostrar — solo cambia un flag en Supabase, Servicios lo respeta al instante.
+async function toggleCategoryHidden(slug) {
+  const c = categoriasList.find(x => x.slug === slug);
+  if (!c) return;
+  const nuevaOculta = !c.oculta;
+  c.oculta = nuevaOculta;
+  renderManageCategoriesList();
+  if (sbClient) {
+    const { error } = await sbClient.from('categorias').update({ oculta: nuevaOculta }).eq('slug', slug);
+    if (error) { console.error('toggleCategoryHidden error:', error.message || JSON.stringify(error)); showToast('No se pudo guardar en Supabase', 'error'); return; }
+  }
+  localStorage.setItem('jans_categorias', JSON.stringify(categoriasList));
+  showToast(nuevaOculta ? `"${c.nombre}" ahora está oculta` : `"${c.nombre}" ahora es visible`);
+}
+
+// Eliminar categoría — borra también todos sus planes.
+async function deleteCategory(slug) {
+  const c = categoriasList.find(x => x.slug === slug);
+  if (!c) return;
+  const planesDeLaCategoria = publicPlans.filter(p => p.categoria === slug).length;
+  const warning = planesDeLaCategoria
+    ? `¿Eliminar "${c.nombre}"? Esto también eliminará sus ${planesDeLaCategoria} plan(es) asociado(s). Esta acción no se puede deshacer.`
+    : `¿Eliminar "${c.nombre}"? Esta acción no se puede deshacer.`;
+  if (!confirm(warning)) return;
+
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+
+  try {
+    // 1. Borrar los planes y las fotos de galería de esa categoría (Supabase)
+    if (sbClient) {
+      await sbClient.from('planes_publicos').delete().eq('categoria', slug);
+      // Borrar también los archivos de las fotos de galería en GitHub, no solo las filas
+      try {
+        const { data: galImgs } = await sbClient.from('galeria_categoria').select('*').eq('categoria', slug);
+        if (galImgs && galImgs.length && hasGH) {
+          for (const img of galImgs) {
+            try {
+              const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`,
+                { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+              if (r.ok) {
+                const j = await r.json();
+                await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
+                  method: 'DELETE',
+                  headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: `delete gallery image: ${slug}`, sha: j.sha }),
+                });
+              }
+            } catch(e) {}
+          }
+        }
+      } catch(e) {}
+      await sbClient.from('galeria_categoria').delete().eq('categoria', slug);
+      await sbClient.from('categorias').delete().eq('slug', slug);
+    }
+    publicPlans = publicPlans.filter(p => p.categoria !== slug);
+    localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+    localStorage.removeItem('jans_galeria_' + slug);
+
+    // 2. Borrar la página y la foto de portada en GitHub
+    if (hasGH) {
+      const page = await ghGetFile(`assets/pages/planes/${slug}.html`);
+      if (page) {
+        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/assets/pages/planes/${slug}.html`, {
+          method: 'DELETE',
+          headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `delete category page: ${slug}`, sha: page.sha }),
+        });
+      }
+      if (c.imagen) {
+        try {
+          const imgRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${c.imagen}`,
+            { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+          if (imgRes.ok) {
+            const imgJson = await imgRes.json();
+            await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${c.imagen}`, {
+              method: 'DELETE',
+              headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: `delete cover photo: ${slug}`, sha: imgJson.sha }),
+            });
+          }
+        } catch(e) {}
+      }
+
+      // 3. Quitar del menú de las páginas restantes
+      ALL_PLAN_SLUGS.splice(ALL_PLAN_SLUGS.indexOf(slug), 1);
+      const idxOrder = CAT_ORDER.indexOf(slug);
+      if (idxOrder !== -1) CAT_ORDER.splice(idxOrder, 1);
+      delete CAT_LABELS[slug];
+      for (const otherSlug of ALL_PLAN_SLUGS) {
+        try {
+          const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
+          if (!f) continue;
+          const updated = injectNavIntoPageHTML(f.content, ALL_PLAN_SLUGS);
+          if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `remove ${slug} from nav`);
+        } catch(e) {}
+      }
+      await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `Categoría eliminada: ${c.nombre}` });
+    }
+
+    categoriasList = categoriasList.filter(x => x.slug !== slug);
+    localStorage.setItem('jans_categorias', JSON.stringify(categoriasList));
+    renderManageCategoriesList();
+    renderPublicPlans();
+    showToast(`"${c.nombre}" eliminada ✓`);
+  } catch(e) {
+    console.error('deleteCategory:', e);
+    showToast('Error al eliminar la categoría', 'error');
+  }
+}
+
+// ══════════ Galería de fotos por categoría ══════════
+
+let galleryManageList = [];
+
+async function openGalleryManageModal(slug) {
+  document.getElementById('galleryManageSlug').value = slug;
+  const c = categoriasList.find(x => x.slug === slug);
+  document.getElementById('galleryManageTitle').textContent = 'Galería — ' + (c?.nombre || slug);
+  document.getElementById('galleryManageGrid').innerHTML = '<div class="empty-state">Cargando fotos...</div>';
+  closeModal('manageCategoriesModal');
+  openModal('galleryManageModal');
+
+  galleryManageList = [];
+  if (sbClient) {
+    const { data, error } = await sbClient.from('galeria_categoria').select('*').eq('categoria', slug).order('orden', { ascending: true });
+    if (!error && data) galleryManageList = data;
+  }
+  renderGalleryManageGrid();
+}
+
+function renderGalleryManageGrid() {
+  const grid = document.getElementById('galleryManageGrid');
+  if (!galleryManageList.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Sin fotos administradas todavía — añade la primera arriba.</div>';
+    return;
+  }
+  grid.innerHTML = galleryManageList.map((img, i) => `
+    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/5;background:#111">
+      <img src="https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${img.imagen}?t=${Date.now()}"
+        style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.opacity='0.2'" />
+      <button onclick="deleteGalleryImage('${img.id}')" title="Eliminar"
+        style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:#fff;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>`).join('');
+}
+
+function handleGalleryUpload(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
+  const slug = document.getElementById('galleryManageSlug').value;
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (!hasGH) { showToast('Configura tu token de GitHub en Configuración.', 'error'); return; }
+
+  const label = document.getElementById('galleryAddLabel');
+  label.textContent = 'Subiendo...';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = async function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const base64 = jpegDataUrl.split(',')[1];
+
+      const id = 'gal_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      const path = `assets/images/planes/${slug}/${id}.jpeg`;
+
+      const ok = await ghPutBinaryFile(path, base64, `add gallery photo: ${slug}`);
+      if (!ok) { showToast('No se pudo subir la foto', 'error'); label.textContent = 'Haz clic para añadir una foto nueva a la galería'; return; }
+
+      const orden = galleryManageList.length;
+      const row = { id, categoria: slug, imagen: path, orden };
+      if (sbClient) {
+        const { error } = await sbClient.from('galeria_categoria').insert([row]);
+        if (error) { console.error('handleGalleryUpload Supabase error:', error.message || JSON.stringify(error)); showToast('No se pudo guardar en Supabase', 'error'); label.textContent = 'Haz clic para añadir una foto nueva a la galería'; return; }
+      }
+
+      galleryManageList.push(row);
+      localStorage.removeItem('jans_galeria_' + slug); // forzar refresco en la página pública
+      renderGalleryManageGrid();
+      document.getElementById('galleryAddInput').value = '';
+      label.textContent = 'Haz clic para añadir una foto nueva a la galería';
+      showToast('✓ Foto añadida a la galería');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function deleteGalleryImage(id) {
+  const img = galleryManageList.find(x => x.id === id);
+  if (!img) return;
+  if (!confirm('¿Eliminar esta foto de la galería?')) return;
+
+  galleryManageList = galleryManageList.filter(x => x.id !== id);
+  renderGalleryManageGrid();
+  localStorage.removeItem('jans_galeria_' + img.categoria);
+
+  if (sbClient) {
+    const { error } = await sbClient.from('galeria_categoria').delete().eq('id', id);
+    if (error) console.error('deleteGalleryImage Supabase error:', error.message || JSON.stringify(error));
+  }
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (hasGH) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`,
+        { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+      if (r.ok) {
+        const j = await r.json();
+        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
+          method: 'DELETE',
+          headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: `remove gallery photo: ${img.categoria}`, sha: j.sha }),
+        });
+      }
+    } catch(e) {}
+  }
+  showToast('Foto eliminada de la galería');
+}
+
 function renderPlans() {
   const c = document.getElementById('plansContainer');
   if(!state.plans.length){c.innerHTML='<div class="card" style="text-align:center;color:var(--gray);padding:32px">Sin planes. Haz clic en "Nuevo Plan".</div>';return;}
@@ -1155,6 +1759,17 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   const desc  = subtitle || `Sesiones de ${name.toLowerCase()} profesionales en Panamá. Ve nuestros planes y precios.`;
   const url   = `https://jansphotograph.com/assets/pages/planes/${slug}.html`;
   const navSlugsList = navSlugs.map(s => `'${s}'`).join(',');
+
+  // Las etiquetas de script reales NO pueden escribirse literalmente aquí
+  // dentro (el navegador cortaría el bloque de script de ESTA página al
+  // toparse con el cierre en medio del texto). Se arman por concatenación y se
+  // insertan con ${...} para que sí generen etiquetas válidas en la página
+  // publicada — antes esto usaba un truco roto que nunca escribía scripts
+  // reales, dejando las categorías nuevas sin JavaScript funcionando.
+  const OPEN_SCRIPT  = '<' + 'script>';
+  const CLOSE_SCRIPT = '<' + '/script>';
+  const OPEN_SCRIPT_SUPABASE = '<' + 'script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">' + '<' + '/script>';
+  const MAIN_JS_TAG = '<' + 'script src="../../js/main.js">' + '<' + '/script>';
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -1237,7 +1852,7 @@ ${navLinks}
   <!-- ── Photo Catalog ── -->
   <section class="catalog-section">
     <h2>Galería</h2>
-    <div class="catalog-grid">
+    <div class="catalog-grid" id="catalogGrid">
 ${galleryItems}
     </div>
   </section>
@@ -1297,12 +1912,55 @@ ${galleryItems}
     Ver Planes
   </button>
 
-  <\/script>
-  <scr'+'ipt>
+  ${MAIN_JS_TAG}
+  ${OPEN_SCRIPT_SUPABASE}
+  ${OPEN_SCRIPT}
+    // ── Galería de fotos — se lee de Supabase (editable desde el panel
+    //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no
+    //    hay fotos administradas ahí, se deja el respaldo fijo de arriba. ──
+    (function() {
+      const SLUG = '${slug}';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+      const grid = document.getElementById('catalogGrid');
+      if (!grid) return;
+
+      function resolveGalleryImg(path) {
+        if (/^https?:\/\/[^']*/i.test(path)) return path;
+        return path.replace(/^assets\//, '../../');
+      }
+      function renderGallery(images) {
+        if (!images.length) return;
+        grid.innerHTML = images.map((img, i) => \`
+          <div class="catalog-item">
+            <img src="\${resolveGalleryImg(img.imagen)}" alt="${slug} foto \${i+1}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+          </div>\`).join('');
+      }
+
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_galeria_' + SLUG) || '[]');
+        if (local.length) renderGallery(local);
+      } catch(e) {}
+
+      function loadGalleryFromSupabase() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('galeria_categoria').select('*').eq('categoria', SLUG).order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data || !data.length) return;
+            localStorage.setItem('jans_galeria_' + SLUG, JSON.stringify(data));
+            renderGallery(data);
+          }).catch(() => {});
+      }
+      if (window.supabase) loadGalleryFromSupabase();
+      else window.addEventListener('load', loadGalleryFromSupabase);
+    })();
+  ${CLOSE_SCRIPT}
+  ${OPEN_SCRIPT}
     // ── Filter nav — only show categories with plans ──
     (function() {
-      const OWNER    = 'jansphotograph';
-      const REPO     = 'jansphotograph.github.io';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
       const CURRENT  = '${slug}';
 
       function filterNav(plans) {
@@ -1327,29 +1985,36 @@ ${galleryItems}
         if (local.length) filterNav(local);
       } catch(e) {}
 
-      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/planes.json?t=' + Date.now(), { cache:'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(plans => { if (plans && plans.length) { localStorage.setItem('jans_planes', JSON.stringify(plans)); filterNav(plans); } })
-        .catch(() => {});
+      function loadPlansForNav() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data) return;
+            localStorage.setItem('jans_planes', JSON.stringify(data));
+            filterNav(data);
+          }).catch(() => {});
+      }
+      if (window.supabase) loadPlansForNav();
+      else window.addEventListener('load', loadPlansForNav);
     })();
-  <\/script>
-  <scr'+'ipt>
-    // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
+  ${CLOSE_SCRIPT}
+  ${OPEN_SCRIPT}
+    // ── Load plan cards from Supabase, with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = '${slug}';
       const container   = document.getElementById('planCardsContainer');
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 
-      function renderPlans(allPlans, popularMap) {
-        popularMap = popularMap || {};
+      function renderPlans(allPlans) {
         const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
         if (!plans.length) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
           return;
         }
         container.innerHTML = plans.map(p => {
-          const isPopular = !!popularMap[p.nombre] || !!p.popular;
+          const isPopular = !!p.popular;
           return \`
           <div class="plan-card-pub\${isPopular ? ' plan-popular' : ''}">
             \${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
@@ -1365,34 +2030,38 @@ ${galleryItems}
       }
 
       try {
-        const local    = JSON.parse(localStorage.getItem('jans_planes')   || '[]');
-        const localPop = JSON.parse(localStorage.getItem('jans_popular')  || '{}');
-        if (local.length) { renderPlans(local, localPop); }
+        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+        if (local.length) { renderPlans(local); }
       } catch(e) {}
 
-      try {
-        const BASE_URL = \`https://raw.githubusercontent.com/\${OWNER}/\${REPO}/main/data/socialmedia\`;
-        const [planesRes, popularRes] = await Promise.all([
-          fetch(\`\${BASE_URL}/planes.json?t=\${Date.now()}\`,  { cache: 'no-cache' }),
-          fetch(\`\${BASE_URL}/popular.json?t=\${Date.now()}\`, { cache: 'no-cache' })
-        ]);
-        const plans     = planesRes.ok  ? await planesRes.json()  : JSON.parse(localStorage.getItem('jans_planes')  || '[]');
-        const popularMap= popularRes.ok ? await popularRes.json() : JSON.parse(localStorage.getItem('jans_popular') || '{}');
-        if (plans.length) {
-          localStorage.setItem('jans_planes',  JSON.stringify(plans));
-          localStorage.setItem('jans_popular', JSON.stringify(popularMap));
-          renderPlans(plans, popularMap);
-        } else if (!document.querySelector('.plan-card-pub')) {
-          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-        }
-      } catch(e) {
-        if (!document.querySelector('.plan-card-pub')) {
-          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-        }
+      function loadPlansForCards() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data) {
+              if (!document.querySelector('.plan-card-pub')) {
+                container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+              }
+              return;
+            }
+            if (data.length) {
+              localStorage.setItem('jans_planes', JSON.stringify(data));
+              renderPlans(data);
+            } else if (!document.querySelector('.plan-card-pub')) {
+              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+            }
+          }).catch(() => {
+            if (!document.querySelector('.plan-card-pub')) {
+              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+            }
+          });
       }
+      if (window.supabase) loadPlansForCards();
+      else window.addEventListener('load', loadPlansForCards);
     });
-  <\/script>
-  <scr'+'ipt>
+  ${CLOSE_SCRIPT}
+  ${OPEN_SCRIPT}
     // ── Auto-reload when master publishes an update ──
     (function() {
       const OWNER   = 'jansphotograph';
@@ -1420,8 +2089,8 @@ ${galleryItems}
       checkVersion();
       setInterval(checkVersion, 60000);
     })();
-  <\/script>
-  <scr'+'ipt>
+  ${CLOSE_SCRIPT}
+  ${OPEN_SCRIPT}
     // ── Hide planes nav on scroll down, show on scroll up ──
     (function() {
       var nav      = document.querySelector('.planes-nav-wrap');
@@ -1446,8 +2115,8 @@ ${galleryItems}
         }
       }, { passive: true });
     })();
-  <\/script>
-  <scr'+'ipt>
+  ${CLOSE_SCRIPT}
+  ${OPEN_SCRIPT}
     // ── Load FAQs dynamically — same visual format as before ──
     (function() {
       const OWNER = 'jansphotograph';
@@ -1483,7 +2152,7 @@ ${galleryItems}
         })
         .catch(() => {});
     })();
-  <\/script>
+  ${CLOSE_SCRIPT}
 <\/body>
 <\/html>`;
 }
@@ -2473,7 +3142,7 @@ function showSection(name) {
     if(sec) sec.style.display = s===name ? 'block' : 'none';
     if(btn) btn.classList.toggle('active', s===name);
   });
-  if(name==='planes')     { loadPublicPlans(); renderPublicPlans(); }
+  if(name==='planes')     { refreshPublicPlans(); }
   if(name==='blog')       { loadBlogPosts(); renderBlogPosts(); }
   if(name==='serv')       { loadServAdicionales(); initServAdicionales(); }
   if(name==='inventario') { loadInvData(); initInventario(); }
@@ -2494,13 +3163,30 @@ function openBarcodeScanner() {
   });
 }
 
-function savePubPlanModal() {
+async function savePubPlanModal() {
   const nombre    = document.getElementById('ppNombre').value.trim();
   const precio    = parseFloat(document.getElementById('ppPrecio').value) || 0;
   const categoria = document.getElementById('ppCategoria').value;
   const incluye   = document.getElementById('ppIncluye').value.split('\n').map(s=>s.trim()).filter(Boolean);
   if (!nombre || !categoria) { showToast('Completa nombre y categoría', 'error'); return; }
-  const plan = { nombre, precio, categoria, incluye, popular: editingPlanIdx !== null ? (publicPlans[editingPlanIdx].popular || false) : false };
+
+  const existing = editingPlanIdx !== null ? publicPlans[editingPlanIdx] : null;
+  const id     = existing?.id || ('plan_' + Date.now() + '_' + Math.random().toString(36).slice(2,7));
+  const orden  = existing ? existing.orden : publicPlans.length;
+  const plan   = { id, nombre, precio, categoria, incluye, popular: existing?.popular || false, orden };
+
+  if (sbClient) {
+    const { error } = await sbClient.from('planes_publicos').upsert([plan], { onConflict: 'id' });
+    if (error) {
+      console.error('savePubPlanModal Supabase error:', error.message || JSON.stringify(error));
+      showToast('No se pudo guardar en Supabase: ' + (error.message || 'error desconocido'), 'error');
+      return;
+    }
+  } else {
+    showToast('Sin conexión con Supabase — no se pudo guardar', 'error');
+    return;
+  }
+
   if (editingPlanIdx !== null) {
     publicPlans[editingPlanIdx] = plan;
   } else {
@@ -2509,7 +3195,7 @@ function savePubPlanModal() {
   localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
   closeModal('pubPlanModal');
   renderPublicPlans();
-  showToast(editingPlanIdx !== null ? 'Plan actualizado ✓' : 'Plan creado ✓');
+  showToast(editingPlanIdx !== null ? '✓ Plan actualizado' : '✓ Plan creado');
 }
 
 function addFaqItem() {
@@ -2633,7 +3319,7 @@ async function startZxingScanner(videoId, onDetect) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => { loadPublicPlans(); renderPublicPlans(); });
+document.addEventListener('DOMContentLoaded', () => { refreshPublicPlans(); });
 </script>
 <script>
 // Sincroniza el submenú anidado del menú hamburguesa con la sección activa

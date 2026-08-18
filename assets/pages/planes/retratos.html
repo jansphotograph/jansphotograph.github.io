@@ -90,7 +90,7 @@
   <!-- ── Photo Catalog ── -->
   <section class="catalog-section">
     <h2>Galería</h2>
-    <div class="catalog-grid">
+    <div class="catalog-grid" id="catalogGrid">
       <div class="catalog-item">
         <img src="../../images/planes/retratos/foto_01.jpeg"
           alt="Retratos foto 1"
@@ -232,11 +232,55 @@
   </button>
 
   <script src="../../js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ── Galería de fotos — se lee de Supabase (editable desde el panel
+    //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no
+    //    hay fotos administradas ahí, se deja el respaldo fijo (foto_01..16)
+    //    que ya estaba en esta página. ──
+    (function() {
+      const SLUG = 'retratos';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+      const grid = document.getElementById('catalogGrid');
+      if (!grid) return;
+
+      function resolveGalleryImg(path) {
+        if (/^https?:\/\//i.test(path)) return path;
+        return path.replace(/^assets\//, '../../');
+      }
+      function renderGallery(images) {
+        if (!images.length) return; // deja el respaldo fijo tal cual
+        grid.innerHTML = images.map((img, i) => `
+          <div class="catalog-item">
+            <img src="${resolveGalleryImg(img.imagen)}" alt="retratos foto ${i+1}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+          </div>`).join('');
+      }
+
+      try {
+        const local = JSON.parse(localStorage.getItem('jans_galeria_' + SLUG) || '[]');
+        if (local.length) renderGallery(local);
+      } catch(e) {}
+
+      function loadGalleryFromSupabase() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('galeria_categoria').select('*').eq('categoria', SLUG).order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data || !data.length) return;
+            localStorage.setItem('jans_galeria_' + SLUG, JSON.stringify(data));
+            renderGallery(data);
+          }).catch(() => {});
+      }
+      if (window.supabase) loadGalleryFromSupabase();
+      else window.addEventListener('load', loadGalleryFromSupabase);
+    })();
+  </script>
   <script>
     // ── Filter nav — only show categories with plans ──
     (function() {
-      const OWNER    = 'jansphotograph';
-      const REPO     = 'jansphotograph.github.io';
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
       const CURRENT  = 'retratos';
       const ALL_CATS = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia'];
 
@@ -264,11 +308,20 @@
         if (local.length) filterNav(local);
       } catch(e) {}
 
-      // From GitHub
-      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/planes.json?t=' + Date.now(), { cache:'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(plans => { if (plans && plans.length) { localStorage.setItem('jans_planes', JSON.stringify(plans)); filterNav(plans); } })
-        .catch(() => {});
+      // From Supabase — refleja publicaciones al instante, sin depender de
+      // que GitHub Pages reconstruya el sitio.
+      function loadPlansForNav() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data) return;
+            localStorage.setItem('jans_planes', JSON.stringify(data));
+            filterNav(data);
+          }).catch(() => {});
+      }
+      if (window.supabase) loadPlansForNav();
+      else window.addEventListener('load', loadPlansForNav);
     })();
   </script>
   <script>
@@ -276,18 +329,17 @@
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = 'retratos';
       const container   = document.getElementById('planCardsContainer');
-      const OWNER = 'jansphotograph'; // ← reemplaza con tu usuario de GitHub
-      const REPO  = 'jansphotograph.github.io';   // ← reemplaza con el nombre de tu repo
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
 
-      function renderPlans(allPlans, popularMap) {
-        popularMap = popularMap || {};
+      function renderPlans(allPlans) {
         const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
         if (!plans.length) {
           container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
           return;
         }
         container.innerHTML = plans.map(p => {
-          const isPopular = !!popularMap[p.nombre] || !!p.popular;
+          const isPopular = !!p.popular;
           return `
           <div class="plan-card-pub${isPopular ? ' plan-popular' : ''}">
             ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
@@ -304,32 +356,37 @@
 
       // 1. Show from localStorage immediately (instant)
       try {
-        const local    = JSON.parse(localStorage.getItem('jans_planes')   || '[]');
-        const localPop = JSON.parse(localStorage.getItem('jans_popular')  || '{}');
-        if (local.length) { renderPlans(local, localPop); }
+        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+        if (local.length) { renderPlans(local); }
       } catch(e) {}
 
-      // 2. Fetch planes + popular from GitHub
-      try {
-        const BASE_URL = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
-        const [planesRes, popularRes] = await Promise.all([
-          fetch(`${BASE_URL}/planes.json?t=${Date.now()}`,  { cache: 'no-cache' }),
-          fetch(`${BASE_URL}/popular.json?t=${Date.now()}`, { cache: 'no-cache' })
-        ]);
-        const plans     = planesRes.ok  ? await planesRes.json()  : JSON.parse(localStorage.getItem('jans_planes')  || '[]');
-        const popularMap= popularRes.ok ? await popularRes.json() : JSON.parse(localStorage.getItem('jans_popular') || '{}');
-        if (plans.length) {
-          localStorage.setItem('jans_planes',  JSON.stringify(plans));
-          localStorage.setItem('jans_popular', JSON.stringify(popularMap));
-          renderPlans(plans, popularMap);
-        } else if (!document.querySelector('.plan-card-pub')) {
-          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-        }
-      } catch(e) {
-        if (!document.querySelector('.plan-card-pub')) {
-          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-        }
+      // 2. Supabase — refleja publicaciones al instante, sin depender de que
+      //    GitHub Pages reconstruya el sitio.
+      function loadPlansForCards() {
+        if (!window.supabase) return;
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
+          .then(({ data, error }) => {
+            if (error || !data) {
+              if (!document.querySelector('.plan-card-pub')) {
+                container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+              }
+              return;
+            }
+            if (data.length) {
+              localStorage.setItem('jans_planes', JSON.stringify(data));
+              renderPlans(data);
+            } else if (!document.querySelector('.plan-card-pub')) {
+              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+            }
+          }).catch(() => {
+            if (!document.querySelector('.plan-card-pub')) {
+              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+            }
+          });
       }
+      if (window.supabase) loadPlansForCards();
+      else window.addEventListener('load', loadPlansForCards);
     });
   </script>
   <script>

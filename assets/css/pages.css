@@ -138,6 +138,35 @@
   font-size: 2rem;
 }
 
+/* ── Lightbox de galería — ver imagen en grande ── */
+.gallery-lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+  display: none; align-items: center; justify-content: center;
+  z-index: 3000; padding: 20px;
+}
+.gallery-lightbox.open { display: flex; animation: galleryLightboxFade 0.2s ease; }
+@keyframes galleryLightboxFade { from { opacity: 0; } to { opacity: 1; } }
+.gallery-lightbox img {
+  max-width: 92vw; max-height: 88vh;
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  object-fit: contain;
+  cursor: default;
+}
+.gallery-lightbox-close {
+  position: fixed; top: 16px; right: 16px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; font-size: 1.5rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 3001; backdrop-filter: blur(6px);
+  transition: background 0.2s;
+}
+.gallery-lightbox-close:hover { background: rgba(255,255,255,0.2); }
+@media (max-width: 640px) {
+  .gallery-lightbox-close { top: 12px; right: 12px; width: 40px; height: 40px; }
+}
+
 /* ── Plan Cards ── */
 .plan-cards-section {
   background: #111;

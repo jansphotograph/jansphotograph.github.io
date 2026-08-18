@@ -106,3 +106,50 @@ function goBack() {
   const logoLink = document.querySelector('.header-logo a[href*="index.html"]');
   window.location.href = logoLink ? logoLink.getAttribute('href') : 'index.html';
 }
+
+// ── Lightbox de galería — click en una foto la abre en grande; click fuera
+//    de la imagen (o la X) la cierra. Usa delegación de eventos sobre el
+//    contenedor de la galería, así funciona también con fotos cargadas
+//    dinámicamente después (no hace falta re-inicializar nada). ──
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.querySelector('.catalog-grid');
+  if (!grid) return;
+
+  let lightbox = document.getElementById('galleryLightbox');
+  if (!lightbox) {
+    lightbox = document.createElement('div');
+    lightbox.className = 'gallery-lightbox';
+    lightbox.id = 'galleryLightbox';
+    lightbox.innerHTML = '<button class="gallery-lightbox-close" aria-label="Cerrar">&times;</button><img src="" alt="" />';
+    document.body.appendChild(lightbox);
+  }
+  const lbImg   = lightbox.querySelector('img');
+  const lbClose = lightbox.querySelector('.gallery-lightbox-close');
+
+  function openLightbox(src, alt) {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  grid.addEventListener('click', (e) => {
+    const item = e.target.closest('.catalog-item');
+    if (!item) return;
+    const img = item.querySelector('img');
+    if (img && img.src) openLightbox(img.src, img.alt);
+  });
+
+  // Cerrar al hacer click FUERA del borde de la imagen (en el fondo oscuro)
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  // X — siempre visible, clave en móvil donde no hay mucho "fondo" para tocar
+  lbClose.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+});
+

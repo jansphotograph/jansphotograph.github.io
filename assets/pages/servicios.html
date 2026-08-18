@@ -241,34 +241,33 @@
     })();
   </script>
   <script>
-    // ── Show only categories that have plans ──
+    // ── Categorías y planes — se leen directo de Supabase (nombre, ícono,
+    //    foto y visibilidad de cada categoría; y qué categorías tienen
+    //    planes activos), para reflejar cambios del panel al instante. ──
     document.addEventListener('DOMContentLoaded', async function() {
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
-      const CATS  = [
-        { slug:'retratos',    name:'Retratos',    icon:'👤' },
-        { slug:'xv-anos',     name:'XV Años',      icon:'🌸' },
-        { slug:'familiares',  name:'Familiares',   icon:'👨‍👩‍👧' },
-        { slug:'pre-boda',    name:'Pre Boda',     icon:'💍' },
-        { slug:'boda',        name:'Boda',         icon:'👰' },
-        { slug:'eventos',     name:'Eventos',      icon:'🎉' },
-        { slug:'graduacion',  name:'Graduación',   icon:'🎓' },
-        { slug:'gastronomia', name:'Gastronomía',  icon:'🍽️' },
-        { slug:'infantiles',  name:'Infantiles',   icon:'👶' },
-      ];
+      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+      let sb = null;
+      try { if (window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
 
       const grid = document.getElementById('serviciosGrid');
 
-      function renderGrid(plans) {
-        const activeCats = new Set(plans.map(p => p.categoria));
-        const hasTodos   = plans.some(p => p.categoria === 'todos');
-        const visible    = CATS.filter(c => activeCats.has(c.slug) || hasTodos);
+      function renderGrid(cats, plans) {
+        const activeCats = new Set((plans || []).map(p => p.categoria));
+        const hasTodos   = (plans || []).some(p => p.categoria === 'todos');
+        const visible    = cats.filter(c => !c.oculta && (activeCats.has(c.slug) || hasTodos));
 
         if (!visible.length) {
           grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes fotográficos.</div>';
           return;
         }
-        grid.innerHTML = visible.map(c => `
+        grid.innerHTML = visible.map(c => {
+          // La ruta guardada es relativa a la raíz del repo (ej. "assets/images/planes/x/foto_01.jpeg").
+          // Desde assets/pages/servicios.html hay que subir un nivel en vez de usar esa ruta tal cual.
+          const imgPath = c.imagen
+            ? c.imagen.replace(/^assets\//, '../')
+            : `../images/planes/${c.slug}/foto_01.jpeg`;
+          return `
           <a href="planes/${c.slug}.html" style="
             display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
             border-radius:14px;overflow:hidden;text-decoration:none;color:#fff;
@@ -279,42 +278,49 @@
             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.5)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.35)'">
             <!-- background image -->
-            <div style="position:absolute;inset:0;background:url('../images/planes/${c.slug}/foto_01.jpeg') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>
+            <div style="position:absolute;inset:0;background:url('${imgPath}') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>
             <!-- gradient overlay -->
             <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)"></div>
             <!-- accent line -->
             <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c71e5f,#e91e8c)"></div>
             <!-- content -->
             <div style="position:relative;padding:20px;width:100%">
-              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${c.name}</div>
+              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${c.nombre}</div>
               <div style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#e91e8c">
                 Ver planes
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             </div>
-          </a>`).join('');
+          </a>`;
+        }).join('');
       }
 
-      // 1. localStorage first (instant)
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) { renderGrid(local); }
-      } catch(e) {}
+      // 1. Caché local — instantáneo
+      let cachedCats = [], cachedPlans = [];
+      try { cachedCats  = JSON.parse(localStorage.getItem('jans_categorias') || '[]'); } catch(e) {}
+      try { cachedPlans = JSON.parse(localStorage.getItem('jans_planes')     || '[]'); } catch(e) {}
+      if (cachedCats.length) renderGrid(cachedCats, cachedPlans);
 
-      // 2. GitHub for latest
-      try {
-        const res = await fetch(
-          `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`,
-          { cache: 'no-cache' }
-        );
-        if (res.ok) {
-          const plans = await res.json();
-          localStorage.setItem('jans_planes', JSON.stringify(plans));
-          renderGrid(plans);
-        }
-      } catch(e) {
-        if (!document.querySelector('#serviciosGrid a')) {
-          grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
+      // 2. Supabase — datos frescos
+      if (sb) {
+        try {
+          const [catsRes, plansRes] = await Promise.all([
+            sb.from('categorias').select('*').order('orden', { ascending: true }),
+            sb.from('planes_publicos').select('*'),
+          ]);
+          const cats  = catsRes.data  || [];
+          const plans = plansRes.data || [];
+          if (cats.length) {
+            localStorage.setItem('jans_categorias', JSON.stringify(cats));
+            localStorage.setItem('jans_planes', JSON.stringify(plans));
+            renderGrid(cats, plans);
+          } else if (!document.querySelector('#serviciosGrid a')) {
+            grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
+          }
+        } catch(e) {
+          if (!document.querySelector('#serviciosGrid a')) {
+            grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
+          }
         }
       }
     });
