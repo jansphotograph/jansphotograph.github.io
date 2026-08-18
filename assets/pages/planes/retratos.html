@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- ══ SEO ══ -->
   <title>Fotografía de Retratos en Panamá | Jans Photograph</title>
-  <meta name="description" content="Sesiones de retratos profesionales en Panamá. Capturamos tu esencia y personalidad con luz, arte y emoción. Ve nuestros planes y precios." />
+  <meta name="description" content="Sesiones individuales que capturan tu esencia y personalidad." />
   <meta name="keywords"    content="retratos Panamá, fotografía de retratos, sesión de fotos retratos Panamá" />
   <meta name="author"      content="Jans Photograph" />
   <meta name="robots"      content="index, follow" />
@@ -14,7 +14,7 @@
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="Fotografía de Retratos en Panamá | Jans Photograph" />
-  <meta property="og:description" content="Sesiones de retratos profesionales en Panamá. Capturamos tu esencia y personalidad con luz, arte y emoción. Ve nuestros planes y precios." />
+  <meta property="og:description" content="Sesiones individuales que capturan tu esencia y personalidad." />
   <meta property="og:url"         content="https://jansphotograph.com/assets/pages/planes/retratos.html" />
   <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
@@ -23,24 +23,23 @@
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Fotografía de Retratos en Panamá | Jans Photograph" />
-  <meta name="twitter:description" content="Sesiones de retratos profesionales en Panamá. Capturamos tu esencia y personalidad con luz, arte y emoción. Ve nuestros planes y precios." />
+  <meta name="twitter:description" content="Sesiones individuales que capturan tu esencia y personalidad." />
   <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   <!-- Geo -->
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
-  <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../../css/style.css" />
   <link rel="stylesheet" href="../../css/pages.css" />
+ 
 </head>
 <body>
 
   <header>
     <div class="header-logo">
-      <button class="btn-back" onclick="goBack()" aria-label="Regresar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        <span>Regresar</span>
-      </button>
       <a href="../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
     </div>
     <a href="../../../index.html" class="header-title">Jans <span>Photograph</span></a>
@@ -70,14 +69,8 @@
     <nav class="planes-nav" id="planesNav" aria-label="Planes fotográficos">
         <a href="retratos.html" class="active" data-slug="retratos">Retratos</a>
         <a href="xv-anos.html" data-slug="xv-anos">XV Años</a>
-        <a href="familiares.html" data-slug="familiares">Familiares</a>
-        <a href="pre-boda.html" data-slug="pre-boda">Pre Boda</a>
-        <a href="boda.html" data-slug="boda">Boda</a>
-        <a href="eventos.html" data-slug="eventos">Eventos</a>
         <a href="graduacion.html" data-slug="graduacion">Graduación</a>
-        <a href="gastronomia.html" data-slug="gastronomia">Gastronomía</a>
         <a href="infantiles.html" data-slug="infantiles">Infantiles</a>
-        <a href="promo-2026.html" data-slug="promo-2026">Promo 2026</a>
     </nav>
   </div>
 
@@ -220,11 +213,9 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
-        
       </div>
     </div>
   </footer>
-
 
   <!-- ── Ver Planes FAB ── -->
   <button class="fab-ver-planes" onclick="document.getElementById('planCardsContainer').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Ver planes">
@@ -237,8 +228,7 @@
   <script>
     // ── Galería de fotos — se lee de Supabase (editable desde el panel
     //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no
-    //    hay fotos administradas ahí, se deja el respaldo fijo (foto_01..16)
-    //    que ya estaba en esta página. ──
+    //    hay fotos administradas ahí, se deja el respaldo fijo de arriba. ──
     (function() {
       const SLUG = 'retratos';
       const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
@@ -247,11 +237,11 @@
       if (!grid) return;
 
       function resolveGalleryImg(path) {
-        if (/^https?:\/\//i.test(path)) return path;
-        return path.replace(/^assets\//, '../../');
+        if (/^https?://[^']*/i.test(path)) return path;
+        return path.replace(/^assets//, '../../');
       }
       function renderGallery(images) {
-        if (!images.length) return; // deja el respaldo fijo tal cual
+        if (!images.length) return;
         grid.innerHTML = images.map((img, i) => `
           <div class="catalog-item">
             <img src="${resolveGalleryImg(img.imagen)}" alt="retratos foto ${i+1}" loading="lazy" onerror="this.parentElement.style.display='none'" />
@@ -283,7 +273,6 @@
       const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
       const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
       const CURRENT  = 'retratos';
-      const ALL_CATS = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia'];
 
       function filterNav(plans) {
         const active = new Set(plans.map(p => p.categoria));
@@ -295,7 +284,6 @@
           const show = active.has(slug) || todos;
           a.style.display = show ? '' : 'none';
         });
-        // If current page has no plans, show a notice
         const currentHasPlans = active.has(CURRENT) || todos;
         if (!currentHasPlans) {
           const container = document.getElementById('planCardsContainer');
@@ -303,14 +291,11 @@
         }
       }
 
-      // From localStorage immediately
       try {
         const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
         if (local.length) filterNav(local);
       } catch(e) {}
 
-      // From Supabase — refleja publicaciones al instante, sin depender de
-      // que GitHub Pages reconstruya el sitio.
       function loadPlansForNav() {
         if (!window.supabase) return;
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -326,7 +311,7 @@
     })();
   </script>
   <script>
-    // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
+    // ── Load plan cards from Supabase, with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = 'retratos';
       const container   = document.getElementById('planCardsContainer');
@@ -349,20 +334,17 @@
             <ul class="pc-includes">
               ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
             </ul>
-            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"
+            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}&personasIncluidas=${p.personasIncluidas||1}&maxPersonasExtra=${p.maxPersonasExtra||0}&precioPersonaExtra=${p.precioPersonaExtra||0}&tipoUbicacion=${encodeURIComponent(p.tipoUbicacion||'estudio')}"
               class="btn-agendar">Agendar</a>
           </div>`;
         }).join('');
       }
 
-      // 1. Show from localStorage immediately (instant)
       try {
         const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
         if (local.length) { renderPlans(local); }
       } catch(e) {}
 
-      // 2. Supabase — refleja publicaciones al instante, sin depender de que
-      //    GitHub Pages reconstruya el sitio.
       function loadPlansForCards() {
         if (!window.supabase) return;
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -407,7 +389,6 @@
           const data = await res.json();
           const current = localStorage.getItem(VER_KEY);
           if (current && current !== String(data.v)) {
-            // New version detected — reload the page
             localStorage.setItem(VER_KEY, String(data.v));
             window.location.reload(true);
           } else {
@@ -416,7 +397,6 @@
         } catch(e) {}
       }
 
-      // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
     })();
@@ -431,9 +411,9 @@
       function update() {
         var y = window.scrollY || window.pageYOffset;
         if (y > lastY && y > 150) {
-          nav.classList.add('nav-hidden');    // scrolling down
+          nav.classList.add('nav-hidden');
         } else {
-          nav.classList.remove('nav-hidden'); // scrolling up or near top
+          nav.classList.remove('nav-hidden');
         }
         lastY   = y;
         ticking = false;
@@ -469,13 +449,11 @@
           </details>`).join('');
       }
 
-      // localStorage first (instant)
       try {
         const local = JSON.parse(localStorage.getItem('jans_faqs') || '[]');
         if (local.length) renderFaqs(local);
       } catch(e) {}
 
-      // GitHub for latest
       fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/faqs.json?t=' + Date.now(), { cache: 'no-cache' })
         .then(r => r.ok ? r.json() : null)
         .then(faqs => {
