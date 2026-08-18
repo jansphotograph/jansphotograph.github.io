@@ -908,6 +908,19 @@ const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Famili
 // que no tiene página propia). Usada al crear una categoría nueva para
 // saber cuáles páginas ya existen y actualizar su menú.
 const ALL_PLAN_SLUGS = CAT_ORDER.filter(s => s !== 'todos');
+// Lista de categorías (desde Supabase) usada para saber cuáles están
+// ocultas — se declara aquí porque el nav de las páginas la necesita antes
+// de que exista la sección "Gestionar Categorías" más abajo en el archivo.
+let categoriasList = [];
+// Excluye del nav las categorías marcadas como "oculta" en Supabase — si
+// todavía no se sincronizó categoriasList para algún slug, se asume visible
+// (mejor mostrarla de más que ocultar algo por error).
+function getVisibleSlugs(slugList) {
+  return slugList.filter(s => {
+    const c = categoriasList.find(x => x.slug === s);
+    return !c || !c.oculta;
+  });
+}
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
@@ -1154,6 +1167,9 @@ function openNewCategoryModal() {
   document.getElementById('newCatBtn').textContent = 'Crear Categoría';
   previewCatSlug();
   openModal('newCategoryModal');
+  // Sincroniza cuáles categorías están ocultas, para no mostrarlas por
+  // error en el nav de la página que se está a punto de crear.
+  syncCategoriasFromSupabase();
 }
 let newCatFileData = null;
 function handleNewCatPhoto(file) {
@@ -1213,11 +1229,12 @@ async function createNewCategory() {
 
   btn.disabled = true; btn.textContent = 'Creando...';
   setCatStatus('info', 'Iniciando creación de la categoría...');
+  await syncCategoriasFromSupabase(); // asegura que sepamos cuáles categorías están ocultas
 
   try {
     // 1. Add to CAT_LABELS/CAT_ORDER in-memory so the new page generator + nav updates use it
     CAT_LABELS[slug] = name;
-    const navSlugs = [...ALL_PLAN_SLUGS, slug];
+    const navSlugs = getVisibleSlugs([...ALL_PLAN_SLUGS, slug]);
 
     // 2. Create the new category page
     setCatStatus('info', `Creando página assets/pages/planes/${slug}.html...`);
@@ -1298,7 +1315,6 @@ async function createNewCategory() {
 
 // ══════════ Gestionar Categorías (Editar / Ocultar / Eliminar) ══════════
 
-let categoriasList = [];
 let editCatFileData = null;
 
 async function syncCategoriasFromSupabase() {
@@ -1435,7 +1451,7 @@ async function saveEditedCategory() {
     //    datos actualizados (título, ícono, subtítulo).
     setEditCatStatus('info', 'Actualizando página de la categoría...');
     const file = await ghGetFile(`assets/pages/planes/${slug}.html`);
-    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, ALL_PLAN_SLUGS);
+    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, getVisibleSlugs(ALL_PLAN_SLUGS));
     const ok2 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, file?.sha, `edit category: ${slug}`);
     if (!ok2) throw new Error('No se pudo actualizar la página de la categoría.');
 
@@ -1446,7 +1462,7 @@ async function saveEditedCategory() {
       try {
         const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
         if (!f) continue;
-        const updated = injectNavIntoPageHTML(f.content, ALL_PLAN_SLUGS);
+        const updated = injectNavIntoPageHTML(f.content, getVisibleSlugs(ALL_PLAN_SLUGS));
         if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `update nav label: ${slug}`);
       } catch(e) {}
     }
@@ -1483,6 +1499,25 @@ async function toggleCategoryHidden(slug) {
     if (error) { console.error('toggleCategoryHidden error:', error.message || JSON.stringify(error)); showToast('No se pudo guardar en Supabase', 'error'); return; }
   }
   localStorage.setItem('jans_categorias', JSON.stringify(categoriasList));
+
+  // Actualizar el menú en TODAS las páginas de categorías para que la
+  // oculta deje de aparecer ahí también (antes solo se ocultaba en
+  // Servicios, pero seguía visible en el nav de las demás páginas).
+  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
+  if (hasGH) {
+    showToast('Actualizando menú en todas las páginas...');
+    const visibleSlugs = getVisibleSlugs(ALL_PLAN_SLUGS);
+    for (const pageSlug of ALL_PLAN_SLUGS) {
+      try {
+        const f = await ghGetFile(`assets/pages/planes/${pageSlug}.html`);
+        if (!f) continue;
+        const updated = injectNavIntoPageHTML(f.content, visibleSlugs);
+        if (updated !== f.content) await ghPutFile(`assets/pages/planes/${pageSlug}.html`, updated, f.sha, `${nuevaOculta ? 'hide' : 'show'} ${slug} in nav`);
+      } catch(e) {}
+    }
+    await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `${nuevaOculta ? 'Ocultada' : 'Mostrada'}: ${c.nombre}` });
+  }
+
   showToast(nuevaOculta ? `"${c.nombre}" ahora está oculta` : `"${c.nombre}" ahora es visible`);
 }
 
@@ -1563,7 +1598,7 @@ async function deleteCategory(slug) {
         try {
           const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
           if (!f) continue;
-          const updated = injectNavIntoPageHTML(f.content, ALL_PLAN_SLUGS);
+          const updated = injectNavIntoPageHTML(f.content, getVisibleSlugs(ALL_PLAN_SLUGS));
           if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `remove ${slug} from nav`);
         } catch(e) {}
       }
@@ -1805,6 +1840,8 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/pages.css" />
  
 </head>
 <body>
