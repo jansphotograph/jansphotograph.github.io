@@ -262,11 +262,11 @@
           return;
         }
         grid.innerHTML = visible.map(c => {
-          // La ruta guardada es relativa a la raíz del repo (ej. "assets/images/planes/x/foto_01.jpeg").
+          // La ruta guardada es relativa a la raíz del repo (ej. "assets/images/planes/x/portada.jpeg").
           // Desde assets/pages/servicios.html hay que subir un nivel en vez de usar esa ruta tal cual.
           const imgPath = c.imagen
             ? c.imagen.replace(/^assets\//, '../')
-            : `../images/planes/${c.slug}/foto_01.jpeg`;
+            : `../images/planes/${c.slug}/portada.jpeg`;
           return `
           <a href="planes/${c.slug}.html" style="
             display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;

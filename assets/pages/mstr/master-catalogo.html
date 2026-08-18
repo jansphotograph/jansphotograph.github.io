@@ -550,8 +550,8 @@ function showSection(name) {
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
         <div style="font-size:0.82rem;color:var(--gray-l)" id="editCatDropLabel">Haz clic o arrastra una foto nueva aquí</div>
       </div>
-      <div id="editCatImgPreview" style="margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
-        <img id="editCatImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      <div id="editCatImgPreview" style="margin-top:8px;border-radius:8px;overflow:hidden;max-height:320px;background:var(--dark);display:flex;align-items:center;justify-content:center">
+        <img id="editCatImgPreviewEl" src="" style="max-width:100%;max-height:320px;object-fit:contain;display:block" />
       </div>
     </div>
 
@@ -622,8 +622,8 @@ function showSection(name) {
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(233,30,140,0.5)" stroke-width="1.5" style="margin:0 auto 8px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="7.5" cy="6.5" r="1"/></svg>
         <div style="font-size:0.82rem;color:var(--gray-l)" id="newCatDropLabel">Haz clic o arrastra la foto aquí</div>
       </div>
-      <div id="newCatImgPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:160px;background:var(--dark)">
-        <img id="newCatImgPreviewEl" src="" style="width:100%;max-height:160px;object-fit:cover;display:block" />
+      <div id="newCatImgPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:320px;background:var(--dark);align-items:center;justify-content:center">
+        <img id="newCatImgPreviewEl" src="" style="max-width:100%;max-height:320px;object-fit:contain;display:block" />
       </div>
       <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
         Se muestra como fondo de la tarjeta de la categoría en la página de Servicios.
@@ -1177,8 +1177,8 @@ function handleNewCatPhoto(file) {
   if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
   const reader = new FileReader();
   reader.onload = function(e) {
-    // La tarjeta de categoría en Servicios espera siempre "foto_01.jpeg" —
-    // convertimos aquí a JPEG para que cualquier formato subido (png, webp...)
+    // La tarjeta de categoría en Servicios necesita la foto en JPEG —
+    // convertimos aquí para que cualquier formato subido (png, webp...)
     // funcione igual, sin tener que tocar el código de la tarjeta.
     const img = new Image();
     img.onload = function() {
@@ -1189,7 +1189,7 @@ function handleNewCatPhoto(file) {
       const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.9);
       newCatFileData = { base64: jpegDataUrl.split(',')[1], extension: 'jpeg', mimeType: 'image/jpeg', fileName: file.name };
       document.getElementById('newCatImgPreviewEl').src = jpegDataUrl;
-      document.getElementById('newCatImgPreview').style.display = 'block';
+      document.getElementById('newCatImgPreview').style.display = 'flex';
       document.getElementById('newCatDropLabel').textContent = '✓ ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB)';
       document.getElementById('newCatDropZone').style.borderColor = 'rgba(34,197,94,0.5)';
     };
@@ -1242,10 +1242,11 @@ async function createNewCategory() {
     const ok1 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, null, `create category page: ${slug}`);
     if (!ok1) throw new Error('No se pudo crear la página de la categoría.');
 
-    // 3. Subir la foto de portada — el mismo nombre que usa la tarjeta en
-    //    Servicios (foto_01.jpeg), así la carpeta ya no queda vacía.
+    // 3. Subir la foto de portada — se guarda como "portada.jpeg" (distinto
+    //    a foto_01, foto_02... que son las de la galería/portafolio, para
+    //    que nunca se mezclen entre sí).
     setCatStatus('info', 'Subiendo foto de portada...');
-    const ok2 = await ghPutBinaryFile(`assets/images/planes/${slug}/foto_01.jpeg`, newCatFileData.base64, `cover photo: ${slug}`);
+    const ok2 = await ghPutBinaryFile(`assets/images/planes/${slug}/portada.jpeg`, newCatFileData.base64, `cover photo: ${slug}`);
     if (!ok2) throw new Error('No se pudo subir la foto de portada.');
 
     // 4. Update nav in all existing category pages
@@ -1285,18 +1286,10 @@ async function createNewCategory() {
     if (sbClient) {
       const { error } = await sbClient.from('categorias').upsert([{
         slug, nombre: name, icono: icon, subtitulo: subtitle,
-        imagen: `assets/images/planes/${slug}/foto_01.jpeg`,
+        imagen: `assets/images/planes/${slug}/portada.jpeg`,
         oculta: false, orden: ALL_PLAN_SLUGS.length - 1,
       }], { onConflict: 'slug' });
       if (error) console.error('createNewCategory Supabase error:', error.message || JSON.stringify(error));
-
-      // Sembrar la galería con la misma foto de portada como primera imagen,
-      // para que no arranque vacía — desde aquí ya se puede administrar.
-      const { error: galError } = await sbClient.from('galeria_categoria').insert([{
-        id: 'gal_' + Date.now() + '_seed', categoria: slug,
-        imagen: `assets/images/planes/${slug}/foto_01.jpeg`, orden: 0,
-      }]);
-      if (galError) console.error('createNewCategory gallery seed error:', galError.message || JSON.stringify(galError));
     }
 
     // 7. Bump version.json so all pages auto-reload with the new nav
@@ -1439,12 +1432,31 @@ async function saveEditedCategory() {
     //    el menú de las demás páginas usen el texto actualizado.
     CAT_LABELS[slug] = name;
 
-    // 2. Si se subió una foto nueva, reemplaza la existente (mismo nombre de archivo)
-    let imagen = existing.imagen || `assets/images/planes/${slug}/foto_01.jpeg`;
+    // 2. Si se subió una foto nueva, se guarda como "portada.jpeg" — separada
+    //    de las fotos de galería (foto_01, foto_02...). Si la categoría
+    //    venía de antes usando otro nombre para su portada, se borra ese
+    //    archivo viejo para no dejar duplicados ni confundirla con la galería.
+    let imagen = existing.imagen || `assets/images/planes/${slug}/portada.jpeg`;
     if (editCatFileData) {
+      const newPath = `assets/images/planes/${slug}/portada.jpeg`;
       setEditCatStatus('info', 'Subiendo nueva foto...');
-      const ok = await ghPutBinaryFile(imagen, editCatFileData.base64, `update cover photo: ${slug}`);
+      const ok = await ghPutBinaryFile(newPath, editCatFileData.base64, `update cover photo: ${slug}`);
       if (!ok) throw new Error('No se pudo subir la nueva foto.');
+      if (imagen && imagen !== newPath) {
+        try {
+          const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagen}`,
+            { headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' } });
+          if (r.ok) {
+            const j = await r.json();
+            await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagen}`, {
+              method: 'DELETE',
+              headers: { Authorization: `token ${CONFIG.GH_TOKEN}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: `remove legacy cover photo: ${slug}`, sha: j.sha }),
+            });
+          }
+        } catch(e) {}
+      }
+      imagen = newPath;
     }
 
     // 3. Regenerar y re-commitear la página propia de la categoría con los
@@ -1504,18 +1516,30 @@ async function toggleCategoryHidden(slug) {
   // oculta deje de aparecer ahí también (antes solo se ocultaba en
   // Servicios, pero seguía visible en el nav de las demás páginas).
   const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
-  if (hasGH) {
+  if (!hasGH) {
+    showToast('⚠ Falta configurar el token de GitHub — el nav de las demás páginas no se actualizó', 'error');
+  } else {
     showToast('Actualizando menú en todas las páginas...');
     const visibleSlugs = getVisibleSlugs(ALL_PLAN_SLUGS);
+    let updatedCount = 0, failedPages = [];
     for (const pageSlug of ALL_PLAN_SLUGS) {
       try {
         const f = await ghGetFile(`assets/pages/planes/${pageSlug}.html`);
-        if (!f) continue;
+        if (!f) { failedPages.push(pageSlug); continue; }
         const updated = injectNavIntoPageHTML(f.content, visibleSlugs);
-        if (updated !== f.content) await ghPutFile(`assets/pages/planes/${pageSlug}.html`, updated, f.sha, `${nuevaOculta ? 'hide' : 'show'} ${slug} in nav`);
-      } catch(e) {}
+        if (updated !== f.content) {
+          const ok = await ghPutFile(`assets/pages/planes/${pageSlug}.html`, updated, f.sha, `${nuevaOculta ? 'hide' : 'show'} ${slug} in nav`);
+          if (ok) updatedCount++; else failedPages.push(pageSlug);
+        }
+      } catch(e) { console.error(`Error actualizando nav de ${pageSlug}:`, e); failedPages.push(pageSlug); }
     }
     await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `${nuevaOculta ? 'Ocultada' : 'Mostrada'}: ${c.nombre}` });
+    if (failedPages.length) {
+      console.error('Páginas donde falló la actualización del nav:', failedPages);
+      showToast(`⚠ El menú no se pudo actualizar en: ${failedPages.join(', ')}`, 'error');
+    } else if (updatedCount > 0) {
+      showToast(`✓ Menú actualizado en ${updatedCount} página(s)`);
+    }
   }
 
   showToast(nuevaOculta ? `"${c.nombre}" ahora está oculta` : `"${c.nombre}" ahora es visible`);
@@ -1882,7 +1906,7 @@ ${navLinks}
     <!-- ── Page Hero ── -->
   <section class="page-hero" style="margin-top:0">
     <span class="section-label">Sesiones fotográficas</span>
-    <h1>${name}</h1>
+    <h1>${icon} ${name}</h1>
     <p>${subtitle || `Sesiones de ${name.toLowerCase()} a tu medida.`}</p>
   </section>
 

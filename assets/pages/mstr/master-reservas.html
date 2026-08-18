@@ -778,12 +778,28 @@ function viewReserva(id) {
       ` : ''}
       <div id="resExtrasList">${renderResExtrasList(r)}</div>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap">
       <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
-        <label>Añadir plan o servicio adicional</label>
+        <label>Añadir del catálogo</label>
         <select id="resExtraSelect">${renderExtrasOptions()}</select>
       </div>
       <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
+    </div>
+    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:8px">
+        🛠️ O crea un artefacto/servicio personalizado (solo para esta reserva)
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div class="field" style="flex:2;min-width:160px;margin-bottom:0">
+          <label>Nombre</label>
+          <input type="text" id="resExtraCustomNombre" placeholder="Ej. Edición momentánea" />
+        </div>
+        <div class="field" style="flex:1;min-width:100px;margin-bottom:0">
+          <label>Precio ($)</label>
+          <input type="number" id="resExtraCustomPrecio" min="0" step="0.01" placeholder="5.00" />
+        </div>
+        <button class="btn btn-outline" onclick="addResExtraCustom('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
+      </div>
     </div>
     ${r.exterior ? `
     <div class="field" style="margin-bottom:16px">
@@ -1546,17 +1562,58 @@ function getExtrasCatalog() {
 }
 
 // Renderizar la lista de extras ya añadidos en el modal
+let editingExtraIdx = null; // { resId, idx } o null mientras se edita uno en línea
 function renderResExtrasList(r) {
   const extras = r.extras || [];
   if (!extras.length) return '<div style="font-size:0.78rem;color:var(--gray);padding:6px 0">Sin servicios adicionales</div>';
-  return extras.map((e, i) => `
+  return extras.map((e, i) => {
+    if (editingExtraIdx && editingExtraIdx.resId === r.id && editingExtraIdx.idx === i) {
+      return `
+      <div style="display:flex;gap:6px;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
+        <input type="text" id="resExtraEditNombre" value="${e.nombre.replace(/"/g,'&quot;')}" style="flex:2;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
+        <input type="number" id="resExtraEditPrecio" value="${e.precio}" step="0.01" style="flex:1;min-width:70px;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
+        <button onclick="saveResExtraEdit('${r.id}',${i})" style="background:none;border:none;color:#86efac;cursor:pointer;font-size:1rem;padding:0" title="Guardar">✓</button>
+        <button onclick="cancelResExtraEdit('${r.id}')" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.9rem;padding:0" title="Cancelar">✕</button>
+      </div>`;
+    }
+    return `
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
       <span style="color:var(--gray-l)">+ ${e.nombre}</span>
-      <span style="display:flex;align-items:center;gap:10px">
+      <span style="display:flex;align-items:center;gap:8px">
         <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
+        <button onclick="editResExtra('${r.id}',${i})" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.85rem;padding:0" title="Editar">✏</button>
         <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0" title="Eliminar">✕</button>
       </span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function editResExtra(id, idx) {
+  editingExtraIdx = { resId: id, idx };
+  const r = allReservas.find(x => x.id === id);
+  const extrasList = document.getElementById('resExtrasList');
+  if (extrasList && r) extrasList.innerHTML = renderResExtrasList(r);
+}
+
+function cancelResExtraEdit(id) {
+  editingExtraIdx = null;
+  const r = allReservas.find(x => x.id === id);
+  const extrasList = document.getElementById('resExtrasList');
+  if (extrasList && r) extrasList.innerHTML = renderResExtrasList(r);
+}
+
+async function saveResExtraEdit(id, idx) {
+  const nombre = document.getElementById('resExtraEditNombre').value.trim();
+  const precio = parseFloat(document.getElementById('resExtraEditPrecio').value) || 0;
+  if (!nombre) { showToast('El nombre no puede estar vacío', 'error'); return; }
+  const rIdx = allReservas.findIndex(x => x.id === id); if (rIdx < 0) return;
+  allReservas[rIdx].extras[idx] = { nombre, precio };
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  editingExtraIdx = null;
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  await pushReservaToSupabase(allReservas[rIdx]);
+  showToast('Actualizado ✓');
 }
 
 // Selector de servicios adicionales disponibles en Supabase/localStorage
@@ -1575,7 +1632,7 @@ function renderExtrasOptions() {
 }
 
 // Añadir un extra desde el selector
-function addResExtra(id) {
+async function addResExtra(id) {
   const sel = document.getElementById('resExtraSelect');
   if (!sel || !sel.value) { showToast('Selecciona un servicio primero', 'error'); return; }
   const [nombre, precio] = sel.value.split('||');
@@ -1586,17 +1643,40 @@ function addResExtra(id) {
   sel.value = '';
   refreshResFinancialBlock(id);
   renderReservasTable();
+  await pushReservaToSupabase(allReservas[idx]);
   showToast('Servicio añadido ✓');
 }
 
+// Añadir un artefacto/servicio con nombre y precio escritos a mano —
+// no necesita existir en el catálogo de Servicios Adicionales, es solo
+// para esta reserva (ej. "Edición momentánea" a $5).
+async function addResExtraCustom(id) {
+  const nombreEl = document.getElementById('resExtraCustomNombre');
+  const precioEl = document.getElementById('resExtraCustomPrecio');
+  const nombre = nombreEl.value.trim();
+  const precio = parseFloat(precioEl.value) || 0;
+  if (!nombre) { showToast('Escribe un nombre para el artefacto', 'error'); return; }
+  if (precio <= 0) { showToast('Coloca un precio mayor a $0', 'error'); return; }
+  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!allReservas[idx].extras) allReservas[idx].extras = [];
+  allReservas[idx].extras.push({ nombre, precio });
+  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  nombreEl.value = ''; precioEl.value = '';
+  refreshResFinancialBlock(id);
+  renderReservasTable();
+  await pushReservaToSupabase(allReservas[idx]);
+  showToast('Artefacto añadido ✓');
+}
+
 // Eliminar un extra por índice
-function removeResExtra(id, extraIdx) {
+async function removeResExtra(id, extraIdx) {
   const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
   if (!allReservas[idx].extras) return;
   allReservas[idx].extras.splice(extraIdx, 1);
   localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
   refreshResFinancialBlock(id);
   renderReservasTable();
+  await pushReservaToSupabase(allReservas[idx]);
   showToast('Servicio eliminado', 'error');
 }
 
