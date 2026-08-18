@@ -1249,19 +1249,6 @@ async function createNewCategory() {
     const ok2 = await ghPutBinaryFile(`assets/images/planes/${slug}/portada.jpeg`, newCatFileData.base64, `cover photo: ${slug}`);
     if (!ok2) throw new Error('No se pudo subir la foto de portada.');
 
-    // 4. Update nav in all existing category pages
-    setCatStatus('info', 'Actualizando menú en las páginas existentes...');
-    for (const existingSlug of ALL_PLAN_SLUGS) {
-      try {
-        const file = await ghGetFile(`assets/pages/planes/${existingSlug}.html`);
-        if (!file) continue;
-        const updated = injectNavIntoPageHTML(file.content, navSlugs);
-        if (updated !== file.content) {
-          await ghPutFile(`assets/pages/planes/${existingSlug}.html`, updated, file.sha, `add ${slug} to nav`);
-        }
-      } catch(e) { /* continue with the rest even if one page fails */ }
-    }
-
     // 5. Update servicios.html CATS array
     setCatStatus('info', 'Actualizando página de Servicios...');
     try {
@@ -1467,18 +1454,6 @@ async function saveEditedCategory() {
     const ok2 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, file?.sha, `edit category: ${slug}`);
     if (!ok2) throw new Error('No se pudo actualizar la página de la categoría.');
 
-    // 4. Si cambió el nombre, actualiza el texto del menú en TODAS las páginas
-    setEditCatStatus('info', 'Actualizando menú en las demás páginas...');
-    for (const otherSlug of ALL_PLAN_SLUGS) {
-      if (otherSlug === slug) continue;
-      try {
-        const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
-        if (!f) continue;
-        const updated = injectNavIntoPageHTML(f.content, getVisibleSlugs(ALL_PLAN_SLUGS));
-        if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `update nav label: ${slug}`);
-      } catch(e) {}
-    }
-
     // 5. Guardar en Supabase — de aquí lee Servicios en vivo
     if (sbClient) {
       const { error } = await sbClient.from('categorias').update({
@@ -1512,36 +1487,9 @@ async function toggleCategoryHidden(slug) {
   }
   localStorage.setItem('jans_categorias', JSON.stringify(categoriasList));
 
-  // Actualizar el menú en TODAS las páginas de categorías para que la
-  // oculta deje de aparecer ahí también (antes solo se ocultaba en
-  // Servicios, pero seguía visible en el nav de las demás páginas).
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== 'tu-usuario-github' && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    showToast('⚠ Falta configurar el token de GitHub — el nav de las demás páginas no se actualizó', 'error');
-  } else {
-    showToast('Actualizando menú en todas las páginas...');
-    const visibleSlugs = getVisibleSlugs(ALL_PLAN_SLUGS);
-    let updatedCount = 0, failedPages = [];
-    for (const pageSlug of ALL_PLAN_SLUGS) {
-      try {
-        const f = await ghGetFile(`assets/pages/planes/${pageSlug}.html`);
-        if (!f) { failedPages.push(pageSlug); continue; }
-        const updated = injectNavIntoPageHTML(f.content, visibleSlugs);
-        if (updated !== f.content) {
-          const ok = await ghPutFile(`assets/pages/planes/${pageSlug}.html`, updated, f.sha, `${nuevaOculta ? 'hide' : 'show'} ${slug} in nav`);
-          if (ok) updatedCount++; else failedPages.push(pageSlug);
-        }
-      } catch(e) { console.error(`Error actualizando nav de ${pageSlug}:`, e); failedPages.push(pageSlug); }
-    }
-    await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `${nuevaOculta ? 'Ocultada' : 'Mostrada'}: ${c.nombre}` });
-    if (failedPages.length) {
-      console.error('Páginas donde falló la actualización del nav:', failedPages);
-      showToast(`⚠ El menú no se pudo actualizar en: ${failedPages.join(', ')}`, 'error');
-    } else if (updatedCount > 0) {
-      showToast(`✓ Menú actualizado en ${updatedCount} página(s)`);
-    }
-  }
-
+  // Ya no hace falta actualizar ningún nav — las páginas de categoría no
+  // tienen menú propio; solo se llega a ellas desde las tarjetas de
+  // Servicios, que ya respetan "oculta" al leerla de Supabase.
   showToast(nuevaOculta ? `"${c.nombre}" ahora está oculta` : `"${c.nombre}" ahora es visible`);
 }
 
@@ -1613,19 +1561,12 @@ async function deleteCategory(slug) {
         } catch(e) {}
       }
 
-      // 3. Quitar del menú de las páginas restantes
+      // 3. Quitar sus datos internos (ya no hace falta tocar ningún nav —
+      //    las páginas de categoría no tienen menú propio)
       ALL_PLAN_SLUGS.splice(ALL_PLAN_SLUGS.indexOf(slug), 1);
       const idxOrder = CAT_ORDER.indexOf(slug);
       if (idxOrder !== -1) CAT_ORDER.splice(idxOrder, 1);
       delete CAT_LABELS[slug];
-      for (const otherSlug of ALL_PLAN_SLUGS) {
-        try {
-          const f = await ghGetFile(`assets/pages/planes/${otherSlug}.html`);
-          if (!f) continue;
-          const updated = injectNavIntoPageHTML(f.content, getVisibleSlugs(ALL_PLAN_SLUGS));
-          if (updated !== f.content) await ghPutFile(`assets/pages/planes/${otherSlug}.html`, updated, f.sha, `remove ${slug} from nav`);
-        } catch(e) {}
-      }
       await ghPutPublic('version.json', { v: Date.now(), ts: new Date().toISOString(), note: `Categoría eliminada: ${c.nombre}` });
     }
 
@@ -1799,12 +1740,6 @@ function setCatStatus(type, msg) {
   el.textContent = msg;
 }
 function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
-  const navLinks = navSlugs.map(s => {
-    const label = CAT_LABELS[s] || s;
-    const active = s === slug ? ' class="active"' : '';
-    return `        <a href="${s}.html"${active} data-slug="${s}">${label}</a>`;
-  }).join('\n');
-
   const galleryItems = Array.from({length:16}, (_, i) => {
     const n = String(i+1).padStart(2,'0');
     return `      <div class="catalog-item">
@@ -1817,7 +1752,6 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
   const title = `Fotografía de ${name} en Panamá | Jans Photograph`;
   const desc  = subtitle || `Sesiones de ${name.toLowerCase()} profesionales en Panamá. Ve nuestros planes y precios.`;
   const url   = `https://jansphotograph.com/assets/pages/planes/${slug}.html`;
-  const navSlugsList = navSlugs.map(s => `'${s}'`).join(',');
 
   // Las etiquetas de script reales NO pueden escribirse literalmente aquí
   // dentro (el navegador cortaría el bloque de script de ESTA página al
@@ -1896,15 +1830,8 @@ function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
     </a>
   </nav>
 
-  <!-- ── Plans Nav ── -->
-  <div class="planes-nav-wrap">
-    <nav class="planes-nav" id="planesNav" aria-label="Planes fotográficos">
-${navLinks}
-    </nav>
-  </div>
-
-    <!-- ── Page Hero ── -->
-  <section class="page-hero" style="margin-top:0">
+  <!-- ── Page Hero ── -->
+  <section class="page-hero">
     <span class="section-label">Sesiones fotográficas</span>
     <h1>${icon} ${name}</h1>
     <p>${subtitle || `Sesiones de ${name.toLowerCase()} a tu medida.`}</p>
@@ -2018,49 +1945,6 @@ ${galleryItems}
     })();
   ${CLOSE_SCRIPT}
   ${OPEN_SCRIPT}
-    // ── Filter nav — only show categories with plans ──
-    (function() {
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-      const CURRENT  = '${slug}';
-
-      function filterNav(plans) {
-        const active = new Set(plans.map(p => p.categoria));
-        const todos  = plans.some(p => p.categoria === 'todos');
-        const nav    = document.getElementById('planesNav');
-        if (!nav) return;
-        nav.querySelectorAll('a[data-slug]').forEach(a => {
-          const slug = a.getAttribute('data-slug');
-          const show = active.has(slug) || todos;
-          a.style.display = show ? '' : 'none';
-        });
-        const currentHasPlans = active.has(CURRENT) || todos;
-        if (!currentHasPlans) {
-          const container = document.getElementById('planCardsContainer');
-          if (container) container.innerHTML = '<div class="plans-empty">Esta categoría no tiene planes disponibles aún.</div>';
-        }
-      }
-
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) filterNav(local);
-      } catch(e) {}
-
-      function loadPlansForNav() {
-        if (!window.supabase) return;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
-          .then(({ data, error }) => {
-            if (error || !data) return;
-            localStorage.setItem('jans_planes', JSON.stringify(data));
-            filterNav(data);
-          }).catch(() => {});
-      }
-      if (window.supabase) loadPlansForNav();
-      else window.addEventListener('load', loadPlansForNav);
-    })();
-  ${CLOSE_SCRIPT}
-  ${OPEN_SCRIPT}
     // ── Load plan cards from Supabase, with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = '${slug}';
@@ -2152,32 +2036,6 @@ ${galleryItems}
     })();
   ${CLOSE_SCRIPT}
   ${OPEN_SCRIPT}
-    // ── Hide planes nav on scroll down, show on scroll up ──
-    (function() {
-      var nav      = document.querySelector('.planes-nav-wrap');
-      var lastY    = 0;
-      var ticking  = false;
-
-      function update() {
-        var y = window.scrollY || window.pageYOffset;
-        if (y > lastY && y > 150) {
-          nav.classList.add('nav-hidden');
-        } else {
-          nav.classList.remove('nav-hidden');
-        }
-        lastY   = y;
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', function() {
-        if (!ticking) {
-          requestAnimationFrame(update);
-          ticking = true;
-        }
-      }, { passive: true });
-    })();
-  ${CLOSE_SCRIPT}
-  ${OPEN_SCRIPT}
     // ── Load FAQs dynamically — same visual format as before ──
     (function() {
       const OWNER = 'jansphotograph';
@@ -2216,22 +2074,6 @@ ${galleryItems}
   ${CLOSE_SCRIPT}
 <\/body>
 <\/html>`;
-}
-function injectNavIntoPageHTML(html, navSlugs) {
-  const navLinksRegex = /(<nav class="planes-nav" id="planesNav"[^>]*>)([\s\S]*?)(<\/nav>)/;
-  const m = html.match(navLinksRegex);
-  if (!m) return html;
-  // Detect which slug is "active" in this page from existing markup
-  const activeMatch = html.match(/data-slug="([^"]+)"[^>]*class="active"|class="active"[^>]*data-slug="([^"]+)"/);
-  const currentSlug = activeMatch ? (activeMatch[1] || activeMatch[2]) : null;
-
-  const newLinks = navSlugs.map(s => {
-    const label  = CAT_LABELS[s] || s;
-    const active = (s === currentSlug) ? ' class="active"' : '';
-    return `        <a href="${s}.html"${active} data-slug="${s}">${label}</a>`;
-  }).join('\n');
-
-  return html.replace(navLinksRegex, `$1\n${newLinks}\n    $3`);
 }
 function addCategoryToSelects(slug, name) {
   const categorySelectIds = ['filterPlanCat', 'ppCategoria'];

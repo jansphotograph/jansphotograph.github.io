@@ -65,18 +65,9 @@
     </a>
   </nav>
 
-  <!-- ── Plans Nav ── -->
-  <div class="planes-nav-wrap">
-    <nav class="planes-nav" id="planesNav" aria-label="Planes fotográficos">
-        <a href="retratos.html" data-slug="retratos">Retratos</a>
-        <a href="xv-anos.html" data-slug="xv-anos">XV Años</a>
-        <a href="graduacion.html" data-slug="graduacion">Graduación</a>
-        <a href="infantiles.html" data-slug="infantiles">Infantiles</a>
-    </nav>
-  </div>
 
     <!-- ── Page Hero ── -->
-  <section class="page-hero" style="margin-top:0">
+  <section class="page-hero">
     <span class="section-label">Sesiones fotográficas</span>
     <h1>Gastronomía</h1>
     <p>Fotografía gastronómica que despierta el apetito y la pasión.</p>
@@ -272,54 +263,6 @@
     })();
   </script>
   <script>
-    // ── Filter nav — only show categories with plans ──
-    (function() {
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-      const CURRENT  = 'gastronomia';
-      const ALL_CATS = ['retratos','xv-anos','familiares','pre-boda','boda','eventos','graduacion','gastronomia'];
-
-      function filterNav(plans) {
-        const active = new Set(plans.map(p => p.categoria));
-        const todos  = plans.some(p => p.categoria === 'todos');
-        const nav    = document.getElementById('planesNav');
-        if (!nav) return;
-        nav.querySelectorAll('a[data-slug]').forEach(a => {
-          const slug = a.getAttribute('data-slug');
-          const show = active.has(slug) || todos;
-          a.style.display = show ? '' : 'none';
-        });
-        // If current page has no plans, show a notice
-        const currentHasPlans = active.has(CURRENT) || todos;
-        if (!currentHasPlans) {
-          const container = document.getElementById('planCardsContainer');
-          if (container) container.innerHTML = '<div class="plans-empty">Esta categoría no tiene planes disponibles aún.</div>';
-        }
-      }
-
-      // From localStorage immediately
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) filterNav(local);
-      } catch(e) {}
-
-      // From Supabase — refleja publicaciones al instante, sin depender de
-      // que GitHub Pages reconstruya el sitio.
-      function loadPlansForNav() {
-        if (!window.supabase) return;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
-          .then(({ data, error }) => {
-            if (error || !data) return;
-            localStorage.setItem('jans_planes', JSON.stringify(data));
-            filterNav(data);
-          }).catch(() => {});
-      }
-      if (window.supabase) loadPlansForNav();
-      else window.addEventListener('load', loadPlansForNav);
-    })();
-  </script>
-  <script>
     // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
     document.addEventListener('DOMContentLoaded', async function() {
       const currentPlan = 'gastronomia';
@@ -413,32 +356,6 @@
       // Check on load and every 60 seconds
       checkVersion();
       setInterval(checkVersion, 60000);
-    })();
-  </script>
-  <script>
-    // ── Hide planes nav on scroll down, show on scroll up ──
-    (function() {
-      var nav      = document.querySelector('.planes-nav-wrap');
-      var lastY    = 0;
-      var ticking  = false;
-
-      function update() {
-        var y = window.scrollY || window.pageYOffset;
-        if (y > lastY && y > 150) {
-          nav.classList.add('nav-hidden');    // scrolling down
-        } else {
-          nav.classList.remove('nav-hidden'); // scrolling up or near top
-        }
-        lastY   = y;
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', function() {
-        if (!ticking) {
-          requestAnimationFrame(update);
-          ticking = true;
-        }
-      }, { passive: true });
     })();
   </script>
   <script>
