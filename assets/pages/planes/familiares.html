@@ -220,6 +220,15 @@
   <script src="../../js/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Cliente único de Supabase compartido en esta página — evita el
+    // warning "Multiple GoTrueClient instances" que sale si cada bloque de
+    // script crea su propio cliente por separado con la misma llave.
+    function getSbClient(url, key) {
+      if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+      return window.__sbSharedClient;
+    }
+  </script>
+  <script>
     // ── Galería de fotos — se lee de Supabase (editable desde el panel
     //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no
     //    hay fotos administradas ahí, se deja el respaldo fijo (foto_01..16)
@@ -250,7 +259,7 @@
 
       function loadGalleryFromSupabase() {
         if (!window.supabase) return;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
         sb.from('galeria_categoria').select('*').eq('categoria', SLUG).order('orden', { ascending: true })
           .then(({ data, error }) => {
             if (error || !data || !data.length) return;
@@ -302,7 +311,7 @@
       //    GitHub Pages reconstruya el sitio.
       function loadPlansForCards() {
         if (!window.supabase) return;
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
         sb.from('planes_publicos').select('*').order('orden', { ascending: true })
           .then(({ data, error }) => {
             if (error || !data) {

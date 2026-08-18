@@ -33,6 +33,15 @@
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/pages.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Cliente único de Supabase compartido en esta página — evita el
+    // warning "Multiple GoTrueClient instances" que sale si cada bloque de
+    // script crea su propio cliente por separado con la misma llave.
+    function getSbClient(url, key) {
+      if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+      return window.__sbSharedClient;
+    }
+  </script>
   <style>
     /* ── Comentarios de clientes ── */
     .testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
@@ -248,7 +257,7 @@
       const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
       const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
       let sb = null;
-      try { if (window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
+      try { if (window.supabase) sb = getSbClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
 
       const grid = document.getElementById('serviciosGrid');
 
@@ -364,7 +373,7 @@
       let sbClient = null;
       function initSupabase() {
         if (window.supabase && typeof window.supabase.createClient === 'function') {
-          sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          sbClient = getSbClient(SUPABASE_URL, SUPABASE_KEY);
           return true;
         }
         return false;
