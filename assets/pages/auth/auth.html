@@ -305,8 +305,11 @@
 
     // ── Get stored credential hashes from Supabase ──
     // Credentials live in Supabase, hashed — never in this file's source code.
-    // Falls back to a baked-in default ONLY if Supabase is completely unreachable,
-    // so the Master never becomes totally inaccessible due to a network hiccup.
+    // IMPORTANTE: ya no hay una contraseña de respaldo "quemada" en el código.
+    // Cualquier texto en este archivo es visible para cualquiera con "Ver código fuente",
+    // así que un usuario/contraseña fijo aquí es, en la práctica, una puerta trasera pública.
+    // Si Supabase no responde, el login FALLA de forma segura (fail-closed) en vez de
+    // aceptar una contraseña conocida por cualquiera que lea el HTML.
     async function getStoredHashes() {
       if (sbClient) {
         try {
@@ -318,18 +321,16 @@
           if (!error && data && data.user_hash && data.pass_hash) {
             return { userHash: data.user_hash, passHash: data.pass_hash };
           }
-        } catch(e) { /* fall through to local override / default below */ }
+        } catch(e) { /* fall through to local override below */ }
       }
-      // Local override (set manually via console if ever needed) takes next priority
+      // Override local — solo existe si TÚ lo configuraste a mano en este navegador
+      // específico (vía consola), nunca se guarda en el código fuente del sitio.
       const override = JSON.parse(localStorage.getItem('jans_auth_override') || 'null');
       if (override && override.userHash && override.passHash) {
         return { userHash: override.userHash, passHash: override.passHash };
       }
-      // Last-resort default (admin / jans2025) — only reached if Supabase is down
-      return {
-        userHash: await sha256('admin'),
-        passHash: await sha256('jans2025')
-      };
+      // Sin Supabase y sin override local no hay forma segura de validar credenciales.
+      return null;
     }
 
     // ── Main login handler ──
@@ -380,6 +381,19 @@
 
         // Get stored hashes
         const stored = await getStoredHashes();
+
+        if (!stored) {
+          // No se pudo verificar contra Supabase ni hay override local: fallamos de forma
+          // segura. Es mejor un panel temporalmente inaccesible que una puerta trasera
+          // pública en el código fuente.
+          await new Promise(r => setTimeout(r, 400 + Math.random() * 200));
+          btn.disabled = false;
+          spinner.style.display = 'none';
+          btnText.textContent = 'Ingresar';
+          err.querySelector('span').textContent = 'No se pudo verificar tus credenciales (sin conexión con el servidor). Intenta de nuevo en unos minutos.';
+          err.classList.add('show');
+          return;
+        }
 
         // Timing-safe comparison (both hashes always compared)
         const userOk = inputUserHash === stored.userHash;
