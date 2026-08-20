@@ -475,21 +475,21 @@
     async function syncAvailabilityFromSupabase() {
       if (!sbClient) return;
       try {
-        // select('*') en vez de nombrar columnas puntuales — así, si la tabla
-        // todavía no tiene bloqueo_antes/bloqueo_despues (falta correr la
-        // migración SQL), la consulta no falla por completo; simplemente esos
-        // campos vienen undefined y se usa el valor por defecto (2).
+        // Solo pedimos las columnas necesarias para calcular disponibilidad — nunca
+        // datos personales del cliente (nombre, teléfono, email, notas, etc.). Esto es
+        // importante porque esta página es pública: cualquier visitante ejecuta esta
+        // consulta, así que traer más columnas de las necesarias expondría datos de
+        // todos los clientes a cualquiera.
         let { data, error } = await sbClient
           .from('reservas')
-          .select('*')
+          .select('id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues')
           .in('status', ['confirmed', 'completed']);
 
         if (error) {
-          // select('*') puede fallar por razones ajenas a las columnas de bloqueo
-          // (ej. permisos de columna en Supabase) — reintenta con la consulta
-          // más acotada que ya sabíamos que funcionaba antes, para no perder
-          // la disponibilidad por completo.
-          console.warn('select(*) falló en syncAvailabilityFromSupabase, reintentando con columnas básicas:', error.message || JSON.stringify(error));
+          // Si bloqueo_antes/bloqueo_despues todavía no existen en la tabla (falta la
+          // migración SQL), reintenta sin esas columnas — pero SIN usar select('*'),
+          // para no arriesgarnos a traer datos personales si la tabla cambia en el futuro.
+          console.warn('Reintentando disponibilidad sin columnas de bloqueo:', error.message || JSON.stringify(error));
           const fallback = await sbClient
             .from('reservas')
             .select('id,fecha,horaVal,status')

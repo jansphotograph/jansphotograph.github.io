@@ -232,11 +232,32 @@
       window.location.replace('../master.html');
     }
 
-    // ── SHA-256 via WebCrypto (no external libs needed) ──
+    // ── SHA-256 via WebCrypto (no external libs needed) — usado solo para el
+    //    usuario (no es secreto) y para el token de sesión, nunca para la contraseña. ──
     async function sha256(text) {
       const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
     }
+
+    // ── PBKDF2-HMAC-SHA256 vía WebCrypto — para la CONTRASEÑA sí importa usar
+    //    una función de derivación lenta con sal, para que si alguien llega a ver
+    //    el hash (fuga de la tabla, backup expuesto, etc.) no pueda romperlo con
+    //    fuerza bruta / tablas arcoíris tan fácilmente como con un SHA-256 plano.
+    //    150,000 iteraciones es un costo razonable para correr en el navegador
+    //    (~100-300ms) sin backend dedicado. ──
+    async function pbkdf2Hex(password, saltHex, iterations) {
+      const enc = new TextEncoder();
+      const saltBytes = new Uint8Array((saltHex.match(/.{1,2}/g) || []).map(b => parseInt(b, 16)));
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']
+      );
+      const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: saltBytes, iterations, hash: 'SHA-256' },
+        keyMaterial, 256
+      );
+      return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    const DEFAULT_PBKDF2_ITERATIONS = 150000;
 
     // ── Sanitize input — strip tags and limit length ──
     function sanitize(str) {
@@ -315,19 +336,29 @@
         try {
           const { data, error } = await sbClient
             .from('master_credentials')
-            .select('user_hash,pass_hash')
+            .select('user_hash,pass_hash,salt,iterations')
             .eq('id', 'master_login')
             .single();
-          if (!error && data && data.user_hash && data.pass_hash) {
-            return { userHash: data.user_hash, passHash: data.pass_hash };
+          if (!error && data && data.user_hash && data.pass_hash && data.salt) {
+            return {
+              userHash: data.user_hash,
+              passHash: data.pass_hash,
+              salt: data.salt,
+              iterations: data.iterations || DEFAULT_PBKDF2_ITERATIONS
+            };
           }
         } catch(e) { /* fall through to local override below */ }
       }
       // Override local — solo existe si TÚ lo configuraste a mano en este navegador
       // específico (vía consola), nunca se guarda en el código fuente del sitio.
       const override = JSON.parse(localStorage.getItem('jans_auth_override') || 'null');
-      if (override && override.userHash && override.passHash) {
-        return { userHash: override.userHash, passHash: override.passHash };
+      if (override && override.userHash && override.passHash && override.salt) {
+        return {
+          userHash: override.userHash,
+          passHash: override.passHash,
+          salt: override.salt,
+          iterations: override.iterations || DEFAULT_PBKDF2_ITERATIONS
+        };
       }
       // Sin Supabase y sin override local no hay forma segura de validar credenciales.
       return null;
@@ -373,13 +404,10 @@
       }
 
       try {
-        // Hash the input credentials
-        const [inputUserHash, inputPassHash] = await Promise.all([
-          sha256(rawUser),
-          sha256(rawPass)
-        ]);
+        // Hash del usuario (no es secreto, alcanza con SHA-256 simple)
+        const inputUserHash = await sha256(rawUser);
 
-        // Get stored hashes
+        // Get stored hashes (incluye la sal para la contraseña)
         const stored = await getStoredHashes();
 
         if (!stored) {
@@ -394,6 +422,10 @@
           err.classList.add('show');
           return;
         }
+
+        // Hash de la contraseña con PBKDF2 + sal propia de esta cuenta (lento a propósito,
+        // para resistir fuerza bruta si el hash llegara a filtrarse).
+        const inputPassHash = await pbkdf2Hex(rawPass, stored.salt, stored.iterations);
 
         // Timing-safe comparison (both hashes always compared)
         const userOk = inputUserHash === stored.userHash;
