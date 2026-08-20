@@ -373,6 +373,14 @@ function showToast(msg, type='success') {
 }
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// Escapa HTML — usar SIEMPRE al insertar datos que vienen del cliente (formulario público) en innerHTML
+function escapeHtml(str) {
+  return String(str === null || str === undefined ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeJsAttr(str) {
+  const raw = (str === null || str === undefined) ? '' : String(str);
+  return raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+}
 function statusLabel(s) {
   return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
 }
@@ -515,14 +523,14 @@ function renderQuotesTable() {
   tbody.innerHTML = quotes.map((q,i)=>`
     <tr>
       <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3,'0')}</td>
-      <td><div style="font-weight:600">${q.clientName}</div><div style="font-size:0.75rem;color:var(--gray-l)">${q.email||''}</div></td>
+      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email)||''}</div></td>
       <td>${q.clientType==='juridica'?'Jurídica':'Natural'}</td>
-      <td>${q.plan||'—'}</td>
+      <td>${escapeHtml(q.plan)||'—'}</td>
       <td style="font-weight:700">$${(q.total||0).toFixed(2)}</td>
       <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
-      <td style="font-size:0.8rem;color:var(--gray-l)">${q.createdAt||'—'}</td>
+      <td style="font-size:0.8rem;color:var(--gray-l)">${escapeHtml(q.createdAt)||'—'}</td>
       <td>
-        <button class="btn btn-sm btn-outline" onclick="viewQuote('${q.id}')">Ver</button>
+        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>
       </td>
     </tr>`).join('');
 }
@@ -1078,17 +1086,17 @@ function viewQuote(id){
   document.getElementById('quoteModalTitle').textContent=(q.numero||'Cotizacion')+' - '+q.clientName;
   
   const addonsPos = (q.addons||[]).filter(function(a){return a.price>0;}).map(function(a){
-    return '<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ '+a.name+'</span><span>$'+parseFloat(a.price).toFixed(2)+'</span></div>';
+    return '<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ '+escapeHtml(a.name)+'</span><span>$'+parseFloat(a.price).toFixed(2)+'</span></div>';
   }).join('');
   const addonsZero = (q.addons||[]).filter(function(a){return !a.price||a.price===0;}).map(function(a){
-    return '<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">- '+a.name+'</div>';
+    return '<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">- '+escapeHtml(a.name)+'</div>';
   }).join('');
 
   const statusBtns = ['pending','confirmed','completed','postponed','cancelled'].map(function(s){
     const labels={pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada'};
     const cls={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
     const active=q.status===s?cls[s]:'btn-outline';
-    return '<button class="btn btn-sm '+active+'" onclick="changeQuoteStatus(\''+q.id+'\',\''+s+'\')">'+labels[s]+'</button>';
+    return '<button class="btn btn-sm '+active+'" onclick="changeQuoteStatus(\''+escapeJsAttr(q.id)+'\',\''+s+'\')">'+labels[s]+'</button>';
   }).join('');
 
   // Cargar servicios adicionales de Supabase para el selector
@@ -1096,7 +1104,7 @@ function viewQuote(id){
   try {
     loadServAdicionales();
     (servData.items||[]).forEach(function(s){
-      modalSAOptions += '<option value="'+s.id+'" data-price="'+parseFloat(s.precio||0).toFixed(2)+'" data-name="'+s.nombre.replace(/"/g,'&quot;')+'">'+s.nombre+' — $'+parseFloat(s.precio||0).toFixed(2)+'</option>';
+      modalSAOptions += '<option value="'+escapeHtml(s.id)+'" data-price="'+parseFloat(s.precio||0).toFixed(2)+'" data-name="'+escapeHtml(s.nombre)+'">'+escapeHtml(s.nombre)+' — $'+parseFloat(s.precio||0).toFixed(2)+'</option>';
     });
   } catch(e){}
 
@@ -1109,7 +1117,7 @@ function viewQuote(id){
     if(!window._modalExtras.length) return '<div id="extrasEmptyMsg" style="color:var(--gray);font-size:0.82rem;padding:8px 0">Sin extras añadidos aún.</div>';
     return window._modalExtras.map(function(a,i){
       return '<div id="extra-row-'+i+'" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--black);border-radius:8px;margin-bottom:6px">'
-        +'<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">'+a.name+'</span>'
+        +'<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">'+escapeHtml(a.name)+'</span>'
         +(a.price>0?'<span style="color:var(--pink-l);font-size:0.82rem;margin-left:8px">+$'+parseFloat(a.price).toFixed(2)+'</span>':'<span style="color:var(--gray);font-size:0.78rem;margin-left:8px">gratis</span>')+'</div>'
         +'<button onclick="removeModalExtra('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px" title="Eliminar">✕</button>'
         +'</div>';
@@ -1157,22 +1165,22 @@ function viewQuote(id){
   document.getElementById('quoteModalBody').innerHTML=
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
     +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>'
-    +'<div style="font-weight:700">'+q.clientName+'</div>'
-    +'<div style="color:var(--gray-l);font-size:0.82rem">'+(q.clientType==='juridica'?'Juridica':'Natural')+' - '+(q.clientId||'')+'</div></div>'
+    +'<div style="font-weight:700">'+escapeHtml(q.clientName)+'</div>'
+    +'<div style="color:var(--gray-l);font-size:0.82rem">'+(q.clientType==='juridica'?'Juridica':'Natural')+' - '+escapeHtml(q.clientId||'')+'</div></div>'
     +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>'
     +'<span id="qStatusBadge" class="badge-status '+statusClassQ(q.status)+'">'+statusLabel(q.status)+'</span></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>'+(q.phone||'—')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>'+(q.email||'—')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>'+escapeHtml(q.phone||'—')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>'+escapeHtml(q.email||'—')+'</div></div>'
     +'<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>'
-    +'<input type="date" id="qCreatedAtInput" value="'+toDateInputVal(q.createdAt)+'" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />'
+    +'<input type="date" id="qCreatedAtInput" value="'+escapeHtml(toDateInputVal(q.createdAt))+'" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />'
     +'</div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">'+(q.sessionDate||'—')+' '+(q.sessionTime||'')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>'+(q.location||'—')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">'+escapeHtml(q.sessionDate||'—')+' '+escapeHtml(q.sessionTime||'')+'</div></div>'
+    +'<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>'+escapeHtml(q.location||'—')+'</div></div>'
     +'</div>'
     +'<hr class="section-divider"/>'
     +'<span class="section-label-sm">Plan &amp; Servicios</span>'
     +'<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">'
-    +'<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>'+(q.plan||'Sin plan')+'</span><span>$'+(q.planPrice||0).toFixed(2)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>'+escapeHtml(q.plan||'Sin plan')+'</span><span>$'+(q.planPrice||0).toFixed(2)+'</span></div>'
     +addonsPos+addonsZero
     +'</div>'
 
@@ -1198,12 +1206,12 @@ function viewQuote(id){
     +'</div></div>'
 
     +'<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>'
-    +'<input type="number" id="qTotalInput" data-qid="'+q.id+'" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'<input type="number" id="qTotalInput" data-qid="'+escapeHtml(q.id)+'" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
     +'<hr class="section-divider"/>'
     +'<span class="section-label-sm">Control Financiero</span>'
     +'<div class="form-row" style="margin-bottom:8px">'
-    +'<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="'+abono.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
-    +'<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="'+pagado.toFixed(2)+'" oninput="updateQFinancials(\''+q.id+'\')" /></div>'
+    +'<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="'+abono.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
+    +'<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="'+pagado.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
     +'</div>'
     +'<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
     +renderQFinancialSummary(total,abono,pagado,pendiente,prog)
@@ -1211,17 +1219,17 @@ function viewQuote(id){
     +'<hr class="section-divider"/>'
     +'<span class="section-label-sm">Estado</span>'
     +'<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">'+statusBtns+'</div>'
-    +(q.notes?'<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">'+q.notes+'</p>':'');
+    +(q.notes?'<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">'+escapeHtml(q.notes)+'</p>':'');
 
   const fEl=document.getElementById('quoteModalFooter');
   if(fEl)fEl.innerHTML=
-    '<button class="btn btn-pink" onclick="saveQuoteChanges(\''+q.id+'\')">'
+    '<button class="btn btn-pink" onclick="saveQuoteChanges(\''+escapeJsAttr(q.id)+'\')">'
     +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar'
     +'</button>'
-    +'<button class="btn btn-outline" onclick="generateQuotePDF(\''+q.id+'\')">PDF</button>'
-    +'<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\''+q.id+'\')">Factura</button>'
+    +'<button class="btn btn-outline" onclick="generateQuotePDF(\''+escapeJsAttr(q.id)+'\')">PDF</button>'
+    +'<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\''+escapeJsAttr(q.id)+'\')">Factura</button>'
     +'<button class="btn btn-ghost" onclick="closeModal(\'quoteModal\')">Cancelar</button>'
-    +'<button class="btn btn-red" onclick="deleteQuote(\''+q.id+'\')">Eliminar</button>';
+    +'<button class="btn btn-red" onclick="deleteQuote(\''+escapeJsAttr(q.id)+'\')">Eliminar</button>';
 
   openModal('quoteModal');
 }
@@ -1242,22 +1250,22 @@ function showPDF(id) {
       <div class="pdf-quote-info">
         <h2>COTIZACIÓN</h2>
         <p><strong>#${qNum}</strong></p>
-        <p>Fecha: ${q.createdAt}</p>
-        <p>Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}</p>
+        <p>Fecha: ${escapeHtml(q.createdAt)}</p>
+        <p>Sesión: ${escapeHtml(q.sessionDate||'Por confirmar')} ${escapeHtml(q.sessionTime||'')}</p>
       </div>
     </div>
     <div class="pdf-section">
       <h3>Datos del Cliente</h3>
       <div class="pdf-grid">
-        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${q.clientName}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${q.clientId||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${escapeHtml(q.clientName)}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${escapeHtml(q.clientId)||'—'}</div></div>
         ${q.clientType==='juridica'?`
-        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${q.razonSocial||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${q.dv||'—'}</div></div>`:''}
-        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${q.phone||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${q.email||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${q.address||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${q.location||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${escapeHtml(q.razonSocial)||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${escapeHtml(q.dv)||'—'}</div></div>`:''}
+        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${escapeHtml(q.phone)||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${escapeHtml(q.email)||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${escapeHtml(q.address)||'—'}</div></div>
+        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${escapeHtml(q.location)||'—'}</div></div>
       </div>
     </div>
     <div class="pdf-section">
@@ -1265,13 +1273,13 @@ function showPDF(id) {
       <table class="pdf-table">
         <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>
         <tbody>
-          ${q.plan?`<tr><td><strong>${q.plan}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
-          ${(q.addons||[]).map(a=>`<tr><td>${a.name}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
+          ${q.plan?`<tr><td><strong>${escapeHtml(q.plan)}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
+          ${(q.addons||[]).map(a=>`<tr><td>${escapeHtml(a.name)}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
           <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total||0).toFixed(2)}</td></tr>
         </tbody>
       </table>
     </div>
-    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${q.notes}</p></div>`:''}
+    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${escapeHtml(q.notes)}</p></div>`:''}
     <div class="pdf-footer">
       Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>
       ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}

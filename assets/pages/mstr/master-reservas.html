@@ -360,6 +360,15 @@ function copyToClipboard(text, label) {
   }
 }
 const COPY_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+// Escapa HTML — usar SIEMPRE al insertar datos que vienen del cliente (formulario público) en innerHTML
+function escapeHtml(str) {
+  return String(str === null || str === undefined ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+// Escapa para usar dentro de un atributo onclick="...('...')" con comillas simples (además de escapar HTML)
+function escapeJsAttr(str) {
+  const raw = (str === null || str === undefined) ? '' : String(str);
+  return raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+}
 // Genera el HTML de un botoncito de copiar seguro para insertar en template strings con onclick
 function copyBtnHTML(text, label) {
   const raw = (text === null || text === undefined) ? '' : String(text);
@@ -665,18 +674,18 @@ function renderReservasTable(highlightId) {
   tbody.innerHTML = list.map(r => {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
     return `
-    <tr id="resrow-${r.id}">
+    <tr id="resrow-${escapeHtml(r.id)}">
       <td>
-        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${r.numero || '—'}</span>
-        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${r.facturaNumero}</div>` : ''}
+        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || '—'}</span>
+        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ''}
       </td>
       <td>
-        <div style="font-weight:600">${r.nombre}</div>
-        <div style="font-size:.75rem;color:var(--gray-l)">${r.tel}</div>
+        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>
+        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>
       </td>
-      <td style="font-size:.88rem">${r.fechaLabel || r.fecha}</td>
-      <td style="font-size:.88rem">${r.hora || '—'}</td>
-      <td style="font-size:.82rem;color:var(--gray-l)">${r.plan || '—'}</td>
+      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>
+      <td style="font-size:.88rem">${escapeHtml(r.hora) || '—'}</td>
+      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || '—'}</td>
       <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
       <td style="min-width:110px">
         ${total > 0 ? `
@@ -688,8 +697,8 @@ function renderReservasTable(highlightId) {
       </td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="viewReserva('${r.id}')">Ver</button>
-          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${r.id}')">✏</button>
+          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>
+          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>
         </div>
       </td>
     </tr>`;
@@ -739,28 +748,28 @@ function viewReserva(id) {
 
   document.getElementById('reservaModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${r.numero||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${escapeHtml(r.numero)||'—'}</div></div>
       <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resStatusBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
-      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${r.facturaNumero}</div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${r.nombre} ${copyBtnHTML(r.nombre,'Nombre')}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${r.tel||'—'} ${r.tel?copyBtnHTML(r.tel,'Teléfono'):''}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${r.email||'—'} ${r.email?copyBtnHTML(r.email,'Email'):''}</div></div>
-      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${r.cumpleanos}</div></div>` : ''}
-      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${r.fechaEspecial}</div></div>` : ''}
-      ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${r.lugar || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
+      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${escapeHtml(r.facturaNumero)}</div></div>` : ''}
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${escapeHtml(r.nombre)} ${copyBtnHTML(r.nombre,'Nombre')}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${escapeHtml(r.tel)||'—'} ${r.tel?copyBtnHTML(r.tel,'Teléfono'):''}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${escapeHtml(r.email)||'—'} ${r.email?copyBtnHTML(r.email,'Email'):''}</div></div>
+      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${escapeHtml(r.cumpleanos)}</div></div>` : ''}
+      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${escapeHtml(r.fechaEspecial)}</div></div>` : ''}
+      ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${escapeHtml(r.lugar) || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
       ${r.personasAdicionales > 0 ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">👥 Personas adicionales</div><div style="font-weight:600;color:#e91e8c">${r.personasAdicionales} persona${r.personasAdicionales>1?'s':''} — <span style="color:#86efac">+$${(r.costoPersonas||0).toFixed(2)}</span></div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${r.createdAt||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.fechaLabel||r.fecha||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${r.hora||'—'}</div></div>
-      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${r.plan||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${escapeHtml(r.createdAt)||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.fechaLabel||r.fecha)||'—'}</div></div>
+      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.hora)||'—'}</div></div>
+      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${escapeHtml(r.plan)||'—'}</div></div>
     </div>
-    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${r.notas}</div>` : ''}
+    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${escapeHtml(r.notas)}</div>` : ''}
 
     <hr class="section-divider" />
     <span class="section-label-sm">Plan y Servicios Adicionales</span>
     <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0">
-        <span>${r.plan || 'Sin plan principal'}</span>
+        <span>${escapeHtml(r.plan) || 'Sin plan principal'}</span>
         <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>
       </div>
       ${r.personasAdicionales > 0 ? `
@@ -770,7 +779,7 @@ function viewReserva(id) {
       </div>` : ''}
       ${r.exterior && r.costoExterior > 0 ? `
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
-        <span>Sesión exterior — ${r.lugar||''}</span>
+        <span>Sesión exterior — ${escapeHtml(r.lugar)||''}</span>
         <span style="font-weight:700;color:#86efac">$${(r.costoExterior||0).toFixed(2)}</span>
       </div>` : ''}
       ${r.exterior && !r.costoExterior ? `
@@ -847,7 +856,7 @@ function viewReserva(id) {
     <!-- Rango de horas a bloquear en el calendario de reservas -->
     <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:10px">
-        🔒 Bloqueo de horas alrededor de la sesión (${r.hora||'—'})
+        🔒 Bloqueo de horas alrededor de la sesión (${escapeHtml(r.hora)||'—'})
       </div>
       <div class="form-row">
         <div class="field" style="margin-bottom:0">
@@ -867,12 +876,12 @@ function viewReserva(id) {
       <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
         <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:10px">
           📅 Sesión aplazada
-          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${r.fechaOriginal}</span>` : ''}
+          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${escapeHtml(r.fechaOriginal)}</span>` : ''}
         </div>
         <div class="form-row">
           <div class="field" style="margin-bottom:0">
             <label>Nueva fecha</label>
-            <input type="date" id="resNewFecha" value="${r.fechaNueva||r.fecha||''}" />
+            <input type="date" id="resNewFecha" value="${escapeHtml(r.fechaNueva||r.fecha||'')}" />
           </div>
           <div class="field" style="margin-bottom:0">
             <label>Nueva hora</label>
@@ -1570,7 +1579,7 @@ function renderResExtrasList(r) {
     if (editingExtraIdx && editingExtraIdx.resId === r.id && editingExtraIdx.idx === i) {
       return `
       <div style="display:flex;gap:6px;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
-        <input type="text" id="resExtraEditNombre" value="${e.nombre.replace(/"/g,'&quot;')}" style="flex:2;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
+        <input type="text" id="resExtraEditNombre" value="${escapeHtml(e.nombre)}" style="flex:2;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
         <input type="number" id="resExtraEditPrecio" value="${e.precio}" step="0.01" style="flex:1;min-width:70px;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
         <button onclick="saveResExtraEdit('${r.id}',${i})" style="background:none;border:none;color:#86efac;cursor:pointer;font-size:1rem;padding:0" title="Guardar">✓</button>
         <button onclick="cancelResExtraEdit('${r.id}')" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.9rem;padding:0" title="Cancelar">✕</button>
@@ -1578,7 +1587,7 @@ function renderResExtrasList(r) {
     }
     return `
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
-      <span style="color:var(--gray-l)">+ ${e.nombre}</span>
+      <span style="color:var(--gray-l)">+ ${escapeHtml(e.nombre)}</span>
       <span style="display:flex;align-items:center;gap:8px">
         <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
         <button onclick="editResExtra('${r.id}',${i})" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.85rem;padding:0" title="Editar">✏</button>
