@@ -366,8 +366,9 @@
           btn.disabled = false;
           spinner.style.display = 'none';
           btnText.textContent = 'Ingresar';
+          document.getElementById('loginUser').value = '';
           document.getElementById('loginPass').value = '';
-          document.getElementById('loginPass').focus();
+          document.getElementById('loginUser').focus();
           err.querySelector('span').textContent = remaining > 0
             ? `Usuario o contraseña incorrectos. ${remaining} intento(s) restante(s).`
             : `Cuenta bloqueada por ${LOCK_MS/60000} minutos.`;
