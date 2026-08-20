@@ -631,7 +631,21 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 </style>
 </head>
 <body>
-<script>(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function(){
+  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+  try {
+    window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { session } } = await window._jansAuthClient.auth.getSession();
+    if (!session) { window.location.replace('../master.html'); return; }
+    window._jansAdminEmail = session.user && session.user.email;
+  } catch(e) {
+    window.location.replace('../master.html');
+  }
+})();
+</script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -1160,7 +1174,11 @@ document.addEventListener('click', function(e){
   if(ctx&&!ctx.contains(e.target))ctx.style.display='none';
 });
 
-function handleLogout(){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}
+function handleLogout() {
+  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
+  sessionStorage.removeItem('jans_master_auth');
+  window.location.replace('../master.html');
+}
 
 
 // ── Supabase helpers ──

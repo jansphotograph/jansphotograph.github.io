@@ -12,8 +12,20 @@
 <link rel="stylesheet" href="../../css/master-comentarios.css" />
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function(){const raw=sessionStorage.getItem('jans_master_auth');if(!raw){window.location.replace('../master.html');return;}try{const s=JSON.parse(raw);if(!s||!s.token||!s.expiry||s.expiry<Date.now()){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}}catch(e){sessionStorage.removeItem('jans_master_auth');window.location.replace('../master.html');}})();
+(async function(){
+  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+  try {
+    window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { session } } = await window._jansAuthClient.auth.getSession();
+    if (!session) { window.location.replace('../master.html'); return; }
+    window._jansAdminEmail = session.user && session.user.email;
+  } catch(e) {
+    window.location.replace('../master.html');
+  }
+})();
 </script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
@@ -252,7 +264,8 @@ function showToast(msg, type='success') {
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function handleLogout() {
-  sessionStorage.removeItem(SESSION_KEY);
+  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
+  sessionStorage.removeItem('jans_master_auth');
   window.location.replace('../master.html');
 }
 function escapeHtml(str) {
