@@ -212,7 +212,13 @@ let sbClient = null;
 
 try {
   if (window.supabase && typeof window.supabase.createClient === "function") {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        storage: window.sessionStorage,
+        persistSession: true,
+        autoRefreshToken: true
+      }
+    });
   }
 } catch (e) {
   console.warn("No se pudo inicializar Supabase:", e);

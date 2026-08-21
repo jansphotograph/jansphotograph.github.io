@@ -19,7 +19,13 @@
   const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
   const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
-    window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        storage: window.sessionStorage,
+        persistSession: true,
+        autoRefreshToken: true
+      }
+    });
     const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
     if (!session) {
       window.location.replace("../master.html");
@@ -924,7 +930,13 @@ let sbClient = null;
 
 try {
   if (window.supabase && typeof window.supabase.createClient === "function") {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        storage: window.sessionStorage,
+        persistSession: true,
+        autoRefreshToken: true
+      }
+    });
   } else {
     console.warn("Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.");
   }
