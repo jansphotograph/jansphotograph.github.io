@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ══ SEO ══ -->
+  
   <title>Blog de Fotografía | Jans Photograph Panamá</title>
   <meta name="description" content="Consejos de fotografía, inspiración, tendencias y novedades del mundo visual. Blog de Jans Photograph, fotógrafos profesionales en Panamá." />
   <meta name="keywords"    content="blog fotografía Panamá, consejos fotográficos, inspiración fotografía, Jans Photograph blog" />
@@ -11,7 +11,7 @@
   <meta name="robots"      content="index, follow" />
   <link rel="canonical"    href="https://jansphotograph.com/assets/pages/blogs.html" />
 
-  <!-- Open Graph -->
+  
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="Blog de Fotografía | Jans Photograph Panamá" />
   <meta property="og:description" content="Consejos de fotografía, inspiración, tendencias y novedades del mundo visual. Blog de Jans Photograph, fotógrafos profesionales en Panamá." />
@@ -20,13 +20,13 @@
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
-  <!-- Twitter Card -->
+  
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Blog de Fotografía | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Consejos de fotografía, inspiración, tendencias y novedades del mundo visual. Blog de Jans Photograph, fotógrafos profesionales en Panamá." />
   <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
-  <!-- Geo -->
+  
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
@@ -37,7 +37,7 @@
   </head>
 <body>
 
-  <!-- Header from main site -->
+  
   <header>
     <div class="header-logo">
       <button class="btn-back" onclick="goBack()" aria-label="Regresar">
@@ -68,7 +68,7 @@
     </a>
   </nav>
 
-  <!-- Masthead -->
+  
   <div style="margin-top:72px">
     <div class="blog-masthead">
       <div class="blog-masthead-inner">
@@ -78,13 +78,13 @@
       </div>
     </div>
 
-    <!-- Category filters -->
+    
     <div class="blog-filters" id="blogFilters">
       <button class="blog-filter-btn active" onclick="filterBlogs('', this)">Todo</button>
     </div>
   </div>
 
-  <!-- Main content -->
+  
   <div class="blog-main" id="blogMain">
     <div class="blog-empty">
       <h3>Cargando publicaciones...</h3>
@@ -145,174 +145,140 @@
   </footer>
 
   <script src="../js/main.js"></script>
-  <script>
-    const OWNER = 'jansphotograph';
-    const REPO  = 'jansphotograph.github.io';
-    const BASE  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
+  <script>const OWNER = "jansphotograph";
 
-    // Set date
-    document.getElementById('blogDate').textContent =
-      new Date().toLocaleDateString('es-PA', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+const REPO = "jansphotograph.github.io";
 
-    let allBlogs    = [];
-    let activeFilter = '';
+const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
 
-    function filterBlogs(cat, btn) {
-      activeFilter = cat;
-      document.querySelectorAll('.blog-filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+document.getElementById("blogDate").textContent = (new Date).toLocaleDateString("es-PA", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric"
+});
+
+let allBlogs = [];
+
+let activeFilter = "";
+
+function filterBlogs(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll(".blog-filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderBlogs();
+}
+
+function buildFilters(blogs) {
+  const cats = [ ...new Set(blogs.map(b => b.categoria).filter(Boolean)) ];
+  const bar = document.getElementById("blogFilters");
+  bar.innerHTML = `<button class="blog-filter-btn active" onclick="filterBlogs('',this)">Todo</button>`;
+  cats.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "blog-filter-btn";
+    btn.textContent = cat;
+    btn.onclick = function() {
+      filterBlogs(cat, this);
+    };
+    bar.appendChild(btn);
+  });
+}
+
+const RAW_BASE = "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main";
+
+function imgOrPlaceholder(imagePath) {
+  if (imagePath) {
+    const src = imagePath.startsWith("http") ? imagePath : RAW_BASE + "/" + imagePath;
+    return `<img src="${src}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
+  }
+  return `<div class="img-placeholder">📷</div>`;
+}
+
+function renderBlogs() {
+  const main = document.getElementById("blogMain");
+  const blogs = activeFilter ? allBlogs.filter(b => b.categoria === activeFilter) : allBlogs;
+  if (!blogs.length) {
+    main.innerHTML = `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
+    return;
+  }
+  let html = "";
+  const featured = blogs[0];
+  const link = featured.enlace || null;
+  const titleTag = link ? `<a href="${link}" target="_blank" rel="noopener">${featured.titulo}</a>` : featured.titulo;
+  const readBtn = link ? `<a href="${link}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : "";
+  html += `\n      <div class="blog-featured">\n        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagePath || featured.imagen, "blog-featured-img")}</div>\n        <div class="blog-featured-content">\n          ${featured.categoria ? `<span class="blog-category-tag">${featured.categoria}</span>` : ""}\n          <h2>${titleTag}</h2>\n          <p class="blog-excerpt">${featured.descripcion || ""}</p>\n          <div class="blog-meta">\n            <span>📅 ${featured.fecha || ""}</span>\n          </div>\n          ${readBtn ? `<div style="margin-top:16px">${readBtn}</div>` : ""}\n        </div>\n      </div>`;
+  const rest = blogs.slice(1);
+  if (rest.length) {
+    const layout = featured.layout || "grid";
+    if (layout === "cards") {
+      html += `<div class="blog-section-title">Más publicaciones</div>\n          <div class="blog-cards-row">`;
+      rest.forEach(b => {
+        const lk = b.enlace || null;
+        html += `<div class="blog-magazine-card">\n              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              <div class="blog-magazine-card-body">\n                ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ""}\n                <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>\n                <p>${b.descripcion || ""}</p>\n                <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha || ""}</span></div>\n                ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n              </div>\n            </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="blog-section-title">Más publicaciones</div>\n          <div class="blog-grid">`;
+      rest.forEach(b => {
+        const lk = b.enlace || null;
+        html += `<div class="blog-card">\n              <div class="blog-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ""}\n              <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>\n              <p>${b.descripcion || ""}</p>\n              <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha || ""}</span></div>\n              ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n            </div>`;
+      });
+      html += `</div>`;
+    }
+  }
+  main.innerHTML = html;
+}
+
+async function loadBlogs() {
+  try {
+    const local = JSON.parse(localStorage.getItem("jans_blogs") || "[]");
+    if (local.length) {
+      allBlogs = local;
+      buildFilters(allBlogs);
       renderBlogs();
     }
+  } catch (e) {}
+  try {
+    const res = await fetch(`${BASE}/blogs.json?t=${Date.now()}`, {
+      cache: "no-cache"
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length) {
+        allBlogs = data;
+        localStorage.setItem("jans_blogs", JSON.stringify(data));
+        buildFilters(allBlogs);
+        renderBlogs();
+      }
+    }
+  } catch (e) {}
+  if (!allBlogs.length) {
+    document.getElementById("blogMain").innerHTML = `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
+  }
+}
 
-    function buildFilters(blogs) {
-      const cats = [...new Set(blogs.map(b => b.categoria).filter(Boolean))];
-      const bar  = document.getElementById('blogFilters');
-      bar.innerHTML = `<button class="blog-filter-btn active" onclick="filterBlogs('',this)">Todo</button>`;
-      cats.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className   = 'blog-filter-btn';
-        btn.textContent = cat;
-        btn.onclick     = function() { filterBlogs(cat, this); };
-        bar.appendChild(btn);
+document.addEventListener("DOMContentLoaded", loadBlogs);
+
+(function() {
+  const VER_KEY = "jans_site_version";
+  async function checkVersion() {
+    try {
+      const res = await fetch(`${BASE}/version.json?t=${Date.now()}`, {
+        cache: "no-cache"
       });
-    }
-
-    const RAW_BASE = 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main';
-
-    function imgOrPlaceholder(imagePath) {
-      if (imagePath) {
-        const src = imagePath.startsWith('http') ? imagePath : RAW_BASE + '/' + imagePath;
-        return `<img src="${src}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
+      if (!res.ok) return;
+      const data = await res.json();
+      const current = localStorage.getItem(VER_KEY);
+      if (current && current !== String(data.v)) {
+        localStorage.setItem(VER_KEY, String(data.v));
+        window.location.reload(true);
+      } else {
+        localStorage.setItem(VER_KEY, String(data.v));
       }
-      return `<div class="img-placeholder">📷</div>`;
-    }
-
-    function renderBlogs() {
-      const main   = document.getElementById('blogMain');
-      const blogs  = activeFilter ? allBlogs.filter(b => b.categoria === activeFilter) : allBlogs;
-
-      if (!blogs.length) {
-        main.innerHTML = `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
-        return;
-      }
-
-      let html = '';
-
-      // Featured — first article full width
-      const featured = blogs[0];
-      const link     = featured.enlace || null;
-      const titleTag = link
-        ? `<a href="${link}" target="_blank" rel="noopener">${featured.titulo}</a>`
-        : featured.titulo;
-      const readBtn  = link
-        ? `<a href="${link}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>`
-        : '';
-
-      html += `
-      <div class="blog-featured">
-        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagePath || featured.imagen, 'blog-featured-img')}</div>
-        <div class="blog-featured-content">
-          ${featured.categoria ? `<span class="blog-category-tag">${featured.categoria}</span>` : ''}
-          <h2>${titleTag}</h2>
-          <p class="blog-excerpt">${featured.descripcion || ''}</p>
-          <div class="blog-meta">
-            <span>📅 ${featured.fecha || ''}</span>
-          </div>
-          ${readBtn ? `<div style="margin-top:16px">${readBtn}</div>` : ''}
-        </div>
-      </div>`;
-
-      // Rest of articles
-      const rest = blogs.slice(1);
-      if (rest.length) {
-        const layout = featured.layout || 'grid'; // default grid
-        if (layout === 'cards') {
-          html += `<div class="blog-section-title">Más publicaciones</div>
-          <div class="blog-cards-row">`;
-          rest.forEach(b => {
-            const lk = b.enlace || null;
-            html += `<div class="blog-magazine-card">
-              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>
-              <div class="blog-magazine-card-body">
-                ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ''}
-                <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>
-                <p>${b.descripcion || ''}</p>
-                <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha||''}</span></div>
-                ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ''}
-              </div>
-            </div>`;
-          });
-          html += `</div>`;
-        } else {
-          html += `<div class="blog-section-title">Más publicaciones</div>
-          <div class="blog-grid">`;
-          rest.forEach(b => {
-            const lk = b.enlace || null;
-            html += `<div class="blog-card">
-              <div class="blog-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>
-              ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ''}
-              <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>
-              <p>${b.descripcion || ''}</p>
-              <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha||''}</span></div>
-              ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ''}
-            </div>`;
-          });
-          html += `</div>`;
-        }
-      }
-
-      main.innerHTML = html;
-    }
-
-    async function loadBlogs() {
-      // 1. localStorage first
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_blogs') || '[]');
-        if (local.length) { allBlogs = local; buildFilters(allBlogs); renderBlogs(); }
-      } catch(e) {}
-
-      // 2. GitHub
-      try {
-        const res = await fetch(`${BASE}/blogs.json?t=${Date.now()}`, { cache:'no-cache' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.length) {
-            allBlogs = data;
-            localStorage.setItem('jans_blogs', JSON.stringify(data));
-            buildFilters(allBlogs);
-            renderBlogs();
-          }
-        }
-      } catch(e) {}
-
-      if (!allBlogs.length) {
-        document.getElementById('blogMain').innerHTML =
-          `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadBlogs);
-
-    // Auto-reload on version change
-    (function() {
-      const VER_KEY = 'jans_site_version';
-      async function checkVersion() {
-        try {
-          const res = await fetch(`${BASE}/version.json?t=${Date.now()}`, { cache:'no-cache' });
-          if (!res.ok) return;
-          const data = await res.json();
-          const current = localStorage.getItem(VER_KEY);
-          if (current && current !== String(data.v)) {
-            localStorage.setItem(VER_KEY, String(data.v));
-            window.location.reload(true);
-          } else {
-            localStorage.setItem(VER_KEY, String(data.v));
-          }
-        } catch(e) {}
-      }
-      checkVersion();
-      setInterval(checkVersion, 60000);
-    })();
-  </script>
+    } catch (e) {}
+  }
+  checkVersion();
+  setInterval(checkVersion, 6e4);
+})();</script>
 </body>
 </html>

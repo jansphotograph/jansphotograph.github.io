@@ -28,7 +28,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font); background: var(--black); color: var(--white); min-height: 100vh; }
 
-    /* ── Topbar ── */
+    
     .topbar {
       position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 100;
       background: rgba(13,13,13,0.95); backdrop-filter: blur(12px);
@@ -48,10 +48,10 @@
     }
     .btn-back-top:hover { border-color: var(--pink); color: var(--white); }
 
-    /* ── Main ── */
+    
     main { padding: 88px 28px 60px; max-width: 1100px; margin: 0 auto; }
 
-    /* ── Hero ── */
+    
     .hero { margin-bottom: 36px; }
     .hero-eyebrow {
       display: inline-block; font-size: 0.72rem; font-weight: 700;
@@ -61,7 +61,7 @@
     .hero h1 span { color: var(--pink); }
     .hero-sub { color: var(--gray-l); font-size: 0.9rem; }
 
-    /* ── Controls bar ── */
+    
     .controls-bar {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
@@ -83,7 +83,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--white); }
     .btn-outline:hover { border-color: var(--pink); }
 
-    /* ── Empty state ── */
+    
     .empty-state {
       text-align: center; padding: 80px 24px; color: var(--gray);
       border: 2px dashed var(--border); border-radius: 16px; margin-top: 8px;
@@ -92,7 +92,7 @@
     .empty-state h3 { font-size: 1.1rem; color: var(--gray-l); margin-bottom: 8px; }
     .empty-state p { font-size: 0.88rem; margin-bottom: 20px; }
 
-    /* ── Events grid ── */
+    
     .events-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px;
     }
@@ -123,7 +123,7 @@
     .event-card-count { margin-top: 12px; font-size: 0.78rem; color: var(--gray-l); }
     .event-card-count strong { color: var(--white); }
 
-    /* ── Filter pills ── */
+    
     .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .pill {
       padding: 5px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
@@ -132,7 +132,7 @@
     .pill.active { background: rgba(233,30,140,0.12); border-color: rgba(233,30,140,0.4); color: var(--pink-l); }
     .pill:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--white); }
 
-    /* ── Toast ── */
+    
     .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dark-mid, #232323); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; }
     .toast.show { opacity: 1; transform: none; }
     .toast.success { border-color: rgba(34,197,94,0.4); }
@@ -140,7 +140,7 @@
     .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
     .toast.error .toast-dot { background: var(--red); }
 
-    /* ── Confirm dialog ── */
+    
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
     .overlay.open { display: flex; }
     .confirm-box { background: var(--dark); border: 1px solid var(--border); border-radius: 16px; padding: 28px; max-width: 340px; width: 90%; text-align: center; }
@@ -203,7 +203,7 @@
     </div>
   </main>
 
-  <!-- Confirm delete dialog -->
+  
   <div class="overlay" id="confirmOverlay">
     <div class="confirm-box">
       <h3>¿Eliminar evento?</h3>
@@ -220,148 +220,134 @@
     <span id="toastMsg"></span>
   </div>
 
-  <script>
-    // ── Auth guard ── (soporta formato legacy 'true' y nuevo JSON con token)
-    (function() {
-      const raw = sessionStorage.getItem('jans_master_auth');
-      if (!raw) { window.location.replace('../auth/auth.html'); return; }
-      if (raw === 'true') return; // legacy
-      try {
-        const s = JSON.parse(raw);
-        if (!s || !s.expiry || s.expiry < Date.now()) {
-          sessionStorage.removeItem('jans_master_auth');
-          window.location.replace('../auth/auth.html');
-        }
-        // Sesión válida — continuar (no verificamos fingerprint aquí para evitar falsos positivos)
-      } catch(e) {
-        window.location.replace('../auth/auth.html');
-      }
-    })();
-
-    // ── Almacenamiento local de eventos ──
-    const EVENTS_KEY = 'jans_events';
-
-    function loadEventsLocal() {
-      try { return JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); } catch(e) { return []; }
+  <script>(function() {
+  const raw = sessionStorage.getItem("jans_master_auth");
+  if (!raw) {
+    window.location.replace("../auth/auth.html");
+    return;
+  }
+  if (raw === "true") return;
+  try {
+    const s = JSON.parse(raw);
+    if (!s || !s.expiry || s.expiry < Date.now()) {
+      sessionStorage.removeItem("jans_master_auth");
+      window.location.replace("../auth/auth.html");
     }
-    function saveEventsLocal(data) {
-      localStorage.setItem(EVENTS_KEY, JSON.stringify(data));
-      return true;
+  } catch (e) {
+    window.location.replace("../auth/auth.html");
+  }
+})();
+
+const EVENTS_KEY = "jans_events";
+
+function loadEventsLocal() {
+  try {
+    return JSON.parse(localStorage.getItem(EVENTS_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveEventsLocal(data) {
+  localStorage.setItem(EVENTS_KEY, JSON.stringify(data));
+  return true;
+}
+
+let events = [];
+
+let activeFilter = "all";
+
+let toastTimer;
+
+let pendingDeleteId = null;
+
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
+}
+
+async function loadEvents() {
+  events = loadEventsLocal();
+}
+
+function setFilter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll(".pill").forEach(p => p.classList.toggle("active", p.dataset.cat === cat));
+  renderCards();
+}
+
+function buildFilterPills() {
+  const cats = [ "all", ...new Set(events.map(e => e.categoria).filter(Boolean)) ];
+  const container = document.getElementById("filterPills");
+  container.innerHTML = cats.map(c => `<button class="pill${c === activeFilter ? " active" : ""}" data-cat="${c}" onclick="setFilter('${c}')">${c === "all" ? "Todos" : c}</button>`).join("");
+}
+
+function renderCards() {
+  const query = (document.getElementById("searchInput").value || "").toLowerCase();
+  const filtered = events.filter(e => {
+    const matchCat = activeFilter === "all" || e.categoria === activeFilter;
+    const matchText = !query || e.titulo?.toLowerCase().includes(query) || e.categoria?.toLowerCase().includes(query);
+    return matchCat && matchText;
+  }).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+  const grid = document.getElementById("eventGrid");
+  const empty = document.getElementById("emptyState");
+  if (!filtered.length) {
+    grid.innerHTML = "";
+    empty.style.display = events.length ? "none" : "block";
+    if (events.length && !filtered.length) {
+      grid.innerHTML = `<div style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px">Sin resultados para esa búsqueda.</div>`;
     }
+    return;
+  }
+  empty.style.display = "none";
+  grid.innerHTML = filtered.map(e => {
+    const asistentes = (e.asistentes || []).length;
+    const fecha = e.fecha ? new Date(e.fecha + "T00:00:00").toLocaleDateString("es-PA", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }) : "Sin fecha";
+    return `\n        <div class="event-card" onclick="editEvent('${e.id}')">\n          <div class="event-card-header">\n            ${e.categoria ? `<span class="event-card-badge">${e.categoria}</span>` : "<span></span>"}\n            <div class="event-card-actions" onclick="event.stopPropagation()">\n              <button class="event-card-action" onclick="editEvent('${e.id}')" title="Editar">✏</button>\n              <button class="event-card-action del" onclick="confirmDelete('${e.id}','${(e.titulo || "").replace(/'/g, "\\'")}') " title="Eliminar">✕</button>\n            </div>\n          </div>\n          <h2>${e.titulo || "Sin título"}</h2>\n          <div class="event-card-meta">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>\n            ${fecha}\n          </div>\n          <div class="event-card-count"><strong>${asistentes}</strong> asistente(s) registrado(s)</div>\n        </div>`;
+  }).join("");
+}
 
-    // ── State ──
-    let events = [];
-    let activeFilter = 'all';
-    let toastTimer;
-    let pendingDeleteId = null;
+function newEvent() {
+  window.location.href = "renderevent.html";
+}
 
-    function showToast(msg, type = 'success') {
-      const t = document.getElementById('toast');
-      document.getElementById('toastMsg').textContent = msg;
-      t.className = `toast ${type} show`;
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
-    }
+function editEvent(id) {
+  window.location.href = `renderevent.html?id=${id}`;
+}
 
-    // ── Load events (local) ──
-    async function loadEvents() {
-      events = loadEventsLocal();
-    }
+function confirmDelete(id, titulo) {
+  pendingDeleteId = id;
+  document.getElementById("confirmMsg").textContent = `¿Estás seguro que deseas eliminar "${titulo}"? Esta acción no se puede deshacer.`;
+  document.getElementById("confirmBtn").onclick = doDelete;
+  document.getElementById("confirmOverlay").classList.add("open");
+}
 
-    // ── Filter pills ──
-    function setFilter(cat) {
-      activeFilter = cat;
-      document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.cat === cat));
-      renderCards();
-    }
+function closeConfirm() {
+  document.getElementById("confirmOverlay").classList.remove("open");
+  pendingDeleteId = null;
+}
 
-    function buildFilterPills() {
-      const cats = ['all', ...new Set(events.map(e => e.categoria).filter(Boolean))];
-      const container = document.getElementById('filterPills');
-      container.innerHTML = cats.map(c =>
-        `<button class="pill${c === activeFilter ? ' active' : ''}" data-cat="${c}" onclick="setFilter('${c}')">${c === 'all' ? 'Todos' : c}</button>`
-      ).join('');
-    }
+async function doDelete() {
+  if (!pendingDeleteId) return;
+  events = events.filter(e => e.id !== pendingDeleteId);
+  closeConfirm();
+  renderCards();
+  buildFilterPills();
+  const ok = saveEventsLocal(events);
+  showToast(ok ? "Evento eliminado ✓" : "No se pudo eliminar", ok ? "success" : "error");
+}
 
-    // ── Render event cards ──
-    function renderCards() {
-      const query = (document.getElementById('searchInput').value || '').toLowerCase();
-      const filtered = events.filter(e => {
-        const matchCat  = activeFilter === 'all' || e.categoria === activeFilter;
-        const matchText = !query || e.titulo?.toLowerCase().includes(query) || e.categoria?.toLowerCase().includes(query);
-        return matchCat && matchText;
-      }).sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-
-      const grid = document.getElementById('eventGrid');
-      const empty = document.getElementById('emptyState');
-
-      if (!filtered.length) {
-        grid.innerHTML = '';
-        empty.style.display = events.length ? 'none' : 'block';
-        if (events.length && !filtered.length) {
-          grid.innerHTML = `<div style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px">Sin resultados para esa búsqueda.</div>`;
-        }
-        return;
-      }
-      empty.style.display = 'none';
-      grid.innerHTML = filtered.map(e => {
-        const asistentes = (e.asistentes || []).length;
-        const fecha = e.fecha ? new Date(e.fecha + 'T00:00:00').toLocaleDateString('es-PA', { day:'numeric', month:'long', year:'numeric' }) : 'Sin fecha';
-        return `
-        <div class="event-card" onclick="editEvent('${e.id}')">
-          <div class="event-card-header">
-            ${e.categoria ? `<span class="event-card-badge">${e.categoria}</span>` : '<span></span>'}
-            <div class="event-card-actions" onclick="event.stopPropagation()">
-              <button class="event-card-action" onclick="editEvent('${e.id}')" title="Editar">✏</button>
-              <button class="event-card-action del" onclick="confirmDelete('${e.id}','${(e.titulo||'').replace(/'/g,"\\'")}') " title="Eliminar">✕</button>
-            </div>
-          </div>
-          <h2>${e.titulo || 'Sin título'}</h2>
-          <div class="event-card-meta">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            ${fecha}
-          </div>
-          <div class="event-card-count"><strong>${asistentes}</strong> asistente(s) registrado(s)</div>
-        </div>`;
-      }).join('');
-    }
-
-    // ── Navigation ──
-    function newEvent() {
-      window.location.href = 'renderevent.html';
-    }
-
-    function editEvent(id) {
-      window.location.href = `renderevent.html?id=${id}`;
-    }
-
-    // ── Delete ──
-    function confirmDelete(id, titulo) {
-      pendingDeleteId = id;
-      document.getElementById('confirmMsg').textContent = `¿Estás seguro que deseas eliminar "${titulo}"? Esta acción no se puede deshacer.`;
-      document.getElementById('confirmBtn').onclick = doDelete;
-      document.getElementById('confirmOverlay').classList.add('open');
-    }
-    function closeConfirm() {
-      document.getElementById('confirmOverlay').classList.remove('open');
-      pendingDeleteId = null;
-    }
-    async function doDelete() {
-      if (!pendingDeleteId) return;
-      events = events.filter(e => e.id !== pendingDeleteId);
-      closeConfirm();
-      renderCards();
-      buildFilterPills();
-      const ok = saveEventsLocal(events);
-      showToast(ok ? 'Evento eliminado ✓' : 'No se pudo eliminar', ok ? 'success' : 'error');
-    }
-
-    // ── Init ──
-    (async () => {
-      await loadEvents();
-      buildFilterPills();
-      renderCards();
-    })();
-  </script>
+(async () => {
+  await loadEvents();
+  buildFilterPills();
+  renderCards();
+})();</script>
 </body>
 </html>

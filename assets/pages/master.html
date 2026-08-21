@@ -15,22 +15,23 @@
 <body>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('auth/auth.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("auth/auth.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('auth/auth.html');
+  } catch (e) {
+    window.location.replace("auth/auth.html");
   }
-})();
-</script>
+})();</script>
 
-<!-- HEADER -->
+
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:10px">
     <img src="../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
@@ -45,7 +46,7 @@
   </div>
 </header>
 
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -116,87 +117,82 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
-// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
-// en escritorio se comporta como un link normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':              'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
 <main style="padding-top:120px;padding-left:24px;padding-right:24px;padding-bottom:60px;max-width:1200px;margin:0 auto">
 
-<!-- WELCOME -->
+
 <div class="home-welcome">
   <h1>Jans Photograph</h1>
   <p>Panel administrativo — selecciona una sección</p>
 </div>
 
-<!-- GRID DE SECCIONES -->
+
 <div class="home-grid">
 
-  <!-- Dashboard -->
+  
   <a href="mstr/master-dashboard.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -208,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Resumen general — ingresos, reservas, cotizaciones y estadísticas.</div>
   </a>
 
-  <!-- Reservas -->
+  
   <a href="mstr/master-reservas.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -223,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="home-card-badge" id="badgeReservas">Cargando...</span>
   </a>
 
-  <!-- Cotizaciones -->
+  
   <a href="mstr/master-cotizaciones.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -239,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="home-card-badge" id="badgeQuotes">Cargando...</span>
   </a>
 
-  <!-- Calendario -->
+  
   <a href="mstr/master-calendario.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Vista mensual, semanal y diaria de reservas y eventos.</div>
   </a>
 
-  <!-- Panel -->
+  
   <a href="mstr/master-panel.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -266,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Ingresos, estadísticas por mes, planes más solicitados y top clientes.</div>
   </a>
 
-  <!-- Catálogo -->
+  
   <a href="mstr/master-catalogo.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -278,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Planes públicos, servicios adicionales, inventario, blog, FAQ y equipo.</div>
   </a>
 
-  <!-- Configuración -->
+  
   <a href="mstr/master-config.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -290,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Empresa, redes sociales, credenciales, GitHub token y numeración de facturas.</div>
   </a>
 
-  <!-- Notas -->
+  
   <a href="mstr/master-notas.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -302,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="home-card-desc">Bloc de notas rápidas visible en la página principal.</div>
   </a>
 
-  <!-- Comentarios -->
+  
   <a href="mstr/master-comentarios.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -314,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="home-card-badge" id="badgeComentarios">Cargando...</span>
   </a>
 
-  <!-- Slider -->
+  
   <a href="mstr/master-slider.html" class="home-card">
     <div class="home-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -327,52 +323,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </div>
 
-<script>
-const SESSION_KEY = 'jans_master_auth';
+<script>const SESSION_KEY = "jans_master_auth";
 
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
   sessionStorage.removeItem(SESSION_KEY);
-  window.location.replace('auth/auth.html');
+  window.location.replace("auth/auth.html");
 }
 
 function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  const m = document.getElementById('toastMsg');
-  if(!t||!m) return;
+  const t = document.getElementById("toast");
+  const m = document.getElementById("toastMsg");
+  if (!t || !m) return;
   m.textContent = msg;
-  t.className = 'toast show' + (type === 'error' ? ' error' : '');
-  setTimeout(() => t.className = 'toast', 3000);
+  t.className = "toast show" + (type === "error" ? " error" : "");
+  setTimeout(() => t.className = "toast", 3e3);
 }
 
-// Mostrar badges con conteos
 function updateBadges() {
   try {
-    const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
-    const pending  = reservas.filter(r => r.status === 'pending').length;
-    const el = document.getElementById('badgeReservas');
-    if (el) el.textContent = pending > 0 ? pending + ' pendiente(s)' : 'Al día';
-  } catch(e) {}
-
+    const reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    const pending = reservas.filter(r => r.status === "pending").length;
+    const el = document.getElementById("badgeReservas");
+    if (el) el.textContent = pending > 0 ? pending + " pendiente(s)" : "Al día";
+  } catch (e) {}
   try {
-    const quotes  = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
-    const pending = quotes.filter(q => q.status === 'pending').length;
-    const el = document.getElementById('badgeQuotes');
-    if (el) el.textContent = pending > 0 ? pending + ' pendiente(s)' : 'Al día';
-  } catch(e) {}
-
+    const quotes = JSON.parse(localStorage.getItem("jans_quotes") || "[]");
+    const pending = quotes.filter(q => q.status === "pending").length;
+    const el = document.getElementById("badgeQuotes");
+    if (el) el.textContent = pending > 0 ? pending + " pendiente(s)" : "Al día";
+  } catch (e) {}
   try {
-    const comentarios = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
-    const sinPublicar  = comentarios.filter(c => !c.publicado).length;
-    const el = document.getElementById('badgeComentarios');
-    if (el) el.textContent = sinPublicar > 0 ? sinPublicar + ' sin publicar' : 'Al día';
-  } catch(e) {}
+    const comentarios = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
+    const sinPublicar = comentarios.filter(c => !c.publicado).length;
+    const el = document.getElementById("badgeComentarios");
+    if (el) el.textContent = sinPublicar > 0 ? sinPublicar + " sin publicar" : "Al día";
+  } catch (e) {}
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   updateBadges();
-});
-</script>
+});</script>
 </main>
 </body>
 </html>

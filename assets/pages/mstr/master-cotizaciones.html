@@ -16,20 +16,21 @@
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('../master.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("../master.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('../master.html');
+  } catch (e) {
+    window.location.replace("../master.html");
   }
-})();
-</script>
+})();</script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -47,7 +48,7 @@
 </nav>
 </header>
 
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="../master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -118,71 +119,66 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado de esta página dentro del menú
-// hamburguesa principal (solo en móvil; en escritorio navega normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links (incluidos los del submenú) sí
-  // cierran el menú completo al seleccionarlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':              'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 <div class="subnav">
 <button class="subnav-btn active" id="btn-quotes" onclick="showSection('quotes')">Cotizaciones</button>
@@ -233,8 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- ── NEW QUOTE ── -->
-      <!-- ── FORMULARIO EVENTO ── -->
+      
+      
 </div>
 <div id="section-newquote" style="display:none">
 <div id="view-newquote">
@@ -344,453 +340,559 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 </main>
-<script>
+<script>const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
 let sbClient = null;
+
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('✅ Supabase conectado');
+    console.log("✅ Supabase conectado");
     return true;
   }
   return false;
 }
+
 try {
   if (!initSupabase()) {
-    window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
+    window.addEventListener("load", () => {
+      if (!sbClient) initSupabase();
+    });
   }
-} catch(e) { console.warn('Supabase init error:', e); }
-const SESSION_KEY = 'jans_master_auth';
+} catch (e) {
+  console.warn("Supabase init error:", e);
+}
+
+const SESSION_KEY = "jans_master_auth";
+
 const CONFIG = {
-  ADMIN_USER: 'admin',               // Usuario de acceso
-  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
-
-  COMPANY_NAME:  'Jans Photograph',
-  COMPANY_PHONE: '+507 6862-2402',
-  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
-  COMPANY_WEB:   'jansphotograph.com',
+  ADMIN_USER: "admin",
+  ADMIN_PASS: "jans2025",
+  COMPANY_NAME: "Jans Photograph",
+  COMPANY_PHONE: "+507 6862-2402",
+  COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
+  COMPANY_WEB: "jansphotograph.com"
 };
-/* ═════════════════════════════════════ */
 
-// ── State ──
 let toastTimer;
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   t.className = `toast ${type} show`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-// Escapa HTML — usar SIEMPRE al insertar datos que vienen del cliente (formulario público) en innerHTML
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 function escapeHtml(str) {
-  return String(str === null || str === undefined ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str === null || str === undefined ? "" : str).replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[m]));
 }
+
 function escapeJsAttr(str) {
-  const raw = (str === null || str === undefined) ? '' : String(str);
-  return raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+  const raw = str === null || str === undefined ? "" : String(str);
+  return raw.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/[\r\n]+/g, " ");
 }
+
 function statusLabel(s) {
-  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+  return {
+    pending: "Pendiente",
+    confirmed: "Confirmada",
+    completed: "Completada",
+    postponed: "Aplazada",
+    cancelled: "Cancelada",
+    approved: "Confirmada",
+    booked: "Confirmada",
+    rejected: "Cancelada"
+  }[s] || s;
 }
+
 function statusClassQ(s) {
-  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+  return {
+    pending: "status-pending",
+    confirmed: "status-approved",
+    completed: "status-approved",
+    postponed: "status-postponed",
+    cancelled: "status-rejected",
+    approved: "status-approved",
+    booked: "status-approved",
+    rejected: "status-rejected"
+  }[s] || "";
 }
-// ── Contadores centralizados en Supabase — numeración compartida entre todos los dispositivos ──
+
 async function nextNumero(prefix) {
-  const clave    = prefix === 'WEB' ? 'reserva' : 'cotizacion';
-  const localKey = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  const clave = prefix === "WEB" ? "reserva" : "cotizacion";
+  const localKey = prefix === "WEB" ? "jans_web_counter" : "jans_cot_counter";
   if (sbClient) {
     try {
-      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: clave });
+      const {data: data, error: error} = await sbClient.rpc("siguiente_contador", {
+        p_clave: clave
+      });
       if (!error && data != null) {
         localStorage.setItem(localKey, String(data));
-        return prefix + '-' + String(data).padStart(2, '0');
+        return prefix + "-" + String(data).padStart(2, "0");
       }
-    } catch(e) { console.warn('nextNumero RPC error:', e); }
+    } catch (e) {
+      console.warn("nextNumero RPC error:", e);
+    }
   }
-  let counter = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
+  let counter = parseInt(localStorage.getItem(localKey) || "0", 10) + 1;
   localStorage.setItem(localKey, String(counter));
-  return prefix + '-' + String(counter).padStart(2, '0');
+  return prefix + "-" + String(counter).padStart(2, "0");
 }
+
 async function nextFacturaNumero() {
   if (sbClient) {
     try {
-      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: 'factura' });
+      const {data: data, error: error} = await sbClient.rpc("siguiente_contador", {
+        p_clave: "factura"
+      });
       if (!error && data != null) {
-        localStorage.setItem('jans_factura_counter', String(data));
-        return String(data).padStart(3, '0');
+        localStorage.setItem("jans_factura_counter", String(data));
+        return String(data).padStart(3, "0");
       }
-    } catch(e) { console.warn('nextFacturaNumero RPC error:', e); }
+    } catch (e) {
+      console.warn("nextFacturaNumero RPC error:", e);
+    }
   }
-  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10) + 1;
-  localStorage.setItem('jans_factura_counter', String(counter));
-  return String(counter).padStart(3, '0');
+  let counter = parseInt(localStorage.getItem("jans_factura_counter") || "0", 10) + 1;
+  localStorage.setItem("jans_factura_counter", String(counter));
+  return String(counter).padStart(3, "0");
 }
-const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+
+const CAT_LABELS = {
+  retratos: "Retratos",
+  "xv-anos": "XV Años",
+  familiares: "Familiares",
+  "pre-boda": "Pre Boda",
+  boda: "Boda",
+  eventos: "Eventos",
+  graduacion: "Graduación",
+  gastronomia: "Gastronomía",
+  infantiles: "Infantiles",
+  todos: "Todas las categorías"
+};
+
 let publicPlans = [];
+
 function loadPublicPlans() {
-  try { publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) { publicPlans = []; }
-  // jans_planes already has the popular flag embedded — no need to re-apply from jans_popular
-  // jans_popular is only used as a source of truth for the PUBLIC pages
+  try {
+    publicPlans = JSON.parse(localStorage.getItem(PP_KEY) || "[]");
+  } catch (e) {
+    publicPlans = [];
+  }
 }
-let servData = { items: [] };
+
+let servData = {
+  items: []
+};
+
 function loadServAdicionales() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
-    // Migrar formato antiguo (maquillaje/impresiones) al nuevo (lista plana)
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
     if (Array.isArray(saved)) {
-      servData = { items: saved };
+      servData = {
+        items: saved
+      };
     } else if (saved.items) {
       servData = saved;
     } else {
-      // Migrar desde formato viejo
       const migrated = [];
-      (saved.maquillaje||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: false, insumos: [] }));
-      (saved.impresiones||[]).forEach(s => migrated.push({ ...s, id: s.id||genServId(), usaInsumo: true,  insumos: s.insumos||[] }));
-      servData = { items: migrated };
+      (saved.maquillaje || []).forEach(s => migrated.push({
+        ...s,
+        id: s.id || genServId(),
+        usaInsumo: false,
+        insumos: []
+      }));
+      (saved.impresiones || []).forEach(s => migrated.push({
+        ...s,
+        id: s.id || genServId(),
+        usaInsumo: true,
+        insumos: s.insumos || []
+      }));
+      servData = {
+        items: migrated
+      };
     }
-  } catch(e) { servData = { items: [] }; }
+  } catch (e) {
+    servData = {
+      items: []
+    };
+  }
 }
 
-let state = { quotes: [], plans: [], services: { makeup: [], print: [] } };
-let clientType = 'natural';
+let state = {
+  quotes: [],
+  plans: [],
+  services: {
+    makeup: [],
+    print: []
+  }
+};
+
+let clientType = "natural";
 
 function loadQuotes() {
-  try { state.quotes = JSON.parse(localStorage.getItem('jans_quotes') || '[]'); } catch(e) { state.quotes = []; }
+  try {
+    state.quotes = JSON.parse(localStorage.getItem("jans_quotes") || "[]");
+  } catch (e) {
+    state.quotes = [];
+  }
 }
 
 async function fetchQuotes() {
-  // 1. Intentar Supabase primero
   if (sbClient) {
     try {
-      const { data, error } = await sbClient.from('cotizaciones').select('*').order('created_at', { ascending: false });
+      const {data: data, error: error} = await sbClient.from("cotizaciones").select("*").order("created_at", {
+        ascending: false
+      });
       if (!error && data && data.length > 0) {
         const mapped = data.map(r => ({
-          id:          r.id,
-          numero:      r.numero,
-          clientName:  r.client_name,
-          clientId:    r.client_id,
-          clientType:  r.client_type,
-          razonSocial: r.razon_social || '',
-          dv:          r.dv || '',
-          phone:       r.phone,
-          email:       r.email,
-          address:     r.address || '',
-          sessionDate: r.session_date || '',
-          sessionTime: r.session_time || '',
-          location:    r.location || '',
-          plan:        r.plan,
-          planPrice:   r.plan_price,
-          addons:      typeof r.addons === 'string' ? JSON.parse(r.addons || '[]') : (r.addons || []),
-          total:       r.total,
-          abono:       parseFloat(r.abono)  || 0,
-          pagado:      parseFloat(r.pagado) || 0,
-          notes:       r.notes || '',
-          status:      r.status,
-          createdAt:   (function(iso){
-            if(!iso) return '';
+          id: r.id,
+          numero: r.numero,
+          clientName: r.client_name,
+          clientId: r.client_id,
+          clientType: r.client_type,
+          razonSocial: r.razon_social || "",
+          dv: r.dv || "",
+          phone: r.phone,
+          email: r.email,
+          address: r.address || "",
+          sessionDate: r.session_date || "",
+          sessionTime: r.session_time || "",
+          location: r.location || "",
+          plan: r.plan,
+          planPrice: r.plan_price,
+          addons: typeof r.addons === "string" ? JSON.parse(r.addons || "[]") : r.addons || [],
+          total: r.total,
+          abono: parseFloat(r.abono) || 0,
+          pagado: parseFloat(r.pagado) || 0,
+          notes: r.notes || "",
+          status: r.status,
+          createdAt: function(iso) {
+            if (!iso) return "";
             const d = new Date(iso);
-            if(isNaN(d.getTime())) return iso;
-            return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
-          })(r.created_at),
+            if (isNaN(d.getTime())) return iso;
+            return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+          }(r.created_at)
         }));
-        // Merge con locales
-        const local = JSON.parse(localStorage.getItem('jans_quotes') || '[]');
+        const local = JSON.parse(localStorage.getItem("jans_quotes") || "[]");
         const ids = new Set(mapped.map(q => q.id));
-        const merged = [...mapped, ...local.filter(q => !ids.has(q.id))];
+        const merged = [ ...mapped, ...local.filter(q => !ids.has(q.id)) ];
         state.quotes = merged;
-        localStorage.setItem('jans_quotes', JSON.stringify(merged));
+        localStorage.setItem("jans_quotes", JSON.stringify(merged));
         renderQuotesTable();
         return;
       }
-    } catch(e) { console.warn('Supabase fetchQuotes error', e); }
+    } catch (e) {
+      console.warn("Supabase fetchQuotes error", e);
+    }
   }
 }
 
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
-  sessionStorage.removeItem('jans_master_auth');
-  window.location.replace('../master.html');
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
+  sessionStorage.removeItem("jans_master_auth");
+  window.location.replace("../master.html");
 }
+
 function showSection(name) {
-  ['quotes','newquote','eventoForm'].forEach(s => {
-    const sec=document.getElementById('section-'+s);
-    const btn=document.getElementById('btn-'+s);
-    if(sec)sec.style.display=s===name?'block':'none';
-    if(btn)btn.classList.toggle('active',s===name);
+  [ "quotes", "newquote", "eventoForm" ].forEach(s => {
+    const sec = document.getElementById("section-" + s);
+    const btn = document.getElementById("btn-" + s);
+    if (sec) sec.style.display = s === name ? "block" : "none";
+    if (btn) btn.classList.toggle("active", s === name);
   });
-  if(name==='newquote'){loadPublicPlans();updateQPlanSelect();renderServiceChecks();}
-  if(name==='eventoForm')initEventoForm();
+  if (name === "newquote") {
+    loadPublicPlans();
+    updateQPlanSelect();
+    renderServiceChecks();
+  }
+  if (name === "eventoForm") initEventoForm();
 }
+
 function renderQuotesTable() {
-  const search = (document.getElementById('searchQuotes').value||'').toLowerCase();
-  const filter = document.getElementById('filterStatus').value;
+  const search = (document.getElementById("searchQuotes").value || "").toLowerCase();
+  const filter = document.getElementById("filterStatus").value;
   let quotes = state.quotes.filter(q => {
     const matchSearch = !search || q.clientName.toLowerCase().includes(search);
-    const matchStatus = !filter || q.status===filter;
+    const matchStatus = !filter || q.status === filter;
     return matchSearch && matchStatus;
   }).reverse();
-  const tbody = document.getElementById('quotesTable');
-  if(!quotes.length){tbody.innerHTML='<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';return;}
-  tbody.innerHTML = quotes.map((q,i)=>`
-    <tr>
-      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3,'0')}</td>
-      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email)||''}</div></td>
-      <td>${q.clientType==='juridica'?'Jurídica':'Natural'}</td>
-      <td>${escapeHtml(q.plan)||'—'}</td>
-      <td style="font-weight:700">$${(q.total||0).toFixed(2)}</td>
-      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>
-      <td style="font-size:0.8rem;color:var(--gray-l)">${escapeHtml(q.createdAt)||'—'}</td>
-      <td>
-        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>
-      </td>
-    </tr>`).join('');
+  const tbody = document.getElementById("quotesTable");
+  if (!quotes.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';
+    return;
+  }
+  tbody.innerHTML = quotes.map((q, i) => `\n    <tr>\n      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3, "0")}</td>\n      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email) || ""}</div></td>\n      <td>${q.clientType === "juridica" ? "Jurídica" : "Natural"}</td>\n      <td>${escapeHtml(q.plan) || "—"}</td>\n      <td style="font-weight:700">$${(q.total || 0).toFixed(2)}</td>\n      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>\n      <td style="font-size:0.8rem;color:var(--gray-l)">${escapeHtml(q.createdAt) || "—"}</td>\n      <td>\n        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>\n      </td>\n    </tr>`).join("");
 }
+
 async function deleteQuote(id) {
-  if(!confirm('¿Eliminar esta cotización?')) return;
-  state.quotes = state.quotes.filter(x=>x.id!==id);
-  localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
-  if (sbClient) await sbDelete('cotizaciones', id);
-  closeModal('quoteModal'); updateDashboard(); renderQuotesTable();
-  showToast('Cotización eliminada', 'error');
+  if (!confirm("¿Eliminar esta cotización?")) return;
+  state.quotes = state.quotes.filter(x => x.id !== id);
+  localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
+  if (sbClient) await sbDelete("cotizaciones", id);
+  closeModal("quoteModal");
+  updateDashboard();
+  renderQuotesTable();
+  showToast("Cotización eliminada", "error");
 }
+
 function selectClientType(type) {
   clientType = type;
-  document.getElementById('rNatural').classList.toggle('selected', type==='natural');
-  document.getElementById('rJuridica').classList.toggle('selected', type==='juridica');
-  document.getElementById('juridicaFields').style.display = type==='juridica'?'grid':'none';
+  document.getElementById("rNatural").classList.toggle("selected", type === "natural");
+  document.getElementById("rJuridica").classList.toggle("selected", type === "juridica");
+  document.getElementById("juridicaFields").style.display = type === "juridica" ? "grid" : "none";
 }
+
 function updateQPlanSelect() {
-  const sel = document.getElementById('qPlan');
+  const sel = document.getElementById("qPlan");
   const current = sel.value;
-  // Cargar planes públicos del catálogo
   let plans = [];
-  try { plans = JSON.parse(localStorage.getItem(PP_KEY) || '[]'); } catch(e) {}
-  // Agrupar por categoría
+  try {
+    plans = JSON.parse(localStorage.getItem(PP_KEY) || "[]");
+  } catch (e) {}
   const grouped = {};
   plans.forEach(p => {
-    const cat = p.category || p.categoria || 'General';
+    const cat = p.category || p.categoria || "General";
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(p);
   });
   let html = '<option value="">— Seleccionar —</option>';
-  // Agregar planes por categoría
   Object.entries(grouped).forEach(([cat, ps]) => {
     html += `<optgroup label="${cat}">`;
     ps.forEach(p => {
-      html += `<option value="${p.name||p.nombre}" data-price="${p.price||p.precio||0}">${p.name||p.nombre} — $${p.price||p.precio||0}</option>`;
+      html += `<option value="${p.name || p.nombre}" data-price="${p.price || p.precio || 0}">${p.name || p.nombre} — $${p.price || p.precio || 0}</option>`;
     });
-    html += '</optgroup>';
+    html += "</optgroup>";
   });
-  // Agregar Cobertura de Evento siempre al final
   html += '<optgroup label="Eventos"><option value="Cobertura de Evento" data-price="0">Cobertura de Evento — Precio personalizado</option></optgroup>';
   sel.innerHTML = html;
   sel.value = current;
-  // Si seleccionó Cobertura de Evento, mostrar campo de precio manual
   toggleEventoPrecio(sel.value);
   renderServiceChecks();
 }
 
 function toggleEventoPrecio(val) {
-  const field = document.getElementById('fieldPrecioEvento');
-  if (field) field.style.display = val === 'Cobertura de Evento' ? 'block' : 'none';
+  const field = document.getElementById("fieldPrecioEvento");
+  if (field) field.style.display = val === "Cobertura de Evento" ? "block" : "none";
 }
+
 function renderServiceChecks() {
-  // Recargar servicios del localStorage por si no están en state
   if (!state.services.makeup.length && !state.services.print.length) {
     try {
-      const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+      const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
       state.services = {
         makeup: Array.isArray(saved.makeup) ? saved.makeup : [],
-        print:  Array.isArray(saved.print)  ? saved.print  : []
+        print: Array.isArray(saved.print) ? saved.print : []
       };
-      // También soportar formato items plano
       if (!state.services.makeup.length && !state.services.print.length && Array.isArray(saved.items)) {
         saved.items.forEach(i => {
-          if (i.cat === 'makeup') state.services.makeup.push(i);
-          else state.services.print.push(i);
+          if (i.cat === "makeup") state.services.makeup.push(i); else state.services.print.push(i);
         });
       }
-    } catch(e) {}
+    } catch (e) {}
   }
-  const all = [...state.services.makeup, ...state.services.print];
+  const all = [ ...state.services.makeup, ...state.services.print ];
   if (!all.length) {
-    document.getElementById('qServicesCheck').innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
+    document.getElementById("qServicesCheck").innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
     return;
   }
-  document.getElementById('qServicesCheck').innerHTML = all.map(s=>`
-    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">
-      <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />
-      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>
-    </label>`).join('');
+  document.getElementById("qServicesCheck").innerHTML = all.map(s => `\n    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">\n      <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />\n      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>\n    </label>`).join("");
 }
+
 function updateTotal() {
-  const planSel = document.getElementById('qPlan');
+  const planSel = document.getElementById("qPlan");
   const opt = planSel.options[planSel.selectedIndex];
   let planPrice = opt && opt.dataset.price ? parseFloat(opt.dataset.price) : 0;
-  // Si es Cobertura de Evento usar precio manual
-  if (opt && opt.value === 'Cobertura de Evento') {
-    planPrice = parseFloat(document.getElementById('qPrecioEvento')?.value || 0);
+  if (opt && opt.value === "Cobertura de Evento") {
+    planPrice = parseFloat(document.getElementById("qPrecioEvento")?.value || 0);
   }
-  const planName  = opt ? opt.value : '';
-  const checks = document.querySelectorAll('#qServicesCheck input:checked');
+  const planName = opt ? opt.value : "";
+  const checks = document.querySelectorAll("#qServicesCheck input:checked");
   let addonsTotal = 0;
-  let summaryHTML = '';
-  if(planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
+  let summaryHTML = "";
+  if (planName) summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>${planName}</span><span>$${planPrice.toFixed(2)}</span></div>`;
   checks.forEach(c => {
-    const [name, price] = c.value.split('||');
+    const [name, price] = c.value.split("||");
     addonsTotal += parseFloat(price);
     summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
   });
   const total = planPrice + addonsTotal;
-  document.getElementById('quoteSummary').innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
-  document.getElementById('qTotal').textContent = `$${total.toFixed(2)}`;
+  document.getElementById("quoteSummary").innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
+  document.getElementById("qTotal").textContent = `$${total.toFixed(2)}`;
 }
-async function saveQuote() {
-  const name = document.getElementById('qClientName').value.trim();
-  const cid  = document.getElementById('qClientId').value.trim();
-  const phone= document.getElementById('qPhone').value.trim();
-  if(!name||!cid||!phone){showToast('Completa los campos obligatorios (*)','error');return;}
 
-  const planSel   = document.getElementById('qPlan');
-  const planOpt   = planSel.options[planSel.selectedIndex];
-  const planName  = planOpt ? planOpt.value : '';
+async function saveQuote() {
+  const name = document.getElementById("qClientName").value.trim();
+  const cid = document.getElementById("qClientId").value.trim();
+  const phone = document.getElementById("qPhone").value.trim();
+  if (!name || !cid || !phone) {
+    showToast("Completa los campos obligatorios (*)", "error");
+    return;
+  }
+  const planSel = document.getElementById("qPlan");
+  const planOpt = planSel.options[planSel.selectedIndex];
+  const planName = planOpt ? planOpt.value : "";
   let planPrice = planOpt && planOpt.dataset.price ? parseFloat(planOpt.dataset.price) : 0;
-  // Si es Cobertura de Evento, usar el precio manual
-  if (planOpt && planOpt.value === 'Cobertura de Evento') {
-    const evPrice = parseFloat(document.getElementById('qPrecioEvento')?.value || 0);
+  if (planOpt && planOpt.value === "Cobertura de Evento") {
+    const evPrice = parseFloat(document.getElementById("qPrecioEvento")?.value || 0);
     planPrice = evPrice;
   }
-  const checks    = document.querySelectorAll('#qServicesCheck input:checked');
-  const addons    = [];
-  checks.forEach(c => { const [n,p]=c.value.split('||'); addons.push({name:n,price:parseFloat(p)}); });
-  const addonsTotal = addons.reduce((s,a)=>s+a.price,0);
+  const checks = document.querySelectorAll("#qServicesCheck input:checked");
+  const addons = [];
+  checks.forEach(c => {
+    const [n, p] = c.value.split("||");
+    addons.push({
+      name: n,
+      price: parseFloat(p)
+    });
+  });
+  const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
   const total = planPrice + addonsTotal;
-
-  const numero = await nextNumero('COT');
-
+  const numero = await nextNumero("COT");
   const quote = {
-    id:         `q_${Date.now()}`,
-    numero,
-    clientType,
+    id: `q_${Date.now()}`,
+    numero: numero,
+    clientType: clientType,
     clientName: name,
-    clientId:   cid,
-    razonSocial:document.getElementById('qRazonSocial').value,
-    dv:         document.getElementById('qDV')?.value || '',
-    repLegal:   '',
-    phone,
-    email:      document.getElementById('qEmail').value,
-    address:    document.getElementById('qAddress').value,
-    sessionDate:document.getElementById('qDate').value,
-    sessionTime:document.getElementById('qTime').value,
-    location:   document.getElementById('qLocation').value,
-    plan:       planName,
-    planPrice,
-    addons,
-    total,
-    notes:      document.getElementById('qNotes').value,
-    status:     'pending',
-    createdAt:  (function(){ const d=new Date(); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); })(),
+    clientId: cid,
+    razonSocial: document.getElementById("qRazonSocial").value,
+    dv: document.getElementById("qDV")?.value || "",
+    repLegal: "",
+    phone: phone,
+    email: document.getElementById("qEmail").value,
+    address: document.getElementById("qAddress").value,
+    sessionDate: document.getElementById("qDate").value,
+    sessionTime: document.getElementById("qTime").value,
+    location: document.getElementById("qLocation").value,
+    plan: planName,
+    planPrice: planPrice,
+    addons: addons,
+    total: total,
+    notes: document.getElementById("qNotes").value,
+    status: "pending",
+    createdAt: function() {
+      const d = new Date;
+      return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+    }()
   };
-
   state.quotes.push(quote);
-  // Guardar en Supabase tabla cotizaciones
   if (sbClient) {
-    sbClient.from('cotizaciones').upsert([{
-      id:           quote.id,
-      numero:       quote.numero,
-      client_name:  quote.clientName,
-      client_id:    quote.clientId,
-      client_type:  quote.clientType,
-      razon_social: quote.razonSocial || '',
-      dv:           quote.dv || '',
-      phone:        quote.phone,
-      email:        quote.email,
-      address:      quote.address || '',
-      session_date: quote.sessionDate || '',
-      session_time: quote.sessionTime || '',
-      location:     quote.location || '',
-      plan:         quote.plan,
-      plan_price:   quote.planPrice,
-      addons:       JSON.stringify(quote.addons || []),
-      total:        quote.total,
-      notes:        quote.notes || '',
-      status:       quote.status,
-      created_at:   quote.createdAt,
-    }]).then(({error}) => {
-      if (error) console.error('Supabase cotizacion error:', error);
+    sbClient.from("cotizaciones").upsert([ {
+      id: quote.id,
+      numero: quote.numero,
+      client_name: quote.clientName,
+      client_id: quote.clientId,
+      client_type: quote.clientType,
+      razon_social: quote.razonSocial || "",
+      dv: quote.dv || "",
+      phone: quote.phone,
+      email: quote.email,
+      address: quote.address || "",
+      session_date: quote.sessionDate || "",
+      session_time: quote.sessionTime || "",
+      location: quote.location || "",
+      plan: quote.plan,
+      plan_price: quote.planPrice,
+      addons: JSON.stringify(quote.addons || []),
+      total: quote.total,
+      notes: quote.notes || "",
+      status: quote.status,
+      created_at: quote.createdAt
+    } ]).then(({error: error}) => {
+      if (error) console.error("Supabase cotizacion error:", error);
     });
   }
-  localStorage.setItem('jans_quotes', JSON.stringify(state.quotes));
-
-  // Also feed into the unified reservas system so it appears in Reservas
-  // with the same control module (status, abono, PDFs)
+  localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   try {
-    const reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
-    const [y,m,d] = (quote.sessionDate || '').split('-');
-    const fechaLabel = (y && m && d) ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : '';
+    const reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    const [y, m, d] = (quote.sessionDate || "").split("-");
+    const fechaLabel = y && m && d ? parseInt(d) + " de " + [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ][parseInt(m) - 1] + " " + y : "";
     const reservaRecord = {
-      id:         quote.id,
-      numero,
-      nombre:     name,
-      tel:        phone,
-      email:      quote.email,
-      plan:       planName,
-      notas:      quote.notes,
-      fecha:      quote.sessionDate || '',
-      fechaLabel,
-      hora:       quote.sessionTime || '',
-      horaVal:    quote.sessionTime ? parseInt(quote.sessionTime.split(':')[0]) : null,
-      status:     'pending',
-      abono:      0,
+      id: quote.id,
+      numero: numero,
+      nombre: name,
+      tel: phone,
+      email: quote.email,
+      plan: planName,
+      notas: quote.notes,
+      fecha: quote.sessionDate || "",
+      fechaLabel: fechaLabel,
+      hora: quote.sessionTime || "",
+      horaVal: quote.sessionTime ? parseInt(quote.sessionTime.split(":")[0]) : null,
+      status: "pending",
+      abono: 0,
       totalManual: total,
-      clientId:   cid,
-      clientType,
+      clientId: cid,
+      clientType: clientType,
       razonSocial: quote.razonSocial,
-    repLegal:    '',
-      address:     quote.address,
-      extras:      addons.map(a => ({ nombre: a.name, precio: a.price })),
-      origin:     'manual',
-      createdAt:  quote.createdAt,
+      repLegal: "",
+      address: quote.address,
+      extras: addons.map(a => ({
+        nombre: a.name,
+        precio: a.price
+      })),
+      origin: "manual",
+      createdAt: quote.createdAt
     };
     reservas.push(reservaRecord);
-    localStorage.setItem('jans_reservas', JSON.stringify(reservas));
-    // Mirror to Supabase so it's visible from any device too
+    localStorage.setItem("jans_reservas", JSON.stringify(reservas));
     if (sbClient) {
-      sbClient.from('reservas').insert([reservaRecord]).then(({error}) => {
-        if (error) console.error('Supabase insert (manual quote) error:', error);
+      sbClient.from("reservas").insert([ reservaRecord ]).then(({error: error}) => {
+        if (error) console.error("Supabase insert (manual quote) error:", error);
       });
     }
-  } catch(e) {}
-
-  showToast('Cotización ' + numero + ' guardada ✓');
+  } catch (e) {}
+  showToast("Cotización " + numero + " guardada ✓");
   clearQuoteForm();
-  updateDashboard(); renderQuotesTable();
-  showSection('quotes');
+  updateDashboard();
+  renderQuotesTable();
+  showSection("quotes");
 }
+
 function clearQuoteForm() {
-  ['qClientName','qClientId','qRazonSocial','qDV','qPhone','qEmail','qAddress','qDate','qTime','qLocation','qNotes'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  document.getElementById('qPlan').value = '';
-  document.querySelectorAll('#qServicesCheck input').forEach(c=>c.checked=false);
-  selectClientType('natural'); updateTotal();
+  [ "qClientName", "qClientId", "qRazonSocial", "qDV", "qPhone", "qEmail", "qAddress", "qDate", "qTime", "qLocation", "qNotes" ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  document.getElementById("qPlan").value = "";
+  document.querySelectorAll("#qServicesCheck input").forEach(c => c.checked = false);
+  selectClientType("natural");
+  updateTotal();
 }
+
 function pdfCompanyInfo() {
   const c = getCompanyData();
-  const ubicacion = [c.corregimiento, c.distrito, c.calle].filter(Boolean).join(', ');
+  const ubicacion = [ c.corregimiento, c.distrito, c.calle ].filter(Boolean).join(", ");
   return {
-    nombre:    c.nombre || CONFIG.COMPANY_NAME || 'Jans Photograph',
-    telefono:  c.telefono || CONFIG.COMPANY_PHONE || '',
-    email:     c.email || CONFIG.COMPANY_EMAIL || '',
-    ruc:       c.ruc || '',
-    dv:        c.dv || '',
-    ubicacion: ubicacion || '',
-    logoPath:  c.logoPath || ''
+    nombre: c.nombre || CONFIG.COMPANY_NAME || "Jans Photograph",
+    telefono: c.telefono || CONFIG.COMPANY_PHONE || "",
+    email: c.email || CONFIG.COMPANY_EMAIL || "",
+    ruc: c.ruc || "",
+    dv: c.dv || "",
+    ubicacion: ubicacion || "",
+    logoPath: c.logoPath || ""
   };
 }
+
 async function loadImageAsDataUrl(path) {
   if (!path) return null;
   try {
@@ -799,591 +901,567 @@ async function loadImageAsDataUrl(path) {
     if (!res.ok) return null;
     const blob = await res.blob();
     return await new Promise(resolve => {
-      const reader = new FileReader();
+      const reader = new FileReader;
       reader.onloadend = () => resolve(reader.result);
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
+
 function pdfCompanyFooterLine(company) {
-  const parts = [company.telefono, company.email, company.ubicacion].filter(Boolean);
-  return parts.join(' · ');
+  const parts = [ company.telefono, company.email, company.ubicacion ].filter(Boolean);
+  return parts.join(" · ");
 }
+
 async function copyEventoForm(tipo) {
-  const text  = tipo === 'natural' ? EVENTO_FORM_NATURAL : EVENTO_FORM_JURIDICA;
-  const msgId = tipo === 'natural' ? 'msgNatural' : 'msgJuridica';
-
-  // Actualizar preview
-  const preview = document.getElementById('eventoFormPreview');
+  const text = tipo === "natural" ? EVENTO_FORM_NATURAL : EVENTO_FORM_JURIDICA;
+  const msgId = tipo === "natural" ? "msgNatural" : "msgJuridica";
+  const preview = document.getElementById("eventoFormPreview");
   if (preview) preview.textContent = text;
-
   try {
     await navigator.clipboard.writeText(text);
     const msg = document.getElementById(msgId);
     if (msg) {
-      msg.style.display = '';
-      setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      msg.style.display = "";
+      setTimeout(() => {
+        msg.style.display = "none";
+      }, 3e3);
     }
-    showToast('Formulario copiado al portapapeles ✓');
-  } catch(e) {
-    // Fallback para browsers sin clipboard API
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy');
+    showToast("Formulario copiado al portapapeles ✓");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
     document.body.removeChild(ta);
-    showToast('Formulario copiado ✓');
+    showToast("Formulario copiado ✓");
   }
 }
+
 function initEventoForm() {
-  // Mostrar preview del formulario natural por defecto
-  const preview = document.getElementById('eventoFormPreview');
+  const preview = document.getElementById("eventoFormPreview");
   if (preview) preview.textContent = EVENTO_FORM_NATURAL;
 }
-const EVENTO_FORM_NATURAL = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH
 
-Hola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:
+const EVENTO_FORM_NATURAL = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH\n\nHola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:\n\n👤 Nombre completo: \n🪪 Cédula: \n📧 Correo electrónico: \n📅 Fecha del evento: \n📍 Lugar del evento: \n🕐 Hora estimada de inicio: \n\n¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
 
-👤 Nombre completo: 
-🪪 Cédula: 
-📧 Correo electrónico: 
-📅 Fecha del evento: 
-📍 Lugar del evento: 
-🕐 Hora estimada de inicio: 
+const EVENTO_FORM_JURIDICA = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH\n\nHola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:\n\n👤 Nombre completo / Razón social: \n🏢 RUC: \n🔢 DV: \n🪪 Cédula del representante: \n📧 Correo electrónico: \n📅 Fecha del evento: \n📍 Lugar del evento: \n🕐 Hora estimada de inicio: \n\n¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
 
-¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
+let quoteTipo = "fotografico";
 
-const EVENTO_FORM_JURIDICA = `📋 COTIZACIÓN DE EVENTO — JANS PHOTOGRAPH
-
-Hola, para poder prepararte una cotización personalizada, por favor completa los siguientes datos y envíanoslos de vuelta:
-
-👤 Nombre completo / Razón social: 
-🏢 RUC: 
-🔢 DV: 
-🪪 Cédula del representante: 
-📧 Correo electrónico: 
-📅 Fecha del evento: 
-📍 Lugar del evento: 
-🕐 Hora estimada de inicio: 
-
-¡Gracias! En breve nos pondremos en contacto contigo. 📸`;
-
-// ── selectQuoteTipo ──
-let quoteTipo = 'fotografico';
 function selectQuoteTipo(tipo) {
   quoteTipo = tipo;
-  document.getElementById('qTipoFoto').classList.toggle('selected', tipo==='fotografico');
-  document.getElementById('qTipoEvento').classList.toggle('selected', tipo==='evento');
-  document.getElementById('qBloqueFoto').style.display   = tipo==='fotografico' ? '' : 'none';
-  document.getElementById('qBloqueEvento').style.display = tipo==='evento'      ? '' : 'none';
+  document.getElementById("qTipoFoto").classList.toggle("selected", tipo === "fotografico");
+  document.getElementById("qTipoEvento").classList.toggle("selected", tipo === "evento");
+  document.getElementById("qBloqueFoto").style.display = tipo === "fotografico" ? "" : "none";
+  document.getElementById("qBloqueEvento").style.display = tipo === "evento" ? "" : "none";
   updateTotal();
 }
 
 function onQPlanChange() {
-  const sel=document.getElementById('qPlan');
-  const opt=sel?.options[sel.selectedIndex];
-  const infoEl=document.getElementById('qPlanInfo');
-  const pb=document.getElementById('qFotoPersonasBlock');
-  const pl=document.getElementById('qFotoPersonasLabel');
-  if(opt&&opt.value){
-    const desc=opt.dataset.desc||'';
-    const maxX=parseInt(opt.dataset.maxExtra)||0;
-    const prX=parseFloat(opt.dataset.precioExtra)||0;
-    if(infoEl){infoEl.style.display=desc?'':'none';infoEl.textContent=desc;}
-    if(pb){
-      pb.style.display=maxX>0?'':'none';
-      if(pl)pl.textContent='Personas adicionales (max. '+maxX+' — $'+prX.toFixed(2)+' c/u)';
-      const pe=document.getElementById('qFotoPrecioPersona');if(pe)pe.value=prX;
-      const pa=document.getElementById('qFotoPersonas');if(pa){pa.max=maxX;pa.value=0;}
+  const sel = document.getElementById("qPlan");
+  const opt = sel?.options[sel.selectedIndex];
+  const infoEl = document.getElementById("qPlanInfo");
+  const pb = document.getElementById("qFotoPersonasBlock");
+  const pl = document.getElementById("qFotoPersonasLabel");
+  if (opt && opt.value) {
+    const desc = opt.dataset.desc || "";
+    const maxX = parseInt(opt.dataset.maxExtra) || 0;
+    const prX = parseFloat(opt.dataset.precioExtra) || 0;
+    if (infoEl) {
+      infoEl.style.display = desc ? "" : "none";
+      infoEl.textContent = desc;
+    }
+    if (pb) {
+      pb.style.display = maxX > 0 ? "" : "none";
+      if (pl) pl.textContent = "Personas adicionales (max. " + maxX + " — $" + prX.toFixed(2) + " c/u)";
+      const pe = document.getElementById("qFotoPrecioPersona");
+      if (pe) pe.value = prX;
+      const pa = document.getElementById("qFotoPersonas");
+      if (pa) {
+        pa.max = maxX;
+        pa.value = 0;
+      }
     }
   } else {
-    if(infoEl)infoEl.style.display='none';
-    if(pb)pb.style.display='none';
+    if (infoEl) infoEl.style.display = "none";
+    if (pb) pb.style.display = "none";
   }
   updateTotal();
 }
 
 function onQFotoExteriorChange() {
-  const checked=document.getElementById('qFotoExterior')?.checked;
-  const block=document.getElementById('qFotoExteriorBlock');
-  if(block)block.style.display=checked?'':'none';
-  if(!checked){
-    const t=document.getElementById('qFotoTransporte');if(t)t.value=0;
-    const l=document.getElementById('qFotoLugar');if(l)l.value='';
+  const checked = document.getElementById("qFotoExterior")?.checked;
+  const block = document.getElementById("qFotoExteriorBlock");
+  if (block) block.style.display = checked ? "" : "none";
+  if (!checked) {
+    const t = document.getElementById("qFotoTransporte");
+    if (t) t.value = 0;
+    const l = document.getElementById("qFotoLugar");
+    if (l) l.value = "";
   }
   updateTotal();
 }
 
 function _renderQPlanOptions(sel, current) {
-  const cats={};
-  publicPlans.forEach(p=>{
-    const cat=p.categoria||p.category||'sin-categoria';
-    if(!cats[cat])cats[cat]=[];
+  const cats = {};
+  publicPlans.forEach(p => {
+    const cat = p.categoria || p.category || "sin-categoria";
+    if (!cats[cat]) cats[cat] = [];
     cats[cat].push(p);
   });
-  let html='<option value="">Seleccionar plan</option>';
-  if(!Object.keys(cats).length){
-    html='<option value="">Sin planes disponibles</option>';
+  let html = '<option value="">Seleccionar plan</option>';
+  if (!Object.keys(cats).length) {
+    html = '<option value="">Sin planes disponibles</option>';
   } else {
-    Object.entries(cats).forEach(([cat,planes])=>{
-      const label=(typeof CAT_LABELS!=='undefined'&&CAT_LABELS[cat])?CAT_LABELS[cat]:cat;
-      html+='<optgroup label="'+label+'">';
-      planes.forEach(p=>{
-        const desc=(p.descripcion||'').replace(/"/g,'&quot;');
-        html+='<option value="'+p.nombre+'" data-price="'+p.precio+'" data-desc="'+desc+'" data-max-extra="'+(p.personasExtra||0)+'" data-precio-extra="'+(p.precioPersonaExtra||0)+'">'+p.nombre+' — $'+parseFloat(p.precio||0).toFixed(2)+'</option>';
+    Object.entries(cats).forEach(([cat, planes]) => {
+      const label = typeof CAT_LABELS !== "undefined" && CAT_LABELS[cat] ? CAT_LABELS[cat] : cat;
+      html += '<optgroup label="' + label + '">';
+      planes.forEach(p => {
+        const desc = (p.descripcion || "").replace(/"/g, "&quot;");
+        html += '<option value="' + p.nombre + '" data-price="' + p.precio + '" data-desc="' + desc + '" data-max-extra="' + (p.personasExtra || 0) + '" data-precio-extra="' + (p.precioPersonaExtra || 0) + '">' + p.nombre + " — $" + parseFloat(p.precio || 0).toFixed(2) + "</option>";
       });
-      html+='</optgroup>';
+      html += "</optgroup>";
     });
   }
-  sel.innerHTML=html;
-  sel.value=current;
+  sel.innerHTML = html;
+  sel.value = current;
   onQPlanChange();
   renderServiceChecks();
 }
 
-function renderQFinancialSummary(total,abono,pagado,pendiente,prog){
-  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$'+total.toFixed(2)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$'+abono.toFixed(2)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:'+(pendiente>0?'#fca5a5':'#86efac')+'">$'+pendiente.toFixed(2)+'</span></div>'
-    +'<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:'+prog+'%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>'
-    +'<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">'+prog+'% pagado</div>';
+function renderQFinancialSummary(total, abono, pagado, pendiente, prog) {
+  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$' + total.toFixed(2) + "</span></div>" + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$' + abono.toFixed(2) + "</span></div>" + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:' + (pendiente > 0 ? "#fca5a5" : "#86efac") + '">$' + pendiente.toFixed(2) + "</span></div>" + '<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>' + '<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">' + prog + "% pagado</div>";
 }
 
-function updateQFinancials(id){
-  const total=parseFloat(document.getElementById('qTotalInput')?.value)||0;
-  const abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
-  const pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
-  const pendiente=Math.max(0,total-abono-pagado);
-  const prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
-  const el=document.getElementById('qFinancialSummary');
-  if(el)el.innerHTML=renderQFinancialSummary(total,abono,pagado,pendiente,prog);
+function updateQFinancials(id) {
+  const total = parseFloat(document.getElementById("qTotalInput")?.value) || 0;
+  const abono = parseFloat(document.getElementById("qAbonoInput")?.value) || 0;
+  const pagado = parseFloat(document.getElementById("qPagadoInput")?.value) || 0;
+  const pendiente = Math.max(0, total - abono - pagado);
+  const prog = total > 0 ? Math.min(100, Math.round((abono + pagado) / total * 100)) : 0;
+  const el = document.getElementById("qFinancialSummary");
+  if (el) el.innerHTML = renderQFinancialSummary(total, abono, pagado, pendiente, prog);
 }
 
-function changeQuoteStatus(id,status){
-  const q=state.quotes.find(x=>x.id===id);if(!q)return;
-  q.status=status;
-  // Persistir inmediatamente en localStorage y Supabase
-  localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
-  if(sbClient){
-    sbClient.from('cotizaciones').update({status:status}).eq('id',id)
-      .then(function(r){ if(r.error) console.warn('sbUpdate status:', r.error.message); });
+function changeQuoteStatus(id, status) {
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
+  q.status = status;
+  localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
+  if (sbClient) {
+    sbClient.from("cotizaciones").update({
+      status: status
+    }).eq("id", id).then(function(r) {
+      if (r.error) console.warn("sbUpdate status:", r.error.message);
+    });
   }
-  const badge=document.getElementById('qStatusBadge');
-  if(badge){badge.className='badge-status '+statusClassQ(status);badge.textContent=statusLabel(status);}
-  ['pending','confirmed','completed','postponed','cancelled'].forEach(function(s){
-    const classes={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
-    const btn=document.querySelector('#quoteModalBody .btn[onclick*="changeQuoteStatus(\''+id+'\',\''+s+'\')"]');
-    if(btn)btn.className='btn btn-sm '+(s===status?classes[s]:'btn-outline');
+  const badge = document.getElementById("qStatusBadge");
+  if (badge) {
+    badge.className = "badge-status " + statusClassQ(status);
+    badge.textContent = statusLabel(status);
+  }
+  [ "pending", "confirmed", "completed", "postponed", "cancelled" ].forEach(function(s) {
+    const classes = {
+      pending: "btn-pink",
+      confirmed: "btn-green",
+      completed: "btn-green",
+      postponed: "btn-amber",
+      cancelled: "btn-red"
+    };
+    const btn = document.querySelector("#quoteModalBody .btn[onclick*=\"changeQuoteStatus('" + id + "','" + s + "')\"]");
+    if (btn) btn.className = "btn btn-sm " + (s === status ? classes[s] : "btn-outline");
   });
 }
 
-async function blockCalendarForQuote(q){
-  try{
-    const parts=(q.sessionTime||'0:0').split(':');
-    const hh=parseInt(parts[0])||0;
-    const durHoras=q.eventoData?.horas||1;
-    const fecha=q.sessionDate;if(!fecha)return;
-    let cal={};
-    try{cal=JSON.parse(localStorage.getItem('jans_calendar')||'{}');}catch(e){}
-    const horaInicio = Math.max(0,hh-2);
-    const horaFin = Math.min(23,hh+Math.ceil(durHoras)+1);
-    const titulo = 'Cotizacion '+(q.numero||'')+' - '+q.clientName;
-    // Id estable por cotización — si se reconfirma o se edita la fecha/hora,
-    // reemplaza el bloqueo anterior de ESTA cotización sin tocar otros
-    // eventos (manuales u otras cotizaciones) que compartan el mismo día.
-    const evId = 'q_' + q.id;
-
-    // Normaliza el valor guardado en esa fecha a un array de eventos —
-    // soporta tanto el formato legado (un objeto único) como el actual (array).
-    function dayEventsOf(v){
-      if(!v) return [];
-      if(Array.isArray(v)) return v.filter(e=>e&&typeof e==='object'&&e.type==='event');
-      if(typeof v==='object'&&v.type==='event') return [v];
+async function blockCalendarForQuote(q) {
+  try {
+    const parts = (q.sessionTime || "0:0").split(":");
+    const hh = parseInt(parts[0]) || 0;
+    const durHoras = q.eventoData?.horas || 1;
+    const fecha = q.sessionDate;
+    if (!fecha) return;
+    let cal = {};
+    try {
+      cal = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
+    } catch (e) {}
+    const horaInicio = Math.max(0, hh - 2);
+    const horaFin = Math.min(23, hh + Math.ceil(durHoras) + 1);
+    const titulo = "Cotizacion " + (q.numero || "") + " - " + q.clientName;
+    const evId = "q_" + q.id;
+    function dayEventsOf(v) {
+      if (!v) return [];
+      if (Array.isArray(v)) return v.filter(e => e && typeof e === "object" && e.type === "event");
+      if (typeof v === "object" && v.type === "event") return [ v ];
       return [];
     }
-
-    const evObj = { id:evId, type:'event', blockType:'hours', horaInicio, horaFin, quoteLock:q.id, titulo, color:'pink' };
-    const list = dayEventsOf(cal[fecha]).filter(e=>e.id!==evId);
+    const evObj = {
+      id: evId,
+      type: "event",
+      blockType: "hours",
+      horaInicio: horaInicio,
+      horaFin: horaFin,
+      quoteLock: q.id,
+      titulo: titulo,
+      color: "pink"
+    };
+    const list = dayEventsOf(cal[fecha]).filter(e => e.id !== evId);
     list.push(evObj);
-    cal[fecha]=list;
-
-    localStorage.setItem('jans_calendar',JSON.stringify(cal));
+    cal[fecha] = list;
+    localStorage.setItem("jans_calendar", JSON.stringify(cal));
     if (sbClient) {
-      await sbUpsert('calendario', {
+      await sbUpsert("calendario", {
         id: evId,
         fecha: fecha,
-        titulo,
-        notas: '',
-        color: 'pink',
-        block_type: 'hours',
+        titulo: titulo,
+        notas: "",
+        color: "pink",
+        block_type: "hours",
         hora_inicio: horaInicio,
         hora_fin: horaFin,
-        status: 'evento'
+        status: "evento"
       });
     }
-    showToast('Calendario bloqueado: '+fecha+' OK');
-  }catch(e){console.warn('blockCalendar',e);}
+    showToast("Calendario bloqueado: " + fecha + " OK");
+  } catch (e) {
+    console.warn("blockCalendar", e);
+  }
 }
 
-async function saveQuoteChanges(id){
-  const q=state.quotes.find(x=>x.id===id);if(!q)return;
-  const newTotal=parseFloat(document.getElementById('qTotalInput')?.value);
-  if(!isNaN(newTotal))q.total=newTotal;
-  q.abono=parseFloat(document.getElementById('qAbonoInput')?.value)||0;
-  q.pagado=parseFloat(document.getElementById('qPagadoInput')?.value)||0;
-  // Guardar extras editados desde el modal
-  if(Array.isArray(window._modalExtras)){q.addons=window._modalExtras.slice();}
-  // Guardar fecha de cotización editada
-  const newCat = document.getElementById('qCreatedAtInput')?.value;
-  if(newCat){
-    const [cy,cm,cd] = newCat.split('-');
-    q.createdAt = parseInt(cd)+'/'+parseInt(cm)+'/'+cy;
+async function saveQuoteChanges(id) {
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
+  const newTotal = parseFloat(document.getElementById("qTotalInput")?.value);
+  if (!isNaN(newTotal)) q.total = newTotal;
+  q.abono = parseFloat(document.getElementById("qAbonoInput")?.value) || 0;
+  q.pagado = parseFloat(document.getElementById("qPagadoInput")?.value) || 0;
+  if (Array.isArray(window._modalExtras)) {
+    q.addons = window._modalExtras.slice();
   }
-  // Sincronizar Supabase — solo columnas que existen en cotizaciones
-  if(sbClient){
-    const sbPayload = { addons: JSON.stringify(q.addons||[]), total: q.total, status: q.status, abono: q.abono||0, pagado: q.pagado||0 };
-    sbClient.from('cotizaciones').update(sbPayload).eq('id', id)
-      .then(({error})=>{
-        if(error){
-          // Si falla por columnas faltantes, reintentar sin abono/pagado
-          console.warn('sbUpdate cotizacion:', error.message);
-          if(error.message && error.message.includes('column')){
-            sbClient.from('cotizaciones').update({ addons: sbPayload.addons, total: sbPayload.total, status: sbPayload.status }).eq('id', id)
-              .then(({error:e2})=>{ if(e2) console.warn('sbUpdate retry:', e2.message); });
-          }
+  const newCat = document.getElementById("qCreatedAtInput")?.value;
+  if (newCat) {
+    const [cy, cm, cd] = newCat.split("-");
+    q.createdAt = parseInt(cd) + "/" + parseInt(cm) + "/" + cy;
+  }
+  if (sbClient) {
+    const sbPayload = {
+      addons: JSON.stringify(q.addons || []),
+      total: q.total,
+      status: q.status,
+      abono: q.abono || 0,
+      pagado: q.pagado || 0
+    };
+    sbClient.from("cotizaciones").update(sbPayload).eq("id", id).then(({error: error}) => {
+      if (error) {
+        console.warn("sbUpdate cotizacion:", error.message);
+        if (error.message && error.message.includes("column")) {
+          sbClient.from("cotizaciones").update({
+            addons: sbPayload.addons,
+            total: sbPayload.total,
+            status: sbPayload.status
+          }).eq("id", id).then(({error: e2}) => {
+            if (e2) console.warn("sbUpdate retry:", e2.message);
+          });
         }
-      });
+      }
+    });
   }
-  if(q.status==='confirmed'&&q.sessionDate&&q.sessionTime)await blockCalendarForQuote(q);
-  localStorage.setItem('jans_quotes',JSON.stringify(state.quotes));
+  if (q.status === "confirmed" && q.sessionDate && q.sessionTime) await blockCalendarForQuote(q);
+  localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   renderQuotesTable();
-  closeModal('quoteModal');
-  showToast('Cotizacion '+(q.numero||'')+' guardada ✓');
+  closeModal("quoteModal");
+  showToast("Cotizacion " + (q.numero || "") + " guardada ✓");
 }
 
-function sanitizeText(str){
-  if(!str)return'';
-  return String(str).replace(/[^\x00-\xFF]/g,'').replace(/\s+/g,' ').trim();
+function sanitizeText(str) {
+  if (!str) return "";
+  return String(str).replace(/[^\x00-\xFF]/g, "").replace(/\s+/g, " ").trim();
 }
 
-// Convertir "dd/mm/yyyy" o ISO a "yyyy-mm-dd" para input type="date"
 function toDateInputVal(str) {
-  if (!str || str === '—') return '';
+  if (!str || str === "—") return "";
   str = String(str).trim();
-  // ISO yyyy-mm-dd o yyyy-mm-ddT...
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
-    const p = str.substring(0,10).split('-').map(Number);
-    // si el segundo segmento > 12 está invertido (yyyy-dd-mm)
-    if (p[1] > 12) return p[0]+'-'+String(p[2]).padStart(2,'0')+'-'+String(p[1]).padStart(2,'0');
-    return str.substring(0,10);
+    const p = str.substring(0, 10).split("-").map(Number);
+    if (p[1] > 12) return p[0] + "-" + String(p[2]).padStart(2, "0") + "-" + String(p[1]).padStart(2, "0");
+    return str.substring(0, 10);
   }
-  // Formato con barras: puede ser dd/mm/yyyy o mm/dd/yyyy
-  const parts = str.split('/').map(Number);
+  const parts = str.split("/").map(Number);
   if (parts.length === 3) {
     let [a, b, y] = parts;
-    // si el año está al final (dd/mm/yyyy o mm/dd/yyyy)
     if (y > 31) {
-      // a > 12 → seguro que es día/mes
       const day = a > 12 ? a : b;
       const mon = a > 12 ? b : a;
-      return y+'-'+String(mon).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+      return y + "-" + String(mon).padStart(2, "0") + "-" + String(day).padStart(2, "0");
     }
-    // año al principio yyyy/mm/dd
-    return String(a)+'-'+String(b).padStart(2,'0')+'-'+String(y).padStart(2,'0');
+    return String(a) + "-" + String(b).padStart(2, "0") + "-" + String(y).padStart(2, "0");
   }
-  return '';
+  return "";
 }
 
-function viewQuote(id){
-  const q=state.quotes.find(x=>x.id===id);if(!q)return;
-  const total=parseFloat(q.total)||0,abono=parseFloat(q.abono)||0,pagado=parseFloat(q.pagado)||0;
-  const pendiente=Math.max(0,total-abono-pagado),prog=total>0?Math.min(100,Math.round(((abono+pagado)/total)*100)):0;
-  document.getElementById('quoteModalTitle').textContent=(q.numero||'Cotizacion')+' - '+q.clientName;
-  
-  const addonsPos = (q.addons||[]).filter(function(a){return a.price>0;}).map(function(a){
-    return '<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ '+escapeHtml(a.name)+'</span><span>$'+parseFloat(a.price).toFixed(2)+'</span></div>';
-  }).join('');
-  const addonsZero = (q.addons||[]).filter(function(a){return !a.price||a.price===0;}).map(function(a){
-    return '<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">- '+escapeHtml(a.name)+'</div>';
-  }).join('');
-
-  const statusBtns = ['pending','confirmed','completed','postponed','cancelled'].map(function(s){
-    const labels={pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada'};
-    const cls={pending:'btn-pink',confirmed:'btn-green',completed:'btn-green',postponed:'btn-amber',cancelled:'btn-red'};
-    const active=q.status===s?cls[s]:'btn-outline';
-    return '<button class="btn btn-sm '+active+'" onclick="changeQuoteStatus(\''+escapeJsAttr(q.id)+'\',\''+s+'\')">'+labels[s]+'</button>';
-  }).join('');
-
-  // Cargar servicios adicionales de Supabase para el selector
+function viewQuote(id) {
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
+  const total = parseFloat(q.total) || 0, abono = parseFloat(q.abono) || 0, pagado = parseFloat(q.pagado) || 0;
+  const pendiente = Math.max(0, total - abono - pagado), prog = total > 0 ? Math.min(100, Math.round((abono + pagado) / total * 100)) : 0;
+  document.getElementById("quoteModalTitle").textContent = (q.numero || "Cotizacion") + " - " + q.clientName;
+  const addonsPos = (q.addons || []).filter(function(a) {
+    return a.price > 0;
+  }).map(function(a) {
+    return '<div style="display:flex;justify-content:space-between;color:var(--gray-l);font-size:0.85rem;padding:2px 0"><span>+ ' + escapeHtml(a.name) + "</span><span>$" + parseFloat(a.price).toFixed(2) + "</span></div>";
+  }).join("");
+  const addonsZero = (q.addons || []).filter(function(a) {
+    return !a.price || a.price === 0;
+  }).map(function(a) {
+    return '<div style="color:var(--gray-l);font-size:0.8rem;padding:2px 0">- ' + escapeHtml(a.name) + "</div>";
+  }).join("");
+  const statusBtns = [ "pending", "confirmed", "completed", "postponed", "cancelled" ].map(function(s) {
+    const labels = {
+      pending: "Pendiente",
+      confirmed: "Confirmada",
+      completed: "Completada",
+      postponed: "Aplazada",
+      cancelled: "Cancelada"
+    };
+    const cls = {
+      pending: "btn-pink",
+      confirmed: "btn-green",
+      completed: "btn-green",
+      postponed: "btn-amber",
+      cancelled: "btn-red"
+    };
+    const active = q.status === s ? cls[s] : "btn-outline";
+    return '<button class="btn btn-sm ' + active + '" onclick="changeQuoteStatus(\'' + escapeJsAttr(q.id) + "','" + s + "')\">" + labels[s] + "</button>";
+  }).join("");
   let modalSAOptions = '<option value="">— Seleccionar servicio —</option>';
   try {
     loadServAdicionales();
-    (servData.items||[]).forEach(function(s){
-      modalSAOptions += '<option value="'+escapeHtml(s.id)+'" data-price="'+parseFloat(s.precio||0).toFixed(2)+'" data-name="'+escapeHtml(s.nombre)+'">'+escapeHtml(s.nombre)+' — $'+parseFloat(s.precio||0).toFixed(2)+'</option>';
+    (servData.items || []).forEach(function(s) {
+      modalSAOptions += '<option value="' + escapeHtml(s.id) + '" data-price="' + parseFloat(s.precio || 0).toFixed(2) + '" data-name="' + escapeHtml(s.nombre) + '">' + escapeHtml(s.nombre) + " — $" + parseFloat(s.precio || 0).toFixed(2) + "</option>";
     });
-  } catch(e){}
-
-  // Extras actuales de la cotización (para mostrar la lista editable)
+  } catch (e) {}
   const currentExtras = JSON.parse(JSON.stringify(q.addons || []));
   window._modalExtras = currentExtras;
-  window._modalBaseTotal = parseFloat(q.planPrice)||0;
-
+  window._modalBaseTotal = parseFloat(q.planPrice) || 0;
   function _buildExtrasHTML() {
-    if(!window._modalExtras.length) return '<div id="extrasEmptyMsg" style="color:var(--gray);font-size:0.82rem;padding:8px 0">Sin extras añadidos aún.</div>';
-    return window._modalExtras.map(function(a,i){
-      return '<div id="extra-row-'+i+'" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--black);border-radius:8px;margin-bottom:6px">'
-        +'<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">'+escapeHtml(a.name)+'</span>'
-        +(a.price>0?'<span style="color:var(--pink-l);font-size:0.82rem;margin-left:8px">+$'+parseFloat(a.price).toFixed(2)+'</span>':'<span style="color:var(--gray);font-size:0.78rem;margin-left:8px">gratis</span>')+'</div>'
-        +'<button onclick="removeModalExtra('+i+')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px" title="Eliminar">✕</button>'
-        +'</div>';
-    }).join('');
+    if (!window._modalExtras.length) return '<div id="extrasEmptyMsg" style="color:var(--gray);font-size:0.82rem;padding:8px 0">Sin extras añadidos aún.</div>';
+    return window._modalExtras.map(function(a, i) {
+      return '<div id="extra-row-' + i + '" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--black);border-radius:8px;margin-bottom:6px">' + '<div style="flex:1"><span style="font-size:0.85rem;font-weight:600">' + escapeHtml(a.name) + "</span>" + (a.price > 0 ? '<span style="color:var(--pink-l);font-size:0.82rem;margin-left:8px">+$' + parseFloat(a.price).toFixed(2) + "</span>" : '<span style="color:var(--gray);font-size:0.78rem;margin-left:8px">gratis</span>') + "</div>" + '<button onclick="removeModalExtra(' + i + ')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:0 4px" title="Eliminar">✕</button>' + "</div>";
+    }).join("");
   }
-
-  window.removeModalExtra = function(i){
-    window._modalExtras.splice(i,1);
-    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
+  window.removeModalExtra = function(i) {
+    window._modalExtras.splice(i, 1);
+    document.getElementById("modalExtrasList").innerHTML = _buildExtrasHTML();
     _recalcModalTotal();
   };
-  window.addModalSAExtra = function(){
-    const sel = document.getElementById('modalSASelect');
+  window.addModalSAExtra = function() {
+    const sel = document.getElementById("modalSASelect");
     const opt = sel.options[sel.selectedIndex];
-    if(!opt||!opt.value) return;
-    const name  = opt.dataset.name;
-    const price = parseFloat(opt.dataset.price)||0;
-    window._modalExtras.push({name,price});
-    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
-    sel.value='';
+    if (!opt || !opt.value) return;
+    const name = opt.dataset.name;
+    const price = parseFloat(opt.dataset.price) || 0;
+    window._modalExtras.push({
+      name: name,
+      price: price
+    });
+    document.getElementById("modalExtrasList").innerHTML = _buildExtrasHTML();
+    sel.value = "";
     _recalcModalTotal();
   };
-  window.addModalCustomExtra = function(){
-    const nameEl  = document.getElementById('modalCustomName');
-    const priceEl = document.getElementById('modalCustomPrice');
-    const name    = (nameEl.value||'').trim();
-    const price   = parseFloat(priceEl.value)||0;
-    if(!name){nameEl.focus();return;}
-    window._modalExtras.push({name,price});
-    document.getElementById('modalExtrasList').innerHTML = _buildExtrasHTML();
-    nameEl.value=''; priceEl.value='';
+  window.addModalCustomExtra = function() {
+    const nameEl = document.getElementById("modalCustomName");
+    const priceEl = document.getElementById("modalCustomPrice");
+    const name = (nameEl.value || "").trim();
+    const price = parseFloat(priceEl.value) || 0;
+    if (!name) {
+      nameEl.focus();
+      return;
+    }
+    window._modalExtras.push({
+      name: name,
+      price: price
+    });
+    document.getElementById("modalExtrasList").innerHTML = _buildExtrasHTML();
+    nameEl.value = "";
+    priceEl.value = "";
     _recalcModalTotal();
   };
-  function _recalcModalTotal(){
+  function _recalcModalTotal() {
     const base = window._modalBaseTotal;
-    const extrasSum = window._modalExtras.reduce(function(s,a){return s+parseFloat(a.price||0);},0);
-    const newTotal  = base + extrasSum;
-    const inp = document.getElementById('qTotalInput');
-    if(inp){ inp.value = newTotal.toFixed(2); }
-    // Disparar actualización financiera sin pasar id (lee inputs directamente)
-    const qId = inp ? inp.dataset.qid : '';
+    const extrasSum = window._modalExtras.reduce(function(s, a) {
+      return s + parseFloat(a.price || 0);
+    }, 0);
+    const newTotal = base + extrasSum;
+    const inp = document.getElementById("qTotalInput");
+    if (inp) {
+      inp.value = newTotal.toFixed(2);
+    }
+    const qId = inp ? inp.dataset.qid : "";
     updateQFinancials(qId);
   }
-
-  document.getElementById('quoteModalBody').innerHTML=
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
-    +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>'
-    +'<div style="font-weight:700">'+escapeHtml(q.clientName)+'</div>'
-    +'<div style="color:var(--gray-l);font-size:0.82rem">'+(q.clientType==='juridica'?'Juridica':'Natural')+' - '+escapeHtml(q.clientId||'')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>'
-    +'<span id="qStatusBadge" class="badge-status '+statusClassQ(q.status)+'">'+statusLabel(q.status)+'</span></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>'+escapeHtml(q.phone||'—')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>'+escapeHtml(q.email||'—')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>'
-    +'<input type="date" id="qCreatedAtInput" value="'+escapeHtml(toDateInputVal(q.createdAt))+'" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />'
-    +'</div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">'+escapeHtml(q.sessionDate||'—')+' '+escapeHtml(q.sessionTime||'')+'</div></div>'
-    +'<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>'+escapeHtml(q.location||'—')+'</div></div>'
-    +'</div>'
-    +'<hr class="section-divider"/>'
-    +'<span class="section-label-sm">Plan &amp; Servicios</span>'
-    +'<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">'
-    +'<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>'+escapeHtml(q.plan||'Sin plan')+'</span><span>$'+(q.planPrice||0).toFixed(2)+'</span></div>'
-    +addonsPos+addonsZero
-    +'</div>'
-
-    // ── EXTRAS ADICIONALES ──
-    +'<hr class="section-divider"/>'
-    +'<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>'
-    // Lista de extras actuales
-    +'<div id="modalExtrasList" style="margin-bottom:12px">'+_buildExtrasHTML()+'</div>'
-    // Selector desde Supabase
-    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">'
-    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>'
-    +'<div style="display:flex;gap:8px;align-items:center">'
-    +'<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">'+modalSAOptions+'</select>'
-    +'<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>'
-    +'</div></div>'
-    // Item personalizado
-    +'<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">'
-    +'<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>'
-    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-    +'<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
-    +'<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />'
-    +'<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>'
-    +'</div></div>'
-
-    +'<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>'
-    +'<input type="number" id="qTotalInput" data-qid="'+escapeHtml(q.id)+'" min="0" step="0.01" value="'+total.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
-    +'<hr class="section-divider"/>'
-    +'<span class="section-label-sm">Control Financiero</span>'
-    +'<div class="form-row" style="margin-bottom:8px">'
-    +'<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="'+abono.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
-    +'<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="'+pagado.toFixed(2)+'" oninput="updateQFinancials(\''+escapeJsAttr(q.id)+'\')" /></div>'
-    +'</div>'
-    +'<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">'
-    +renderQFinancialSummary(total,abono,pagado,pendiente,prog)
-    +'</div>'
-    +'<hr class="section-divider"/>'
-    +'<span class="section-label-sm">Estado</span>'
-    +'<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">'+statusBtns+'</div>'
-    +(q.notes?'<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">'+escapeHtml(q.notes)+'</p>':'');
-
-  const fEl=document.getElementById('quoteModalFooter');
-  if(fEl)fEl.innerHTML=
-    '<button class="btn btn-pink" onclick="saveQuoteChanges(\''+escapeJsAttr(q.id)+'\')">'
-    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar'
-    +'</button>'
-    +'<button class="btn btn-outline" onclick="generateQuotePDF(\''+escapeJsAttr(q.id)+'\')">PDF</button>'
-    +'<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\''+escapeJsAttr(q.id)+'\')">Factura</button>'
-    +'<button class="btn btn-ghost" onclick="closeModal(\'quoteModal\')">Cancelar</button>'
-    +'<button class="btn btn-red" onclick="deleteQuote(\''+escapeJsAttr(q.id)+'\')">Eliminar</button>';
-
-  openModal('quoteModal');
+  document.getElementById("quoteModalBody").innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>' + '<div style="font-weight:700">' + escapeHtml(q.clientName) + "</div>" + '<div style="color:var(--gray-l);font-size:0.82rem">' + (q.clientType === "juridica" ? "Juridica" : "Natural") + " - " + escapeHtml(q.clientId || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>' + '<span id="qStatusBadge" class="badge-status ' + statusClassQ(q.status) + '">' + statusLabel(q.status) + "</span></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>' + escapeHtml(q.phone || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>' + escapeHtml(q.email || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>' + '<input type="date" id="qCreatedAtInput" value="' + escapeHtml(toDateInputVal(q.createdAt)) + '" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />' + "</div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">' + escapeHtml(q.sessionDate || "—") + " " + escapeHtml(q.sessionTime || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>' + escapeHtml(q.location || "—") + "</div></div>" + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Plan &amp; Servicios</span>' + '<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">' + '<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>' + escapeHtml(q.plan || "Sin plan") + "</span><span>$" + (q.planPrice || 0).toFixed(2) + "</span></div>" + addonsPos + addonsZero + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>' + '<div id="modalExtrasList" style="margin-bottom:12px">' + _buildExtrasHTML() + "</div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>' + '<div style="display:flex;gap:8px;align-items:center">' + '<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">' + modalSAOptions + "</select>" + '<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>' + "</div></div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>' + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' + '<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>' + "</div></div>" + '<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>' + '<input type="number" id="qTotalInput" data-qid="' + escapeHtml(q.id) + '" min="0" step="0.01" value="' + total.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Control Financiero</span>' + '<div class="form-row" style="margin-bottom:8px">' + '<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="' + abono.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="' + pagado.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + "</div>" + '<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">' + renderQFinancialSummary(total, abono, pagado, pendiente, prog) + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Estado</span>' + '<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">' + statusBtns + "</div>" + (q.notes ? '<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">' + escapeHtml(q.notes) + "</p>" : "");
+  const fEl = document.getElementById("quoteModalFooter");
+  if (fEl) fEl.innerHTML = '<button class="btn btn-pink" onclick="saveQuoteChanges(\'' + escapeJsAttr(q.id) + "')\">" + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar' + "</button>" + '<button class="btn btn-outline" onclick="generateQuotePDF(\'' + escapeJsAttr(q.id) + "')\">PDF</button>" + '<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\'' + escapeJsAttr(q.id) + "')\">Factura</button>" + '<button class="btn btn-ghost" onclick="closeModal(\'quoteModal\')">Cancelar</button>' + '<button class="btn btn-red" onclick="deleteQuote(\'' + escapeJsAttr(q.id) + "')\">Eliminar</button>";
+  openModal("quoteModal");
 }
 
-
 function showPDF(id) {
-  const q = state.quotes.find(x=>x.id===id); if(!q) return;
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
   state.currentPDFQuote = q;
-  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
-  document.getElementById('pdfPreview').innerHTML = `
-    <div class="pdf-header">
-      <div class="pdf-company">
-        <h1>${CONFIG.COMPANY_NAME}</h1>
-        <p>${CONFIG.COMPANY_PHONE}</p>
-        <p>${CONFIG.COMPANY_EMAIL}</p>
-        <p>${CONFIG.COMPANY_WEB}</p>
-      </div>
-      <div class="pdf-quote-info">
-        <h2>COTIZACIÓN</h2>
-        <p><strong>#${qNum}</strong></p>
-        <p>Fecha: ${escapeHtml(q.createdAt)}</p>
-        <p>Sesión: ${escapeHtml(q.sessionDate||'Por confirmar')} ${escapeHtml(q.sessionTime||'')}</p>
-      </div>
-    </div>
-    <div class="pdf-section">
-      <h3>Datos del Cliente</h3>
-      <div class="pdf-grid">
-        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${escapeHtml(q.clientName)}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${escapeHtml(q.clientId)||'—'}</div></div>
-        ${q.clientType==='juridica'?`
-        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${escapeHtml(q.razonSocial)||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${escapeHtml(q.dv)||'—'}</div></div>`:''}
-        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${escapeHtml(q.phone)||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${escapeHtml(q.email)||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${escapeHtml(q.address)||'—'}</div></div>
-        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${escapeHtml(q.location)||'—'}</div></div>
-      </div>
-    </div>
-    <div class="pdf-section">
-      <h3>Detalle de Servicios</h3>
-      <table class="pdf-table">
-        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>
-        <tbody>
-          ${q.plan?`<tr><td><strong>${escapeHtml(q.plan)}</strong></td><td style="text-align:right">$${(q.planPrice||0).toFixed(2)}</td></tr>`:''}
-          ${(q.addons||[]).map(a=>`<tr><td>${escapeHtml(a.name)}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join('')}
-          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total||0).toFixed(2)}</td></tr>
-        </tbody>
-      </table>
-    </div>
-    ${q.notes?`<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${escapeHtml(q.notes)}</p></div>`:''}
-    <div class="pdf-footer">
-      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>
-      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}
-    </div>`;
-  openModal('pdfModal');
+  const qNum = String(state.quotes.indexOf(q) + 1).padStart(4, "0");
+  document.getElementById("pdfPreview").innerHTML = `\n    <div class="pdf-header">\n      <div class="pdf-company">\n        <h1>${CONFIG.COMPANY_NAME}</h1>\n        <p>${CONFIG.COMPANY_PHONE}</p>\n        <p>${CONFIG.COMPANY_EMAIL}</p>\n        <p>${CONFIG.COMPANY_WEB}</p>\n      </div>\n      <div class="pdf-quote-info">\n        <h2>COTIZACIÓN</h2>\n        <p><strong>#${qNum}</strong></p>\n        <p>Fecha: ${escapeHtml(q.createdAt)}</p>\n        <p>Sesión: ${escapeHtml(q.sessionDate || "Por confirmar")} ${escapeHtml(q.sessionTime || "")}</p>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Datos del Cliente</h3>\n      <div class="pdf-grid">\n        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${escapeHtml(q.clientName)}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${escapeHtml(q.clientId) || "—"}</div></div>\n        ${q.clientType === "juridica" ? `\n        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${escapeHtml(q.razonSocial) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${escapeHtml(q.dv) || "—"}</div></div>` : ""}\n        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${escapeHtml(q.phone) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${escapeHtml(q.email) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${escapeHtml(q.address) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${escapeHtml(q.location) || "—"}</div></div>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Detalle de Servicios</h3>\n      <table class="pdf-table">\n        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>\n        <tbody>\n          ${q.plan ? `<tr><td><strong>${escapeHtml(q.plan)}</strong></td><td style="text-align:right">$${(q.planPrice || 0).toFixed(2)}</td></tr>` : ""}\n          ${(q.addons || []).map(a => `<tr><td>${escapeHtml(a.name)}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join("")}\n          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total || 0).toFixed(2)}</td></tr>\n        </tbody>\n      </table>\n    </div>\n    ${q.notes ? `<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${escapeHtml(q.notes)}</p></div>` : ""}\n    <div class="pdf-footer">\n      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>\n      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}\n    </div>`;
+  openModal("pdfModal");
 }
 
 function downloadPDF() {
-  const q = state.currentPDFQuote; if(!q) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const qNum = String(state.quotes.indexOf(q)+1).padStart(4,'0');
-  const margin = 18; let y = 20;
-
-  // Header
-  doc.setFillColor(199,30,95); doc.rect(0,0,210,14,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
-  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(`COTIZACIÓN #${qNum}`, 210-margin, 9.5, {align:'right'});
-
-  y = 24;
-  // Company info
-  doc.setTextColor(120,120,120); doc.setFontSize(8);
-  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y); y+=5;
-  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate||'Por confirmar'} ${q.sessionTime||''}`, margin, y); y+=8;
-
-  // Section: Client
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE', margin, y); y+=6;
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-  const clientData = [
-    ['Nombre:', q.clientName], ['Cédula/RUC:', q.clientId||'—'],
-    ...(q.clientType==='juridica'?[['Razón Social:', q.razonSocial||'—'],['DV:', q.dv||'—']]:[]),
-    ['Teléfono:', q.phone||'—'], ['Email:', q.email||'—'],
-    ['Dirección:', q.address||'—'], ['Lugar:', q.location||'—'],
-  ];
-  clientData.forEach(([l,v],i) => {
-    const col = i%2===0?margin:110;
-    if(i%2===0) { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); }
-    else        { doc.setTextColor(120,120,120); doc.text(l,col,y); doc.setTextColor(30,30,30); doc.text(v,col+28,y); y+=5; }
+  const q = state.currentPDFQuote;
+  if (!q) return;
+  const {jsPDF: jsPDF} = window.jspdf;
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4"
   });
-  if(clientData.length%2!==0) y+=5; y+=6;
-
-  // Section: Services
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-4, 210-(margin*2)+4, 6, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DETALLE DE SERVICIOS', margin, y); y+=7;
-  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin, y); doc.text('PRECIO', 210-margin, y, {align:'right'}); y+=4;
-  doc.line(margin, y, 210-margin, y); y+=4;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
-  if(q.plan){ doc.setFont('helvetica','bold'); doc.text(q.plan, margin, y); doc.text(`$${(q.planPrice||0).toFixed(2)}`, 210-margin, y, {align:'right'}); doc.setFont('helvetica','normal'); y+=5; }
-  (q.addons||[]).forEach(a => { doc.text(a.name, margin+4, y); doc.text(`$${a.price.toFixed(2)}`, 210-margin, y, {align:'right'}); y+=5; });
-  y+=2; doc.line(margin, y, 210-margin, y); y+=6;
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(199,30,95);
-  doc.text('TOTAL ESTIMADO', margin, y); doc.text(`$${(q.total||0).toFixed(2)}`, 210-margin, y, {align:'right'}); y+=10;
-
-  if(q.notes) { doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold'); doc.text('NOTAS:', margin, y); y+=4; doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); const lines=doc.splitTextToSize(q.notes,170); doc.text(lines,margin,y); y+=lines.length*4+4; }
-
-  // Footer
-  doc.setFillColor(199,30,95); doc.rect(0,287,210,10,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {align:'center'});
-
-  doc.save(`Cotizacion_${q.clientName.replace(/\s/g,'_')}_${qNum}.pdf`);
-  showToast('PDF descargado ✓');
+  const qNum = String(state.quotes.indexOf(q) + 1).padStart(4, "0");
+  const margin = 18;
+  let y = 20;
+  doc.setFillColor(199, 30, 95);
+  doc.rect(0, 0, 210, 14, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`COTIZACIÓN #${qNum}`, 210 - margin, 9.5, {
+    align: "right"
+  });
+  y = 24;
+  doc.setTextColor(120, 120, 120);
+  doc.setFontSize(8);
+  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y);
+  y += 5;
+  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate || "Por confirmar"} ${q.sessionTime || ""}`, margin, y);
+  y += 8;
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin - 2, y - 4, 210 - margin * 2 + 4, 6, 1, 1, "F");
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATOS DEL CLIENTE", margin, y);
+  y += 6;
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  const clientData = [ [ "Nombre:", q.clientName ], [ "Cédula/RUC:", q.clientId || "—" ], ...q.clientType === "juridica" ? [ [ "Razón Social:", q.razonSocial || "—" ], [ "DV:", q.dv || "—" ] ] : [], [ "Teléfono:", q.phone || "—" ], [ "Email:", q.email || "—" ], [ "Dirección:", q.address || "—" ], [ "Lugar:", q.location || "—" ] ];
+  clientData.forEach(([l, v], i) => {
+    const col = i % 2 === 0 ? margin : 110;
+    if (i % 2 === 0) {
+      doc.setTextColor(120, 120, 120);
+      doc.text(l, col, y);
+      doc.setTextColor(30, 30, 30);
+      doc.text(v, col + 28, y);
+    } else {
+      doc.setTextColor(120, 120, 120);
+      doc.text(l, col, y);
+      doc.setTextColor(30, 30, 30);
+      doc.text(v, col + 28, y);
+      y += 5;
+    }
+  });
+  if (clientData.length % 2 !== 0) y += 5;
+  y += 6;
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin - 2, y - 4, 210 - margin * 2 + 4, 6, 1, 1, "F");
+  doc.setTextColor(199, 30, 95);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("DETALLE DE SERVICIOS", margin, y);
+  y += 7;
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(.2);
+  doc.setTextColor(120, 120, 120);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("DESCRIPCIÓN", margin, y);
+  doc.text("PRECIO", 210 - margin, y, {
+    align: "right"
+  });
+  y += 4;
+  doc.line(margin, y, 210 - margin, y);
+  y += 4;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(30, 30, 30);
+  if (q.plan) {
+    doc.setFont("helvetica", "bold");
+    doc.text(q.plan, margin, y);
+    doc.text(`$${(q.planPrice || 0).toFixed(2)}`, 210 - margin, y, {
+      align: "right"
+    });
+    doc.setFont("helvetica", "normal");
+    y += 5;
+  }
+  (q.addons || []).forEach(a => {
+    doc.text(a.name, margin + 4, y);
+    doc.text(`$${a.price.toFixed(2)}`, 210 - margin, y, {
+      align: "right"
+    });
+    y += 5;
+  });
+  y += 2;
+  doc.line(margin, y, 210 - margin, y);
+  y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(199, 30, 95);
+  doc.text("TOTAL ESTIMADO", margin, y);
+  doc.text(`$${(q.total || 0).toFixed(2)}`, 210 - margin, y, {
+    align: "right"
+  });
+  y += 10;
+  if (q.notes) {
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "bold");
+    doc.text("NOTAS:", margin, y);
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    const lines = doc.splitTextToSize(q.notes, 170);
+    doc.text(lines, margin, y);
+    y += lines.length * 4 + 4;
+  }
+  doc.setFillColor(199, 30, 95);
+  doc.rect(0, 287, 210, 10, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {
+    align: "center"
+  });
+  doc.save(`Cotizacion_${q.clientName.replace(/\s/g, "_")}_${qNum}.pdf`);
+  showToast("PDF descargado ✓");
 }
 
-
 function getCompanyData() {
-  try { return JSON.parse(localStorage.getItem('jans_company') || '{}'); } catch(e) { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem("jans_company") || "{}");
+  } catch (e) {
+    return {};
+  }
 }
 
 async function loadLogoForPDF() {
-  // Intentar con loadImageAsDataUrl si CONFIG_PUBLIC está disponible
-  const base = (typeof CONFIG_PUBLIC !== 'undefined' && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO)
-    ? 'https://raw.githubusercontent.com/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/main/'
-    : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/';
+  const base = typeof CONFIG_PUBLIC !== "undefined" && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO ? "https://raw.githubusercontent.com/" + CONFIG_PUBLIC.OWNER + "/" + CONFIG_PUBLIC.REPO + "/main/" : "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/";
   const comp = pdfCompanyInfo();
-  const paths = [
-    comp.logoPath,
-    'assets/images/icons/Janssocialmedialogo.png',
-    'assets/images/icons/Janssocialmedialogo.jpg',
-    'assets/images/icons/Janssocialmedialogo.webp',
-  ].filter(Boolean);
+  const paths = [ comp.logoPath, "assets/images/icons/Janssocialmedialogo.png", "assets/images/icons/Janssocialmedialogo.jpg", "assets/images/icons/Janssocialmedialogo.webp" ].filter(Boolean);
   for (const p of paths) {
     try {
       const url = base + p;
@@ -1391,452 +1469,614 @@ async function loadLogoForPDF() {
       if (!res.ok) continue;
       const blob = await res.blob();
       const dataUrl = await new Promise(r => {
-        const fr = new FileReader();
+        const fr = new FileReader;
         fr.onloadend = () => r(fr.result);
-        fr.onerror  = () => r(null);
+        fr.onerror = () => r(null);
         fr.readAsDataURL(blob);
       });
       if (dataUrl) return dataUrl;
-    } catch(e) { continue; }
+    } catch (e) {
+      continue;
+    }
   }
   return null;
 }
 
-// Formatear fecha "2026-06-26" o "26/6/2026" → "26 de Junio 2026"
 function fmtFechaPDF(str) {
-  if (!str || str === '—') return '—';
-  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  if (!str || str === "—") return "—";
+  const meses = [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ];
   str = String(str).trim();
-  // ISO yyyy-mm-dd
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
-    const [y,m,d] = str.substring(0,10).split('-').map(Number);
-    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+    const [y, m, d] = str.substring(0, 10).split("-").map(Number);
+    return d + " de " + (meses[m - 1] || "") + " " + y;
   }
-  // dd/mm/yyyy
-  const parts = str.split('/');
+  const parts = str.split("/");
   if (parts.length === 3) {
-    const [d,m,y] = parts.map(Number);
-    return d + ' de ' + (meses[m-1]||'') + ' ' + y;
+    const [d, m, y] = parts.map(Number);
+    return d + " de " + (meses[m - 1] || "") + " " + y;
   }
   return str;
 }
 
-// ════════════════════════════════════════════
-//  PDF CONFIRMACIÓN — modelo "RESERVA CONFIRMADA"
-// ════════════════════════════════════════════
 async function generateQuotePDF(id) {
-  const q = state.quotes.find(x => x.id === id); if (!q) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
+  const {jsPDF: jsPDF} = window.jspdf;
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4"
+  });
   const comp = pdfCompanyInfo();
   const footer = pdfCompanyFooterLine(comp);
-  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const qNum = q.numero || "COT-" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
   const margin = 14;
   const pageW = 210;
-  const today = new Date().toLocaleDateString('es-PA');
+  const today = (new Date).toLocaleDateString("es-PA");
   let y = 0;
-
-  // ── HEADER OSCURO ──
-  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  doc.setFillColor(30, 30, 30);
+  doc.rect(0, 0, pageW, 34, "F");
   const logo = await loadLogoForPDF();
   if (logo) {
-    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+    try {
+      doc.addImage(logo, "PNG", margin, 5, 22, 22);
+    } catch (e) {}
   } else {
-    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('JP', margin+10, 18, {align:'center'});
+    doc.setFillColor(199, 30, 95);
+    doc.roundedRect(margin, 6, 20, 20, 2, 2, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("JP", margin + 10, 18, {
+      align: "center"
+    });
   }
-  // Empresa — izquierda
-  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
   doc.text(comp.nombre, 40, 13);
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
-  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(200, 200, 200);
+  doc.text("Tel: " + comp.telefono, 40, 18);
   doc.text(comp.email, 40, 22);
   if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
-  // Derecha — número arriba, fecha abajo, RUC
-  doc.setTextColor(180,180,180); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 9, {align:'right'});
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text('# ' + qNum, pageW-margin, 18, {align:'right'});
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text('Emitido: ' + today, pageW-margin, 24, {align:'right'});
-
+  doc.setTextColor(180, 180, 180);
+  doc.setFontSize(6.5);
+  doc.setFont("helvetica", "normal");
+  if (comp.ruc) doc.text("RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : ""), pageW - margin, 9, {
+    align: "right"
+  });
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text("# " + qNum, pageW - margin, 18, {
+    align: "right"
+  });
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 180, 180);
+  doc.text("Emitido: " + today, pageW - margin, 24, {
+    align: "right"
+  });
   y = 40;
-
-  // ── CINTILLO DE ESTADO — color y texto según el estado real de la cotización ──
   const statusBanner = {
-    pending:   { color: [245,158,11], text: 'COTIZACIÓN PENDIENTE'   },
-    confirmed: { color: [34,197,94],  text: 'COTIZACIÓN CONFIRMADA'  },
-    completed: { color: [34,197,94],  text: 'COTIZACIÓN COMPLETADA'  },
-    postponed: { color: [139,92,246], text: 'COTIZACIÓN APLAZADA'    },
-    cancelled: { color: [239,68,68],  text: 'COTIZACIÓN CANCELADA'   },
-  }[q.status] || { color: [245,158,11], text: 'COTIZACIÓN PENDIENTE' };
-  doc.setFillColor(...statusBanner.color); doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 12, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
-  doc.text(statusBanner.text, pageW/2, y+8, {align:'center'});
+    pending: {
+      color: [ 245, 158, 11 ],
+      text: "COTIZACIÓN PENDIENTE"
+    },
+    confirmed: {
+      color: [ 34, 197, 94 ],
+      text: "COTIZACIÓN CONFIRMADA"
+    },
+    completed: {
+      color: [ 34, 197, 94 ],
+      text: "COTIZACIÓN COMPLETADA"
+    },
+    postponed: {
+      color: [ 139, 92, 246 ],
+      text: "COTIZACIÓN APLAZADA"
+    },
+    cancelled: {
+      color: [ 239, 68, 68 ],
+      text: "COTIZACIÓN CANCELADA"
+    }
+  }[q.status] || {
+    color: [ 245, 158, 11 ],
+    text: "COTIZACIÓN PENDIENTE"
+  };
+  doc.setFillColor(...statusBanner.color);
+  doc.roundedRect(margin - 2, y, pageW - margin * 2 + 4, 12, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(statusBanner.text, pageW / 2, y + 8, {
+    align: "center"
+  });
   y += 26;
-
-  // ── DATOS DE LA RESERVA ──
   const col2 = 112;
-  const dataRows = [
-    ['Cliente',      q.clientName,            'Fecha de sesión', fmtFechaPDF(q.sessionDate)],
-    ['Teléfono',     q.phone || '—',          'Hora',            q.sessionTime || '—'],
-    ['Email',        q.email || '—',          'Plan',            q.plan || '—'],
-    ['# Cotización', qNum,                    'Estado',          statusLabel(q.status)],
-  ];
+  const dataRows = [ [ "Cliente", q.clientName, "Fecha de sesión", fmtFechaPDF(q.sessionDate) ], [ "Teléfono", q.phone || "—", "Hora", q.sessionTime || "—" ], [ "Email", q.email || "—", "Plan", q.plan || "—" ], [ "# Cotización", qNum, "Estado", statusLabel(q.status) ] ];
   const dataH = 14 + dataRows.length * 9 + 4;
-  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
-  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, dataH, 3, 3, 'FD');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DE LA RESERVA', margin+2, y); y += 9;
-
-  dataRows.forEach(([l1,v1,l2,v2]) => {
-    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text(l1 + ':', margin+2, y);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(String(v1||'—'), margin+30, y);
-    doc.setTextColor(130,130,130); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text(l2 + ':', col2, y);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(String(v2||'—'), col2+34, y);
+  doc.setFillColor(250, 250, 250);
+  doc.setDrawColor(228, 228, 228);
+  doc.setLineWidth(.3);
+  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, dataH, 3, 3, "FD");
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATOS DE LA RESERVA", margin + 2, y);
+  y += 9;
+  dataRows.forEach(([l1, v1, l2, v2]) => {
+    doc.setTextColor(130, 130, 130);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(l1 + ":", margin + 2, y);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(String(v1 || "—"), margin + 30, y);
+    doc.setTextColor(130, 130, 130);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(l2 + ":", col2, y);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(String(v2 || "—"), col2 + 34, y);
     y += 9;
   });
   y += 14;
-
-  // ── RESUMEN DE PAGO ──
-  const total     = parseFloat(q.total)||0;
-  const abono     = parseFloat(q.abono)||0;
-  const pagado    = parseFloat(q.pagado)||0;
-  const pend      = Math.max(0, total - abono - pagado);
-  const planPrice = parseFloat(q.planPrice)||0;
-  const addonsPos = (q.addons||[]).filter(a => parseFloat(a.price||0) > 0);
-  const pagoH = 14 + 11 + (addonsPos.length*8) + 8 + (abono>0?8:0) + (pagado>0?8:0) + 12;
-
-  doc.setFillColor(250,250,250); doc.setDrawColor(228,228,228); doc.setLineWidth(0.3);
-  doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, pagoH, 3, 3, 'FD');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('RESUMEN DE PAGO', margin+2, y); y += 10;
-
-  // Plan
-  doc.setTextColor(20,20,20); doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.text('Plan:', margin+4, y);
-  doc.text(q.plan || '—', margin+22, y);
-  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 9;
-
-  // Extras
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(70,70,70);
+  const total = parseFloat(q.total) || 0;
+  const abono = parseFloat(q.abono) || 0;
+  const pagado = parseFloat(q.pagado) || 0;
+  const pend = Math.max(0, total - abono - pagado);
+  const planPrice = parseFloat(q.planPrice) || 0;
+  const addonsPos = (q.addons || []).filter(a => parseFloat(a.price || 0) > 0);
+  const pagoH = 14 + 11 + addonsPos.length * 8 + 8 + (abono > 0 ? 8 : 0) + (pagado > 0 ? 8 : 0) + 12;
+  doc.setFillColor(250, 250, 250);
+  doc.setDrawColor(228, 228, 228);
+  doc.setLineWidth(.3);
+  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, pagoH, 3, 3, "FD");
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("RESUMEN DE PAGO", margin + 2, y);
+  y += 10;
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Plan:", margin + 4, y);
+  doc.text(q.plan || "—", margin + 22, y);
+  doc.text("$" + planPrice.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  y += 9;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(70, 70, 70);
   addonsPos.forEach(a => {
-    doc.text(a.name||'', margin+6, y);
-    doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+    doc.text(a.name || "", margin + 6, y);
+    doc.text("$" + parseFloat(a.price || 0).toFixed(2), pageW - margin, y, {
+      align: "right"
+    });
     y += 8;
   });
-
   y += 2;
-  doc.setDrawColor(220,220,220); doc.line(margin+4, y, pageW-margin-2, y); y += 8;
-
-  doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Total:', margin+4, y);
-  doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20);
-  doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
-
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin + 4, y, pageW - margin - 2, y);
+  y += 8;
+  doc.setFontSize(9.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text("Total:", margin + 4, y);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(20, 20, 20);
+  doc.text("$" + total.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  y += 8;
   if (abono > 0) {
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    doc.text('Abonado:', margin+4, y);
-    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("Abonado:", margin + 4, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 163, 74);
+    doc.text("$" + abono.toFixed(2), pageW - margin, y, {
+      align: "right"
+    });
+    y += 8;
   }
   if (pagado > 0) {
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    doc.text('Pago adicional:', margin+4, y);
-    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text('$'+pagado.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("Pago adicional:", margin + 4, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 163, 74);
+    doc.text("$" + pagado.toFixed(2), pageW - margin, y, {
+      align: "right"
+    });
+    y += 8;
   }
-
-  doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  doc.setTextColor(199,30,95);
-  doc.text('Saldo pendiente:', margin+4, y);
-  doc.text('$'+pend.toFixed(2), pageW-margin, y, {align:'right'});
-
-  // ── FOOTER ──
-  doc.setFillColor(30,30,30); doc.rect(0, 272, pageW, 25, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, 282, {align:'center'});
-  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180,180,180);
-  doc.text(footer, pageW/2, 290, {align:'center'});
-  doc.save('Confirmacion_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '_' + qNum + '.pdf');
-  showToast('PDF de confirmación descargado ✓');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(199, 30, 95);
+  doc.text("Saldo pendiente:", margin + 4, y);
+  doc.text("$" + pend.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  doc.setFillColor(30, 30, 30);
+  doc.rect(0, 272, pageW, 25, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Gracias por confiar en nosotros", pageW / 2, 282, {
+    align: "center"
+  });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(180, 180, 180);
+  doc.text(footer, pageW / 2, 290, {
+    align: "center"
+  });
+  doc.save("Confirmacion_" + (q.clientName || "cliente").replace(/\s+/g, "_") + "_" + qNum + ".pdf");
+  showToast("PDF de confirmación descargado ✓");
 }
 
-// ════════════════════════════════════════════
-//  PDF FACTURA — modelo con constancia
-// ════════════════════════════════════════════
 async function generateQuoteInvoicePDF(id) {
-  const q = state.quotes.find(x => x.id === id); if (!q) return;
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const q = state.quotes.find(x => x.id === id);
+  if (!q) return;
+  const {jsPDF: jsPDF} = window.jspdf;
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4"
+  });
   const comp = pdfCompanyInfo();
   const footer = pdfCompanyFooterLine(comp);
-  const qNum = q.numero || ('COT-' + String(state.quotes.indexOf(q)+1).padStart(3,'0'));
+  const qNum = q.numero || "COT-" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
   const margin = 14;
   const pageW = 210;
-
-  // Número de factura correlativo (contador centralizado en Supabase)
   const facNumStr = await nextFacturaNumero();
-  const today = new Date().toLocaleDateString('es-PA', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const today = (new Date).toLocaleDateString("es-PA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
   let y = 0;
-
-  // ── HEADER OSCURO ──
-  doc.setFillColor(30,30,30); doc.rect(0, 0, pageW, 34, 'F');
+  doc.setFillColor(30, 30, 30);
+  doc.rect(0, 0, pageW, 34, "F");
   const logo = await loadLogoForPDF();
   if (logo) {
-    try { doc.addImage(logo, 'PNG', margin, 5, 22, 22); } catch(e) {}
+    try {
+      doc.addImage(logo, "PNG", margin, 5, 22, 22);
+    } catch (e) {}
   } else {
-    doc.setFillColor(199,30,95); doc.roundedRect(margin, 6, 20, 20, 2, 2, 'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('JP', margin+10, 18, {align:'center'});
+    doc.setFillColor(199, 30, 95);
+    doc.roundedRect(margin, 6, 20, 20, 2, 2, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("JP", margin + 10, 18, {
+      align: "center"
+    });
   }
-  doc.setTextColor(255,255,255); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
   doc.text(comp.nombre, 40, 13);
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
-  doc.text('Tel: ' + comp.telefono, 40, 18);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(200, 200, 200);
+  doc.text("Tel: " + comp.telefono, 40, 18);
   doc.text(comp.email, 40, 22);
   if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
-  // Derecha
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text('FACTURA #' + facNumStr, pageW-margin, 13, {align:'right'});
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text('Emitida: ' + today, pageW-margin, 19, {align:'right'});
-  if (comp.ruc) doc.text('RUC: ' + comp.ruc + (comp.dv ? '  DV: ' + comp.dv : ''), pageW-margin, 25, {align:'right'});
-
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text("FACTURA #" + facNumStr, pageW - margin, 13, {
+    align: "right"
+  });
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 180, 180);
+  doc.text("Emitida: " + today, pageW - margin, 19, {
+    align: "right"
+  });
+  if (comp.ruc) doc.text("RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : ""), pageW - margin, 25, {
+    align: "right"
+  });
   y = 42;
-
-  // ── DATOS DEL CLIENTE Y SESIÓN ──
-  doc.setFillColor(248,248,248); doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
-  doc.rect(margin-2, y-4, pageW-(margin*2)+4, 48, 'FD');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
-
+  doc.setFillColor(248, 248, 248);
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(.3);
+  doc.rect(margin - 2, y - 4, pageW - margin * 2 + 4, 48, "FD");
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATOS DEL CLIENTE Y SESIÓN", margin, y);
+  y += 7;
   const col2 = 115;
-  const clientRows = [
-    ['Nombre',    q.clientName,         'Fecha de sesión', q.sessionDate || '—'],
-    ['Cédula/RUC',q.clientId || '—',   'Hora',            q.sessionTime || '—'],
-    ['Teléfono',  q.phone || '—',       'Estado',          statusLabel(q.status)],
-    ['Email',     q.email || '—',       'Origen',          qNum],
-  ];
-  clientRows.forEach(([l1,v1,l2,v2]) => {
-    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text(l1 + ':', margin, y);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
-    doc.text(String(v1||'—'), margin+26, y);
-    doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
-    doc.text(l2 + ':', col2, y);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold');
-    doc.text(String(v2||'—'), col2+30, y);
+  const clientRows = [ [ "Nombre", q.clientName, "Fecha de sesión", q.sessionDate || "—" ], [ "Cédula/RUC", q.clientId || "—", "Hora", q.sessionTime || "—" ], [ "Teléfono", q.phone || "—", "Estado", statusLabel(q.status) ], [ "Email", q.email || "—", "Origen", qNum ] ];
+  clientRows.forEach(([l1, v1, l2, v2]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(l1 + ":", margin, y);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(v1 || "—"), margin + 26, y);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "normal");
+    doc.text(l2 + ":", col2, y);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(v2 || "—"), col2 + 30, y);
     y += 7;
   });
   y += 14;
-
-  // ── PLANES Y SERVICIOS ──
-  // El borde de esta caja se dibuja AL FINAL, una vez que sabemos cuánto
-  // contenido real hay (plan + extras) — antes tenía una altura fija de
-  // 70mm que se quedaba corta y el texto se salía del recuadro cuando la
-  // cotización tenía varios extras.
   const servicesBoxTop = y - 4;
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('PLANES Y SERVICIOS', margin, y); y += 6;
-  // Encabezado tabla
-  doc.setTextColor(120,120,120); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
-  doc.text('DESCRIPCIÓN', margin+4, y); doc.text('PRECIO', pageW-margin, y, {align:'right'});
-  doc.setDrawColor(200,200,200); doc.line(margin+2, y+2, pageW-margin, y+2); y += 7;
-
-  // Plan
-  const planPrice = parseFloat(q.planPrice)||0;
-  doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
-  doc.text(q.plan || '—', margin+4, y);
-  doc.text('$'+planPrice.toFixed(2), pageW-margin, y, {align:'right'}); y += 7;
-
-  // Extras con precio
-  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(60,60,60);
-  (q.addons||[]).forEach(a => {
-    if (parseFloat(a.price||0) > 0) {
-      doc.text(a.name||'', margin+4, y);
-      doc.text('$'+parseFloat(a.price||0).toFixed(2), pageW-margin, y, {align:'right'});
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("PLANES Y SERVICIOS", margin, y);
+  y += 6;
+  doc.setTextColor(120, 120, 120);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("DESCRIPCIÓN", margin + 4, y);
+  doc.text("PRECIO", pageW - margin, y, {
+    align: "right"
+  });
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin + 2, y + 2, pageW - margin, y + 2);
+  y += 7;
+  const planPrice = parseFloat(q.planPrice) || 0;
+  doc.setTextColor(20, 20, 20);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.text(q.plan || "—", margin + 4, y);
+  doc.text("$" + planPrice.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  y += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(60, 60, 60);
+  (q.addons || []).forEach(a => {
+    if (parseFloat(a.price || 0) > 0) {
+      doc.text(a.name || "", margin + 4, y);
+      doc.text("$" + parseFloat(a.price || 0).toFixed(2), pageW - margin, y, {
+        align: "right"
+      });
       y += 5;
     }
   });
   y += 4;
-
-  // Ahora que conocemos el contenido real (plan + extras), dibujamos el
-  // borde de la caja con la altura exacta que necesita.
-  const servicesBoxHeight = (y - 4) - servicesBoxTop;
-  doc.setDrawColor(220,220,220); doc.setLineWidth(0.3);
-  doc.roundedRect(margin-2, servicesBoxTop, pageW-(margin*2)+4, servicesBoxHeight, 3, 3, 'D');
-
-  // Totales
-  const total  = parseFloat(q.total)||0;
-  const abono  = parseFloat(q.abono)||0;
-  const pagado = parseFloat(q.pagado)||0;
-  const pend   = Math.max(0, total - abono - pagado);
-
-  doc.setDrawColor(220,220,220); doc.line(margin+2, y, pageW-margin, y); y += 5;
-  doc.setTextColor(60,60,60); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-  doc.text('Total de plan(es):', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(20,20,20); doc.text('$'+total.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+  const servicesBoxHeight = y - 4 - servicesBoxTop;
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(.3);
+  doc.roundedRect(margin - 2, servicesBoxTop, pageW - margin * 2 + 4, servicesBoxHeight, 3, 3, "D");
+  const total = parseFloat(q.total) || 0;
+  const abono = parseFloat(q.abono) || 0;
+  const pagado = parseFloat(q.pagado) || 0;
+  const pend = Math.max(0, total - abono - pagado);
+  doc.setDrawColor(220, 220, 220);
+  doc.line(margin + 2, y, pageW - margin, y);
+  y += 5;
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Total de plan(es):", margin + 4, y);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(20, 20, 20);
+  doc.text("$" + total.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  y += 6;
   if (abono > 0) {
-    doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
-    doc.text('Abono realizado:', margin+4, y); doc.setFont('helvetica','bold'); doc.setTextColor(34,197,94); doc.text('$'+abono.toFixed(2), pageW-margin, y, {align:'right'}); y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
+    doc.text("Abono realizado:", margin + 4, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(34, 197, 94);
+    doc.text("$" + abono.toFixed(2), pageW - margin, y, {
+      align: "right"
+    });
+    y += 6;
   }
-  doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
-  doc.text('Cancelación completa:', margin+4, y);
-  doc.setFont('helvetica','bold'); doc.setTextColor(199,30,95);
-  doc.text('Pendiente: $'+pend.toFixed(2), pageW-margin, y, {align:'right'}); y += 8;
-
-  // Barra TOTAL FACTURADO
-  doc.setFillColor(199,30,95); doc.roundedRect(margin-2, y-4, pageW-(margin*2)+4, 11, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10);
-  doc.text('TOTAL FACTURADO', margin+4, y+3);
-  doc.text('$'+total.toFixed(2), pageW-margin, y+3, {align:'right'});
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(60, 60, 60);
+  doc.text("Cancelación completa:", margin + 4, y);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(199, 30, 95);
+  doc.text("Pendiente: $" + pend.toFixed(2), pageW - margin, y, {
+    align: "right"
+  });
+  y += 8;
+  doc.setFillColor(199, 30, 95);
+  doc.roundedRect(margin - 2, y - 4, pageW - margin * 2 + 4, 11, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("TOTAL FACTURADO", margin + 4, y + 3);
+  doc.text("$" + total.toFixed(2), pageW - margin, y + 3, {
+    align: "right"
+  });
   y += 18;
-
-  // ── CAJA SELLO ──
-  doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
-  doc.roundedRect(margin-2, y, pageW-(margin*2)+4, 14, 2, 2, 'D');
-  doc.setTextColor(160,160,160); doc.setFontSize(8); doc.setFont('helvetica','italic');
-  doc.text('Factura que no presente sello es nula', pageW/2, y+9, {align:'center'});
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(.3);
+  doc.roundedRect(margin - 2, y, pageW - margin * 2 + 4, 14, 2, 2, "D");
+  doc.setTextColor(160, 160, 160);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text("Factura que no presente sello es nula", pageW / 2, y + 9, {
+    align: "center"
+  });
   y += 20;
-
-  // ── FOOTER — se ubica según el contenido real (nunca se superpone), pero
-  //    no más arriba de 230mm para que no quede "flotando" muy pegado al
-  //    contenido cuando la factura es corta. ──
   const footerY = Math.max(230, y + 6);
-  doc.setFillColor(30,30,30); doc.rect(0, footerY, pageW, 18, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, footerY+7, {align:'center'});
-  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,180,180);
-  doc.text(footer, pageW/2, footerY+13, {align:'center'});
-
-  // ── LÍNEA PUNTEADA + CONSTANCIA — pegada debajo del footer ──
+  doc.setFillColor(30, 30, 30);
+  doc.rect(0, footerY, pageW, 18, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Gracias por confiar en nosotros", pageW / 2, footerY + 7, {
+    align: "center"
+  });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(180, 180, 180);
+  doc.text(footer, pageW / 2, footerY + 13, {
+    align: "center"
+  });
   let cy = footerY + 22;
-  doc.setDrawColor(140,140,140); doc.setLineWidth(0.2);
-  for (let x = margin; x < pageW-margin; x += 4) doc.line(x, cy, x+2, cy);
-  doc.setTextColor(140,140,140); doc.setFontSize(7); doc.setFont('helvetica','italic');
-  doc.text("' Constancia — recortar y conservar", pageW/2, cy+5, {align:'center'});
+  doc.setDrawColor(140, 140, 140);
+  doc.setLineWidth(.2);
+  for (let x = margin; x < pageW - margin; x += 4) doc.line(x, cy, x + 2, cy);
+  doc.setTextColor(140, 140, 140);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "italic");
+  doc.text("' Constancia — recortar y conservar", pageW / 2, cy + 5, {
+    align: "center"
+  });
   cy += 10;
-
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('CONSTANCIA DE FACTURACIÓN', margin, cy); cy += 7;
-
-  doc.setTextColor(80,80,80); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  const constLeft  = [['Factura','#'+facNumStr],['Origen',qNum],['Plan', q.plan||'—']];
-  const constRight = [['Cliente',q.clientName],['Teléfono',q.phone||'—'],['Total','$'+total.toFixed(2)]];
-  constLeft.forEach(([l,v],i) => {
-    doc.setTextColor(120,120,120); doc.text(l+':', margin, cy);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(v||'—'), margin+20, cy);
-    doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120); doc.text(constRight[i][0]+':', col2, cy);
-    doc.setTextColor(20,20,20); doc.setFont('helvetica','bold'); doc.text(String(constRight[i][1]||'—'), col2+22, cy);
-    doc.setFont('helvetica','normal'); cy += 6;
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("CONSTANCIA DE FACTURACIÓN", margin, cy);
+  cy += 7;
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  const constLeft = [ [ "Factura", "#" + facNumStr ], [ "Origen", qNum ], [ "Plan", q.plan || "—" ] ];
+  const constRight = [ [ "Cliente", q.clientName ], [ "Teléfono", q.phone || "—" ], [ "Total", "$" + total.toFixed(2) ] ];
+  constLeft.forEach(([l, v], i) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l + ":", margin, cy);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(v || "—"), margin + 20, cy);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text(constRight[i][0] + ":", col2, cy);
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(constRight[i][1] || "—"), col2 + 22, cy);
+    doc.setFont("helvetica", "normal");
+    cy += 6;
   });
   cy += 4;
-  doc.setDrawColor(150,150,150); doc.line(margin, cy, margin+70, cy);
-  doc.setTextColor(120,120,120); doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.text('Firma del cliente', margin, cy+4);
-
-  doc.save('Factura_' + facNumStr + '_' + (q.clientName||'cliente').replace(/\s+/g,'_') + '.pdf');
-  showToast('Factura #' + facNumStr + ' descargada ✓');
+  doc.setDrawColor(150, 150, 150);
+  doc.line(margin, cy, margin + 70, cy);
+  doc.setTextColor(120, 120, 120);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Firma del cliente", margin, cy + 4);
+  doc.save("Factura_" + facNumStr + "_" + (q.clientName || "cliente").replace(/\s+/g, "_") + ".pdf");
+  showToast("Factura #" + facNumStr + " descargada ✓");
 }
 
-
-// ── Supabase helpers ──
-
 async function sbUpsert(tabla, datos) {
-  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  if (!sbClient) {
+    console.warn("sbClient no disponible");
+    return false;
+  }
   try {
-    const { error } = await sbClient.from(tabla).upsert(
-      Array.isArray(datos) ? datos : [datos],
-      { onConflict: 'id' }
-    );
-    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    const {error: error} = await sbClient.from(tabla).upsert(Array.isArray(datos) ? datos : [ datos ], {
+      onConflict: "id"
+    });
+    if (error) {
+      console.error(`sbUpsert ${tabla}:`, error);
+      return false;
+    }
     return true;
-  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+  } catch (e) {
+    console.error(`sbUpsert ${tabla}:`, e);
+    return false;
+  }
 }
 
 async function sbDelete(tabla, id) {
   if (!sbClient) return false;
   try {
-    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    const {error: error} = await sbClient.from(tabla).delete().eq("id", id);
     return !error;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
 
-async function sbGetAll(tabla, order='created_at') {
+async function sbGetAll(tabla, order = "created_at") {
   if (!sbClient) return null;
   try {
-    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    const {data: data, error: error} = await sbClient.from(tabla).select("*").order(order);
     if (error) return null;
     return data;
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
-// Guardar en config_sitio
 async function sbSetConfig(clave, valor) {
   if (!sbClient) return false;
   try {
-    const { error } = await sbClient.from('config_sitio').upsert(
-      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
-      { onConflict: 'clave' }
-    );
+    const {error: error} = await sbClient.from("config_sitio").upsert([ {
+      clave: clave,
+      valor: JSON.stringify(valor),
+      updated_at: (new Date).toISOString()
+    } ], {
+      onConflict: "clave"
+    });
     return !error;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
 
 async function sbGetConfig(clave) {
   if (!sbClient) return null;
   try {
-    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    const {data: data, error: error} = await sbClient.from("config_sitio").select("valor").eq("clave", clave).single();
     if (error || !data) return null;
     return JSON.parse(data.valor);
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadQuotes();
   renderQuotesTable();
   loadPublicPlans();
-  // Cargar servicios adicionales en state
   try {
-    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
     state.services = {
-      makeup: Array.isArray(saved.makeup) ? saved.makeup : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='makeup') : []),
-      print:  Array.isArray(saved.print)  ? saved.print  : (Array.isArray(saved.items) ? saved.items.filter(i=>i.cat==='print')  : [])
+      makeup: Array.isArray(saved.makeup) ? saved.makeup : Array.isArray(saved.items) ? saved.items.filter(i => i.cat === "makeup") : [],
+      print: Array.isArray(saved.print) ? saved.print : Array.isArray(saved.items) ? saved.items.filter(i => i.cat === "print") : []
     };
-  } catch(e) { state.services = { makeup: [], print: [] }; }
+  } catch (e) {
+    state.services = {
+      makeup: [],
+      print: []
+    };
+  }
   updateQPlanSelect();
   fetchQuotes();
-  // Pre-inicializar el formulario de evento aunque no sea visible aún
   initEventoForm();
-  // Si se llega desde otro módulo (ej. Calendario) con ?highlight=id, abre esa cotización
-  const highlightId = new URLSearchParams(location.search).get('highlight');
+  const highlightId = new URLSearchParams(location.search).get("highlight");
   if (highlightId) setTimeout(() => viewQuote(highlightId), 300);
-});
-</script>
-<script>
-// Sincroniza el submenú anidado del menú hamburguesa con la sección activa
-// (envuelve showSection, ya definida arriba, sin tocar su lógica original).
-if (typeof showSection === 'function') {
+});</script>
+<script>if (typeof showSection === "function") {
   const __origShowSection = showSection;
   showSection = function(name) {
     __origShowSection(name);
-    document.querySelectorAll('.nav-submenu-item').forEach(function(el) {
-      el.classList.toggle('active', el.dataset.section === name);
+    document.querySelectorAll(".nav-submenu-item").forEach(function(el) {
+      el.classList.toggle("active", el.dataset.section === name);
     });
   };
-  // Si se llega desde otra página con ?section=xxx en la URL, abre esa
-  // sección directamente al cargar (así el submenú del menú principal
-  // funciona como acceso directo desde cualquier parte del sitio).
-  const __sectionParam = new URLSearchParams(location.search).get('section');
-  if (__sectionParam && document.getElementById('section-' + __sectionParam)) {
+  const __sectionParam = new URLSearchParams(location.search).get("section");
+  if (__sectionParam && document.getElementById("section-" + __sectionParam)) {
     showSection(__sectionParam);
   }
-}
-</script>
+}</script>
 </body>
 </html>

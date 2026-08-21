@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ══ SEO ══ -->
+  
   <title>Reserva tu Sesión Fotográfica | Jans Photograph Panamá</title>
   <meta name="description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
   <meta name="keywords"    content="reservar sesión fotográfica Panamá, agendar fotógrafo Panamá, reservas fotografía" />
@@ -11,7 +11,7 @@
   <meta name="robots"      content="index, follow" />
   <link rel="canonical"    href="https://jansphotograph.com/assets/pages/quotes/reservas.html" />
 
-  <!-- Open Graph -->
+  
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta property="og:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
@@ -20,13 +20,13 @@
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
-  <!-- Twitter Card -->
+  
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
   <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
-  <!-- Geo -->
+  
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
@@ -41,7 +41,7 @@
     }
     .res-wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
 
-    /* ── Page hero ── */
+    
     .res-hero {
       background: linear-gradient(135deg,#0d0d0d,#1a0a10,#0d0d0d);
       padding: 52px 24px 36px;
@@ -54,16 +54,16 @@
     .res-hero p  { color:rgba(255,255,255,.5); font-size:.95rem; }
     .plan-badge  { display:inline-flex; align-items:center; gap:8px; background:rgba(233,30,140,.12); border:1px solid rgba(233,30,140,.3); border-radius:50px; padding:7px 16px; font-size:.82rem; color:#e91e8c; font-weight:600; margin-top:14px; }
 
-    /* ── Grid layout ── */
+    
     .res-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
     @media(max-width:700px){ .res-grid{ grid-template-columns:1fr; } }
 
-    /* ── Cards ── */
+    
     .res-card { background:#1c1c1c; border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:28px; }
     .res-card-title { font-family:'Playfair Display',Georgia,serif; font-size:1.1rem; color:#fff; margin-bottom:22px; display:flex; align-items:center; gap:10px; }
     .res-card-title svg { color:#e91e8c; flex-shrink:0; }
 
-    /* ── Calendar ── */
+    
     .cal-nav-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
     .cal-nav-row button { background:#111; border:1px solid rgba(255,255,255,.1); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all .2s; }
     .cal-nav-row button:hover { border-color:#e91e8c; color:#e91e8c; }
@@ -82,14 +82,14 @@
     .cal-legend-item { display:flex; align-items:center; gap:5px; font-size:.72rem; color:#666; }
     .leg-dot { width:8px; height:8px; border-radius:50%; }
 
-    /* ── Time slots ── */
+    
     .time-slots { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:4px; }
     .time-slot { padding:9px 4px; text-align:center; font-size:.78rem; font-weight:600; border:1px solid rgba(255,255,255,.1); border-radius:8px; cursor:pointer; transition:all .2s; color:rgba(255,255,255,.6); background:#111; }
     .time-slot:hover:not(.slot-blocked)  { border-color:#e91e8c; color:#e91e8c; }
     .time-slot.slot-selected { background:#e91e8c; border-color:#e91e8c; color:#fff; }
     .time-slot.slot-blocked  { background:rgba(239,68,68,.08); color:rgba(255,255,255,.2); cursor:not-allowed; border-color:rgba(239,68,68,.2); text-decoration:line-through; }
 
-    /* ── Form ── */
+    
     .res-field { margin-bottom:16px; }
     .res-field label { display:block; font-size:.73rem; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:#888; margin-bottom:7px; }
     .res-field input, .res-field select, .res-field textarea {
@@ -110,13 +110,13 @@
     .btn-reservar:hover:not(:disabled)  { background:#15803d; transform:translateY(-1px); }
     .btn-reservar:disabled { opacity:.5; cursor:not-allowed; }
 
-    /* ── Success ── */
+    
     .success-card { background:#1c1c1c; border:1px solid rgba(34,197,94,.3); border-radius:16px; padding:48px 32px; text-align:center; display:none; }
     .success-card h3 { font-family:'Playfair Display',Georgia,serif; font-size:1.5rem; color:#86efac; margin-bottom:12px; }
     .success-card p  { color:rgba(255,255,255,.6); font-size:.9rem; line-height:1.7; }
     .success-card .wa-btn { display:inline-flex; align-items:center; gap:8px; margin-top:24px; padding:13px 28px; background:#16a34a; color:#fff; border-radius:10px; font-weight:700; text-decoration:none; font-size:.92rem; }
 
-    /* ── Importante FAB ── */
+    
     .fab-importante {
       position: fixed;
       bottom: 28px;
@@ -186,7 +186,7 @@
     </a>
   </nav>
 
-  <!-- Hero -->
+  
   <div class="res-hero">
     <div class="res-hero-inner">
       <span class="res-hero-label">Reservas</span>
@@ -199,7 +199,7 @@
   <div class="res-wrap">
     <div class="res-grid" id="mainGrid">
 
-      <!-- LEFT: Calendar + Time -->
+      
       <div>
         <div class="res-card" style="margin-bottom:20px">
           <div class="res-card-title">
@@ -229,7 +229,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: Form -->
+      
       <div>
         <div class="selected-info" id="selectedInfo"></div>
         <div class="res-card" id="formCard">
@@ -257,7 +257,7 @@
             <label style="line-height:1.4">¿Es para tu cumpleaños? Cuéntanos la fecha <span style="color:#666;font-weight:400;font-size:0.78rem">(opcional, no reemplaza la fecha de la sesión)</span></label>
             <input type="date" id="rFechaEspecial" style="cursor:pointer" />
           </div>
-          <!-- ── Exterior ── -->
+          
           <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
               <input type="checkbox" id="rExterior" onchange="toggleExterior()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
@@ -274,7 +274,7 @@
             </div>
           </div>
 
-          <!-- ── Personas adicionales ── -->
+          
           <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
               <input type="checkbox" id="rPersonasCheck" onchange="togglePersonas()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
@@ -291,10 +291,21 @@
             </div>
           </div>
 
-          <!-- ── Notas ── -->
+          
+          <div class="res-field">
+            <label>¿Cómo planeas hacer el abono?</label>
+            <select id="rMetodoAbono" style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#fff;font-size:0.88rem;padding:10px 14px;outline:none;font-family:inherit;cursor:pointer">
+              <option value="">Sin especificar</option>
+              <option value="Yappy">Yappy</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          
           <div class="res-field"><label>Notas</label><textarea id="rNotas" placeholder="Locación, requerimientos especiales..."></textarea></div>
 
-          <!-- ── Resumen de precio ── -->
+          
           <div id="resumenPrecio" style="display:none;background:rgba(199,30,95,0.08);border:1px solid rgba(199,30,95,0.2);border-radius:12px;padding:14px 16px;margin-bottom:4px">
             <div style="font-size:0.75rem;font-weight:700;color:#e91e8c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Resumen de precio estimado</div>
             <div id="resumenLineas" style="display:flex;flex-direction:column;gap:6px;font-size:0.85rem"></div>
@@ -308,7 +319,7 @@
             </div>
           </div>
 
-          <!-- ── Términos de reserva ── -->
+          
           <div style="margin-bottom:4px">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.85rem;color:#ccc;line-height:1.5">
               <input type="checkbox" id="rTerminos" onchange="updateReservaBtn()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0;margin-top:2px" />
@@ -332,7 +343,7 @@
     </div>
   </div>
 
-  <!-- ── Notas importantes ── (above footer) -->
+  
   <div id="notasSection" style="display:none; background:#fff9f0; border-top:3px solid #f59e0b; border-bottom:1px solid #fde68a;">
     <div style="max-width:960px; margin:0 auto; padding:24px;">
       <div style="display:flex; align-items:flex-start; gap:14px;">
@@ -401,681 +412,606 @@
   </footer>
 
   <script src="../../js/main.js"></script>
-  <script>
-    // ═══════════════════════════════════════════
-    //  RESERVAS PAGE — FULL LOGIC
-    // ═══════════════════════════════════════════
-    const WA_NUMBER = '50768622402';
-    const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-    const HOURS  = ['8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM'];
-    const HOUR_VALS = [8,9,10,11,12,13,14,15,16,17,18,19,20];
+  <script>const WA_NUMBER = "50768622402";
 
-    // ── Supabase — shared database so reservas reach the Master from any device ──
-    // Wrapped defensively: if the CDN is slow/blocked, the rest of the page (calendar,
-    // form, etc.) must keep working regardless — Supabase is an enhancement, not a dependency.
-    const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-    let sbClient = null;
-    function initSupabase() {
-      if (window.supabase && typeof window.supabase.createClient === 'function') {
-        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        return true;
+const MONTHS = [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ];
+
+const DAYS = [ "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" ];
+
+const HOURS = [ "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM" ];
+
+const HOUR_VALS = [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
+
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
+let sbClient = null;
+
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  }
+  return false;
+}
+
+try {
+  if (!initSupabase()) {
+    window.addEventListener("load", () => {
+      if (!sbClient) initSupabase();
+    });
+    console.warn("Supabase SDK no cargó a tiempo — reintentando en load...");
+  }
+} catch (e) {
+  console.warn("No se pudo inicializar Supabase:", e);
+}
+
+let calYear = (new Date).getFullYear();
+
+let calMonth = (new Date).getMonth();
+
+let calData = {};
+
+function toLocalDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+let reservas = [];
+
+let selectedDate = null;
+
+let selectedHour = null;
+
+const OWNER = "jansphotograph";
+
+const REPO = "jansphotograph.github.io";
+
+const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
+
+function showNotas(texto) {
+  if (!texto || !texto.trim()) return;
+  const section = document.getElementById("notasSection");
+  const content = document.getElementById("notasContent");
+  if (!section || !content) return;
+  content.innerHTML = texto.trim().split("\n").map(line => line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b;flex-shrink:0">•</span>${line.trim()}</div>` : "").join("");
+  section.style.display = "block";
+}
+
+async function syncAvailabilityFromSupabase() {
+  if (!sbClient) return;
+  try {
+    let {data: data, error: error} = await sbClient.from("reservas").select("id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues").in("status", [ "confirmed", "completed" ]);
+    if (error) {
+      console.warn("Reintentando disponibilidad sin columnas de bloqueo:", error.message || JSON.stringify(error));
+      const fallback = await sbClient.from("reservas").select("id,fecha,horaVal,status").in("status", [ "confirmed", "completed" ]);
+      data = fallback.data;
+      error = fallback.error;
+      if (error) {
+        console.error("syncAvailabilityFromSupabase error:", error.message || JSON.stringify(error), "| code:", error.code, "| details:", error.details, "| hint:", error.hint);
+        return;
       }
-      return false;
     }
-    try {
-      if (!initSupabase()) {
-        window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
-        console.warn('Supabase SDK no cargó a tiempo — reintentando en load...');
-      }
-    } catch(e) {
-      console.warn('No se pudo inicializar Supabase:', e);
-    }
-
-    let calYear   = new Date().getFullYear();
-    let calMonth  = new Date().getMonth();
-    let calData   = {};       // { 'YYYY-MM-DD': 'available'|'booked' }
-
-    // Formatea una fecha como YYYY-MM-DD usando la ZONA HORARIA LOCAL del
-    // navegador (no UTC). Usar .toISOString() para esto es un bug clásico:
-    // convierte a UTC, así que cerca de medianoche en Panamá (UTC-5) la
-    // página "cree" que ya es el día siguiente varias horas antes de tiempo
-    // — pudiendo bloquear que un cliente reserve el día de hoy.
-    function toLocalDateStr(d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    }
-    let reservas  = [];       // confirmed reservas with time blocks
-    let selectedDate = null;
-    let selectedHour = null;
-
-    // ── Config — mismo repo público ──
-    const OWNER = 'jansphotograph';
-    const REPO  = 'jansphotograph.github.io';
-    const BASE  = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
-
-    // ── Show notas importantes ── (defined early so it's available on load)
-    function showNotas(texto) {
-      if (!texto || !texto.trim()) return;
-      const section = document.getElementById('notasSection');
-      const content = document.getElementById('notasContent');
-      if (!section || !content) return;
-      content.innerHTML = texto.trim().split('\n').map(line =>
-        line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b;flex-shrink:0">•</span>${line.trim()}</div>` : ''
-      ).join('');
-      section.style.display = 'block';
-    }
-
-    // ── Sync confirmed/completed reservas from Supabase — real source of truth
-    //    for hour-blocking. Reusable: called on load AND every 60s afterward so
-    //    a visitor with the page open sees fresh availability without reloading. ──
-    async function syncAvailabilityFromSupabase() {
-      if (!sbClient) return;
-      try {
-        // Solo pedimos las columnas necesarias para calcular disponibilidad — nunca
-        // datos personales del cliente (nombre, teléfono, email, notas, etc.). Esto es
-        // importante porque esta página es pública: cualquier visitante ejecuta esta
-        // consulta, así que traer más columnas de las necesarias expondría datos de
-        // todos los clientes a cualquiera.
-        let { data, error } = await sbClient
-          .from('reservas')
-          .select('id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues')
-          .in('status', ['confirmed', 'completed']);
-
-        if (error) {
-          // Si bloqueo_antes/bloqueo_despues todavía no existen en la tabla (falta la
-          // migración SQL), reintenta sin esas columnas — pero SIN usar select('*'),
-          // para no arriesgarnos a traer datos personales si la tabla cambia en el futuro.
-          console.warn('Reintentando disponibilidad sin columnas de bloqueo:', error.message || JSON.stringify(error));
-          const fallback = await sbClient
-            .from('reservas')
-            .select('id,fecha,horaVal,status')
-            .in('status', ['confirmed', 'completed']);
-          data = fallback.data;
-          error = fallback.error;
-          if (error) {
-            console.error('syncAvailabilityFromSupabase error:', error.message || JSON.stringify(error), '| code:', error.code, '| details:', error.details, '| hint:', error.hint);
-            return;
-          }
-        }
-        if (!data) return;
-
-        // Merge: keep any local-only entries, but Supabase is authoritative for status
-        const byId = new Map(reservas.map(r => [r.id, r]));
-        data.forEach(remote => {
-          const existing = byId.get(remote.id);
-          const bloqueoAntes   = remote.bloqueo_antes   != null ? remote.bloqueo_antes   : 2;
-          const bloqueoDespues = remote.bloqueo_despues != null ? remote.bloqueo_despues : 2;
-          if (existing) {
-            existing.status  = remote.status;
-            existing.fecha   = remote.fecha;
-            existing.horaVal = remote.horaVal;
-            existing.bloqueoAntes   = bloqueoAntes;
-            existing.bloqueoDespues = bloqueoDespues;
-          } else {
-            byId.set(remote.id, {
-              id: remote.id, fecha: remote.fecha, horaVal: remote.horaVal, status: remote.status,
-              bloqueoAntes, bloqueoDespues,
-            });
-          }
+    if (!data) return;
+    const byId = new Map(reservas.map(r => [ r.id, r ]));
+    data.forEach(remote => {
+      const existing = byId.get(remote.id);
+      const bloqueoAntes = remote.bloqueo_antes != null ? remote.bloqueo_antes : 2;
+      const bloqueoDespues = remote.bloqueo_despues != null ? remote.bloqueo_despues : 2;
+      if (existing) {
+        existing.status = remote.status;
+        existing.fecha = remote.fecha;
+        existing.horaVal = remote.horaVal;
+        existing.bloqueoAntes = bloqueoAntes;
+        existing.bloqueoDespues = bloqueoDespues;
+      } else {
+        byId.set(remote.id, {
+          id: remote.id,
+          fecha: remote.fecha,
+          horaVal: remote.horaVal,
+          status: remote.status,
+          bloqueoAntes: bloqueoAntes,
+          bloqueoDespues: bloqueoDespues
         });
-        reservas = Array.from(byId.values());
-        localStorage.setItem('jans_reservas', JSON.stringify(reservas));
-
-        // Re-render hours in case a date is already picked, and re-render the calendar
-        // grid too, since day-level "fully booked" now depends on hour availability,
-        // not just calData — so the visitor sees up-to-date availability without reloading.
-        renderCal();
-        if (selectedDate) renderTimeSlots(selectedDate);
-      } catch(e) {
-        console.warn('No se pudo sincronizar disponibilidad desde Supabase:', e);
-      }
-    }
-
-    // ── Init ──
-    document.addEventListener('DOMContentLoaded', async function() {
-
-      // URL params
-      const p = new URLSearchParams(window.location.search);
-      if (p.get('plan')) {
-        const badge = document.getElementById('planBadge');
-        badge.textContent = 'Plan: ' + p.get('plan') + (p.get('precio') ? ' — $' + p.get('precio') : '');
-        badge.style.display = 'inline-flex';
-        document.getElementById('rPlan').value = p.get('plan') + (p.get('precio') ? ' ($' + p.get('precio') + ')' : '');
-        window._planPrecio = parseFloat(p.get('precio') || '0') || 0;
-      }
-      document.getElementById('rFecha').min = toLocalDateStr(new Date());
-
-      // Lee del localStorage (mismo dominio que el Master) — respaldo instantáneo
-      try { calData  = JSON.parse(localStorage.getItem('jans_calendar') || '{}'); } catch(e) {}
-      try { reservas = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
-      renderCal();
-
-      // ── Sync calendario desde Supabase ──
-      let calendarSyncedFromSupabase = false;
-      if (sbClient) {
-        try {
-          const { data: calRows, error: calErr } = await sbClient
-            .from('calendario').select('*').order('fecha', { ascending: true });
-          if (!calErr && calRows) {
-            // Varias filas pueden compartir la misma fecha (varios eventos el
-            // mismo día) — se agrupan en un array por fecha, sin perder ninguno.
-            const cal = {};
-            calRows.forEach(row => {
-              if (!row.fecha) return;
-              const ev = {
-                id:          row.id,
-                type:        'event',
-                titulo:      row.titulo || '',
-                descripcion: row.notas || '',
-                color:       row.color || 'pink',
-                blockType:   row.block_type || 'day',
-                horaInicio:  row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
-                horaFin:     row.hora_fin    != null ? parseInt(row.hora_fin)    : null,
-                status:      row.status || 'evento',
-              };
-              if (!cal[row.fecha]) cal[row.fecha] = [];
-              cal[row.fecha].push(ev);
-            });
-            calData = cal;
-            localStorage.setItem('jans_calendar', JSON.stringify(calData));
-            renderCal();
-            calendarSyncedFromSupabase = true;
-          }
-        } catch(e) { console.warn('sync calendario:', e); }
-      }
-
-      // ── Sync availability from Supabase — real source of truth for hour-blocking ──
-      await syncAvailabilityFromSupabase();
-
-      // Keep refreshing availability every 60s in case the Master confirms a
-      // reserva while this visitor still has the page open.
-      setInterval(syncAvailabilityFromSupabase, 60000);
-
-      // ── Load notas importantes — desde Supabase ──
-      try {
-        // Mostrar desde localStorage mientras carga (si hay)
-        const cached = localStorage.getItem('jans_notas_reservas');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.texto) showNotas(parsed.texto);
-        }
-        // Cargar desde Supabase (fuente principal)
-        if (sbClient) {
-          const { data, error } = await sbClient
-            .from('config_sitio')
-            .select('valor')
-            .eq('clave', 'notas')
-            .maybeSingle();
-          if (!error && data && data.valor) {
-            const n = JSON.parse(data.valor);
-            if (n && n.texto) {
-              localStorage.setItem('jans_notas_reservas', JSON.stringify(n));
-              showNotas(n.texto);
-            }
-          }
-        }
-      } catch(e) {}
-
-      // Re-renderizar si el Master actualiza en otra pestaña
-      window.addEventListener('storage', function(ev) {
-        if (ev.key === 'jans_calendar') {
-          try { calData = JSON.parse(ev.newValue || '{}'); } catch(ex) {}
-          renderCal();
-        }
-      });
-
-      // Respaldo desde GitHub (archivo estático calendar.json) — SOLO para
-      // cuando Supabase no está disponible (ej. sin conexión). Supabase es
-      // la fuente de verdad y ya soporta varios eventos por día; este archivo
-      // estático usa un formato más viejo (un evento por día) y podría ser
-      // una foto vieja, así que nunca debe pisar datos ya sincronizados.
-      if (!calendarSyncedFromSupabase) {
-        try {
-          const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, { cache: 'no-cache' });
-          if (calRes.ok) {
-            const ghCal = await calRes.json();
-            if (Object.keys(ghCal).length >= Object.keys(calData).length) {
-              calData = ghCal;
-              localStorage.setItem('jans_calendar', JSON.stringify(calData));
-              renderCal();
-            }
-          }
-        } catch(e) {}
       }
     });
+    reservas = Array.from(byId.values());
+    localStorage.setItem("jans_reservas", JSON.stringify(reservas));
+    renderCal();
+    if (selectedDate) renderTimeSlots(selectedDate);
+  } catch (e) {
+    console.warn("No se pudo sincronizar disponibilidad desde Supabase:", e);
+  }
+}
 
-    // ── Calendar ──
-    function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
-    function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
-
-    function renderCal() {
-      document.getElementById('calLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
-      const grid = document.getElementById('calGrid');
-      grid.innerHTML = '';
-      DAYS.forEach(d => { const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el); });
-      const firstDay    = new Date(calYear, calMonth, 1).getDay();
-      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-      const todayStr    = toLocalDateStr(new Date());
-
-      for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='cal-day';grid.appendChild(el);}
-      for(let d=1;d<=daysInMonth;d++){
-        const ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-        const st = calData[ds];
-        const isPast = ds < todayStr;
-        // A day is fully booked if the Master explicitly closed it, OR every hour slot
-        // is taken by confirmed/completed reservas — pending requests never block the day.
-        const isFull = isDayBlocked(ds);
-        const el = document.createElement('div');
-        el.className = 'cal-day';
-        el.textContent = d;
-        if(ds===todayStr)    el.classList.add('today');
-        if(isPast)          { el.classList.add('past'); }
-        else if(isFull || isDayFull(ds)) {
-          // Día completamente bloqueado — sin click
-          el.classList.add('booked');
-        }
-        else {
-          // available — selectable
-          el.classList.add('available');
-          if(selectedDate===ds) el.classList.add('selected');
-          el.addEventListener('click', () => pickDate(ds, d));
-        }
-        grid.appendChild(el);
-      }
-    }
-
-    function pickDate(ds, d) {
-      selectedDate = ds;
-      selectedHour = null;
-      // Sync to date input
-      document.getElementById('rFecha').value = ds;
-      document.getElementById('rHora').value  = '';
-      renderCal();
-      renderTimeSlots(ds);
-      document.getElementById('timeCard').style.display = 'block';
-      document.getElementById('timeCardDate').textContent = d + ' de ' + MONTHS[calMonth] + ' ' + calYear;
-      updateSelectedInfo();
-      updateSubmitBtn();
-    }
-
-    // Devuelve SIEMPRE un array con los eventos de calendario para una fecha —
-    // soporta tanto el formato nuevo (array) como el legado (un solo objeto).
-    function getDayEvents(ds) {
-      const v = calData[ds];
-      if (!v) return [];
-      if (Array.isArray(v)) return v.filter(e => e && typeof e === 'object' && e.type === 'event');
-      if (typeof v === 'object' && v.type === 'event') return [v];
-      return [];
-    }
-
-    // ── Time Slots ──
-    function getBlockedHours(ds) {
-      // Find confirmed/completed reservas on this day and block ±N hours
-      // (N configurable por reserva desde el Master; 2 horas por defecto).
-      const blocked = new Set();
-      if (!ds) return blocked;
-      reservas.filter(r => r.fecha === ds && (r.status === 'confirmed' || r.status === 'completed')).forEach(r => {
-        const h = parseInt(r.horaVal);
-        if (isNaN(h)) return;
-        const antes    = r.bloqueoAntes    != null ? parseInt(r.bloqueoAntes)    : 2;
-        const despues  = r.bloqueoDespues  != null ? parseInt(r.bloqueoDespues)  : 2;
-        for(let i = h-antes; i <= h+despues; i++) blocked.add(i);
+document.addEventListener("DOMContentLoaded", async function() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get("plan")) {
+    const badge = document.getElementById("planBadge");
+    badge.textContent = "Plan: " + p.get("plan") + (p.get("precio") ? " — $" + p.get("precio") : "");
+    badge.style.display = "inline-flex";
+    document.getElementById("rPlan").value = p.get("plan") + (p.get("precio") ? " ($" + p.get("precio") + ")" : "");
+    window._planPrecio = parseFloat(p.get("precio") || "0") || 0;
+  }
+  document.getElementById("rFecha").min = toLocalDateStr(new Date);
+  try {
+    calData = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
+  } catch (e) {}
+  try {
+    reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+  } catch (e) {}
+  renderCal();
+  let calendarSyncedFromSupabase = false;
+  if (sbClient) {
+    try {
+      const {data: calRows, error: calErr} = await sbClient.from("calendario").select("*").order("fecha", {
+        ascending: true
       });
-
-      // Bloquea las horas de CADA evento de calendario de tipo 'hours' ese
-      // día — varios eventos manuales (o cotizaciones) el mismo día deben
-      // sumar sus rangos, no reemplazarse entre sí.
-      getDayEvents(ds).forEach(st => {
-        if (st.blockType !== 'hours') return;
-        const ini = parseInt(st.horaInicio, 10);
-        const fin = parseInt(st.horaFin,    10);
-        if (!isNaN(ini) && !isNaN(fin)) {
-          // Inclusive of fin: a client selecting the end hour would overlap with the event
-          for (let h = ini; h <= fin; h++) blocked.add(h);
-        }
-      });
-      return blocked;
-    }
-
-    // A day is "full" only when every single time slot is blocked by hours
-    function isDayFull(ds) {
-      if (!ds) return false;
-      const blocked = getBlockedHours(ds);
-      return HOUR_VALS.every(hv => blocked.has(hv));
-    }
-
-    // isDayBlocked: returns true only when the ENTIRE day should be closed on the calendar grid.
-    // Hour-range events NEVER block the full day — they only block specific hours in the
-    // time slot picker (handled by getBlockedHours above). Only full-day events and
-    // manual 'booked' closures lock the calendar day itself.
-    // Verificar si la UNIÓN de todos los eventos de tipo 'hours' cubre todas las horas disponibles
-    function isDayFullByCalEvent(ds) {
-      const hourEvents = getDayEvents(ds).filter(st => st.blockType === 'hours');
-      if (!hourEvents.length) return false;
-      return HOUR_VALS.every(hv => hourEvents.some(st => {
-        const ini = parseInt(st.horaInicio, 10);
-        const fin = parseInt(st.horaFin, 10);
-        return !isNaN(ini) && !isNaN(fin) && hv >= ini && hv <= fin;
-      }));
-    }
-
-    function isDayBlocked(ds) {
-      const st = calData[ds];
-      if (st === 'booked') return true;
-      const dayEvents = getDayEvents(ds);
-      // Si CUALQUIER evento de ese día bloquea el día completo (o es legado sin blockType), se cierra el día.
-      if (dayEvents.some(ev => !ev.blockType || ev.blockType === 'day')) return true;
-      // No hay evento de día completo — block si todas las horas están tomadas por reservas o por eventos de horas
-      return isDayFull(ds) || isDayFullByCalEvent(ds);
-    }
-
-    function renderTimeSlots(ds) {
-      if (!ds) return;
-      const blocked = getBlockedHours(ds);
-      const container = document.getElementById('timeSlots');
-      if (!container) return;
-      container.innerHTML = HOURS.map((label, i) => {
-        const hv = HOUR_VALS[i];
-        const isBlocked = blocked.has(hv);
-        const isSel     = selectedHour === hv;
-        let cls = 'time-slot';
-        if(isBlocked) cls += ' slot-blocked';
-        if(isSel)     cls += ' slot-selected';
-        return `<div class="${cls}" onclick="pickHour(${hv},'${label}',${isBlocked})">${label}</div>`;
-      }).join('');
-    }
-
-    function pickHour(hv, label, blocked) {
-      if(blocked) return;
-      selectedHour = hv;
-      document.getElementById('rHora').value = label;
-      renderTimeSlots(selectedDate);
-      updateSelectedInfo();
-      updateSubmitBtn();
-    }
-
-    // ── Date input change (manual typing) ──
-    function onDateInputChange() {
-      const ds = document.getElementById('rFecha').value;
-      if(!ds) return;
-      const st = calData[ds];
-      const today = toLocalDateStr(new Date());
-
-      // Block past dates and fully-booked dates (manually closed OR every hour taken)
-      if(ds < today) {
-        alert('No puedes seleccionar una fecha pasada.');
-        document.getElementById('rFecha').value = selectedDate || '';
-        return;
+      if (!calErr && calRows) {
+        const cal = {};
+        calRows.forEach(row => {
+          if (!row.fecha) return;
+          const ev = {
+            id: row.id,
+            type: "event",
+            titulo: row.titulo || "",
+            descripcion: row.notas || "",
+            color: row.color || "pink",
+            blockType: row.block_type || "day",
+            horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
+            horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
+            status: row.status || "evento"
+          };
+          if (!cal[row.fecha]) cal[row.fecha] = [];
+          cal[row.fecha].push(ev);
+        });
+        calData = cal;
+        localStorage.setItem("jans_calendar", JSON.stringify(calData));
+        renderCal();
+        calendarSyncedFromSupabase = true;
       }
-      if(st === 'booked' || isDayBlocked(ds)) {
-        alert('Esa fecha no está disponible. Por favor elige otra fecha.');
-        document.getElementById('rFecha').value = selectedDate || '';
-        return;
-      }
-
-      const [y,m,d] = ds.split('-');
-      calYear  = parseInt(y);
-      calMonth = parseInt(m)-1;
-      selectedDate = ds;
-      selectedHour = null;
-      document.getElementById('rHora').value = '';
-      renderCal();
-      renderTimeSlots(ds);
-      document.getElementById('timeCard').style.display = 'block';
-      document.getElementById('timeCardDate').textContent = parseInt(d) + ' de ' + MONTHS[calMonth] + ' ' + calYear;
-      updateSelectedInfo();
-      updateSubmitBtn();
+    } catch (e) {
+      console.warn("sync calendario:", e);
     }
-
-    function updateSelectedInfo() {
-      const el = document.getElementById('selectedInfo');
-      if(selectedDate && selectedHour) {
-        const [y,m,d] = selectedDate.split('-');
-        el.textContent = '✓ ' + parseInt(d) + ' de ' + MONTHS[parseInt(m)-1] + ' ' + y + ' — ' + document.getElementById('rHora').value;
-        el.style.display = 'block';
-      } else if(selectedDate) {
-        el.textContent = 'Fecha: ' + selectedDate + ' — selecciona una hora';
-        el.style.display = 'block';
-      } else {
-        el.style.display = 'none';
-      }
+  }
+  await syncAvailabilityFromSupabase();
+  setInterval(syncAvailabilityFromSupabase, 6e4);
+  try {
+    const cached = localStorage.getItem("jans_notas_reservas");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.texto) showNotas(parsed.texto);
     }
-
-    function updateSubmitBtn() {
-      const btn        = document.getElementById('btnReservar');
-      const terminosOk = document.getElementById('rTerminos')?.checked || false;
-      if (selectedDate && selectedHour && terminosOk) {
-        btn.disabled = false;
-        btn.textContent = 'Solicitar reserva';
-      } else if (selectedDate && selectedHour && !terminosOk) {
-        btn.disabled = true;
-        btn.textContent = 'Acepta los términos para continuar';
-      } else {
-        btn.disabled = true;
-        btn.textContent = selectedDate ? 'Selecciona una hora' : 'Selecciona fecha y hora primero';
-      }
-    }
-
-    // ── Submit ──
-    // ── Personas adicionales ──
-    let _personasNum = 1;
-    const PRECIO_PERSONA = 5;
-
-    function togglePersonas() {
-      const checked = document.getElementById('rPersonasCheck').checked;
-      document.getElementById('personasField').style.display = checked ? 'block' : 'none';
-      if (!checked) { _personasNum = 1; updateResumen(); }
-      else updateResumen();
-    }
-
-    function changePersonas(delta) {
-      _personasNum = Math.max(1, _personasNum + delta);
-      document.getElementById('personasCount').textContent = _personasNum;
-      document.getElementById('personasCosto').textContent = '$' + (_personasNum * PRECIO_PERSONA).toFixed(2);
-      updateResumen();
-    }
-
-    function updateResumen() {
-      const planPrecio  = window._planPrecio || 0;
-      const exterior    = document.getElementById('rExterior').checked;
-      const personas    = document.getElementById('rPersonasCheck').checked ? _personasNum : 0;
-      const costoPersonas = personas * PRECIO_PERSONA;
-      const total       = planPrecio + costoPersonas;
-
-      // Mostrar resumen solo si hay algo que sumar
-      const mostrar = planPrecio > 0 || personas > 0;
-      document.getElementById('resumenPrecio').style.display = mostrar ? 'block' : 'none';
-      if (!mostrar) return;
-
-      // Líneas del resumen
-      let lineas = '';
-      if (planPrecio > 0) {
-        const planVal = document.getElementById('rPlan').value || 'Plan seleccionado';
-        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${planVal}</span><span style="font-weight:600;color:#fff">$${planPrecio.toFixed(2)}</span></div>`;
-      }
-      if (personas > 0) {
-        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${personas} persona${personas>1?'s':''} adicional${personas>1?'es':''} (×$${PRECIO_PERSONA})</span><span style="font-weight:600;color:#e91e8c">$${costoPersonas.toFixed(2)}</span></div>`;
-      }
-      if (exterior) {
-        lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>Costo exterior</span><span style="font-weight:600;color:#f59e0b">Por confirmar</span></div>`;
-      }
-      document.getElementById('resumenLineas').innerHTML = lineas;
-      document.getElementById('resumenTotal').textContent = '$' + total.toFixed(2) + (exterior ? '+' : '');
-
-      // Nota exterior
-      const notaEl = document.getElementById('resumenNotaExterior');
-      if (notaEl) notaEl.style.display = exterior ? 'flex' : 'none';
-    }
-
-    function updateReservaBtn() {
-      // Solo oculta el error — el estado del botón lo maneja updateSubmitBtn
-      const terminosOk = document.getElementById('rTerminos')?.checked;
-      const errEl = document.getElementById('terminosError');
-      if (terminosOk && errEl) errEl.style.display = 'none';
-      updateSubmitBtn();
-    }
-
-    function toggleExterior() {
-      const checked = document.getElementById('rExterior').checked;
-      document.getElementById('exteriorField').style.display = checked ? 'block' : 'none';
-      if (!checked) document.getElementById('rLugar').value = '';
-      updateResumen();
-    }
-
-    async function submitReserva() {
-      const nombre = document.getElementById('rNombre').value.trim();
-      const tel    = document.getElementById('rTel').value.trim();
-      if(!nombre || !tel) { alert('Por favor completa tu nombre y teléfono.'); return; }
-      if(!selectedDate || !selectedHour) { alert('Selecciona fecha y hora.'); return; }
-
-      // Validar términos
-      const terminosOk = document.getElementById('rTerminos').checked;
-      const terminosError = document.getElementById('terminosError');
-      if (!terminosOk) {
-        if (terminosError) terminosError.style.display = 'block';
-        document.getElementById('rTerminos').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      if (terminosError) terminosError.style.display = 'none';
-
-      const btn = document.getElementById('btnReservar');
-      if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
-
-      const [y,m,d] = selectedDate.split('-');
-      const hora  = document.getElementById('rHora').value;
-      const plan  = document.getElementById('rPlan').value;
-      const email = document.getElementById('rEmail').value;
-      const notas          = document.getElementById('rNotas').value;
-      const fechaEspecial  = document.getElementById('rFechaEspecial')?.value || '';
-      const exterior        = document.getElementById('rExterior').checked;
-      const lugar           = exterior ? (document.getElementById('rLugar').value.trim() || '') : '';
-      const personasAdicionales = document.getElementById('rPersonasCheck').checked ? _personasNum : 0;
-      const costoPersonas   = personasAdicionales * PRECIO_PERSONA;
-      const fechaLabel = parseInt(d) + ' de ' + MONTHS[parseInt(m)-1] + ' ' + y;
-
-      const reserva = {
-        id:          'r_' + Date.now(),
-        numero:      null, // assigned by Master when it syncs (WEB-01, WEB-02...)
-        nombre, tel, email, plan, notas, exterior, lugar, personasAdicionales, costoPersonas, fechaEspecial,
-        fecha:       selectedDate,
-        fechaLabel,
-        hora,
-        horaVal:     selectedHour,
-        status:      'pending',
-        abono:       0,
-        origin:      'web',
-        createdAt:   new Date().toLocaleDateString('es-PA')
-      };
-
-      // ── Save to Supabase — this is what makes the reserva reach the Master
-      //    from ANY device, since localStorage alone never leaves this browser. ──
-      // NOTE: the 'reservas' table uses snake_case for these three columns
-      // (personas_adicionales, costo_personas, fecha_especial) while the rest of
-      // the app uses camelCase in JS — map them explicitly or Supabase rejects
-      // the whole insert with an "unknown column" error.
-      const { personasAdicionales: _pa, costoPersonas: _cp, fechaEspecial: _fe, ...sbPayload } = reserva;
-      sbPayload.personas_adicionales = personasAdicionales;
-      sbPayload.costo_personas       = costoPersonas;
-      sbPayload.fecha_especial       = fechaEspecial;
-
-      let savedOk = false;
-      if (sbClient) {
-        try {
-          const { error } = await sbClient.from('reservas').insert([sbPayload]);
-          if (!error) savedOk = true;
-          else console.error('Supabase insert error:', error);
-        } catch(e) {
-          console.error('Supabase unreachable:', e);
+    if (sbClient) {
+      const {data: data, error: error} = await sbClient.from("config_sitio").select("valor").eq("clave", "notas").maybeSingle();
+      if (!error && data && data.valor) {
+        const n = JSON.parse(data.valor);
+        if (n && n.texto) {
+          localStorage.setItem("jans_notas_reservas", JSON.stringify(n));
+          showNotas(n.texto);
         }
       }
-
-      // Keep a local copy too (instant reflection if Master is the same browser/device)
+    }
+  } catch (e) {}
+  window.addEventListener("storage", function(ev) {
+    if (ev.key === "jans_calendar") {
       try {
-        const all = JSON.parse(localStorage.getItem('jans_reservas') || '[]');
-        all.push(reserva);
-        localStorage.setItem('jans_reservas', JSON.stringify(all));
-      } catch(e) {}
-
-      if (!savedOk) {
-        // Don't block the client — WhatsApp message still carries all the info either way.
-        console.warn('La reserva no pudo guardarse en línea; el mensaje de WhatsApp sigue llevando todos los datos.');
-      }
-
-      // Build WhatsApp message with all data
-      const fechaEspecialLabel = (() => {
-        if (!fechaEspecial) return '';
-        const [ey, em, ed] = fechaEspecial.split('-');
-        if (!ey || !em || !ed) return fechaEspecial;
-        return parseInt(ed) + ' de ' + MONTHS[parseInt(em)-1] + ' ' + ey;
-      })();
-
-      const msg = encodeURIComponent(
-        '¡Hola Jans Photograph! 📸\n' +
-        'Quiero solicitar una reserva:\n\n' +
-        '👤 Nombre: '    + nombre + '\n' +
-        '📱 Teléfono: '  + tel    + '\n' +
-        '📅 Fecha: '     + fechaLabel + '\n' +
-        '🕐 Hora: '      + hora   + '\n' +
-        (plan  ? '📋 Plan: '  + plan  + '\n' : '') +
-        (exterior
-          ? '📍 Lugar: Sesión exterior' + (lugar ? ' — ' + lugar : '') + '\n'
-          : '📍 Lugar: En estudio\n') +
-        (personasAdicionales > 0 ? '👥 Personas adicionales: ' + personasAdicionales + ' (+$' + costoPersonas.toFixed(2) + ')\n' : '') +
-        (fechaEspecialLabel ? '🎂 Fecha especial (cumpleaños): ' + fechaEspecialLabel + '\n' : '') +
-        (email ? '✉️ Email: ' + email + '\n' : '') +
-        (notas ? '📝 Notas: ' + notas + '\n' : '') +
-        '\n¡Gracias!'
-      );
-
-      // Open WhatsApp in new tab
-      window.open('https://wa.me/' + WA_NUMBER + '?text=' + msg, '_blank');
-
-      // Redirect back to previous page after short delay
-      setTimeout(function() {
-        if (document.referrer) {
-          window.location.href = document.referrer;
-        } else {
-          window.history.back();
-        }
-      }, 600);
+        calData = JSON.parse(ev.newValue || "{}");
+      } catch (ex) {}
+      renderCal();
     }
-  </script>
-  <script>
-    // ── Auto-reload when master publishes an update ──
-    (function() {
-      const OWNER   = 'jansphotograph';
-      const REPO    = 'jansphotograph.github.io';
-      const VER_KEY = 'jans_site_version';
-
-      async function checkVersion() {
-        try {
-          const res = await fetch(
-            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
-            { cache: 'no-cache' }
-          );
-          if (!res.ok) return;
-          const data = await res.json();
-          const current = localStorage.getItem(VER_KEY);
-          if (current && current !== String(data.v)) {
-            // New version detected — reload the page
-            localStorage.setItem(VER_KEY, String(data.v));
-            window.location.reload(true);
-          } else {
-            localStorage.setItem(VER_KEY, String(data.v));
-          }
-        } catch(e) {}
+  });
+  if (!calendarSyncedFromSupabase) {
+    try {
+      const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, {
+        cache: "no-cache"
+      });
+      if (calRes.ok) {
+        const ghCal = await calRes.json();
+        if (Object.keys(ghCal).length >= Object.keys(calData).length) {
+          calData = ghCal;
+          localStorage.setItem("jans_calendar", JSON.stringify(calData));
+          renderCal();
+        }
       }
+    } catch (e) {}
+  }
+});
 
-      // Check on load and every 60 seconds
-      checkVersion();
-      setInterval(checkVersion, 60000);
-    })();
-  </script>
-  <!-- ── Importante FAB ── -->
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) {
+    calMonth = 11;
+    calYear--;
+  }
+  renderCal();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) {
+    calMonth = 0;
+    calYear++;
+  }
+  renderCal();
+}
+
+function renderCal() {
+  document.getElementById("calLabel").textContent = MONTHS[calMonth] + " " + calYear;
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = "";
+  DAYS.forEach(d => {
+    const el = document.createElement("div");
+    el.className = "cal-dow";
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayStr = toLocalDateStr(new Date);
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement("div");
+    el.className = "cal-day";
+    grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = calYear + "-" + String(calMonth + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+    const st = calData[ds];
+    const isPast = ds < todayStr;
+    const isFull = isDayBlocked(ds);
+    const el = document.createElement("div");
+    el.className = "cal-day";
+    el.textContent = d;
+    if (ds === todayStr) el.classList.add("today");
+    if (isPast) {
+      el.classList.add("past");
+    } else if (isFull || isDayFull(ds)) {
+      el.classList.add("booked");
+    } else {
+      el.classList.add("available");
+      if (selectedDate === ds) el.classList.add("selected");
+      el.addEventListener("click", () => pickDate(ds, d));
+    }
+    grid.appendChild(el);
+  }
+}
+
+function pickDate(ds, d) {
+  selectedDate = ds;
+  selectedHour = null;
+  document.getElementById("rFecha").value = ds;
+  document.getElementById("rHora").value = "";
+  renderCal();
+  renderTimeSlots(ds);
+  document.getElementById("timeCard").style.display = "block";
+  document.getElementById("timeCardDate").textContent = d + " de " + MONTHS[calMonth] + " " + calYear;
+  updateSelectedInfo();
+  updateSubmitBtn();
+}
+
+function getDayEvents(ds) {
+  const v = calData[ds];
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(e => e && typeof e === "object" && e.type === "event");
+  if (typeof v === "object" && v.type === "event") return [ v ];
+  return [];
+}
+
+function getBlockedHours(ds) {
+  const blocked = new Set;
+  if (!ds) return blocked;
+  reservas.filter(r => r.fecha === ds && (r.status === "confirmed" || r.status === "completed")).forEach(r => {
+    const h = parseInt(r.horaVal);
+    if (isNaN(h)) return;
+    const antes = r.bloqueoAntes != null ? parseInt(r.bloqueoAntes) : 2;
+    const despues = r.bloqueoDespues != null ? parseInt(r.bloqueoDespues) : 2;
+    for (let i = h - antes; i <= h + despues; i++) blocked.add(i);
+  });
+  getDayEvents(ds).forEach(st => {
+    if (st.blockType !== "hours") return;
+    const ini = parseInt(st.horaInicio, 10);
+    const fin = parseInt(st.horaFin, 10);
+    if (!isNaN(ini) && !isNaN(fin)) {
+      for (let h = ini; h <= fin; h++) blocked.add(h);
+    }
+  });
+  return blocked;
+}
+
+function isDayFull(ds) {
+  if (!ds) return false;
+  const blocked = getBlockedHours(ds);
+  return HOUR_VALS.every(hv => blocked.has(hv));
+}
+
+function isDayFullByCalEvent(ds) {
+  const hourEvents = getDayEvents(ds).filter(st => st.blockType === "hours");
+  if (!hourEvents.length) return false;
+  return HOUR_VALS.every(hv => hourEvents.some(st => {
+    const ini = parseInt(st.horaInicio, 10);
+    const fin = parseInt(st.horaFin, 10);
+    return !isNaN(ini) && !isNaN(fin) && hv >= ini && hv <= fin;
+  }));
+}
+
+function isDayBlocked(ds) {
+  const st = calData[ds];
+  if (st === "booked") return true;
+  const dayEvents = getDayEvents(ds);
+  if (dayEvents.some(ev => !ev.blockType || ev.blockType === "day")) return true;
+  return isDayFull(ds) || isDayFullByCalEvent(ds);
+}
+
+function renderTimeSlots(ds) {
+  if (!ds) return;
+  const blocked = getBlockedHours(ds);
+  const container = document.getElementById("timeSlots");
+  if (!container) return;
+  container.innerHTML = HOURS.map((label, i) => {
+    const hv = HOUR_VALS[i];
+    const isBlocked = blocked.has(hv);
+    const isSel = selectedHour === hv;
+    let cls = "time-slot";
+    if (isBlocked) cls += " slot-blocked";
+    if (isSel) cls += " slot-selected";
+    return `<div class="${cls}" onclick="pickHour(${hv},'${label}',${isBlocked})">${label}</div>`;
+  }).join("");
+}
+
+function pickHour(hv, label, blocked) {
+  if (blocked) return;
+  selectedHour = hv;
+  document.getElementById("rHora").value = label;
+  renderTimeSlots(selectedDate);
+  updateSelectedInfo();
+  updateSubmitBtn();
+}
+
+function onDateInputChange() {
+  const ds = document.getElementById("rFecha").value;
+  if (!ds) return;
+  const st = calData[ds];
+  const today = toLocalDateStr(new Date);
+  if (ds < today) {
+    alert("No puedes seleccionar una fecha pasada.");
+    document.getElementById("rFecha").value = selectedDate || "";
+    return;
+  }
+  if (st === "booked" || isDayBlocked(ds)) {
+    alert("Esa fecha no está disponible. Por favor elige otra fecha.");
+    document.getElementById("rFecha").value = selectedDate || "";
+    return;
+  }
+  const [y, m, d] = ds.split("-");
+  calYear = parseInt(y);
+  calMonth = parseInt(m) - 1;
+  selectedDate = ds;
+  selectedHour = null;
+  document.getElementById("rHora").value = "";
+  renderCal();
+  renderTimeSlots(ds);
+  document.getElementById("timeCard").style.display = "block";
+  document.getElementById("timeCardDate").textContent = parseInt(d) + " de " + MONTHS[calMonth] + " " + calYear;
+  updateSelectedInfo();
+  updateSubmitBtn();
+}
+
+function updateSelectedInfo() {
+  const el = document.getElementById("selectedInfo");
+  if (selectedDate && selectedHour) {
+    const [y, m, d] = selectedDate.split("-");
+    el.textContent = "✓ " + parseInt(d) + " de " + MONTHS[parseInt(m) - 1] + " " + y + " — " + document.getElementById("rHora").value;
+    el.style.display = "block";
+  } else if (selectedDate) {
+    el.textContent = "Fecha: " + selectedDate + " — selecciona una hora";
+    el.style.display = "block";
+  } else {
+    el.style.display = "none";
+  }
+}
+
+function updateSubmitBtn() {
+  const btn = document.getElementById("btnReservar");
+  const terminosOk = document.getElementById("rTerminos")?.checked || false;
+  if (selectedDate && selectedHour && terminosOk) {
+    btn.disabled = false;
+    btn.textContent = "Solicitar reserva";
+  } else if (selectedDate && selectedHour && !terminosOk) {
+    btn.disabled = true;
+    btn.textContent = "Acepta los términos para continuar";
+  } else {
+    btn.disabled = true;
+    btn.textContent = selectedDate ? "Selecciona una hora" : "Selecciona fecha y hora primero";
+  }
+}
+
+let _personasNum = 1;
+
+const PRECIO_PERSONA = 5;
+
+function togglePersonas() {
+  const checked = document.getElementById("rPersonasCheck").checked;
+  document.getElementById("personasField").style.display = checked ? "block" : "none";
+  if (!checked) {
+    _personasNum = 1;
+    updateResumen();
+  } else updateResumen();
+}
+
+function changePersonas(delta) {
+  _personasNum = Math.max(1, _personasNum + delta);
+  document.getElementById("personasCount").textContent = _personasNum;
+  document.getElementById("personasCosto").textContent = "$" + (_personasNum * PRECIO_PERSONA).toFixed(2);
+  updateResumen();
+}
+
+function updateResumen() {
+  const planPrecio = window._planPrecio || 0;
+  const exterior = document.getElementById("rExterior").checked;
+  const personas = document.getElementById("rPersonasCheck").checked ? _personasNum : 0;
+  const costoPersonas = personas * PRECIO_PERSONA;
+  const total = planPrecio + costoPersonas;
+  const mostrar = planPrecio > 0 || personas > 0;
+  document.getElementById("resumenPrecio").style.display = mostrar ? "block" : "none";
+  if (!mostrar) return;
+  let lineas = "";
+  if (planPrecio > 0) {
+    const planVal = document.getElementById("rPlan").value || "Plan seleccionado";
+    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${planVal}</span><span style="font-weight:600;color:#fff">$${planPrecio.toFixed(2)}</span></div>`;
+  }
+  if (personas > 0) {
+    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${personas} persona${personas > 1 ? "s" : ""} adicional${personas > 1 ? "es" : ""} (×$${PRECIO_PERSONA})</span><span style="font-weight:600;color:#e91e8c">$${costoPersonas.toFixed(2)}</span></div>`;
+  }
+  if (exterior) {
+    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>Costo exterior</span><span style="font-weight:600;color:#f59e0b">Por confirmar</span></div>`;
+  }
+  document.getElementById("resumenLineas").innerHTML = lineas;
+  document.getElementById("resumenTotal").textContent = "$" + total.toFixed(2) + (exterior ? "+" : "");
+  const notaEl = document.getElementById("resumenNotaExterior");
+  if (notaEl) notaEl.style.display = exterior ? "flex" : "none";
+}
+
+function updateReservaBtn() {
+  const terminosOk = document.getElementById("rTerminos")?.checked;
+  const errEl = document.getElementById("terminosError");
+  if (terminosOk && errEl) errEl.style.display = "none";
+  updateSubmitBtn();
+}
+
+function toggleExterior() {
+  const checked = document.getElementById("rExterior").checked;
+  document.getElementById("exteriorField").style.display = checked ? "block" : "none";
+  if (!checked) document.getElementById("rLugar").value = "";
+  updateResumen();
+}
+
+async function submitReserva() {
+  const nombre = document.getElementById("rNombre").value.trim();
+  const tel = document.getElementById("rTel").value.trim();
+  if (!nombre || !tel) {
+    alert("Por favor completa tu nombre y teléfono.");
+    return;
+  }
+  if (!selectedDate || !selectedHour) {
+    alert("Selecciona fecha y hora.");
+    return;
+  }
+  const terminosOk = document.getElementById("rTerminos").checked;
+  const terminosError = document.getElementById("terminosError");
+  if (!terminosOk) {
+    if (terminosError) terminosError.style.display = "block";
+    document.getElementById("rTerminos").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+    return;
+  }
+  if (terminosError) terminosError.style.display = "none";
+  const btn = document.getElementById("btnReservar");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Enviando...";
+  }
+  const [y, m, d] = selectedDate.split("-");
+  const hora = document.getElementById("rHora").value;
+  const plan = document.getElementById("rPlan").value;
+  const email = document.getElementById("rEmail").value;
+  const notas = document.getElementById("rNotas").value;
+  const metodoAbono = document.getElementById("rMetodoAbono")?.value || "";
+  const fechaEspecial = document.getElementById("rFechaEspecial")?.value || "";
+  const exterior = document.getElementById("rExterior").checked;
+  const lugar = exterior ? document.getElementById("rLugar").value.trim() || "" : "";
+  const personasAdicionales = document.getElementById("rPersonasCheck").checked ? _personasNum : 0;
+  const costoPersonas = personasAdicionales * PRECIO_PERSONA;
+  const fechaLabel = parseInt(d) + " de " + MONTHS[parseInt(m) - 1] + " " + y;
+  const reserva = {
+    id: "r_" + Date.now(),
+    numero: null,
+    nombre: nombre,
+    tel: tel,
+    email: email,
+    plan: plan,
+    notas: notas,
+    exterior: exterior,
+    lugar: lugar,
+    personasAdicionales: personasAdicionales,
+    costoPersonas: costoPersonas,
+    fechaEspecial: fechaEspecial,
+    metodoAbono: metodoAbono,
+    fecha: selectedDate,
+    fechaLabel: fechaLabel,
+    hora: hora,
+    horaVal: selectedHour,
+    status: "pending",
+    abono: 0,
+    origin: "web",
+    createdAt: (new Date).toLocaleDateString("es-PA")
+  };
+  const {personasAdicionales: _pa, costoPersonas: _cp, fechaEspecial: _fe, metodoAbono: _ma, ...sbPayload} = reserva;
+  sbPayload.personas_adicionales = personasAdicionales;
+  sbPayload.costo_personas = costoPersonas;
+  sbPayload.fecha_especial = fechaEspecial;
+  sbPayload.metodo_abono = metodoAbono;
+  let savedOk = false;
+  if (sbClient) {
+    try {
+      const {error: error} = await sbClient.from("reservas").insert([ sbPayload ]);
+      if (!error) savedOk = true; else console.error("Supabase insert error:", error);
+    } catch (e) {
+      console.error("Supabase unreachable:", e);
+    }
+  }
+  try {
+    const all = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    all.push(reserva);
+    localStorage.setItem("jans_reservas", JSON.stringify(all));
+  } catch (e) {}
+  if (!savedOk) {
+    console.warn("La reserva no pudo guardarse en línea; el mensaje de WhatsApp sigue llevando todos los datos.");
+  }
+  const fechaEspecialLabel = (() => {
+    if (!fechaEspecial) return "";
+    const [ey, em, ed] = fechaEspecial.split("-");
+    if (!ey || !em || !ed) return fechaEspecial;
+    return parseInt(ed) + " de " + MONTHS[parseInt(em) - 1] + " " + ey;
+  })();
+  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
+  window.open("https://wa.me/" + WA_NUMBER + "?text=" + msg, "_blank");
+  setTimeout(function() {
+    if (document.referrer) {
+      window.location.href = document.referrer;
+    } else {
+      window.history.back();
+    }
+  }, 600);
+}</script>
+  <script>(function() {
+  const OWNER = "jansphotograph";
+  const REPO = "jansphotograph.github.io";
+  const VER_KEY = "jans_site_version";
+  async function checkVersion() {
+    try {
+      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
+        cache: "no-cache"
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const current = localStorage.getItem(VER_KEY);
+      if (current && current !== String(data.v)) {
+        localStorage.setItem(VER_KEY, String(data.v));
+        window.location.reload(true);
+      } else {
+        localStorage.setItem(VER_KEY, String(data.v));
+      }
+    } catch (e) {}
+  }
+  checkVersion();
+  setInterval(checkVersion, 6e4);
+})();</script>
+  
   <button class="fab-importante" id="fabImportante" onclick="scrollToNotas()" aria-label="Ver notas importantes" style="display:none">
     <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
@@ -1083,52 +1019,47 @@
     Importante
   </button>
 
-  <script>
-    // ── Scroll to notas section ──
-    function scrollToNotas() {
-      const el = document.getElementById('notasSection');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  <script>function scrollToNotas() {
+  const el = document.getElementById("notasSection");
+  if (el) el.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  const fab = document.getElementById("fabImportante");
+  const notas = document.getElementById("notasSection");
+  const footer = document.querySelector("footer");
+  if (!fab || !notas) return;
+  function syncFabVisibility() {
+    if (notas.style.display !== "none" && notas.style.display !== "") {
+      fab.style.display = "flex";
+    } else if (notas.style.display === "block") {
+      fab.style.display = "flex";
     }
-
-    // ── Show FAB only when notasSection has content ──
-    document.addEventListener('DOMContentLoaded', function() {
-      const fab    = document.getElementById('fabImportante');
-      const notas  = document.getElementById('notasSection');
-      const footer = document.querySelector('footer');
-      if (!fab || !notas) return;
-
-      function syncFabVisibility() {
-        if (notas.style.display !== 'none' && notas.style.display !== '') {
-          fab.style.display = 'flex';
-        } else if (notas.style.display === 'block') {
-          fab.style.display = 'flex';
-        }
-      }
-
-      // Check immediately (covers case where notas already loaded from localStorage)
-      syncFabVisibility();
-
-      // Observer: catch async updates (GitHub fetch resolves after DOMContentLoaded)
-      const observer = new MutationObserver(syncFabVisibility);
-      observer.observe(notas, { attributes: true, attributeFilter: ['style'] });
-
-      // Also poll briefly as a fallback (covers any timing edge case)
-      let pollCount = 0;
-      const pollId = setInterval(() => {
-        syncFabVisibility();
-        pollCount++;
-        if (pollCount > 20) clearInterval(pollId); // stop after ~10s
-      }, 500);
-
-      // Hide near footer
-      function checkFab() {
-        if (!footer || fab.style.display !== 'flex') return;
-        const footerTop = footer.getBoundingClientRect().top;
-        const fabZone   = window.innerHeight - 28 - fab.offsetHeight - 16;
-        fab.classList.toggle('fab-hidden', footerTop < fabZone);
-      }
-      window.addEventListener('scroll', checkFab, { passive: true });
-    });
-  </script>
+  }
+  syncFabVisibility();
+  const observer = new MutationObserver(syncFabVisibility);
+  observer.observe(notas, {
+    attributes: true,
+    attributeFilter: [ "style" ]
+  });
+  let pollCount = 0;
+  const pollId = setInterval(() => {
+    syncFabVisibility();
+    pollCount++;
+    if (pollCount > 20) clearInterval(pollId);
+  }, 500);
+  function checkFab() {
+    if (!footer || fab.style.display !== "flex") return;
+    const footerTop = footer.getBoundingClientRect().top;
+    const fabZone = window.innerHeight - 28 - fab.offsetHeight - 16;
+    fab.classList.toggle("fab-hidden", footerTop < fabZone);
+  }
+  window.addEventListener("scroll", checkFab, {
+    passive: true
+  });
+});</script>
 </body>
 </html>

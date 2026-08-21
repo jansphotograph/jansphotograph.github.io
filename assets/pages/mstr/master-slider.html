@@ -12,20 +12,21 @@
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('../master.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("../master.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('../master.html');
+  } catch (e) {
+    window.location.replace("../master.html");
   }
-})();
-</script>
+})();</script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -43,7 +44,7 @@
 </nav>
 </header>
 
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="../master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -114,76 +115,70 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
-// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
-// en escritorio se comporta como un link normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel',
-    'master-comentarios':  'nav-comentarios',
-    'master-slider':       'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':               'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
-<!-- ══ SLIDE MODAL ══ -->
+
 <div class="modal-overlay" id="slideModal">
   <div class="modal">
     <div class="modal-header">
@@ -243,187 +238,244 @@ document.addEventListener('DOMContentLoaded', () => {
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SESSION_KEY = 'jans_master_auth';
-const LS_KEY = 'jans_slider';
+<script>const SESSION_KEY = "jans_master_auth";
+
+const LS_KEY = "jans_slider";
 
 const CONFIG_PUBLIC = {
-  get OWNER() { return localStorage.getItem('jans_public_owner') || 'jansphotograph'; },
-  get REPO()  { return localStorage.getItem('jans_public_repo')  || 'jansphotograph.github.io'; },
+  get OWNER() {
+    return localStorage.getItem("jans_public_owner") || "jansphotograph";
+  },
+  get REPO() {
+    return localStorage.getItem("jans_public_repo") || "jansphotograph.github.io";
+  }
 };
+
 function getGHConfig() {
-  try { return JSON.parse(localStorage.getItem('jans_gh_config') || '{}'); } catch(e) { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
+  } catch (e) {
+    return {};
+  }
 }
 
-// ── Supabase — fuente de verdad de los datos del slider (título/descripción/
-// orden), para que la edición se refleje al instante sin depender de que
-// GitHub Pages reconstruya el sitio. ──
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
 let sbClient = null;
+
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     return true;
   }
   return false;
 }
+
 try {
-  if (!initSupabase()) window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
-} catch(e) {}
+  if (!initSupabase()) window.addEventListener("load", () => {
+    if (!sbClient) initSupabase();
+  });
+} catch (e) {}
 
 async function ghPutPublicFile(path, base64Content, commitMsg) {
-  const token = (getGHConfig().token || '').replace(/\s+/g, '');
-  if (!token) { showToast('Configura el token de GitHub primero', 'error'); return false; }
+  const token = (getGHConfig().token || "").replace(/\s+/g, "");
+  if (!token) {
+    showToast("Configura el token de GitHub primero", "error");
+    return false;
+  }
   const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
   let sha = null;
   try {
-    const r = await fetch(apiUrl, { headers: { Accept: 'application/vnd.github.v3+json' } });
-    if (r.ok) { const j = await r.json(); sha = j.sha; }
-  } catch(e) {}
-  const body = { message: commitMsg || `upload ${path}`, content: base64Content };
+    const r = await fetch(apiUrl, {
+      headers: {
+        Accept: "application/vnd.github.v3+json"
+      }
+    });
+    if (r.ok) {
+      const j = await r.json();
+      sha = j.sha;
+    }
+  } catch (e) {}
+  const body = {
+    message: commitMsg || `upload ${path}`,
+    content: base64Content
+  };
   if (sha) body.sha = sha;
   const res = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    method: "PUT",
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: "application/vnd.github.v3+json",
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(body)
   });
   return res.ok;
 }
 
 async function ghDeletePublicFile(path, commitMsg) {
-  const token = (getGHConfig().token || '').replace(/\s+/g, '');
+  const token = (getGHConfig().token || "").replace(/\s+/g, "");
   if (!token) return false;
   const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
   try {
-    const r = await fetch(apiUrl, { headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' } });
+    const r = await fetch(apiUrl, {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json"
+      }
+    });
     if (!r.ok) return false;
     const j = await r.json();
     const del = await fetch(apiUrl, {
-      method: 'DELETE',
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: commitMsg || `remove ${path}`, sha: j.sha })
+      method: "DELETE",
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: commitMsg || `remove ${path}`,
+        sha: j.sha
+      })
     });
     return del.ok;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
 
 let slides = [];
+
 let editingSlideId = null;
-let slidePhotoData = null; // { base64, extension, mimeType, fileName }
+
+let slidePhotoData = null;
+
 let toastTimer = null;
 
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   t.className = `toast ${type} show`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
-  sessionStorage.removeItem('jans_master_auth');
-  window.location.replace('../master.html');
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
+  sessionStorage.removeItem("jans_master_auth");
+  window.location.replace("../master.html");
 }
+
 function escapeHtml(str) {
-  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str || "").replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[m]));
 }
+
 function imgUrl(path) {
-  if (!path) return '';
+  if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
   return `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}?t=${Date.now()}`;
 }
 
 function loadSlidesLocal() {
-  try { slides = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
-  catch(e) { slides = []; }
+  try {
+    slides = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+  } catch (e) {
+    slides = [];
+  }
 }
 
-// ── Supabase es la fuente de verdad — se lee directo, sin depender de que
-// GitHub Pages reconstruya el sitio (evita el problema de datos "viejos"). ──
 async function syncSliderFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('sliders').select('*').order('orden', { ascending: true });
-    if (error) { console.error('syncSliderFromSupabase error:', error.message || JSON.stringify(error)); return false; }
+    const {data: data, error: error} = await sbClient.from("sliders").select("*").order("orden", {
+      ascending: true
+    });
+    if (error) {
+      console.error("syncSliderFromSupabase error:", error.message || JSON.stringify(error));
+      return false;
+    }
     if (data) {
       slides = data;
       localStorage.setItem(LS_KEY, JSON.stringify(slides));
       return true;
     }
-  } catch(e) { console.error('syncSliderFromSupabase:', e); }
+  } catch (e) {
+    console.error("syncSliderFromSupabase:", e);
+  }
   return false;
 }
 
 async function syncSlider() {
-  showToast('Sincronizando...');
+  showToast("Sincronizando...");
   const ok = await syncSliderFromSupabase();
   renderSlides();
-  showToast(ok ? 'Sincronizado — ' + slides.length + ' slide(s)' : 'Sin conexión con Supabase — mostrando datos locales', ok ? '' : 'error');
+  showToast(ok ? "Sincronizado — " + slides.length + " slide(s)" : "Sin conexión con Supabase — mostrando datos locales", ok ? "" : "error");
 }
 
 function renderSlides() {
-  const container = document.getElementById('slideList');
+  const container = document.getElementById("slideList");
   if (!slides.length) {
     container.innerHTML = '<div class="empty-state">No hay slides todavía. Pulsa "+ Añadir slide" para crear el primero.</div>';
     return;
   }
-  container.innerHTML = slides.map((s, i) => `
-    <div class="slide-row">
-      <div class="slide-thumb">
-        ${s.imagen ? `<img src="${imgUrl(s.imagen)}" alt="${escapeHtml(s.titulo)}" onerror="this.style.display='none'" />` : '<div class="thumb-empty">📷</div>'}
-      </div>
-      <div class="slide-main">
-        <div class="slide-title">${escapeHtml(s.titulo || 'Sin título')} <span style="color:var(--gray);font-weight:400;font-size:.72rem">#${s.numero}</span></div>
-        <div class="slide-desc">${escapeHtml(s.descripcion || '')}</div>
-      </div>
-      <div class="slide-order">
-        <button class="btn-icon" onclick="moveSlide(${i}, -1)" ${i === 0 ? 'disabled' : ''} aria-label="Subir">↑</button>
-        <button class="btn-icon" onclick="moveSlide(${i}, 1)" ${i === slides.length - 1 ? 'disabled' : ''} aria-label="Bajar">↓</button>
-      </div>
-      <div class="slide-actions">
-        <button class="btn btn-sm btn-outline" onclick="openEditSlideModal('${s.id}')">Editar</button>
-        <button class="btn btn-sm btn-red" onclick="deleteSlide('${s.id}')">Eliminar</button>
-      </div>
-    </div>`).join('');
+  container.innerHTML = slides.map((s, i) => `\n    <div class="slide-row">\n      <div class="slide-thumb">\n        ${s.imagen ? `<img src="${imgUrl(s.imagen)}" alt="${escapeHtml(s.titulo)}" onerror="this.style.display='none'" />` : '<div class="thumb-empty">📷</div>'}\n      </div>\n      <div class="slide-main">\n        <div class="slide-title">${escapeHtml(s.titulo || "Sin título")} <span style="color:var(--gray);font-weight:400;font-size:.72rem">#${s.numero}</span></div>\n        <div class="slide-desc">${escapeHtml(s.descripcion || "")}</div>\n      </div>\n      <div class="slide-order">\n        <button class="btn-icon" onclick="moveSlide(${i}, -1)" ${i === 0 ? "disabled" : ""} aria-label="Subir">↑</button>\n        <button class="btn-icon" onclick="moveSlide(${i}, 1)" ${i === slides.length - 1 ? "disabled" : ""} aria-label="Bajar">↓</button>\n      </div>\n      <div class="slide-actions">\n        <button class="btn btn-sm btn-outline" onclick="openEditSlideModal('${s.id}')">Editar</button>\n        <button class="btn btn-sm btn-red" onclick="deleteSlide('${s.id}')">Eliminar</button>\n      </div>\n    </div>`).join("");
 }
 
-// Intercambia el "orden" (posición visual) de dos slides — el "numero" fijo
-// de cada uno (usado para el nombre de su imagen) NO cambia al reordenar.
 async function moveSlide(idx, dir) {
   const ni = idx + dir;
   if (ni < 0 || ni >= slides.length) return;
   const a = slides[idx], b = slides[ni];
   const ordenA = a.orden, ordenB = b.orden;
-  a.orden = ordenB; b.orden = ordenA;
-  [slides[idx], slides[ni]] = [slides[ni], slides[idx]];
+  a.orden = ordenB;
+  b.orden = ordenA;
+  [slides[idx], slides[ni]] = [ slides[ni], slides[idx] ];
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
   renderSlides();
   if (sbClient) {
-    await sbClient.from('sliders').update({ orden: a.orden }).eq('id', a.id);
-    await sbClient.from('sliders').update({ orden: b.orden }).eq('id', b.id);
+    await sbClient.from("sliders").update({
+      orden: a.orden
+    }).eq("id", a.id);
+    await sbClient.from("sliders").update({
+      orden: b.orden
+    }).eq("id", b.id);
   }
 }
 
 function resetSlidePhotoField() {
   slidePhotoData = null;
-  document.getElementById('slidePhotoInput').value = '';
-  document.getElementById('slidePhotoPreview').style.display = 'none';
-  document.getElementById('slidePhotoIcon').style.display = 'flex';
-  document.getElementById('slidePhotoLabel').textContent = 'Haz clic o arrastra la foto aquí';
-  document.getElementById('slidePhotoZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById("slidePhotoInput").value = "";
+  document.getElementById("slidePhotoPreview").style.display = "none";
+  document.getElementById("slidePhotoIcon").style.display = "flex";
+  document.getElementById("slidePhotoLabel").textContent = "Haz clic o arrastra la foto aquí";
+  document.getElementById("slidePhotoZone").style.borderColor = "rgba(233,30,140,0.35)";
 }
 
 function openNewSlideModal() {
   editingSlideId = null;
   resetSlidePhotoField();
-  document.getElementById('slideModalTitle').textContent = 'Nuevo slide';
-  document.getElementById('slideTitulo').value = '';
-  document.getElementById('slideDescripcion').value = '';
-  document.getElementById('slideModalMsg').style.display = 'none';
-  openModal('slideModal');
+  document.getElementById("slideModalTitle").textContent = "Nuevo slide";
+  document.getElementById("slideTitulo").value = "";
+  document.getElementById("slideDescripcion").value = "";
+  document.getElementById("slideModalMsg").style.display = "none";
+  openModal("slideModal");
 }
 
 function openEditSlideModal(id) {
@@ -431,113 +483,122 @@ function openEditSlideModal(id) {
   if (!s) return;
   editingSlideId = id;
   resetSlidePhotoField();
-  document.getElementById('slideModalTitle').textContent = 'Editar slide';
-  document.getElementById('slideTitulo').value = s.titulo || '';
-  document.getElementById('slideDescripcion').value = s.descripcion || '';
-  document.getElementById('slideModalMsg').style.display = 'none';
+  document.getElementById("slideModalTitle").textContent = "Editar slide";
+  document.getElementById("slideTitulo").value = s.titulo || "";
+  document.getElementById("slideDescripcion").value = s.descripcion || "";
+  document.getElementById("slideModalMsg").style.display = "none";
   if (s.imagen) {
-    const preview = document.getElementById('slidePhotoPreview');
+    const preview = document.getElementById("slidePhotoPreview");
     preview.src = imgUrl(s.imagen);
-    preview.style.display = 'block';
-    document.getElementById('slidePhotoIcon').style.display = 'none';
-    document.getElementById('slidePhotoLabel').textContent = '✓ Foto actual — haz clic para reemplazar';
-    document.getElementById('slidePhotoZone').style.borderColor = 'rgba(34,197,94,0.4)';
+    preview.style.display = "block";
+    document.getElementById("slidePhotoIcon").style.display = "none";
+    document.getElementById("slidePhotoLabel").textContent = "✓ Foto actual — haz clic para reemplazar";
+    document.getElementById("slidePhotoZone").style.borderColor = "rgba(34,197,94,0.4)";
   }
-  openModal('slideModal');
+  openModal("slideModal");
 }
 
 function handleSlidePhoto(file) {
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { showToast('La imagen supera 5MB', 'error'); return; }
-  const ext = file.name.split('.').pop().toLowerCase();
-  const reader = new FileReader();
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("La imagen supera 5MB", "error");
+    return;
+  }
+  const ext = file.name.split(".").pop().toLowerCase();
+  const reader = new FileReader;
   reader.onload = function(e) {
-    slidePhotoData = { base64: e.target.result.split(',')[1], extension: ext, mimeType: file.type, fileName: file.name };
-    document.getElementById('slidePhotoPreview').src = e.target.result;
-    document.getElementById('slidePhotoPreview').style.display = 'block';
-    document.getElementById('slidePhotoIcon').style.display = 'none';
-    document.getElementById('slidePhotoLabel').textContent = '✓ ' + file.name + ' (' + (file.size/1024).toFixed(0) + 'KB) — se sube al guardar';
-    document.getElementById('slidePhotoZone').style.borderColor = 'rgba(34,197,94,0.5)';
+    slidePhotoData = {
+      base64: e.target.result.split(",")[1],
+      extension: ext,
+      mimeType: file.type,
+      fileName: file.name
+    };
+    document.getElementById("slidePhotoPreview").src = e.target.result;
+    document.getElementById("slidePhotoPreview").style.display = "block";
+    document.getElementById("slidePhotoIcon").style.display = "none";
+    document.getElementById("slidePhotoLabel").textContent = "✓ " + file.name + " (" + (file.size / 1024).toFixed(0) + "KB) — se sube al guardar";
+    document.getElementById("slidePhotoZone").style.borderColor = "rgba(34,197,94,0.5)";
   };
   reader.readAsDataURL(file);
 }
 
 function setSlideModalMsg(text, type) {
-  const el = document.getElementById('slideModalMsg');
+  const el = document.getElementById("slideModalMsg");
   el.textContent = text;
-  el.className = 'modal-msg ' + type;
-  el.style.display = 'block';
+  el.className = "modal-msg " + type;
+  el.style.display = "block";
 }
 
 async function saveSlide() {
-  const titulo = document.getElementById('slideTitulo').value.trim();
-  const descripcion = document.getElementById('slideDescripcion').value.trim();
+  const titulo = document.getElementById("slideTitulo").value.trim();
+  const descripcion = document.getElementById("slideDescripcion").value.trim();
   const existing = editingSlideId ? slides.find(x => x.id === editingSlideId) : null;
-
-  if (!titulo)      { setSlideModalMsg('Por favor escribe un título.', 'error'); return; }
-  if (!descripcion) { setSlideModalMsg('Por favor escribe una descripción.', 'error'); return; }
-  if (!slidePhotoData && !existing?.imagen) { setSlideModalMsg('Selecciona una foto para el slide.', 'error'); return; }
-
-  const slideId = editingSlideId || ('s_' + Date.now());
-  // Número fijo del slide — asignado UNA sola vez al crearlo. Se usa para
-  // nombrar su imagen (slider_7, etc.) y nunca cambia, aunque luego lo
-  // reordenes con las flechas ↑ ↓ (eso solo cambia "orden", no "numero").
-  const numero = existing?.numero || (Math.max(0, ...slides.map(s => s.numero || 0)) + 1);
-  const orden  = existing ? existing.orden : slides.length;
-  let imagen = existing?.imagen || '';
-
-  const saveBtn = document.getElementById('slideSaveBtn');
+  if (!titulo) {
+    setSlideModalMsg("Por favor escribe un título.", "error");
+    return;
+  }
+  if (!descripcion) {
+    setSlideModalMsg("Por favor escribe una descripción.", "error");
+    return;
+  }
+  if (!slidePhotoData && !existing?.imagen) {
+    setSlideModalMsg("Selecciona una foto para el slide.", "error");
+    return;
+  }
+  const slideId = editingSlideId || "s_" + Date.now();
+  const numero = existing?.numero || Math.max(0, ...slides.map(s => s.numero || 0)) + 1;
+  const orden = existing ? existing.orden : slides.length;
+  let imagen = existing?.imagen || "";
+  const saveBtn = document.getElementById("slideSaveBtn");
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Guardando...';
-
+  saveBtn.textContent = "Guardando...";
   if (slidePhotoData) {
-    const hasGH = (getGHConfig().token || '').trim();
+    const hasGH = (getGHConfig().token || "").trim();
     if (!hasGH) {
-      setSlideModalMsg('Configura el token de GitHub en Config para poder subir fotos.', 'error');
+      setSlideModalMsg("Configura el token de GitHub en Config para poder subir fotos.", "error");
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Guardar slide';
+      saveBtn.textContent = "Guardar slide";
       return;
     }
-    setSlideModalMsg('Subiendo foto...', 'info');
-    // Nombre fijo y predecible: slider_{numero}.{extensión} — así siempre
-    // se sabe qué imagen le pertenece a cada slide, sin importar cuántas
-    // veces se reemplace.
+    setSlideModalMsg("Subiendo foto...", "info");
     const newPath = `assets/images/slider/slider_${numero}.${slidePhotoData.extension}`;
-
-    // Si la extensión cambió respecto a la imagen anterior, elimina el archivo viejo
     if (existing?.imagen && existing.imagen !== newPath) {
       await ghDeletePublicFile(existing.imagen, `remove old slider image ${numero}`);
     }
-
     const ok = await ghPutPublicFile(newPath, slidePhotoData.base64, `slider_${numero}: ${titulo}`);
     if (!ok) {
-      setSlideModalMsg('Error al subir la foto. Verifica el token de GitHub.', 'error');
+      setSlideModalMsg("Error al subir la foto. Verifica el token de GitHub.", "error");
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Guardar slide';
+      saveBtn.textContent = "Guardar slide";
       return;
     }
     imagen = newPath;
   }
-
-  const slide = { id: slideId, numero, orden, titulo, descripcion, imagen };
-
-  // Guardar directo en Supabase — se refleja al instante, sin pasos extra.
+  const slide = {
+    id: slideId,
+    numero: numero,
+    orden: orden,
+    titulo: titulo,
+    descripcion: descripcion,
+    imagen: imagen
+  };
   if (sbClient) {
-    const { error } = await sbClient.from('sliders').upsert([slide], { onConflict: 'id' });
+    const {error: error} = await sbClient.from("sliders").upsert([ slide ], {
+      onConflict: "id"
+    });
     if (error) {
-      console.error('saveSlide Supabase error:', error.message || JSON.stringify(error));
-      setSlideModalMsg('No se pudo guardar en Supabase: ' + (error.message || 'error desconocido'), 'error');
+      console.error("saveSlide Supabase error:", error.message || JSON.stringify(error));
+      setSlideModalMsg("No se pudo guardar en Supabase: " + (error.message || "error desconocido"), "error");
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Guardar slide';
+      saveBtn.textContent = "Guardar slide";
       return;
     }
   } else {
-    setSlideModalMsg('Sin conexión con Supabase — no se pudo guardar.', 'error');
+    setSlideModalMsg("Sin conexión con Supabase — no se pudo guardar.", "error");
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Guardar slide';
+    saveBtn.textContent = "Guardar slide";
     return;
   }
-
   if (editingSlideId) {
     const idx = slides.findIndex(x => x.id === editingSlideId);
     if (idx !== -1) slides[idx] = slide;
@@ -545,37 +606,35 @@ async function saveSlide() {
     slides.push(slide);
   }
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
-
   saveBtn.disabled = false;
-  saveBtn.textContent = 'Guardar slide';
-  closeModal('slideModal');
+  saveBtn.textContent = "Guardar slide";
+  closeModal("slideModal");
   renderSlides();
-  showToast(editingSlideId ? '✓ Slide actualizado' : '✓ Slide creado');
+  showToast(editingSlideId ? "✓ Slide actualizado" : "✓ Slide creado");
 }
 
 async function deleteSlide(id) {
   const s = slides.find(x => x.id === id);
   if (!s) return;
-  if (!confirm('¿Eliminar este slide? Esta acción no se puede deshacer.')) return;
+  if (!confirm("¿Eliminar este slide? Esta acción no se puede deshacer.")) return;
   slides = slides.filter(x => x.id !== id);
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
   renderSlides();
-  if (s.imagen && (getGHConfig().token || '').trim()) {
+  if (s.imagen && (getGHConfig().token || "").trim()) {
     await ghDeletePublicFile(s.imagen, `remove slider image ${s.numero}`);
   }
   if (sbClient) {
-    const { error } = await sbClient.from('sliders').delete().eq('id', id);
-    if (error) console.error('deleteSlide Supabase error:', error.message || JSON.stringify(error));
+    const {error: error} = await sbClient.from("sliders").delete().eq("id", id);
+    if (error) console.error("deleteSlide Supabase error:", error.message || JSON.stringify(error));
   }
-  showToast('Slide eliminado ✓');
+  showToast("Slide eliminado ✓");
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadSlidesLocal();
   renderSlides();
   const ok = await syncSliderFromSupabase();
   if (ok) renderSlides();
-});
-</script>
+});</script>
 </body>
 </html>

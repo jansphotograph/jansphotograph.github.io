@@ -13,20 +13,21 @@
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('../master.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("../master.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('../master.html');
+  } catch (e) {
+    window.location.replace("../master.html");
   }
-})();
-</script>
+})();</script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -44,7 +45,7 @@
 </nav>
 </header>
 
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="../master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -115,76 +116,70 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
-// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
-// en escritorio se comporta como un link normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel',
-    'master-comentarios':  'nav-comentarios', 'master-slider': 'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':               'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
-<!-- ══ VIEW MODAL ══ -->
+
 <div class="modal-overlay" id="viewModal">
   <div class="modal">
     <div class="modal-header">
@@ -234,132 +229,159 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </main>
 
-<script>
-const SESSION_KEY = 'jans_master_auth';
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>const SESSION_KEY = "jans_master_auth";
+
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
 let sbClient = null;
+
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     return true;
   }
   return false;
 }
+
 try {
-  if (!initSupabase()) window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
-} catch(e) {}
+  if (!initSupabase()) window.addEventListener("load", () => {
+    if (!sbClient) initSupabase();
+  });
+} catch (e) {}
 
 let allComentarios = [];
+
 let activeCommentId = null;
+
 let toastTimer = null;
 
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   t.className = `toast ${type} show`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
-  sessionStorage.removeItem('jans_master_auth');
-  window.location.replace('../master.html');
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
+  sessionStorage.removeItem("jans_master_auth");
+  window.location.replace("../master.html");
 }
+
 function escapeHtml(str) {
-  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str || "").replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[m]));
 }
+
 function fmtDate(iso) {
-  if (!iso) return '';
+  if (!iso) return "";
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString('es-PA', { day:'2-digit', month:'short', year:'numeric' }) +
-           ' · ' + d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' });
-  } catch(e) { return iso; }
+    return d.toLocaleDateString("es-PA", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }) + " · " + d.toLocaleTimeString("es-PA", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  } catch (e) {
+    return iso;
+  }
 }
 
 function loadComentariosLocal() {
-  try { allComentarios = JSON.parse(localStorage.getItem('jans_comentarios') || '[]'); }
-  catch(e) { allComentarios = []; }
+  try {
+    allComentarios = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
+  } catch (e) {
+    allComentarios = [];
+  }
 }
 
 async function syncComentariosFromSupabase() {
   if (!sbClient) return false;
   try {
-    const { data, error } = await sbClient.from('comentarios').select('*').order('created_at', { ascending: false });
-    if (error) { console.error('Supabase select error:', error); return false; }
+    const {data: data, error: error} = await sbClient.from("comentarios").select("*").order("created_at", {
+      ascending: false
+    });
+    if (error) {
+      console.error("Supabase select error:", error);
+      return false;
+    }
     if (data) {
       allComentarios = data;
-      localStorage.setItem('jans_comentarios', JSON.stringify(data));
+      localStorage.setItem("jans_comentarios", JSON.stringify(data));
     }
     return true;
-  } catch(e) { console.error('Supabase unreachable:', e); return false; }
+  } catch (e) {
+    console.error("Supabase unreachable:", e);
+    return false;
+  }
 }
 
 async function syncComentarios() {
-  showToast('Sincronizando...');
+  showToast("Sincronizando...");
   const ok = await syncComentariosFromSupabase();
   if (!ok) loadComentariosLocal();
   renderComentarios();
-  showToast(ok ? 'Sincronizado — ' + allComentarios.length + ' comentario(s)' : 'Sin conexión — mostrando datos locales', ok ? '' : 'error');
+  showToast(ok ? "Sincronizado — " + allComentarios.length + " comentario(s)" : "Sin conexión — mostrando datos locales", ok ? "" : "error");
 }
 
 function populatePlanFilter() {
-  const sel = document.getElementById('filterPlan');
+  const sel = document.getElementById("filterPlan");
   const current = sel.value;
-  const plans = [...new Set(allComentarios.map(c => c.plan).filter(Boolean))].sort();
-  sel.innerHTML = '<option value="">Todos los planes</option>' + plans.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+  const plans = [ ...new Set(allComentarios.map(c => c.plan).filter(Boolean)) ].sort();
+  sel.innerHTML = '<option value="">Todos los planes</option>' + plans.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
   sel.value = current;
 }
 
 function renderComentarios(highlightId) {
-  const filterStatus = document.getElementById('filterStatus').value;
-  const filterPlan    = document.getElementById('filterPlan').value;
-
-  let list = [...allComentarios].sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+  const filterStatus = document.getElementById("filterStatus").value;
+  const filterPlan = document.getElementById("filterPlan").value;
+  let list = [ ...allComentarios ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   list = list.filter(c => {
-    if (filterStatus === 'published'   && !c.publicado) return false;
-    if (filterStatus === 'unpublished' && c.publicado)  return false;
+    if (filterStatus === "published" && !c.publicado) return false;
+    if (filterStatus === "unpublished" && c.publicado) return false;
     if (filterPlan && c.plan !== filterPlan) return false;
     return true;
   });
-
   populatePlanFilter();
-
-  const container = document.getElementById('commentList');
+  const container = document.getElementById("commentList");
   if (!list.length) {
     container.innerHTML = '<div class="empty-state">No hay comentarios que coincidan con el filtro.</div>';
     return;
   }
-
   container.innerHTML = list.map(c => {
-    const preview = (c.comentario || '').slice(0, 90) + ((c.comentario||'').length > 90 ? '…' : '');
-    return `
-    <div class="comment-row ${c.publicado ? 'is-published' : 'is-unpublished'}" id="crow-${c.id}">
-      <div class="comment-main">
-        <div class="comment-name">${escapeHtml(c.nombre)}</div>
-        <div class="comment-meta">
-          <span class="comment-plan-tag">${escapeHtml(c.plan || 'Sin plan')}</span>
-          <span class="badge-status ${c.publicado ? 'status-published' : 'status-unpublished'}">${c.publicado ? '✓ Publicado' : 'No publicado'}</span>
-          <span>${fmtDate(c.created_at)}</span>
-        </div>
-        <div class="comment-preview">${escapeHtml(preview)}</div>
-      </div>
-      <div class="comment-actions">
-        <button class="btn btn-sm btn-outline" onclick="viewComentario('${c.id}')">Ver</button>
-        <button class="btn btn-sm ${c.publicado ? 'btn-outline' : 'btn-green'}" onclick="togglePublish('${c.id}')">${c.publicado ? 'Despublicar' : 'Publicar'}</button>
-      </div>
-    </div>`;
-  }).join('');
-
+    const preview = (c.comentario || "").slice(0, 90) + ((c.comentario || "").length > 90 ? "…" : "");
+    return `\n    <div class="comment-row ${c.publicado ? "is-published" : "is-unpublished"}" id="crow-${c.id}">\n      <div class="comment-main">\n        <div class="comment-name">${escapeHtml(c.nombre)}</div>\n        <div class="comment-meta">\n          <span class="comment-plan-tag">${escapeHtml(c.plan || "Sin plan")}</span>\n          <span class="badge-status ${c.publicado ? "status-published" : "status-unpublished"}">${c.publicado ? "✓ Publicado" : "No publicado"}</span>\n          <span>${fmtDate(c.created_at)}</span>\n        </div>\n        <div class="comment-preview">${escapeHtml(preview)}</div>\n      </div>\n      <div class="comment-actions">\n        <button class="btn btn-sm btn-outline" onclick="viewComentario('${c.id}')">Ver</button>\n        <button class="btn btn-sm ${c.publicado ? "btn-outline" : "btn-green"}" onclick="togglePublish('${c.id}')">${c.publicado ? "Despublicar" : "Publicar"}</button>\n      </div>\n    </div>`;
+  }).join("");
   if (highlightId) {
-    const row = document.getElementById('crow-' + highlightId);
+    const row = document.getElementById("crow-" + highlightId);
     if (row) {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.add('row-flash');
-      setTimeout(() => row.classList.remove('row-flash'), 1500);
+      row.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+      row.classList.add("row-flash");
+      setTimeout(() => row.classList.remove("row-flash"), 1500);
     }
   }
 }
@@ -368,14 +390,14 @@ function viewComentario(id) {
   const c = allComentarios.find(x => x.id === id);
   if (!c) return;
   activeCommentId = id;
-  document.getElementById('viewModalTitle').textContent = c.nombre;
-  document.getElementById('viewModalPlan').textContent = c.plan || 'Sin plan';
-  document.getElementById('viewModalText').textContent = c.comentario;
-  document.getElementById('viewModalDate').textContent = 'Enviado el ' + fmtDate(c.created_at);
-  const publishBtn = document.getElementById('viewModalPublishBtn');
-  publishBtn.textContent = c.publicado ? 'Despublicar' : 'Publicar';
-  publishBtn.className = 'btn ' + (c.publicado ? 'btn-outline' : 'btn-green');
-  openModal('viewModal');
+  document.getElementById("viewModalTitle").textContent = c.nombre;
+  document.getElementById("viewModalPlan").textContent = c.plan || "Sin plan";
+  document.getElementById("viewModalText").textContent = c.comentario;
+  document.getElementById("viewModalDate").textContent = "Enviado el " + fmtDate(c.created_at);
+  const publishBtn = document.getElementById("viewModalPublishBtn");
+  publishBtn.textContent = c.publicado ? "Despublicar" : "Publicar";
+  publishBtn.className = "btn " + (c.publicado ? "btn-outline" : "btn-green");
+  openModal("viewModal");
 }
 
 function togglePublishFromModal() {
@@ -388,55 +410,59 @@ async function togglePublish(id, fromModal) {
   if (!c) return;
   const newVal = !c.publicado;
   c.publicado = newVal;
-
-  // Optimista: reflejar de inmediato en UI y localStorage
-  localStorage.setItem('jans_comentarios', JSON.stringify(allComentarios));
+  localStorage.setItem("jans_comentarios", JSON.stringify(allComentarios));
   renderComentarios(id);
-  if (fromModal) closeModal('viewModal');
-
+  if (fromModal) closeModal("viewModal");
   if (sbClient) {
     try {
-      const { error } = await sbClient.from('comentarios').update({ publicado: newVal }).eq('id', id);
+      const {error: error} = await sbClient.from("comentarios").update({
+        publicado: newVal
+      }).eq("id", id);
       if (error) {
-        console.error('Supabase update error:', error);
-        showToast('Guardado local — no se pudo sincronizar con Supabase', 'error');
+        console.error("Supabase update error:", error);
+        showToast("Guardado local — no se pudo sincronizar con Supabase", "error");
         return;
       }
-    } catch(e) {
-      console.error('Supabase unreachable:', e);
-      showToast('Guardado local — sin conexión a Supabase', 'error');
+    } catch (e) {
+      console.error("Supabase unreachable:", e);
+      showToast("Guardado local — sin conexión a Supabase", "error");
       return;
     }
   }
-  showToast(newVal ? '✓ Comentario publicado en Servicios' : 'Comentario despublicado');
+  showToast(newVal ? "✓ Comentario publicado en Servicios" : "Comentario despublicado");
 }
 
 async function deleteFromModal() {
   if (!activeCommentId) return;
   const c = allComentarios.find(x => x.id === activeCommentId);
   if (!c) return;
-  if (!confirm('¿Eliminar este comentario de forma permanente?')) return;
-
+  if (!confirm("¿Eliminar este comentario de forma permanente?")) return;
   allComentarios = allComentarios.filter(x => x.id !== activeCommentId);
-  localStorage.setItem('jans_comentarios', JSON.stringify(allComentarios));
-  closeModal('viewModal');
+  localStorage.setItem("jans_comentarios", JSON.stringify(allComentarios));
+  closeModal("viewModal");
   renderComentarios();
-
   if (sbClient) {
     try {
-      const { error } = await sbClient.from('comentarios').delete().eq('id', c.id);
-      if (error) { console.error('Supabase delete error:', error); showToast('Eliminado local — no se pudo sincronizar', 'error'); return; }
-    } catch(e) { console.error('Supabase unreachable:', e); showToast('Eliminado local — sin conexión', 'error'); return; }
+      const {error: error} = await sbClient.from("comentarios").delete().eq("id", c.id);
+      if (error) {
+        console.error("Supabase delete error:", error);
+        showToast("Eliminado local — no se pudo sincronizar", "error");
+        return;
+      }
+    } catch (e) {
+      console.error("Supabase unreachable:", e);
+      showToast("Eliminado local — sin conexión", "error");
+      return;
+    }
   }
-  showToast('Comentario eliminado');
+  showToast("Comentario eliminado");
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadComentariosLocal();
   renderComentarios();
   const ok = await syncComentariosFromSupabase();
   if (ok) renderComentarios();
-});
-</script>
+});</script>
 </body>
 </html>

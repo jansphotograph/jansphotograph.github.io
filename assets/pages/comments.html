@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ══ SEO ══ -->
+  
   <title>Déjanos tu Reseña | Jans Photograph Panamá</title>
   <meta name="description" content="Cuéntanos cómo fue tu experiencia con Jans Photograph. Tu opinión ayuda a otros clientes a conocernos mejor." />
   <meta name="robots"      content="noindex, follow" />
@@ -157,133 +157,155 @@
   </footer>
 
   <script src="../js/main.js"></script>
-  <script>
-    const OWNER = 'jansphotograph';
-    const REPO  = 'jansphotograph.github.io';
+  <script>const OWNER = "jansphotograph";
 
-    // ── Supabase ──
-    const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-    let sbClient = null;
-    function initSupabase() {
-      if (window.supabase && typeof window.supabase.createClient === 'function') {
-        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        return true;
-      }
-      return false;
-    }
-    try {
-      if (!initSupabase()) window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
-    } catch(e) {}
+const REPO = "jansphotograph.github.io";
 
-    // ── Poblar el <select> de planes desde planes.json (local primero, GitHub para lo último) ──
-    const planSelect = document.getElementById('cPlan');
-    const CAT_LABELS = {
-      'retratos': 'Retratos', 'xv-anos': 'XV Años', 'familiares': 'Familiares',
-      'pre-boda': 'Pre Boda', 'boda': 'Boda', 'eventos': 'Eventos',
-      'graduacion': 'Graduación', 'gastronomia': 'Gastronomía', 'infantiles': 'Infantiles',
-    };
-    function renderPlanOptions(plans) {
-      if (!Array.isArray(plans) || !plans.length) return;
-      const byCat = {};
-      plans.forEach(p => { (byCat[p.categoria] = byCat[p.categoria] || []).push(p); });
-      let html = '<option value="" disabled selected>Elige el plan que reservaste</option>';
-      Object.keys(byCat).forEach(cat => {
-        const label = CAT_LABELS[cat] || cat;
-        html += `<optgroup label="${label}">`;
-        byCat[cat].forEach(p => { html += `<option value="${p.nombre}">${p.nombre}</option>`; });
-        html += '</optgroup>';
-      });
-      html += '<option value="Otro">Otro / No recuerdo el nombre</option>';
-      planSelect.innerHTML = html;
-    }
-    try {
-      const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-      if (local.length) renderPlanOptions(local);
-    } catch(e) {}
-    fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`, { cache: 'no-cache' })
-      .then(r => r.ok ? r.json() : null)
-      .then(plans => {
-        if (!plans) return;
-        localStorage.setItem('jans_planes', JSON.stringify(plans));
-        renderPlanOptions(plans);
-      })
-      .catch(() => {
-        if (!planSelect.options.length) {
-          planSelect.innerHTML = '<option value="Otro" selected>Otro / No recuerdo el nombre</option>';
-        }
-      });
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
-    // ── Contador de caracteres ──
-    const cText = document.getElementById('cText');
-    const cTextCount = document.getElementById('cTextCount');
-    cText.addEventListener('input', () => { cTextCount.textContent = cText.value.length; });
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
 
-    // ── Envío del formulario ──
-    const form = document.getElementById('commentForm');
-    const msgEl = document.getElementById('cMsg');
-    const submitBtn = document.getElementById('submitBtn');
+let sbClient = null;
 
-    function showMsg(text, type) {
-      msgEl.textContent = text;
-      msgEl.className = 'cm-msg ' + type;
-    }
+function initSupabase() {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  }
+  return false;
+}
 
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
+try {
+  if (!initSupabase()) window.addEventListener("load", () => {
+    if (!sbClient) initSupabase();
+  });
+} catch (e) {}
 
-      const nombre     = document.getElementById('cName').value.trim();
-      const plan       = document.getElementById('cPlan').value;
-      const comentario = cText.value.trim();
+const planSelect = document.getElementById("cPlan");
 
-      if (!nombre)     { showMsg('Por favor ingresa tu nombre.', 'err'); return; }
-      if (!plan)       { showMsg('Por favor selecciona el plan que reservaste.', 'err'); return; }
-      if (!comentario) { showMsg('Por favor escribe tu comentario.', 'err'); return; }
-      if (comentario.length < 10) { showMsg('Tu comentario es muy corto — cuéntanos un poco más.', 'err'); return; }
+const CAT_LABELS = {
+  retratos: "Retratos",
+  "xv-anos": "XV Años",
+  familiares: "Familiares",
+  "pre-boda": "Pre Boda",
+  boda: "Boda",
+  eventos: "Eventos",
+  graduacion: "Graduación",
+  gastronomia: "Gastronomía",
+  infantiles: "Infantiles"
+};
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Enviando...';
-      msgEl.className = 'cm-msg';
-
-      const payload = {
-        id:         'c_' + Date.now(),
-        nombre,
-        plan,
-        comentario,
-        publicado:  false,
-        created_at: new Date().toISOString(),
-      };
-
-      let savedOk = false;
-      if (sbClient) {
-        try {
-          const { error } = await sbClient.from('comentarios').insert([payload]);
-          if (!error) savedOk = true;
-          else console.error('Supabase insert error:', error);
-        } catch(err) { console.error('Supabase unreachable:', err); }
-      }
-
-      // Copia local — se refleja al instante si el Master abre el mismo navegador/dispositivo
-      try {
-        const all = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
-        all.push(payload);
-        localStorage.setItem('jans_comentarios', JSON.stringify(all));
-      } catch(e) {}
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar reseña';
-
-      if (!savedOk && !sbClient) {
-        showMsg('No pudimos conectar en este momento. Intenta de nuevo en unos segundos.', 'err');
-        return;
-      }
-
-      // Mostrar pantalla de éxito
-      document.getElementById('formCard').querySelector('.cm-card-title').style.display = 'none';
-      document.getElementById('formCard').querySelector('.cm-card-sub').style.display = 'none';
-      form.style.display = 'none';
-      document.getElementById('successBox').style.display = 'block';
+function renderPlanOptions(plans) {
+  if (!Array.isArray(plans) || !plans.length) return;
+  const byCat = {};
+  plans.forEach(p => {
+    (byCat[p.categoria] = byCat[p.categoria] || []).push(p);
+  });
+  let html = '<option value="" disabled selected>Elige el plan que reservaste</option>';
+  Object.keys(byCat).forEach(cat => {
+    const label = CAT_LABELS[cat] || cat;
+    html += `<optgroup label="${label}">`;
+    byCat[cat].forEach(p => {
+      html += `<option value="${p.nombre}">${p.nombre}</option>`;
     });
-  </script>
+    html += "</optgroup>";
+  });
+  html += '<option value="Otro">Otro / No recuerdo el nombre</option>';
+  planSelect.innerHTML = html;
+}
+
+try {
+  const local = JSON.parse(localStorage.getItem("jans_planes") || "[]");
+  if (local.length) renderPlanOptions(local);
+} catch (e) {}
+
+fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`, {
+  cache: "no-cache"
+}).then(r => r.ok ? r.json() : null).then(plans => {
+  if (!plans) return;
+  localStorage.setItem("jans_planes", JSON.stringify(plans));
+  renderPlanOptions(plans);
+}).catch(() => {
+  if (!planSelect.options.length) {
+    planSelect.innerHTML = '<option value="Otro" selected>Otro / No recuerdo el nombre</option>';
+  }
+});
+
+const cText = document.getElementById("cText");
+
+const cTextCount = document.getElementById("cTextCount");
+
+cText.addEventListener("input", () => {
+  cTextCount.textContent = cText.value.length;
+});
+
+const form = document.getElementById("commentForm");
+
+const msgEl = document.getElementById("cMsg");
+
+const submitBtn = document.getElementById("submitBtn");
+
+function showMsg(text, type) {
+  msgEl.textContent = text;
+  msgEl.className = "cm-msg " + type;
+}
+
+form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const nombre = document.getElementById("cName").value.trim();
+  const plan = document.getElementById("cPlan").value;
+  const comentario = cText.value.trim();
+  if (!nombre) {
+    showMsg("Por favor ingresa tu nombre.", "err");
+    return;
+  }
+  if (!plan) {
+    showMsg("Por favor selecciona el plan que reservaste.", "err");
+    return;
+  }
+  if (!comentario) {
+    showMsg("Por favor escribe tu comentario.", "err");
+    return;
+  }
+  if (comentario.length < 10) {
+    showMsg("Tu comentario es muy corto — cuéntanos un poco más.", "err");
+    return;
+  }
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Enviando...";
+  msgEl.className = "cm-msg";
+  const payload = {
+    id: "c_" + Date.now(),
+    nombre: nombre,
+    plan: plan,
+    comentario: comentario,
+    publicado: false,
+    created_at: (new Date).toISOString()
+  };
+  let savedOk = false;
+  if (sbClient) {
+    try {
+      const {error: error} = await sbClient.from("comentarios").insert([ payload ]);
+      if (!error) savedOk = true; else console.error("Supabase insert error:", error);
+    } catch (err) {
+      console.error("Supabase unreachable:", err);
+    }
+  }
+  try {
+    const all = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
+    all.push(payload);
+    localStorage.setItem("jans_comentarios", JSON.stringify(all));
+  } catch (e) {}
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Enviar reseña";
+  if (!savedOk && !sbClient) {
+    showMsg("No pudimos conectar en este momento. Intenta de nuevo en unos segundos.", "err");
+    return;
+  }
+  document.getElementById("formCard").querySelector(".cm-card-title").style.display = "none";
+  document.getElementById("formCard").querySelector(".cm-card-sub").style.display = "none";
+  form.style.display = "none";
+  document.getElementById("successBox").style.display = "block";
+});</script>
 </body>
 </html>

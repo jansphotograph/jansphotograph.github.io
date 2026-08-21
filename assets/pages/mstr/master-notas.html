@@ -13,20 +13,21 @@
 <body>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('../master.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("../master.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('../master.html');
+  } catch (e) {
+    window.location.replace("../master.html");
   }
-})();
-</script>
+})();</script>
 
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:10px">
@@ -45,7 +46,7 @@
   </nav>
 </header>
 
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="../master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -116,71 +117,66 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
-// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
-// en escritorio se comporta como un link normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':              'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
@@ -207,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
               placeholder="Ej: El pago del 50% del plan debe realizarse al confirmar la reserva.&#10;Las sesiones canceladas con menos de 24hrs no tienen reembolso.&#10;Por favor llega 10 minutos antes de tu sesión."></textarea>
           </div>
 
-          <!-- Preview -->
+          
           <div id="notasPreview" style="display:none;margin:16px 0;background:#fff9f0;border-top:3px solid #f59e0b;border-radius:8px;padding:18px">
             <div style="font-weight:700;font-size:0.8rem;color:#92400e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">⚠ Previsualización</div>
             <div id="notasPreviewContent" style="font-size:0.88rem;color:#78350f;line-height:1.75"></div>
@@ -224,127 +220,165 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- ── RECARGAR SITIO ── -->
+      
 </main>
 
-<script>
-const SESSION_KEY = 'jans_master_auth';
-const CONFIG = {
-  ADMIN_USER: 'admin',               // Usuario de acceso
-  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
+<script>const SESSION_KEY = "jans_master_auth";
 
-  COMPANY_NAME:  'Jans Photograph',
-  COMPANY_PHONE: '+507 6862-2402',
-  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
-  COMPANY_WEB:   'jansphotograph.com',
+const CONFIG = {
+  ADMIN_USER: "admin",
+  ADMIN_PASS: "jans2025",
+  COMPANY_NAME: "Jans Photograph",
+  COMPANY_PHONE: "+507 6862-2402",
+  COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
+  COMPANY_WEB: "jansphotograph.com"
 };
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
 let sbClient = null;
+
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     return true;
   }
   return false;
 }
+
 try {
   if (!initSupabase()) {
-    window.addEventListener('load', () => { if (!sbClient) initSupabase(); });
-    console.warn('Supabase SDK no cargó a tiempo — reintentando en load...');
+    window.addEventListener("load", () => {
+      if (!sbClient) initSupabase();
+    });
+    console.warn("Supabase SDK no cargó a tiempo — reintentando en load...");
   }
-} catch(e) {
-  console.warn('No se pudo inicializar Supabase:', e);
+} catch (e) {
+  console.warn("No se pudo inicializar Supabase:", e);
 }
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   t.className = `toast ${type} show`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 async function sbSetConfig(clave, valor) {
   if (!sbClient) return false;
   try {
-    const { error } = await sbClient.from('config_sitio').upsert(
-      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
-      { onConflict: 'clave' }
-    );
-    if (error) { console.warn('sbSetConfig error:', error.message); return false; }
+    const {error: error} = await sbClient.from("config_sitio").upsert([ {
+      clave: clave,
+      valor: JSON.stringify(valor),
+      updated_at: (new Date).toISOString()
+    } ], {
+      onConflict: "clave"
+    });
+    if (error) {
+      console.warn("sbSetConfig error:", error.message);
+      return false;
+    }
     return true;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
+
 async function sbGetConfig(clave) {
   if (!sbClient) return null;
   try {
-    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).maybeSingle();
+    const {data: data, error: error} = await sbClient.from("config_sitio").select("valor").eq("clave", clave).maybeSingle();
     if (error || !data) return null;
     return JSON.parse(data.valor);
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
+
 async function loadNotasUI() {
-  // Intentar Supabase primero, fallback localStorage
   try {
-    const sbData = await sbGetConfig('notas');
+    const sbData = await sbGetConfig("notas");
     if (sbData && sbData.texto) {
-      localStorage.setItem('jans_notas_reservas', JSON.stringify(sbData));
-      document.getElementById('notasTexto').value = sbData.texto;
+      localStorage.setItem("jans_notas_reservas", JSON.stringify(sbData));
+      document.getElementById("notasTexto").value = sbData.texto;
       updateNotasPreview();
       return;
     }
-  } catch(e) {}
+  } catch (e) {}
   try {
-    const saved = JSON.parse(localStorage.getItem('jans_notas_reservas') || '{}');
+    const saved = JSON.parse(localStorage.getItem("jans_notas_reservas") || "{}");
     if (saved.texto) {
-      document.getElementById('notasTexto').value = saved.texto;
+      document.getElementById("notasTexto").value = saved.texto;
       updateNotasPreview();
     }
-  } catch(e) {}
+  } catch (e) {}
 }
+
 function updateNotasPreview() {
-  const texto   = document.getElementById('notasTexto').value.trim();
-  const preview = document.getElementById('notasPreview');
-  const content = document.getElementById('notasPreviewContent');
-  if (!texto) { preview.style.display = 'none'; return; }
-  content.innerHTML = texto.split('\n').map(line =>
-    line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b">•</span>${line.trim()}</div>` : ''
-  ).join('');
-  preview.style.display = 'block';
+  const texto = document.getElementById("notasTexto").value.trim();
+  const preview = document.getElementById("notasPreview");
+  const content = document.getElementById("notasPreviewContent");
+  if (!texto) {
+    preview.style.display = "none";
+    return;
+  }
+  content.innerHTML = texto.split("\n").map(line => line.trim() ? `<div style="display:flex;gap:8px;margin-bottom:4px"><span style="color:#f59e0b">•</span>${line.trim()}</div>` : "").join("");
+  preview.style.display = "block";
 }
+
 async function saveNotas() {
-  const texto = document.getElementById('notasTexto').value.trim();
-  const msgEl = document.getElementById('notasMsg');
-  const payload = { texto, updatedAt: new Date().toISOString() };
-  localStorage.setItem('jans_notas_reservas', JSON.stringify(payload));
-  const sbOk = await sbSetConfig('notas', payload);
-  msgEl.style.display    = 'block';
-  msgEl.style.background = 'rgba(34,197,94,0.1)';
-  msgEl.style.border     = '1px solid rgba(34,197,94,0.3)';
-  msgEl.style.color      = '#86efac';
-  msgEl.textContent      = sbOk ? '✓ Notas guardadas en Supabase' : '✓ Notas guardadas localmente';
-  showToast(sbOk ? 'Notas guardadas y sincronizadas ✓' : 'Notas guardadas localmente ✓');
+  const texto = document.getElementById("notasTexto").value.trim();
+  const msgEl = document.getElementById("notasMsg");
+  const payload = {
+    texto: texto,
+    updatedAt: (new Date).toISOString()
+  };
+  localStorage.setItem("jans_notas_reservas", JSON.stringify(payload));
+  const sbOk = await sbSetConfig("notas", payload);
+  msgEl.style.display = "block";
+  msgEl.style.background = "rgba(34,197,94,0.1)";
+  msgEl.style.border = "1px solid rgba(34,197,94,0.3)";
+  msgEl.style.color = "#86efac";
+  msgEl.textContent = sbOk ? "✓ Notas guardadas en Supabase" : "✓ Notas guardadas localmente";
+  showToast(sbOk ? "Notas guardadas y sincronizadas ✓" : "Notas guardadas localmente ✓");
 }
+
 async function clearNotas() {
-  if (!confirm('¿Eliminar todas las notas?')) return;
-  document.getElementById('notasTexto').value = '';
-  document.getElementById('notasPreview').style.display = 'none';
-  document.getElementById('notasMsg').style.display = 'none';
-  const payload = { texto: '', updatedAt: new Date().toISOString() };
-  localStorage.removeItem('jans_notas_reservas');
-  await sbSetConfig('notas', payload);
-  showToast('Notas eliminadas ✓');
+  if (!confirm("¿Eliminar todas las notas?")) return;
+  document.getElementById("notasTexto").value = "";
+  document.getElementById("notasPreview").style.display = "none";
+  document.getElementById("notasMsg").style.display = "none";
+  const payload = {
+    texto: "",
+    updatedAt: (new Date).toISOString()
+  };
+  localStorage.removeItem("jans_notas_reservas");
+  await sbSetConfig("notas", payload);
+  showToast("Notas eliminadas ✓");
 }
+
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
-  sessionStorage.removeItem('jans_master_auth');
-  window.location.replace('../master.html');
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
+  sessionStorage.removeItem("jans_master_auth");
+  window.location.replace("../master.html");
 }
-document.addEventListener('DOMContentLoaded', () => {
+
+document.addEventListener("DOMContentLoaded", () => {
   loadNotasUI();
   updateNotasPreview();
-});
-</script>
+});</script>
 </body>
 </html>

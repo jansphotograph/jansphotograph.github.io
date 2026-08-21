@@ -16,20 +16,21 @@
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(async function(){
-  const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+<script>(async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   try {
     window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { session } } = await window._jansAuthClient.auth.getSession();
-    if (!session) { window.location.replace('../master.html'); return; }
+    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
+    if (!session) {
+      window.location.replace("../master.html");
+      return;
+    }
     window._jansAdminEmail = session.user && session.user.email;
-  } catch(e) {
-    window.location.replace('../master.html');
+  } catch (e) {
+    window.location.replace("../master.html");
   }
-})();
-</script>
+})();</script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -46,7 +47,7 @@
 </button>
 </nav>
 </header>
-<!-- ── Master Nav ── -->
+
 <nav class="master-nav" id="masterNav">
   <a href="../master.html" id="nav-inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -117,71 +118,66 @@
     Salir
   </button>
 </nav>
-<script>
-function toggleMasterNav() {
-  const nav = document.getElementById('masterNav');
-  const btn = document.getElementById('masterNavToggle');
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
   if (!nav) return;
-  const isOpen = nav.classList.toggle('nav-open');
-  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
-// Despliega/cierra el submenú anidado (Cotizaciones/Catálogo/Config) dentro
-// del menú hamburguesa — funciona desde cualquier página (solo en móvil;
-// en escritorio se comporta como un link normal).
+
 function toggleNavSub(event, id) {
-  if (!window.matchMedia('(max-width: 768px)').matches) return true;
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
   event.preventDefault();
   const sub = document.getElementById(id);
   const link = event.currentTarget;
   if (!sub) return false;
-  const isOpen = sub.classList.toggle('open');
-  if (link) link.classList.toggle('nav-sub-open', isOpen);
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
   return false;
 }
-// Click en un ítem del submenú: si ya estamos en esa página (existe
-// showSection y la sección), cambia de sección sin recargar. Si estamos en
-// otra página, navega normalmente hacia allá con la sección en la URL.
+
 function navSubmenuClick(event, section) {
-  if (typeof showSection === 'function' && document.getElementById('section-' + section)) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
     event.preventDefault();
     showSection(section);
-    const nav = document.getElementById('masterNav');
-    if (nav) nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
     return false;
   }
   return true;
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('masterNav');
-  // El link con submenú (.nav-has-sub) NO cierra el menú al tocarlo — solo
-  // despliega su submenú. Los demás links sí cierran el menú al elegirlos.
-  if (nav) nav.querySelectorAll('a:not(.nav-has-sub)').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('nav-open');
-    const btn = document.getElementById('masterNavToggle');
-    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
   }));
-});
-</script>
-<script>
-// Marcar el link activo según la página actual
-(function() {
-  const page = window.location.pathname.split('/').pop().replace('.html','');
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
   const map = {
-    'master-dashboard':    'nav-dashboard',
-    'master-reservas':     'nav-reservas',
-    'master-cotizaciones': 'nav-cotizaciones',
-    'master-calendario':   'nav-calendario',
-    'master-panel':        'nav-panel', 'master-comentarios': 'nav-comentarios', 'master-slider': 'nav-slider',
-    'master-catalogo':     'nav-catalogo',
-    'master-config':       'nav-config',
-    'master':              'nav-inicio',
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
   };
   const id = map[page];
-  if (id) { const el = document.getElementById(id); if(el) el.classList.add('active'); }
-})();
-</script>
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
 
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <div class="modal-overlay" id="reservaModal">
@@ -199,9 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- ══ EDIT RESERVA MODAL ══ -->
 
-<!-- EDIT RESERVA MODAL -->
+
+
 <div class="modal-overlay" id="editReservaModal">
   <div class="modal" style="max-width:520px">
     <div class="modal-header">
@@ -255,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- ══ CALENDAR EVENT MODALS ══ -->
+
 
 <main class="main-content" style="padding-top:120px">
 <div id="view-reservas">
@@ -264,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p>Solicitudes de sesiones recibidas desde la página web</p>
         </div>
 
-        <!-- Filters -->
+        
         <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
           <select id="filterResStatus" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
             <option value="">Todos los estados</option>
@@ -306,1480 +302,1599 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
 
-      <!-- ── BLOG ── -->
+      
 
 </main>
-<script>
-const SESSION_KEY = 'jans_master_auth';
+<script>const SESSION_KEY = "jans_master_auth";
+
 const CONFIG = {
-  ADMIN_USER: 'admin',               // Usuario de acceso
-  ADMIN_PASS: 'jans2025',            // Contraseña de acceso
-
-  COMPANY_NAME:  'Jans Photograph',
-  COMPANY_PHONE: '+507 6862-2402',
-  COMPANY_EMAIL: 'jansphotograph.contact@gmail.com',
-  COMPANY_WEB:   'jansphotograph.com',
+  ADMIN_USER: "admin",
+  ADMIN_PASS: "jans2025",
+  COMPANY_NAME: "Jans Photograph",
+  COMPANY_PHONE: "+507 6862-2402",
+  COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
+  COMPANY_WEB: "jansphotograph.com"
 };
-/* ═════════════════════════════════════ */
 
-// ── State ──
-const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+
 let sbClient = null;
+
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase && typeof window.supabase.createClient === "function") {
     sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('✅ Supabase conectado');
+    console.log("✅ Supabase conectado");
     return true;
   }
   return false;
 }
+
 try {
   if (!initSupabase()) {
-    // Reintentar cuando el DOM esté listo
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       if (!sbClient) {
         initSupabase();
       }
     });
-    console.warn('Supabase SDK no cargó a tiempo — reintentando en load...');
+    console.warn("Supabase SDK no cargó a tiempo — reintentando en load...");
   }
+} catch (e) {
+  console.warn("Supabase error", e);
+}
 
-} catch(e) { console.warn("Supabase error", e); }
 let toastTimer;
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  document.getElementById('toastMsg').textContent = msg;
+
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   t.className = `toast ${type} show`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openModal(id) {
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 function copyToClipboard(text, label) {
-  if (!text) { showToast('Nada que copiar', 'error'); return; }
-  const done = () => showToast((label ? label + ' copiado' : 'Copiado') + ' al portapapeles', 'success');
-  const fail = () => showToast('No se pudo copiar', 'error');
+  if (!text) {
+    showToast("Nada que copiar", "error");
+    return;
+  }
+  const done = () => showToast((label ? label + " copiado" : "Copiado") + " al portapapeles", "success");
+  const fail = () => showToast("No se pudo copiar", "error");
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text).then(done).catch(fail);
   } else {
-    // Fallback para navegadores/contextos sin Clipboard API
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) { fail(); }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand("copy");
+      done();
+    } catch (e) {
+      fail();
+    }
     document.body.removeChild(ta);
   }
 }
+
 const COPY_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-// Escapa HTML — usar SIEMPRE al insertar datos que vienen del cliente (formulario público) en innerHTML
+
 function escapeHtml(str) {
-  return String(str === null || str === undefined ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return String(str === null || str === undefined ? "" : str).replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[m]));
 }
-// Escapa para usar dentro de un atributo onclick="...('...')" con comillas simples (además de escapar HTML)
+
 function escapeJsAttr(str) {
-  const raw = (str === null || str === undefined) ? '' : String(str);
-  return raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
+  const raw = str === null || str === undefined ? "" : String(str);
+  return raw.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/[\r\n]+/g, " ");
 }
-// Genera el HTML de un botoncito de copiar seguro para insertar en template strings con onclick
+
 function copyBtnHTML(text, label) {
-  const raw = (text === null || text === undefined) ? '' : String(text);
-  const jsEscaped = raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]+/g, ' ');
-  const attrEscaped = jsEscaped.replace(/"/g, '&quot;');
+  const raw = text === null || text === undefined ? "" : String(text);
+  const jsEscaped = raw.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/[\r\n]+/g, " ");
+  const attrEscaped = jsEscaped.replace(/"/g, "&quot;");
   return `<button type="button" class="copy-mini-btn" onclick="copyToClipboard('${attrEscaped}','${label}')" title="Copiar ${label}">${COPY_ICON_SVG}</button>`;
 }
+
 function statusLabel(s) {
-  return {pending:'Pendiente',confirmed:'Confirmada',completed:'Completada',postponed:'Aplazada',cancelled:'Cancelada',approved:'Confirmada',booked:'Confirmada',rejected:'Cancelada'}[s]||s;
+  return {
+    pending: "Pendiente",
+    confirmed: "Confirmada",
+    completed: "Completada",
+    postponed: "Aplazada",
+    cancelled: "Cancelada",
+    approved: "Confirmada",
+    booked: "Confirmada",
+    rejected: "Cancelada"
+  }[s] || s;
 }
+
 function statusClassQ(s) {
-  return {pending:'status-pending',confirmed:'status-approved',completed:'status-approved',postponed:'status-postponed',cancelled:'status-rejected',approved:'status-approved',booked:'status-approved',rejected:'status-rejected'}[s]||'';
+  return {
+    pending: "status-pending",
+    confirmed: "status-approved",
+    completed: "status-approved",
+    postponed: "status-postponed",
+    cancelled: "status-rejected",
+    approved: "status-approved",
+    booked: "status-approved",
+    rejected: "status-rejected"
+  }[s] || "";
 }
-// ── Contadores centralizados en Supabase — numeración compartida entre todos los dispositivos ──
+
 async function nextNumero(prefix) {
-  const clave    = prefix === 'WEB' ? 'reserva' : 'cotizacion';
-  const localKey = prefix === 'WEB' ? 'jans_web_counter' : 'jans_cot_counter';
+  const clave = prefix === "WEB" ? "reserva" : "cotizacion";
+  const localKey = prefix === "WEB" ? "jans_web_counter" : "jans_cot_counter";
   if (sbClient) {
     try {
-      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: clave });
+      const {data: data, error: error} = await sbClient.rpc("siguiente_contador", {
+        p_clave: clave
+      });
       if (!error && data != null) {
         localStorage.setItem(localKey, String(data));
-        return prefix + '-' + String(data).padStart(2, '0');
+        return prefix + "-" + String(data).padStart(2, "0");
       }
-    } catch(e) { console.warn('nextNumero RPC error:', e); }
+    } catch (e) {
+      console.warn("nextNumero RPC error:", e);
+    }
   }
-  // Fallback local si no hay conexión (puede repetirse si dos dispositivos están offline a la vez)
-  let counter = parseInt(localStorage.getItem(localKey) || '0', 10) + 1;
+  let counter = parseInt(localStorage.getItem(localKey) || "0", 10) + 1;
   localStorage.setItem(localKey, String(counter));
-  return prefix + '-' + String(counter).padStart(2, '0');
+  return prefix + "-" + String(counter).padStart(2, "0");
 }
+
 async function nextFacturaNumero() {
   if (sbClient) {
     try {
-      const { data, error } = await sbClient.rpc('siguiente_contador', { p_clave: 'factura' });
+      const {data: data, error: error} = await sbClient.rpc("siguiente_contador", {
+        p_clave: "factura"
+      });
       if (!error && data != null) {
-        localStorage.setItem('jans_factura_counter', String(data));
-        return String(data).padStart(3, '0');
+        localStorage.setItem("jans_factura_counter", String(data));
+        return String(data).padStart(3, "0");
       }
-    } catch(e) { console.warn('nextFacturaNumero RPC error:', e); }
+    } catch (e) {
+      console.warn("nextFacturaNumero RPC error:", e);
+    }
   }
-  let counter = parseInt(localStorage.getItem('jans_factura_counter') || '0', 10) + 1;
-  localStorage.setItem('jans_factura_counter', String(counter));
-  return String(counter).padStart(3, '0');
+  let counter = parseInt(localStorage.getItem("jans_factura_counter") || "0", 10) + 1;
+  localStorage.setItem("jans_factura_counter", String(counter));
+  return String(counter).padStart(3, "0");
 }
-const CAT_LABELS  = {retratos:'Retratos',"xv-anos":"XV Años",familiares:'Familiares',"pre-boda":"Pre Boda",boda:'Boda',eventos:'Eventos',graduacion:'Graduación',gastronomia:'Gastronomía',infantiles:'Infantiles',todos:'Todas las categorías'};
+
+const CAT_LABELS = {
+  retratos: "Retratos",
+  "xv-anos": "XV Años",
+  familiares: "Familiares",
+  "pre-boda": "Pre Boda",
+  boda: "Boda",
+  eventos: "Eventos",
+  graduacion: "Graduación",
+  gastronomia: "Gastronomía",
+  infantiles: "Infantiles",
+  todos: "Todas las categorías"
+};
+
 function getCompanyData() {
-  try { return JSON.parse(localStorage.getItem('jans_company') || '{}'); } catch(e) { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem("jans_company") || "{}");
+  } catch (e) {
+    return {};
+  }
 }
 
 function pdfCompanyInfo() {
   const c = getCompanyData();
-  const ubicacion = [c.corregimiento, c.distrito, c.calle].filter(Boolean).join(', ');
+  const ubicacion = [ c.corregimiento, c.distrito, c.calle ].filter(Boolean).join(", ");
   return {
-    nombre:    c.nombre || CONFIG.COMPANY_NAME || 'Jans Photograph',
-    telefono:  c.telefono || CONFIG.COMPANY_PHONE || '',
-    email:     c.email || CONFIG.COMPANY_EMAIL || '',
-    ruc:       c.ruc || '',
-    dv:        c.dv || '',
-    ubicacion: ubicacion || '',
-    logoPath:  c.logoPath || ''
+    nombre: c.nombre || CONFIG.COMPANY_NAME || "Jans Photograph",
+    telefono: c.telefono || CONFIG.COMPANY_PHONE || "",
+    email: c.email || CONFIG.COMPANY_EMAIL || "",
+    ruc: c.ruc || "",
+    dv: c.dv || "",
+    ubicacion: ubicacion || "",
+    logoPath: c.logoPath || ""
   };
 }
+
 async function loadImageAsDataUrl(path) {
-  const base = (typeof CONFIG_PUBLIC !== 'undefined' && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO)
-    ? 'https://raw.githubusercontent.com/' + CONFIG_PUBLIC.OWNER + '/' + CONFIG_PUBLIC.REPO + '/main/'
-    : 'https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/';
-  const paths = [
-    path,
-    'assets/images/icons/Janssocialmedialogo.png',
-    'assets/images/icons/Janssocialmedialogo.jpg',
-    'assets/images/icons/Janssocialmedialogo.webp',
-  ].filter(Boolean);
+  const base = typeof CONFIG_PUBLIC !== "undefined" && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO ? "https://raw.githubusercontent.com/" + CONFIG_PUBLIC.OWNER + "/" + CONFIG_PUBLIC.REPO + "/main/" : "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/";
+  const paths = [ path, "assets/images/icons/Janssocialmedialogo.png", "assets/images/icons/Janssocialmedialogo.jpg", "assets/images/icons/Janssocialmedialogo.webp" ].filter(Boolean);
   for (const p of paths) {
     try {
       const res = await fetch(base + p);
       if (!res.ok) continue;
       const blob = await res.blob();
       const dataUrl = await new Promise(r => {
-        const fr = new FileReader();
+        const fr = new FileReader;
         fr.onloadend = () => r(fr.result);
-        fr.onerror  = () => r(null);
+        fr.onerror = () => r(null);
         fr.readAsDataURL(blob);
       });
       if (dataUrl) return dataUrl;
-    } catch(e) { continue; }
+    } catch (e) {
+      continue;
+    }
   }
   return null;
 }
+
 function pdfCompanyFooterLine(company) {
-  const parts = [company.telefono, company.email, company.ubicacion].filter(Boolean);
-  return parts.join(' · ');
+  const parts = [ company.telefono, company.email, company.ubicacion ].filter(Boolean);
+  return parts.join(" · ");
 }
-let allReservas  = [];
+
+let allReservas = [];
+
 let editingResId = null;
+
 const EDIT_PRECIO_PERSONA = 5;
+
 function changeEditPersonas(delta) {
-  const input = document.getElementById('editResPersonas');
+  const input = document.getElementById("editResPersonas");
   const next = Math.max(0, (parseInt(input.value, 10) || 0) + delta);
   input.value = next;
   updateEditPersonasCosto();
 }
+
 function updateEditPersonasCosto() {
-  const input = document.getElementById('editResPersonas');
+  const input = document.getElementById("editResPersonas");
   let n = parseInt(input.value, 10);
   if (isNaN(n) || n < 0) n = 0;
   input.value = n;
-  document.getElementById('editResPersonasCosto').textContent = '$' + (n * EDIT_PRECIO_PERSONA).toFixed(2);
+  document.getElementById("editResPersonasCosto").textContent = "$" + (n * EDIT_PRECIO_PERSONA).toFixed(2);
 }
 
 function loadReservasLocal() {
   try {
-    const raw = localStorage.getItem('jans_reservas');
-    if (!raw) { allReservas = []; return; }
-    // Intentar parsear (puede ser JSON plano o datos encriptados)
-    try { allReservas = JSON.parse(raw); } catch(e) { allReservas = []; }
-  } catch(e) { allReservas = []; }
+    const raw = localStorage.getItem("jans_reservas");
+    if (!raw) {
+      allReservas = [];
+      return;
+    }
+    try {
+      allReservas = JSON.parse(raw);
+    } catch (e) {
+      allReservas = [];
+    }
+  } catch (e) {
+    allReservas = [];
+  }
   let changed = false;
   allReservas.forEach(r => {
-    if (r.abono === undefined) { r.abono = 0; changed = true; }
+    if (r.abono === undefined) {
+      r.abono = 0;
+      changed = true;
+    }
   });
-  if (changed) localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  if (changed) localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
 }
-// Asigna número (WEB-XX) a las reservas que aún no tienen uno, usando el
-// contador atómico centralizado en Supabase — evita números repetidos
-// aunque varios dispositivos sincronicen al mismo tiempo.
+
 async function backfillReservaNumeros() {
   const pending = allReservas.filter(r => !r.numero);
   if (!pending.length) return;
   for (const r of pending) {
-    r.numero = await nextNumero('WEB');
+    r.numero = await nextNumero("WEB");
     pushReservaToSupabase(r);
   }
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
 }
+
 function resTotal(r) {
-  const base = (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== '')
-    ? (parseFloat(r.totalManual) || 0)
-    : resPlanPrice(r);
-  const extras        = resExtrasTotal(r);
+  const base = r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== "" ? parseFloat(r.totalManual) || 0 : resPlanPrice(r);
+  const extras = resExtrasTotal(r);
   const personasExtra = parseFloat(r.costoPersonas) || 0;
-  const exterior      = parseFloat(r.costoExterior)      || 0;
+  const exterior = parseFloat(r.costoExterior) || 0;
   return base + extras + personasExtra + exterior;
 }
-function resPendiente(r) { return Math.max(0, resTotal(r) - resAbono(r) - resCancelado(r)); }
+
+function resPendiente(r) {
+  return Math.max(0, resTotal(r) - resAbono(r) - resCancelado(r));
+}
+
 function resStatusClass(s) {
-  return { pending:'status-pending', confirmed:'status-approved', completed:'status-approved', declined:'status-rejected', cancelled:'status-rejected', postponed:'status-postponed' }[s] || '';
+  return {
+    pending: "status-pending",
+    confirmed: "status-approved",
+    completed: "status-approved",
+    declined: "status-rejected",
+    cancelled: "status-rejected",
+    postponed: "status-postponed"
+  }[s] || "";
 }
+
 function resStatusLabel(s) {
-  return { pending:'Pendiente', confirmed:'Confirmada', completed:'Completada', declined:'Declinada', cancelled:'Cancelada', deleted:'Eliminada', postponed:'Aplazada' }[s] || s;
+  return {
+    pending: "Pendiente",
+    confirmed: "Confirmada",
+    completed: "Completada",
+    declined: "Declinada",
+    cancelled: "Cancelada",
+    deleted: "Eliminada",
+    postponed: "Aplazada"
+  }[s] || s;
 }
+
 async function getOrAssignFacturaNumero(r) {
-  if (r.facturaNumero) return r.facturaNumero; // already issued — reuse it
+  if (r.facturaNumero) return r.facturaNumero;
   const idx = allReservas.findIndex(x => x.id === r.id);
   const num = await nextFacturaNumero();
   if (idx >= 0) {
     allReservas[idx].facturaNumero = num;
-    localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+    localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   }
   r.facturaNumero = num;
   return num;
 }
+
 async function syncReservasFromSupabase() {
   if (!sbClient) return false;
   try {
-    // Supabase es la fuente de verdad — excluir eliminadas directamente en el query
-    const { data, error } = await sbClient.from('reservas').select('*')
-      .neq('status','deleted').order('created_at', { ascending: true });
-    if (error) { console.error('Supabase fetch error:', error); return false; }
+    const {data: data, error: error} = await sbClient.from("reservas").select("*").neq("status", "deleted").order("created_at", {
+      ascending: true
+    });
+    if (error) {
+      console.error("Supabase fetch error:", error);
+      return false;
+    }
     if (!data) return false;
-
-    // Preservar datos locales que Supabase no tiene (extras editados, facturaNumero, etc.)
     let local = [];
-    try { local = JSON.parse(localStorage.getItem('jans_reservas') || '[]'); } catch(e) {}
+    try {
+      local = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    } catch (e) {}
     const localMap = {};
-    local.forEach(r => { localMap[r.id] = r; });
-
-    // Reconstruir desde Supabase — Supabase manda, local complementa
+    local.forEach(r => {
+      localMap[r.id] = r;
+    });
     const synced = data.map(remote => {
       const prev = localMap[remote.id] || {};
       return {
-        id:            remote.id,
-        numero:        remote.numero        || prev.numero        || null,
-        nombre:        remote.nombre        || prev.nombre,
-        tel:           remote.tel           || prev.tel,
-        email:         remote.email         || prev.email,
-        plan:          remote.plan          || prev.plan,
-        notas:         remote.notas         || prev.notas,
-        fecha:         remote.fecha         || prev.fecha,
-        fechaLabel:    remote.fechaLabel    || prev.fechaLabel,
-        hora:          remote.hora          || prev.hora,
-        horaVal:       remote.horaVal       || prev.horaVal,
-        status:        remote.status        || prev.status || 'pending',
-        abono:         remote.abono         || prev.abono  || 0,
-        totalManual:   remote.totalManual   || prev.totalManual,
-        extras:        remote.extras        || prev.extras || [],
-        clientId:      remote.clientId      || prev.clientId,
-        clientType:    remote.clientType    || prev.clientType,
-        razonSocial:   remote.razonSocial   || prev.razonSocial,
-        repLegal:      remote.repLegal      || prev.repLegal,
-        address:       remote.address       || prev.address,
-        origin:        remote.origin        || prev.origin || 'web',
+        id: remote.id,
+        numero: remote.numero || prev.numero || null,
+        nombre: remote.nombre || prev.nombre,
+        tel: remote.tel || prev.tel,
+        email: remote.email || prev.email,
+        plan: remote.plan || prev.plan,
+        notas: remote.notas || prev.notas,
+        fecha: remote.fecha || prev.fecha,
+        fechaLabel: remote.fechaLabel || prev.fechaLabel,
+        hora: remote.hora || prev.hora,
+        horaVal: remote.horaVal || prev.horaVal,
+        status: remote.status || prev.status || "pending",
+        abono: remote.abono || prev.abono || 0,
+        totalManual: remote.totalManual || prev.totalManual,
+        extras: remote.extras || prev.extras || [],
+        clientId: remote.clientId || prev.clientId,
+        clientType: remote.clientType || prev.clientType,
+        razonSocial: remote.razonSocial || prev.razonSocial,
+        repLegal: remote.repLegal || prev.repLegal,
+        address: remote.address || prev.address,
+        origin: remote.origin || prev.origin || "web",
         facturaNumero: remote.facturaNumero || prev.facturaNumero,
-        createdAt:     remote.createdAt     || prev.createdAt,
-        fechaEspecial:       remote.fecha_especial                                   || prev.fechaEspecial       || '',
-        exterior:            remote.exterior                                         || prev.exterior            || false,
-        lugar:               remote.lugar                                            || prev.lugar               || '',
+        createdAt: remote.createdAt || prev.createdAt,
+        fechaEspecial: remote.fecha_especial || prev.fechaEspecial || "",
+        exterior: remote.exterior || prev.exterior || false,
+        lugar: remote.lugar || prev.lugar || "",
         personasAdicionales: remote.personas_adicionales || remote.personasAdicionales || prev.personasAdicionales || 0,
-        costoPersonas:       remote.costo_personas       || remote.costoPersonas       || prev.costoPersonas       || 0,
-        cancelado:           remote.cancelado                                          || prev.cancelado           || 0,
-        costoExterior:       remote.costo_exterior        || remote.costoExterior       || prev.costoExterior       || 0,
-        bloqueoAntes:        remote.bloqueo_antes   != null ? remote.bloqueo_antes   : (prev.bloqueoAntes   != null ? prev.bloqueoAntes   : 2),
-        bloqueoDespues:      remote.bloqueo_despues != null ? remote.bloqueo_despues : (prev.bloqueoDespues != null ? prev.bloqueoDespues : 2),
+        costoPersonas: remote.costo_personas || remote.costoPersonas || prev.costoPersonas || 0,
+        cancelado: remote.cancelado || prev.cancelado || 0,
+        costoExterior: remote.costo_exterior || remote.costoExterior || prev.costoExterior || 0,
+        bloqueoAntes: remote.bloqueo_antes != null ? remote.bloqueo_antes : prev.bloqueoAntes != null ? prev.bloqueoAntes : 2,
+        bloqueoDespues: remote.bloqueo_despues != null ? remote.bloqueo_despues : prev.bloqueoDespues != null ? prev.bloqueoDespues : 2,
+        metodoAbono: remote.metodo_abono || prev.metodoAbono || "",
+        metodoCancelacion: remote.metodo_cancelacion || prev.metodoCancelacion || ""
       };
     });
-
-    // Guardar en localStorage — reemplaza completamente para reflejar Supabase
-    localStorage.setItem('jans_reservas', JSON.stringify(synced));
+    localStorage.setItem("jans_reservas", JSON.stringify(synced));
     allReservas = synced;
     return true;
-  } catch(e) {
-    console.error('Supabase sync exception:', e);
+  } catch (e) {
+    console.error("Supabase sync exception:", e);
     return false;
   }
 }
+
 async function pushReservaToSupabase(r) {
   if (!sbClient) return;
   try {
-    const { error } = await sbClient.from('reservas').update({
-      numero: r.numero, status: r.status, abono: r.abono, totalManual: r.totalManual,
-      extras: r.extras || [], facturaNumero: r.facturaNumero, notas: r.notas,
-      nombre: r.nombre, tel: r.tel, email: r.email, plan: r.plan,
-      fecha: r.fecha, fechaLabel: r.fechaLabel, hora: r.hora, horaVal: r.horaVal,
-      fecha_especial: r.fechaEspecial || '', exterior: r.exterior || false, lugar: r.lugar || '',
+    const {error: error} = await sbClient.from("reservas").update({
+      numero: r.numero,
+      status: r.status,
+      abono: r.abono,
+      totalManual: r.totalManual,
+      extras: r.extras || [],
+      facturaNumero: r.facturaNumero,
+      notas: r.notas,
+      nombre: r.nombre,
+      tel: r.tel,
+      email: r.email,
+      plan: r.plan,
+      fecha: r.fecha,
+      fechaLabel: r.fechaLabel,
+      hora: r.hora,
+      horaVal: r.horaVal,
+      fecha_especial: r.fechaEspecial || "",
+      exterior: r.exterior || false,
+      lugar: r.lugar || "",
       personas_adicionales: r.personasAdicionales || 0,
       costo_personas: r.costoPersonas || 0,
       cancelado: r.cancelado || 0,
       costo_exterior: r.costoExterior || 0,
       bloqueo_antes: r.bloqueoAntes != null ? r.bloqueoAntes : 2,
       bloqueo_despues: r.bloqueoDespues != null ? r.bloqueoDespues : 2,
-    }).eq('id', r.id);
-    if (error) console.error('Supabase update error:', error);
-  } catch(e) {
-    console.error('Supabase push exception:', e);
+      metodo_abono: r.metodoAbono || "",
+      metodo_cancelacion: r.metodoCancelacion || ""
+    }).eq("id", r.id);
+    if (error) console.error("Supabase update error:", error);
+  } catch (e) {
+    console.error("Supabase push exception:", e);
   }
 }
 
 async function hardSyncReservas() {
-  if (!sbClient) { showToast('Sin conexion a Supabase', 'error'); return; }
-  showToast('Sincronizando...');
-  localStorage.removeItem('jans_reservas');
+  if (!sbClient) {
+    showToast("Sin conexion a Supabase", "error");
+    return;
+  }
+  showToast("Sincronizando...");
+  localStorage.removeItem("jans_reservas");
   allReservas = [];
   const ok = await syncReservasFromSupabase();
   loadReservasLocal();
   await backfillReservaNumeros();
   renderReservasTable();
-  showToast(ok ? 'Sincronizado — ' + allReservas.length + ' reserva(s)' : 'Error al sincronizar', ok ? '' : 'error');
+  showToast(ok ? "Sincronizado — " + allReservas.length + " reserva(s)" : "Error al sincronizar", ok ? "" : "error");
 }
 
 async function purgeSupabaseReservas() {
-  if (!sbClient) { showToast('Sin conexion a Supabase', 'error'); return; }
-  showToast('Verificando...');
-  const { data, error } = await sbClient.from('reservas').select('id');
-  if (error) { showToast('Error al consultar Supabase', 'error'); return; }
+  if (!sbClient) {
+    showToast("Sin conexion a Supabase", "error");
+    return;
+  }
+  showToast("Verificando...");
+  const {data: data, error: error} = await sbClient.from("reservas").select("id");
+  if (error) {
+    showToast("Error al consultar Supabase", "error");
+    return;
+  }
   const localIds = new Set(allReservas.map(r => r.id));
   const toDelete = (data || []).filter(r => !localIds.has(r.id));
-  if (!toDelete.length) { showToast('Supabase ya esta sincronizado'); return; }
+  if (!toDelete.length) {
+    showToast("Supabase ya esta sincronizado");
+    return;
+  }
   if (!localIds.size) {
-    if (!confirm('⚠ La lista local está vacía. Esto eliminaría TODAS las ' + toDelete.length + ' reserva(s) de Supabase. ¿Estás seguro?')) return;
-  } else if (!confirm('Se eliminarán ' + toDelete.length + ' reserva(s) de Supabase que ya no están en esta lista local. ¿Continuar?')) {
+    if (!confirm("⚠ La lista local está vacía. Esto eliminaría TODAS las " + toDelete.length + " reserva(s) de Supabase. ¿Estás seguro?")) return;
+  } else if (!confirm("Se eliminarán " + toDelete.length + " reserva(s) de Supabase que ya no están en esta lista local. ¿Continuar?")) {
     return;
   }
   let deleted = 0, failed = 0;
   for (const r of toDelete) {
-    const { error: e } = await sbClient.from('reservas').delete().eq('id', r.id);
+    const {error: e} = await sbClient.from("reservas").delete().eq("id", r.id);
     if (e) failed++; else deleted++;
   }
-  showToast(failed > 0 ? deleted + ' eliminadas, ' + failed + ' fallaron' : deleted + ' reserva(s) eliminadas de Supabase', failed > 0 ? 'error' : '');
+  showToast(failed > 0 ? deleted + " eliminadas, " + failed + " fallaron" : deleted + " reserva(s) eliminadas de Supabase", failed > 0 ? "error" : "");
 }
 
 function renderReservasTable(highlightId) {
   loadReservasLocal();
-  const filterStatus = document.getElementById('filterResStatus')?.value || '';
-  const filterMonth  = document.getElementById('filterResMonth')?.value  || '';
-  let list = [...allReservas].reverse().filter(r => {
-    if(filterStatus && r.status !== filterStatus) return false;
-    if(filterMonth  && !r.fecha?.startsWith(filterMonth))   return false;
+  const filterStatus = document.getElementById("filterResStatus")?.value || "";
+  const filterMonth = document.getElementById("filterResMonth")?.value || "";
+  let list = [ ...allReservas ].reverse().filter(r => {
+    if (filterStatus && r.status !== filterStatus) return false;
+    if (filterMonth && !r.fecha?.startsWith(filterMonth)) return false;
     return true;
   });
-
-  const tbody = document.getElementById('reservasTableBody');
-  if(!tbody) return;
-  const pending = allReservas.filter(r=>r.status==='pending').length;
-  const badge   = document.getElementById('reservasBadge');
-  const badge2  = document.getElementById('reservasBadge2');
-  if(badge)  { badge.textContent  = pending; badge.style.display  = pending > 0 ? '' : 'none'; }
-  if(badge2) { badge2.textContent = pending; badge2.style.display = pending > 0 ? '' : 'none'; }
-
-  if(!list.length) {
+  const tbody = document.getElementById("reservasTableBody");
+  if (!tbody) return;
+  const pending = allReservas.filter(r => r.status === "pending").length;
+  const badge = document.getElementById("reservasBadge");
+  const badge2 = document.getElementById("reservasBadge2");
+  if (badge) {
+    badge.textContent = pending;
+    badge.style.display = pending > 0 ? "" : "none";
+  }
+  if (badge2) {
+    badge2.textContent = pending;
+    badge2.style.display = pending > 0 ? "" : "none";
+  }
+  if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(r => {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
-    return `
-    <tr id="resrow-${escapeHtml(r.id)}">
-      <td>
-        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || '—'}</span>
-        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ''}
-      </td>
-      <td>
-        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>
-        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>
-      </td>
-      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>
-      <td style="font-size:.88rem">${escapeHtml(r.hora) || '—'}</td>
-      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || '—'}</td>
-      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
-      <td style="min-width:110px">
-        ${total > 0 ? `
-          <div style="font-size:.78rem;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}">$${pend.toFixed(2)}</div>
-          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">
-            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>
-          </div>
-        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}
-      </td>
-      <td>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>
-          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  // ── Scroll to and highlight a specific row (used by the Dashboard's pending-list "Ver" button) ──
+    return `\n    <tr id="resrow-${escapeHtml(r.id)}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pend.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
+  }).join("");
   if (highlightId) {
-    const row = document.getElementById('resrow-' + highlightId);
+    const row = document.getElementById("resrow-" + highlightId);
     if (row) {
-      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      row.classList.add('row-highlight');
-      setTimeout(() => row.classList.remove('row-highlight'), 3500);
+      row.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+      row.classList.add("row-highlight");
+      setTimeout(() => row.classList.remove("row-highlight"), 3500);
     }
   }
 }
-function viewReserva(id) {
-  const r = allReservas.find(x=>x.id===id); if(!r) return;
-  document.getElementById('reservaModalTitle').textContent = (r.numero || '') + ' — ' + r.nombre;
 
-  // Botón "Copiar datos" del header — copia toda la info del cliente en un bloque
-  const copyAllBtn = document.getElementById('reservaCopyAllBtn');
+function viewReserva(id) {
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById("reservaModalTitle").textContent = (r.numero || "") + " — " + r.nombre;
+  const copyAllBtn = document.getElementById("reservaCopyAllBtn");
   if (copyAllBtn) {
     copyAllBtn.onclick = () => {
-      const lines = [
-        r.numero ? `# ${r.numero}` : null,
-        `Cliente: ${r.nombre}`,
-        r.tel ? `Teléfono: ${r.tel}` : null,
-        r.email ? `Email: ${r.email}` : null,
-        `Fecha de sesión: ${r.fechaLabel || r.fecha || '—'}`,
-        `Hora: ${r.hora || '—'}`,
-        r.plan ? `Plan: ${r.plan}` : null,
-      ].filter(Boolean).join('\n');
-      copyToClipboard(lines, 'Datos del cliente');
+      const lines = [ r.numero ? `# ${r.numero}` : null, `Cliente: ${r.nombre}`, r.tel ? `Teléfono: ${r.tel}` : null, r.email ? `Email: ${r.email}` : null, `Fecha de sesión: ${r.fechaLabel || r.fecha || "—"}`, `Hora: ${r.hora || "—"}`, r.plan ? `Plan: ${r.plan}` : null ].filter(Boolean).join("\n");
+      copyToClipboard(lines, "Datos del cliente");
     };
   }
-
-  const waMsg = encodeURIComponent(
-    '¡Hola ' + r.nombre + '! 📸\n' +
-    'Tu reserva ha sido confirmada:\n' +
-    'Fecha: ' + (r.fechaLabel||r.fecha) + '\n' +
-    'Hora: ' + r.hora + '\n' +
-    (r.plan ? 'Plan: ' + r.plan + '\n' : '') +
-    '\n¡Te esperamos! — Jans Photograph'
-  );
-
+  const waMsg = encodeURIComponent("¡Hola " + r.nombre + "! 📸\n" + "Tu reserva ha sido confirmada:\n" + "Fecha: " + (r.fechaLabel || r.fecha) + "\n" + "Hora: " + r.hora + "\n" + (r.plan ? "Plan: " + r.plan + "\n" : "") + "\n¡Te esperamos! — Jans Photograph");
   const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
-
-  document.getElementById('reservaModalBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${escapeHtml(r.numero)||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resStatusBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>
-      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${escapeHtml(r.facturaNumero)}</div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${escapeHtml(r.nombre)} ${copyBtnHTML(r.nombre,'Nombre')}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${escapeHtml(r.tel)||'—'} ${r.tel?copyBtnHTML(r.tel,'Teléfono'):''}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${escapeHtml(r.email)||'—'} ${r.email?copyBtnHTML(r.email,'Email'):''}</div></div>
-      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${escapeHtml(r.cumpleanos)}</div></div>` : ''}
-      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${escapeHtml(r.fechaEspecial)}</div></div>` : ''}
-      ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${escapeHtml(r.lugar) || 'Lugar no especificado'}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ''}
-      ${r.personasAdicionales > 0 ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">👥 Personas adicionales</div><div style="font-weight:600;color:#e91e8c">${r.personasAdicionales} persona${r.personasAdicionales>1?'s':''} — <span style="color:#86efac">+$${(r.costoPersonas||0).toFixed(2)}</span></div></div>` : ''}
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${escapeHtml(r.createdAt)||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.fechaLabel||r.fecha)||'—'}</div></div>
-      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.hora)||'—'}</div></div>
-      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${escapeHtml(r.plan)||'—'}</div></div>
-    </div>
-    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${escapeHtml(r.notas)}</div>` : ''}
-
-    <hr class="section-divider" />
-    <span class="section-label-sm">Plan y Servicios Adicionales</span>
-    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0">
-        <span>${escapeHtml(r.plan) || 'Sin plan principal'}</span>
-        <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>
-      </div>
-      ${r.personasAdicionales > 0 ? `
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
-        <span>+${r.personasAdicionales} persona(s) adicional(es)</span>
-        <span style="font-weight:700;color:#fbbf24">$${(r.costoPersonas||0).toFixed(2)}</span>
-      </div>` : ''}
-      ${r.exterior && r.costoExterior > 0 ? `
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">
-        <span>Sesión exterior — ${escapeHtml(r.lugar)||''}</span>
-        <span style="font-weight:700;color:#86efac">$${(r.costoExterior||0).toFixed(2)}</span>
-      </div>` : ''}
-      ${r.exterior && !r.costoExterior ? `
-      <div style="font-size:0.78rem;color:#fbbf24;margin-top:4px">⚠ Costo de exterior pendiente — edita la reserva para asignarlo</div>
-      ` : ''}
-      <div id="resExtrasList">${renderResExtrasList(r)}</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
-        <label>Añadir del catálogo</label>
-        <select id="resExtraSelect">${renderExtrasOptions()}</select>
-      </div>
-      <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
-    </div>
-    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:8px">
-        🛠️ O crea un artefacto/servicio personalizado (solo para esta reserva)
-      </div>
-      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-        <div class="field" style="flex:2;min-width:160px;margin-bottom:0">
-          <label>Nombre</label>
-          <input type="text" id="resExtraCustomNombre" placeholder="Ej. Edición momentánea" />
-        </div>
-        <div class="field" style="flex:1;min-width:100px;margin-bottom:0">
-          <label>Precio ($)</label>
-          <input type="number" id="resExtraCustomPrecio" min="0" step="0.01" placeholder="5.00" />
-        </div>
-        <button class="btn btn-outline" onclick="addResExtraCustom('${r.id}')" style="margin-bottom:1px">+ Añadir</button>
-      </div>
-    </div>
-    ${r.exterior ? `
-    <div class="field" style="margin-bottom:16px">
-      <label>Costo exterior ($) <span style="color:var(--gray);font-weight:400">(asignar valor)</span></label>
-      <input type="number" id="resCostoExterior" min="0" step="0.01" value="${r.costoExterior||0}" style="max-width:180px" />
-    </div>` : ''}
-
-    <hr class="section-divider" />
-    <span class="section-label-sm">Control Financiero</span>
-    <div class="form-row">
-      <div class="field">
-        <label>Total (auto-calculado) ($)</label>
-        <input type="number" id="resTotalInput" min="0" step="0.01" value="${total.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed" />
-      </div>
-      <div class="field">
-        <label>Abono realizado ($)</label>
-        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" oninput="updateResPendienteLive('${r.id}')" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
-        <label>Total cancelado ($)</label>
-        <input type="number" id="resCanceladoInput" min="0" step="0.01" value="${cancelado}" oninput="updateResPendienteLive('${r.id}')" />
-      </div>
-      <div class="field">
-        <label>Pendiente por pagar ($)</label>
-        <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend>0?'#fca5a5':'#86efac'}" />
-      </div>
-    </div>
-    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-      ${renderResFinancialSummary(total, abono, cancelado, pend, prog)}
-    </div>
-
-    <hr class="section-divider" />
-    <span class="section-label-sm">Cambiar Estado</span>
-    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-sm ${r.status==='pending'   ?'btn-pink'  :'btn-outline'}" data-status="pending"   onclick="changeResStatus('${r.id}','pending'   )">Pendiente</button>
-      <button class="btn btn-sm ${r.status==='confirmed' ?'btn-green' :'btn-outline'}" data-status="confirmed" onclick="changeResStatus('${r.id}','confirmed' )">Confirmada</button>
-      <button class="btn btn-sm ${r.status==='completed' ?'btn-green' :'btn-outline'}" data-status="completed" onclick="changeResStatus('${r.id}','completed' )">Completada</button>
-      <button class="btn btn-sm ${r.status==='postponed' ?'btn-amber' :'btn-outline'}" data-status="postponed" onclick="changeResStatus('${r.id}','postponed' )">Aplazada</button>
-      <button class="btn btn-sm ${r.status==='declined'  ?'btn-red'   :'btn-outline'}" data-status="declined"  onclick="changeResStatus('${r.id}','declined'  )">Declinada</button>
-      <button class="btn btn-sm ${r.status==='cancelled' ?'btn-red'   :'btn-outline'}" data-status="cancelled" onclick="changeResStatus('${r.id}','cancelled' )">Cancelada</button>
-    </div>
-
-    <!-- Rango de horas a bloquear en el calendario de reservas -->
-    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">
-      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:10px">
-        🔒 Bloqueo de horas alrededor de la sesión (${escapeHtml(r.hora)||'—'})
-      </div>
-      <div class="form-row">
-        <div class="field" style="margin-bottom:0">
-          <label>Horas antes</label>
-          <input type="number" id="resBloqueoAntes" min="0" max="12" step="1" value="${r.bloqueoAntes != null ? r.bloqueoAntes : 2}" />
-        </div>
-        <div class="field" style="margin-bottom:0">
-          <label>Horas después</label>
-          <input type="number" id="resBloqueoDespues" min="0" max="12" step="1" value="${r.bloqueoDespues != null ? r.bloqueoDespues : 2}" />
-        </div>
-      </div>
-      <div style="font-size:0.72rem;color:var(--gray);margin-top:8px">Solo aplica cuando la reserva está <strong>Confirmada</strong> o <strong>Completada</strong>. Por defecto se bloquean 2 horas antes y 2 después de la hora de sesión — ajústalo si la sesión necesita más o menos tiempo de preparación/traslado. Recuerda pulsar <strong style="color:var(--white)">Guardar</strong>.</div>
-    </div>
-
-    <!-- Sección aplazamiento -->
-    <div id="resPostponeBlock" style="display:${r.status==='postponed'?'':'none'}">
-      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">
-        <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:10px">
-          📅 Sesión aplazada
-          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${escapeHtml(r.fechaOriginal)}</span>` : ''}
-        </div>
-        <div class="form-row">
-          <div class="field" style="margin-bottom:0">
-            <label>Nueva fecha</label>
-            <input type="date" id="resNewFecha" value="${escapeHtml(r.fechaNueva||r.fecha||'')}" />
-          </div>
-          <div class="field" style="margin-bottom:0">
-            <label>Nueva hora</label>
-            <input type="time" id="resNewHora" value="${to24h(r.horaNueva||r.hora||'')}" />
-          </div>
-        </div>
-        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">El estado de la reserva se mantiene como <strong style="color:#fbbf24">Aplazada</strong>. Guarda los cambios para aplicar la nueva fecha.</div>
-        <div style="margin-top:12px">
-          <button class="btn btn-amber btn-sm" onclick="applyPostpone('${r.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-            Guardar nueva fecha
-          </button>
-        </div>
-`;
-
-  // Botones fijos en el footer del modal
-  document.getElementById('reservaModalFooter').innerHTML = `
-    <button class="btn btn-pink" onclick="saveReservaChanges('${r.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-      Guardar
-    </button>
-    <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      PDF
-    </button>
-    <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Factura
-    </button>
-    <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>
-      Insumos
-    </button>
-    <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>
-    <button class="btn btn-ghost" onclick="closeModal('reservaModal')">Cancelar</button>
-    <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑</button>`;
-
-  openModal('reservaModal');
+  document.getElementById("reservaModalBody").innerHTML = `\n    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em"># Cotización</div><div style="font-weight:700;color:var(--pink-l);font-family:monospace">${escapeHtml(r.numero) || "—"}</div></div>\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Estado</div><span id="resStatusBadge" class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></div>\n      ${r.facturaNumero ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Factura</div><div style="font-weight:700;color:#86efac;font-family:monospace">#${escapeHtml(r.facturaNumero)}</div></div>` : ""}\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cliente</div><div style="font-weight:700">${escapeHtml(r.nombre)} ${copyBtnHTML(r.nombre, "Nombre")}</div></div>\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Teléfono</div><div>${escapeHtml(r.tel) || "—"} ${r.tel ? copyBtnHTML(r.tel, "Teléfono") : ""}</div></div>\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Email</div><div>${escapeHtml(r.email) || "—"} ${r.email ? copyBtnHTML(r.email, "Email") : ""}</div></div>\n      ${r.cumpleanos ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Cumpleaños</div><div>${escapeHtml(r.cumpleanos)}</div></div>` : ""}\n      ${r.fechaEspecial ? `<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🎉 Fecha especial</div><div style="font-weight:600;color:#e91e8c">${escapeHtml(r.fechaEspecial)}</div></div>` : ""}\n      ${r.exterior ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📍 Sesión exterior</div><div style="font-weight:600;color:#f59e0b">${escapeHtml(r.lugar) || "Lugar no especificado"}</div><div style="font-size:0.72rem;color:var(--gray);margin-top:2px">Se aplica costo adicional por desplazamiento</div></div>` : ""}\n      ${r.personasAdicionales > 0 ? `<div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">👥 Personas adicionales</div><div style="font-weight:600;color:#e91e8c">${r.personasAdicionales} persona${r.personasAdicionales > 1 ? "s" : ""} — <span style="color:#86efac">+$${(r.costoPersonas || 0).toFixed(2)}</span></div></div>` : ""}\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📋 Fecha de reservación</div><div style="font-weight:600">${escapeHtml(r.createdAt) || "—"}</div></div>\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.fechaLabel || r.fecha) || "—"}</div></div>\n      <div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">🕐 Hora de sesión</div><div style="font-weight:600;color:var(--pink-l)">${escapeHtml(r.hora) || "—"}</div></div>\n      <div style="grid-column:1/-1"><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.06em">Plan</div><div>${escapeHtml(r.plan) || "—"}</div></div>\n    </div>\n    ${r.notas ? `<div style="background:var(--dark);border-radius:9px;padding:12px 15px;font-size:.85rem;color:var(--gray-l);margin-bottom:20px"><strong style="color:var(--white)">Notas:</strong> ${escapeHtml(r.notas)}</div>` : ""}\n\n    <hr class="section-divider" />\n    <span class="section-label-sm">Plan y Servicios Adicionales</span>\n    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:10px">\n      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0">\n        <span>${escapeHtml(r.plan) || "Sin plan principal"}</span>\n        <span style="font-weight:700">$${resPlanPrice(r).toFixed(2)}</span>\n      </div>\n      ${r.personasAdicionales > 0 ? `\n      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">\n        <span>+${r.personasAdicionales} persona(s) adicional(es)</span>\n        <span style="font-weight:700;color:#fbbf24">$${(r.costoPersonas || 0).toFixed(2)}</span>\n      </div>` : ""}\n      ${r.exterior && r.costoExterior > 0 ? `\n      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:4px 0;color:var(--gray-l)">\n        <span>Sesión exterior — ${escapeHtml(r.lugar) || ""}</span>\n        <span style="font-weight:700;color:#86efac">$${(r.costoExterior || 0).toFixed(2)}</span>\n      </div>` : ""}\n      ${r.exterior && !r.costoExterior ? `\n      <div style="font-size:0.78rem;color:#fbbf24;margin-top:4px">⚠ Costo de exterior pendiente — edita la reserva para asignarlo</div>\n      ` : ""}\n      <div id="resExtrasList">${renderResExtrasList(r)}</div>\n    </div>\n    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap">\n      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">\n        <label>Añadir del catálogo</label>\n        <select id="resExtraSelect">${renderExtrasOptions()}</select>\n      </div>\n      <button class="btn btn-outline" onclick="addResExtra('${r.id}')" style="margin-bottom:1px">+ Añadir</button>\n    </div>\n    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">\n      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:8px">\n        🛠️ O crea un artefacto/servicio personalizado (solo para esta reserva)\n      </div>\n      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">\n        <div class="field" style="flex:2;min-width:160px;margin-bottom:0">\n          <label>Nombre</label>\n          <input type="text" id="resExtraCustomNombre" placeholder="Ej. Edición momentánea" />\n        </div>\n        <div class="field" style="flex:1;min-width:100px;margin-bottom:0">\n          <label>Precio ($)</label>\n          <input type="number" id="resExtraCustomPrecio" min="0" step="0.01" placeholder="5.00" />\n        </div>\n        <button class="btn btn-outline" onclick="addResExtraCustom('${r.id}')" style="margin-bottom:1px">+ Añadir</button>\n      </div>\n    </div>\n    ${r.exterior ? `\n    <div class="field" style="margin-bottom:16px">\n      <label>Costo exterior ($) <span style="color:var(--gray);font-weight:400">(asignar valor)</span></label>\n      <input type="number" id="resCostoExterior" min="0" step="0.01" value="${r.costoExterior || 0}" style="max-width:180px" />\n    </div>` : ""}\n\n    <hr class="section-divider" />\n    <span class="section-label-sm">Control Financiero</span>\n    <div class="form-row">\n      <div class="field">\n        <label>Total (auto-calculado) ($)</label>\n        <input type="number" id="resTotalInput" min="0" step="0.01" value="${total.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed" />\n      </div>\n      <div class="field">\n        <label>Abono realizado ($)</label>\n        <input type="number" id="resAbonoInput" min="0" step="0.01" value="${abono}" oninput="updateResPendienteLive('${r.id}')" />\n      </div>\n    </div>\n    <div class="form-row">\n      <div class="field">\n        <label>Total cancelado ($)</label>\n        <input type="number" id="resCanceladoInput" min="0" step="0.01" value="${cancelado}" oninput="updateResPendienteLive('${r.id}')" />\n      </div>\n      <div class="field">\n        <label>Pendiente por pagar ($)</label>\n        <input type="number" id="resPendienteInput" value="${pend.toFixed(2)}" readonly style="opacity:0.7;cursor:not-allowed;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}" />\n      </div>\n    </div>\n    <div class="form-row">\n      <div class="field">\n        <label>Método de abono <span style="color:var(--gray);font-weight:400">(edítalo si el cliente se equivocó)</span></label>\n        <select id="resMetodoAbonoInput">\n          <option value="" ${!r.metodoAbono ? "selected" : ""}>Sin especificar</option>\n          <option value="Yappy" ${r.metodoAbono === "Yappy" ? "selected" : ""}>Yappy</option>\n          <option value="Efectivo" ${r.metodoAbono === "Efectivo" ? "selected" : ""}>Efectivo</option>\n          <option value="Otro" ${r.metodoAbono === "Otro" ? "selected" : ""}>Otro</option>\n        </select>\n      </div>\n      <div class="field">\n        <label>Método de cancelación <span style="color:var(--gray);font-weight:400">(solo control interno)</span></label>\n        <select id="resMetodoCancelacionInput">\n          <option value="" ${!r.metodoCancelacion ? "selected" : ""}>Sin especificar</option>\n          <option value="Yappy" ${r.metodoCancelacion === "Yappy" ? "selected" : ""}>Yappy</option>\n          <option value="Efectivo" ${r.metodoCancelacion === "Efectivo" ? "selected" : ""}>Efectivo</option>\n          <option value="Otro" ${r.metodoCancelacion === "Otro" ? "selected" : ""}>Otro</option>\n        </select>\n      </div>\n    </div>\n    <div id="resFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">${renderResFinancialSummary(total, abono, cancelado, pend, prog)}</div>\n\n    <hr class="section-divider" />\n    <span class="section-label-sm">Cambiar Estado</span>\n    <div class="btn-row" style="flex-wrap:wrap;margin-bottom:16px">\n      <button class="btn btn-sm ${r.status === "pending" ? "btn-pink" : "btn-outline"}" data-status="pending"   onclick="changeResStatus('${r.id}','pending'   )">Pendiente</button>\n      <button class="btn btn-sm ${r.status === "confirmed" ? "btn-green" : "btn-outline"}" data-status="confirmed" onclick="changeResStatus('${r.id}','confirmed' )">Confirmada</button>\n      <button class="btn btn-sm ${r.status === "completed" ? "btn-green" : "btn-outline"}" data-status="completed" onclick="changeResStatus('${r.id}','completed' )">Completada</button>\n      <button class="btn btn-sm ${r.status === "postponed" ? "btn-amber" : "btn-outline"}" data-status="postponed" onclick="changeResStatus('${r.id}','postponed' )">Aplazada</button>\n      <button class="btn btn-sm ${r.status === "declined" ? "btn-red" : "btn-outline"}" data-status="declined"  onclick="changeResStatus('${r.id}','declined'  )">Declinada</button>\n      <button class="btn btn-sm ${r.status === "cancelled" ? "btn-red" : "btn-outline"}" data-status="cancelled" onclick="changeResStatus('${r.id}','cancelled' )">Cancelada</button>\n    </div>\n\n    \x3c!-- Rango de horas a bloquear en el calendario de reservas --\x3e\n    <div style="background:var(--dark);border-radius:10px;padding:12px 14px;margin-bottom:16px">\n      <div style="font-size:0.78rem;font-weight:600;color:var(--gray-l);margin-bottom:10px">\n        🔒 Bloqueo de horas alrededor de la sesión (${escapeHtml(r.hora) || "—"})\n      </div>\n      <div class="form-row">\n        <div class="field" style="margin-bottom:0">\n          <label>Horas antes</label>\n          <input type="number" id="resBloqueoAntes" min="0" max="12" step="1" value="${r.bloqueoAntes != null ? r.bloqueoAntes : 2}" />\n        </div>\n        <div class="field" style="margin-bottom:0">\n          <label>Horas después</label>\n          <input type="number" id="resBloqueoDespues" min="0" max="12" step="1" value="${r.bloqueoDespues != null ? r.bloqueoDespues : 2}" />\n        </div>\n      </div>\n      <div style="font-size:0.72rem;color:var(--gray);margin-top:8px">Solo aplica cuando la reserva está <strong>Confirmada</strong> o <strong>Completada</strong>. Por defecto se bloquean 2 horas antes y 2 después de la hora de sesión — ajústalo si la sesión necesita más o menos tiempo de preparación/traslado. Recuerda pulsar <strong style="color:var(--white)">Guardar</strong>.</div>\n    </div>\n\n    \x3c!-- Sección aplazamiento --\x3e\n    <div id="resPostponeBlock" style="display:${r.status === "postponed" ? "" : "none"}">\n      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:14px 16px;margin-bottom:16px">\n        <div style="font-size:0.82rem;font-weight:600;color:#fbbf24;margin-bottom:10px">\n          📅 Sesión aplazada\n          ${r.fechaOriginal ? `<span style="font-size:0.75rem;color:var(--gray-l);font-weight:400;margin-left:8px">Fecha original: ${escapeHtml(r.fechaOriginal)}</span>` : ""}\n        </div>\n        <div class="form-row">\n          <div class="field" style="margin-bottom:0">\n            <label>Nueva fecha</label>\n            <input type="date" id="resNewFecha" value="${escapeHtml(r.fechaNueva || r.fecha || "")}" />\n          </div>\n          <div class="field" style="margin-bottom:0">\n            <label>Nueva hora</label>\n            <input type="time" id="resNewHora" value="${to24h(r.horaNueva || r.hora || "")}" />\n          </div>\n        </div>\n        <div style="font-size:0.75rem;color:var(--gray);margin-top:8px">El estado de la reserva se mantiene como <strong style="color:#fbbf24">Aplazada</strong>. Guarda los cambios para aplicar la nueva fecha.</div>\n        <div style="margin-top:12px">\n          <button class="btn btn-amber btn-sm" onclick="applyPostpone('${r.id}')">\n            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>\n            Guardar nueva fecha\n          </button>\n        </div>\n`;
+  document.getElementById("reservaModalFooter").innerHTML = `\n    <button class="btn btn-pink" onclick="saveReservaChanges('${r.id}')">\n      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>\n      Guardar\n    </button>\n    <button class="btn btn-outline" onclick="generateConfirmationPDF('${r.id}')">\n      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>\n      PDF\n    </button>\n    <button class="btn btn-outline" onclick="generateInvoicePDF('${r.id}')">\n      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>\n      Factura\n    </button>\n    <button class="btn btn-blue" onclick="openReservaScan('${r.id}')">\n      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="1" y="4" width="4" height="16"/><rect x="7" y="4" width="2" height="16"/><rect x="11" y="4" width="4" height="16"/><rect x="17" y="4" width="2" height="16"/><rect x="21" y="4" width="2" height="16"/></svg>\n      Insumos\n    </button>\n    <button class="btn btn-outline" onclick="openEditReserva('${r.id}');closeModal('reservaModal')">✏ Editar</button>\n    <button class="btn btn-ghost" onclick="closeModal('reservaModal')">Cancelar</button>\n    <button class="btn btn-red" onclick="deleteReserva('${r.id}')">🗑</button>`;
+  openModal("reservaModal");
 }
-// updateDashboard no aplica en esta página separada — stub para evitar errores
+
 function updateDashboard() {}
 
 function changeResStatus(id, status) {
-  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   allReservas[idx].status = status;
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
-  // Actualizar badge
-  const badge = document.getElementById('resStatusBadge');
-  if (badge) { badge.className = 'badge-status ' + resStatusClass(status); badge.textContent = resStatusLabel(status); }
-  // Actualizar botones — usar data-status, no el texto del onclick (evita fallos por espacios/formato)
-  const clsMap = { pending:'btn-pink', confirmed:'btn-green', completed:'btn-green', postponed:'btn-amber', declined:'btn-red', cancelled:'btn-red' };
-  const body = document.getElementById('reservaModalBody');
+  const badge = document.getElementById("resStatusBadge");
+  if (badge) {
+    badge.className = "badge-status " + resStatusClass(status);
+    badge.textContent = resStatusLabel(status);
+  }
+  const clsMap = {
+    pending: "btn-pink",
+    confirmed: "btn-green",
+    completed: "btn-green",
+    postponed: "btn-amber",
+    declined: "btn-red",
+    cancelled: "btn-red"
+  };
+  const body = document.getElementById("reservaModalBody");
   if (body) {
-    body.querySelectorAll('.btn[data-status]').forEach(function(btn) {
-      const s = btn.getAttribute('data-status');
-      btn.className = 'btn btn-sm ' + (s === status ? (clsMap[s] || 'btn-outline') : 'btn-outline');
+    body.querySelectorAll(".btn[data-status]").forEach(function(btn) {
+      const s = btn.getAttribute("data-status");
+      btn.className = "btn btn-sm " + (s === status ? clsMap[s] || "btn-outline" : "btn-outline");
     });
   }
-  // Mostrar/ocultar bloque de aplazamiento
-  const pb = document.getElementById('resPostponeBlock');
-  if (pb) pb.style.display = status === 'postponed' ? '' : 'none';
+  const pb = document.getElementById("resPostponeBlock");
+  if (pb) pb.style.display = status === "postponed" ? "" : "none";
   renderReservasTable();
   updateDashboard();
-  showToast('Estado actualizado ✓');
+  showToast("Estado actualizado ✓");
 }
 
-
 function applyPostpone(id) {
-  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   const r = allReservas[idx];
-  const nf = document.getElementById('resNewFecha')?.value;
-  const nh = document.getElementById('resNewHora')?.value;
-  if (!nf) { showToast('Ingresa una nueva fecha', 'error'); return; }
+  const nf = document.getElementById("resNewFecha")?.value;
+  const nh = document.getElementById("resNewHora")?.value;
+  if (!nf) {
+    showToast("Ingresa una nueva fecha", "error");
+    return;
+  }
   if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
-  r.fechaNueva = nf; r.horaNueva = nh || r.hora;
-  r.fecha = nf; r.hora = nh || r.hora;
-  const [y,m,d] = nf.split('-');
-  r.fechaLabel = parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y;
+  r.fechaNueva = nf;
+  r.horaNueva = nh || r.hora;
+  r.fecha = nf;
+  r.hora = nh || r.hora;
+  const [y, m, d] = nf.split("-");
+  r.fechaLabel = parseInt(d) + " de " + [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ][parseInt(m) - 1] + " " + y;
   allReservas[idx] = r;
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   pushReservaToSupabase(r);
   renderReservasTable();
-  showToast('Nueva fecha guardada ✓');
+  showToast("Nueva fecha guardada ✓");
 }
 
 function openReservaScan(id) {
-  // Redirige a la sección de insumos/inventario filtrando por esta reserva
-  // Si tienes una sección de insumos en este archivo, ajusta el nombre de sección aquí
-  showToast('Función de insumos disponible en el Master principal', 'error');
+  showToast("Función de insumos disponible en el Master principal", "error");
 }
 
 async function saveReservaChanges(id) {
-  const idx = allReservas.findIndex(x=>x.id===id); if(idx<0) return;
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   const r = allReservas[idx];
-  const abonoEl      = document.getElementById('resAbonoInput');
-  const canceladoEl  = document.getElementById('resCanceladoInput');
-  const exteriorEl   = document.getElementById('resCostoExterior');
-  const bloqAntesEl   = document.getElementById('resBloqueoAntes');
-  const bloqDespuesEl = document.getElementById('resBloqueoDespues');
-  if (abonoEl)     r.abono        = parseFloat(abonoEl.value)     || 0;
-  if (canceladoEl) r.cancelado    = parseFloat(canceladoEl.value) || 0;
-  if (exteriorEl)  r.costoExterior = parseFloat(exteriorEl.value) || 0;
-  if (bloqAntesEl)   r.bloqueoAntes   = Math.max(0, parseInt(bloqAntesEl.value,   10) || 0);
+  const abonoEl = document.getElementById("resAbonoInput");
+  const canceladoEl = document.getElementById("resCanceladoInput");
+  const exteriorEl = document.getElementById("resCostoExterior");
+  const bloqAntesEl = document.getElementById("resBloqueoAntes");
+  const bloqDespuesEl = document.getElementById("resBloqueoDespues");
+  const metodoAbonoEl = document.getElementById("resMetodoAbonoInput");
+  const metodoCancelacionEl = document.getElementById("resMetodoCancelacionInput");
+  if (abonoEl) r.abono = parseFloat(abonoEl.value) || 0;
+  if (canceladoEl) r.cancelado = parseFloat(canceladoEl.value) || 0;
+  if (exteriorEl) r.costoExterior = parseFloat(exteriorEl.value) || 0;
+  if (bloqAntesEl) r.bloqueoAntes = Math.max(0, parseInt(bloqAntesEl.value, 10) || 0);
   if (bloqDespuesEl) r.bloqueoDespues = Math.max(0, parseInt(bloqDespuesEl.value, 10) || 0);
-  if (r.status === 'postponed') {
-    const nf = document.getElementById('resNewFecha')?.value;
-    const nh = document.getElementById('resNewHora')?.value;
+  if (metodoAbonoEl) r.metodoAbono = metodoAbonoEl.value || "";
+  if (metodoCancelacionEl) r.metodoCancelacion = metodoCancelacionEl.value || "";
+  if (r.status === "postponed") {
+    const nf = document.getElementById("resNewFecha")?.value;
+    const nh = document.getElementById("resNewHora")?.value;
     if (nf) {
       if (!r.fechaOriginal) r.fechaOriginal = r.fecha;
-      r.fechaNueva = nf; r.horaNueva = nh||r.hora;
-      r.fecha = nf; r.hora = nh||r.hora;
-      r.fechaLabel = new Date(nf+'T12:00:00').toLocaleDateString('es-PA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+      r.fechaNueva = nf;
+      r.horaNueva = nh || r.hora;
+      r.fecha = nf;
+      r.hora = nh || r.hora;
+      r.fechaLabel = new Date(nf + "T12:00:00").toLocaleDateString("es-PA", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
     }
   }
   allReservas[idx] = r;
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   pushReservaToSupabase(r);
   renderReservasTable();
   updateDashboard();
-  closeModal('reservaModal');
-  showToast('Reserva guardada ✓');
+  closeModal("reservaModal");
+  showToast("Reserva guardada ✓");
 }
+
 function openEditReserva(id) {
-  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
   editingResId = id;
-  document.getElementById('editResNumero').textContent = r.numero ? ('— ' + r.numero) : '';
-  document.getElementById('editResNombre').value = r.nombre || '';
-  document.getElementById('editResTel').value    = r.tel || '';
-  document.getElementById('editResEmail').value  = r.email || '';
-  document.getElementById('editResDate').value   = r.fecha || '';
-  document.getElementById('editResHora').value   = r.horaVal ? (r.horaVal + '|' + r.hora) : '';
-  document.getElementById('editResPlan').value   = r.plan || '';
-  document.getElementById('editResBloqueoAntes').value   = r.bloqueoAntes   != null ? r.bloqueoAntes   : 2;
-  document.getElementById('editResBloqueoDespues').value = r.bloqueoDespues != null ? r.bloqueoDespues : 2;
-  document.getElementById('editResNotas').value  = r.notas || '';
-  document.getElementById('editResPersonas').value = r.personasAdicionales || 0;
-  document.getElementById('editResPersonaPrecio').textContent = EDIT_PRECIO_PERSONA.toFixed(2);
+  document.getElementById("editResNumero").textContent = r.numero ? "— " + r.numero : "";
+  document.getElementById("editResNombre").value = r.nombre || "";
+  document.getElementById("editResTel").value = r.tel || "";
+  document.getElementById("editResEmail").value = r.email || "";
+  document.getElementById("editResDate").value = r.fecha || "";
+  document.getElementById("editResHora").value = r.horaVal ? r.horaVal + "|" + r.hora : "";
+  document.getElementById("editResPlan").value = r.plan || "";
+  document.getElementById("editResBloqueoAntes").value = r.bloqueoAntes != null ? r.bloqueoAntes : 2;
+  document.getElementById("editResBloqueoDespues").value = r.bloqueoDespues != null ? r.bloqueoDespues : 2;
+  document.getElementById("editResNotas").value = r.notas || "";
+  document.getElementById("editResPersonas").value = r.personasAdicionales || 0;
+  document.getElementById("editResPersonaPrecio").textContent = EDIT_PRECIO_PERSONA.toFixed(2);
   updateEditPersonasCosto();
-  // Convertir createdAt "dd/mm/yyyy" → "yyyy-mm-dd" para input type="date"
-  const cat = r.createdAt || '';
-  let catISO = '';
+  const cat = r.createdAt || "";
+  let catISO = "";
   if (/^\d{4}-\d{2}-\d{2}/.test(cat)) {
     catISO = cat.substring(0, 10);
   } else {
-    const parts = cat.split('/');
-    if (parts.length === 3) catISO = parts[2].padStart(4,'0') + '-' + parts[1].padStart(2,'0') + '-' + parts[0].padStart(2,'0');
+    const parts = cat.split("/");
+    if (parts.length === 3) catISO = parts[2].padStart(4, "0") + "-" + parts[1].padStart(2, "0") + "-" + parts[0].padStart(2, "0");
   }
-  document.getElementById('editResCreatedAt').value = catISO;
-  openModal('editReservaModal');
+  document.getElementById("editResCreatedAt").value = catISO;
+  openModal("editReservaModal");
 }
+
 function saveEditReserva() {
-  const idx = allReservas.findIndex(x=>x.id===editingResId); if(idx<0) return;
-  const horaRaw = document.getElementById('editResHora').value.split('|');
-  const fecha   = document.getElementById('editResDate').value;
-  const [y,m,d] = fecha ? fecha.split('-') : ['','',''];
-  const newCreatedAt = document.getElementById('editResCreatedAt').value;
-  let personasAdicionales = parseInt(document.getElementById('editResPersonas').value, 10);
+  const idx = allReservas.findIndex(x => x.id === editingResId);
+  if (idx < 0) return;
+  const horaRaw = document.getElementById("editResHora").value.split("|");
+  const fecha = document.getElementById("editResDate").value;
+  const [y, m, d] = fecha ? fecha.split("-") : [ "", "", "" ];
+  const newCreatedAt = document.getElementById("editResCreatedAt").value;
+  let personasAdicionales = parseInt(document.getElementById("editResPersonas").value, 10);
   if (isNaN(personasAdicionales) || personasAdicionales < 0) personasAdicionales = 0;
   const costoPersonas = personasAdicionales * EDIT_PRECIO_PERSONA;
-  let bloqueoAntes   = parseInt(document.getElementById('editResBloqueoAntes').value,   10);
-  let bloqueoDespues = parseInt(document.getElementById('editResBloqueoDespues').value, 10);
-  if (isNaN(bloqueoAntes)   || bloqueoAntes   < 0) bloqueoAntes   = 2;
+  let bloqueoAntes = parseInt(document.getElementById("editResBloqueoAntes").value, 10);
+  let bloqueoDespues = parseInt(document.getElementById("editResBloqueoDespues").value, 10);
+  if (isNaN(bloqueoAntes) || bloqueoAntes < 0) bloqueoAntes = 2;
   if (isNaN(bloqueoDespues) || bloqueoDespues < 0) bloqueoDespues = 2;
-  // Convertir "yyyy-mm-dd" → "dd/mm/yyyy" para mantener consistencia con el formato local
-  let createdAtFormatted = allReservas[idx].createdAt || '';
+  let createdAtFormatted = allReservas[idx].createdAt || "";
   if (newCreatedAt) {
-    const [cy,cm,cd] = newCreatedAt.split('-');
-    createdAtFormatted = parseInt(cd) + '/' + parseInt(cm) + '/' + cy;
+    const [cy, cm, cd] = newCreatedAt.split("-");
+    createdAtFormatted = parseInt(cd) + "/" + parseInt(cm) + "/" + cy;
   }
   allReservas[idx] = {
     ...allReservas[idx],
-    nombre:    document.getElementById('editResNombre').value,
-    tel:       document.getElementById('editResTel').value,
-    email:     document.getElementById('editResEmail').value,
-    fecha,
-    fechaLabel: d ? (parseInt(d) + ' de ' + ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][parseInt(m)-1] + ' ' + y) : allReservas[idx].fechaLabel,
-    horaVal:   horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
-    hora:      horaRaw[1] || allReservas[idx].hora,
-    plan:      document.getElementById('editResPlan').value,
-    notas:     document.getElementById('editResNotas').value,
+    nombre: document.getElementById("editResNombre").value,
+    tel: document.getElementById("editResTel").value,
+    email: document.getElementById("editResEmail").value,
+    fecha: fecha,
+    fechaLabel: d ? parseInt(d) + " de " + [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ][parseInt(m) - 1] + " " + y : allReservas[idx].fechaLabel,
+    horaVal: horaRaw[0] ? parseInt(horaRaw[0]) : allReservas[idx].horaVal,
+    hora: horaRaw[1] || allReservas[idx].hora,
+    plan: document.getElementById("editResPlan").value,
+    notas: document.getElementById("editResNotas").value,
     createdAt: createdAtFormatted,
-    personasAdicionales,
-    costoPersonas,
-    bloqueoAntes,
-    bloqueoDespues,
+    personasAdicionales: personasAdicionales,
+    costoPersonas: costoPersonas,
+    bloqueoAntes: bloqueoAntes,
+    bloqueoDespues: bloqueoDespues
   };
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
-  closeModal('editReservaModal');
+  closeModal("editReservaModal");
   renderReservasTable();
-  showToast('Reserva actualizada ✓');
+  showToast("Reserva actualizada ✓");
 }
+
 async function deleteReserva(id) {
-  if(!confirm('¿Eliminar esta reserva permanentemente?')) return;
-  // 1. Eliminar de Supabase primero
+  if (!confirm("¿Eliminar esta reserva permanentemente?")) return;
   let sbOk = true;
   if (sbClient) {
-    const { error } = await sbClient.from('reservas').delete().eq('id', id);
-    if (error) { console.error('Supabase delete error:', error); sbOk = false; }
+    const {error: error} = await sbClient.from("reservas").delete().eq("id", id);
+    if (error) {
+      console.error("Supabase delete error:", error);
+      sbOk = false;
+    }
   }
   if (!sbOk) {
-    showToast('No se pudo eliminar en línea — revisa la conexión o los permisos en Supabase', 'error');
+    showToast("No se pudo eliminar en línea — revisa la conexión o los permisos en Supabase", "error");
     return;
   }
-  // 2. Eliminar del array local y localStorage
   allReservas = allReservas.filter(x => x.id !== id);
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  closeModal('reservaModal');
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
+  closeModal("reservaModal");
   renderReservasTable();
   updateDashboard();
-  showToast('Reserva eliminada', 'error');
+  showToast("Reserva eliminada", "error");
 }
-function goToReservaInTable(id) {
-  const filterStatus = document.getElementById('filterResStatus');
-  const filterMonth  = document.getElementById('filterResMonth');
-  if (filterStatus) filterStatus.value = '';
-  if (filterMonth)  filterMonth.value  = '';
 
-  switchView('reservas', document.querySelector('.sidebar-item[onclick*=\'reservas\']'));
-  // switchView already calls renderReservasTable() with no args; re-render with
-  // the highlight target right after so the row gets the highlight + scroll treatment.
+function goToReservaInTable(id) {
+  const filterStatus = document.getElementById("filterResStatus");
+  const filterMonth = document.getElementById("filterResMonth");
+  if (filterStatus) filterStatus.value = "";
+  if (filterMonth) filterMonth.value = "";
+  switchView("reservas", document.querySelector(".sidebar-item[onclick*='reservas']"));
   setTimeout(() => renderReservasTable(id), 80);
 }
-function sanitizeText(str){if(!str)return "";return String(str).trim();}
-async function generateConfirmationPDF(id) {
-  const r = allReservas.find(x=>x.id===id); if(!r) return;
 
-  // Contenido del PDF según el estado actual de la reserva — cada estado
-  // tiene su propio color y encabezado, para no mostrar "CONFIRMADA" en
-  // una reserva que en realidad está Pendiente, Aplazada, etc.
+function sanitizeText(str) {
+  if (!str) return "";
+  return String(str).trim();
+}
+
+async function generateConfirmationPDF(id) {
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
   const STATUS_PDF = {
-    pending:   { label: 'SOLICITUD PENDIENTE DE CONFIRMACIÓN', color: [156,163,175], file: 'Pendiente' },
-    confirmed: { label: 'RESERVA CONFIRMADA',                  color: [22,163,74],   file: 'Confirmacion' },
-    completed: { label: 'SESIÓN COMPLETADA',                   color: [59,130,246],  file: 'Completada' },
-    postponed: { label: 'RESERVA APLAZADA',                    color: [245,158,11],  file: 'Aplazada' },
-    declined:  { label: 'SOLICITUD DECLINADA',                 color: [239,68,68],   file: 'Declinada' },
-    cancelled: { label: 'RESERVA CANCELADA',                   color: [239,68,68],   file: 'Cancelada' },
+    pending: {
+      label: "SOLICITUD PENDIENTE DE CONFIRMACIÓN",
+      color: [ 156, 163, 175 ],
+      file: "Pendiente"
+    },
+    confirmed: {
+      label: "RESERVA CONFIRMADA",
+      color: [ 22, 163, 74 ],
+      file: "Confirmacion"
+    },
+    completed: {
+      label: "SESIÓN COMPLETADA",
+      color: [ 59, 130, 246 ],
+      file: "Completada"
+    },
+    postponed: {
+      label: "RESERVA APLAZADA",
+      color: [ 245, 158, 11 ],
+      file: "Aplazada"
+    },
+    declined: {
+      label: "SOLICITUD DECLINADA",
+      color: [ 239, 68, 68 ],
+      file: "Declinada"
+    },
+    cancelled: {
+      label: "RESERVA CANCELADA",
+      color: [ 239, 68, 68 ],
+      file: "Cancelada"
+    }
   };
   const st = STATUS_PDF[r.status] || STATUS_PDF.pending;
-
-  // Verificación antes de generar — así no se genera un PDF por error con
-  // el estado equivocado sin que el admin lo confirme primero.
   if (!confirm(`Esta reserva está en estado "${resStatusLabel(r.status)}".\n\nSe generará el PDF reflejando ese estado. ¿Continuar?`)) return;
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const {jsPDF: jsPDF} = window.jspdf;
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4"
+  });
   const company = pdfCompanyInfo();
-  const logoDataUrl = await loadImageAsDataUrl(company.logoPath || 'assets/images/icons/Janssocialmedialogo.png');
+  const logoDataUrl = await loadImageAsDataUrl(company.logoPath || "assets/images/icons/Janssocialmedialogo.png");
   const margin = 18;
-  const pageW  = 210;
-  const colW   = (pageW - margin*2 - 8) / 2; // two columns with 8mm gutter
-  const col1X  = margin;
-  const col2X  = margin + colW + 8;
-
-  // ── Black header with logo + company data ──
+  const pageW = 210;
+  const colW = (pageW - margin * 2 - 8) / 2;
+  const col1X = margin;
+  const col2X = margin + colW + 8;
   const headerH = 38;
-  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
-
+  doc.setFillColor(20, 20, 20);
+  doc.rect(0, 0, pageW, headerH, "F");
   let logoTextX = margin;
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      doc.addImage(logoDataUrl, "PNG", margin, 8, 22, 22, undefined, "FAST");
       logoTextX = margin + 28;
-    } catch(e) {}
+    } catch (e) {}
   }
-
-  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15);
+  doc.setFont("helvetica", "bold");
   doc.text(company.nombre, logoTextX, 16);
-
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(210, 210, 210);
   let companyLineY = 22;
-  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
-  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
-  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
-  if (company.ruc) {
-    doc.setFontSize(7.5); doc.setTextColor(180,180,180);
-    doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 16, {align:'right'});
+  if (company.telefono) {
+    doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY);
+    companyLineY += 4.5;
   }
-  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(`# ${r.numero||'—'}`, pageW-margin, 22, {align:'right'});
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text(`Emitido: ${new Date().toLocaleDateString('es-PA')}`, pageW-margin, 27, {align:'right'});
-
+  if (company.email) {
+    doc.text(company.email, logoTextX, companyLineY);
+    companyLineY += 4.5;
+  }
+  if (company.ubicacion) {
+    const locLines = doc.splitTextToSize(company.ubicacion, 95);
+    doc.text(locLines, logoTextX, companyLineY);
+  }
+  if (company.ruc) {
+    doc.setFontSize(7.5);
+    doc.setTextColor(180, 180, 180);
+    doc.text(`RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}`, pageW - margin, 16, {
+      align: "right"
+    });
+  }
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text(`# ${r.numero || "—"}`, pageW - margin, 22, {
+    align: "right"
+  });
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 180, 180);
+  doc.text(`Emitido: ${(new Date).toLocaleDateString("es-PA")}`, pageW - margin, 27, {
+    align: "right"
+  });
   let y = headerH + 12;
-
-  // ── Banner de estado (color y texto según el estado real de la reserva) ──
-  doc.setFillColor(...st.color); doc.roundedRect(margin, y, pageW-(margin*2), 14, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
-  doc.text(st.label, pageW/2, y+9, {align:'center'});
+  doc.setFillColor(...st.color);
+  doc.roundedRect(margin, y, pageW - margin * 2, 14, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(st.label, pageW / 2, y + 9, {
+    align: "center"
+  });
   y += 24;
-
-  // ── Two-column client + session data ──
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
-  doc.setTextColor(...st.color); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DE LA RESERVA', margin, y); y += 9;
-
-  const leftRows  = [['Cliente:', r.nombre], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—'], ['# Cotización:', r.numero||'—']];
-  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Plan:', r.plan||'—'], ['Estado:', resStatusLabel(r.status)]];
-  // Datos complementarios: sesión exterior, ubicación y personas adicionales
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, 7, 1, 1, "F");
+  doc.setTextColor(...st.color);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATOS DE LA RESERVA", margin, y);
+  y += 9;
+  const leftRows = [ [ "Cliente:", r.nombre ], [ "Teléfono:", r.tel || "—" ], [ "Email:", r.email || "—" ], [ "# Cotización:", r.numero || "—" ] ];
+  const rightRows = [ [ "Fecha de sesión:", r.fechaLabel || r.fecha || "—" ], [ "Hora:", r.hora || "—" ], [ "Plan:", r.plan || "—" ], [ "Estado:", resStatusLabel(r.status) ] ];
   if (r.exterior) {
-    rightRows.push(['Sesión exterior:', 'Sí' + (r.lugar ? ' — ' + r.lugar : '')]);
+    rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
   } else if (r.lugar) {
-    rightRows.push(['Ubicación:', r.lugar]);
+    rightRows.push([ "Ubicación:", r.lugar ]);
   }
   if (r.personasAdicionales > 0) {
-    rightRows.push(['Personas adicionales:', String(r.personasAdicionales) + ' persona(s)']);
+    rightRows.push([ "Personas adicionales:", String(r.personasAdicionales) + " persona(s)" ]);
   }
-
   const startY = y;
   let yL = startY, yR = startY;
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  leftRows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines = doc.splitTextToSize(String(v), colW-30);
-    doc.text(lines, col1X+30, yL);
-    doc.setFont('helvetica','normal');
-    yL += Math.max(6, lines.length*5);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  leftRows.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col1X, yL);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(String(v), colW - 30);
+    doc.text(lines, col1X + 30, yL);
+    doc.setFont("helvetica", "normal");
+    yL += Math.max(6, lines.length * 5);
   });
-  rightRows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines = doc.splitTextToSize(String(v), colW-30);
-    doc.text(lines, col2X+30, yR);
-    doc.setFont('helvetica','normal');
-    yR += Math.max(6, lines.length*5);
+  rightRows.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col2X, yR);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(String(v), colW - 30);
+    doc.text(lines, col2X + 30, yR);
+    doc.setFont("helvetica", "normal");
+    yR += Math.max(6, lines.length * 5);
   });
   y = Math.max(yL, yR) + 6;
-
-  // ── Boxed payment summary ──
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
   if (total > 0) {
     const boxItems = [];
-    if (r.plan) boxItems.push(['Plan', r.plan, resPlanPrice(r)]);
-    (r.extras || []).forEach(e => boxItems.push(['Adicional', e.nombre, parseFloat(e.precio)||0]));
-    if (r.personasAdicionales > 0 && r.costoPersonas > 0)
-      boxItems.push(['Personas extra', `+${r.personasAdicionales} persona(s)`, parseFloat(r.costoPersonas)||0]);
-    if (r.exterior && r.costoExterior > 0)
-      boxItems.push(['Sesión exterior', r.lugar||'Exterior', parseFloat(r.costoExterior)||0]);
-
-    const lineH   = 6;
+    if (r.plan) boxItems.push([ "Plan", r.plan, resPlanPrice(r) ]);
+    (r.extras || []).forEach(e => boxItems.push([ "Adicional", e.nombre, parseFloat(e.precio) || 0 ]));
+    if (r.personasAdicionales > 0 && r.costoPersonas > 0) boxItems.push([ "Personas extra", `+${r.personasAdicionales} persona(s)`, parseFloat(r.costoPersonas) || 0 ]);
+    if (r.exterior && r.costoExterior > 0) boxItems.push([ "Sesión exterior", r.lugar || "Exterior", parseFloat(r.costoExterior) || 0 ]);
+    const lineH = 6;
     const boxPadY = 8;
-    const boxH    = boxPadY*2 + 7 /*title*/ + (boxItems.length * lineH) + 4 /*divider gap*/ + lineH*2 /*total+abono*/ + 9 /*saldo*/;
-
-    doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
-    doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
-
+    const boxH = boxPadY * 2 + 7 + boxItems.length * lineH + 4 + lineH * 2 + 9;
+    doc.setDrawColor(199, 30, 95);
+    doc.setLineWidth(.6);
+    doc.roundedRect(margin, y, pageW - margin * 2, boxH, 2, 2, "S");
     let by = y + boxPadY;
-    doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('RESUMEN DE PAGO', margin+6, by); by += 8;
-
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.setTextColor(199, 30, 95);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text("RESUMEN DE PAGO", margin + 6, by);
+    by += 8;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
     boxItems.forEach(([tag, name, price]) => {
-      doc.setTextColor(140,140,140); doc.text(tag+':', margin+6, by);
-      doc.setTextColor(30,30,30); doc.text(name, margin+28, by);
-      doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+      doc.setTextColor(140, 140, 140);
+      doc.text(tag + ":", margin + 6, by);
+      doc.setTextColor(30, 30, 30);
+      doc.text(name, margin + 28, by);
+      doc.text(`$${price.toFixed(2)}`, pageW - margin - 6, by, {
+        align: "right"
+      });
       by += lineH;
     });
-
     by += 2;
-    doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-    doc.line(margin+6, by, pageW-margin-6, by); by += 6;
-
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(.2);
+    doc.line(margin + 6, by, pageW - margin - 6, by);
+    by += 6;
     doc.setFontSize(9.5);
-    doc.setTextColor(80,80,80); doc.text('Total:', margin+6, by);
-    doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-    doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH;
-
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80); doc.text('Abonado:', margin+6, by);
-    doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-    doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += lineH + 2;
-
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(199,30,95);
-    doc.text('Saldo pendiente:', margin+6, by);
-    doc.text(`$${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
-
+    doc.setTextColor(80, 80, 80);
+    doc.text("Total:", margin + 6, by);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 30, 30);
+    doc.text(`$${total.toFixed(2)}`, pageW - margin - 6, by, {
+      align: "right"
+    });
+    by += lineH;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("Abonado:", margin + 6, by);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(22, 163, 74);
+    doc.text(`$${abono.toFixed(2)}`, pageW - margin - 6, by, {
+      align: "right"
+    });
+    by += lineH + 2;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(199, 30, 95);
+    doc.text("Saldo pendiente:", margin + 6, by);
+    doc.text(`$${pend.toFixed(2)}`, pageW - margin - 6, by, {
+      align: "right"
+    });
     y += boxH + 10;
   }
-
   if (r.notas) {
-    doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
-    doc.text('NOTAS:', margin, y); y += 4;
-    doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-    const lines = doc.splitTextToSize(r.notas, pageW-(margin*2)); doc.text(lines, margin, y); y += lines.length*4+4;
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont("helvetica", "bold");
+    doc.text("NOTAS:", margin, y);
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    const lines = doc.splitTextToSize(r.notas, pageW - margin * 2);
+    doc.text(lines, margin, y);
+    y += lines.length * 4 + 4;
   }
-
-  // ── Footer ──
-  doc.setFillColor(20,20,20); doc.rect(0,283,pageW,14,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, 290, {align:'center'});
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
-  doc.text(pdfCompanyFooterLine(company), pageW/2, 294.5, {align:'center'});
-
-  doc.save(`${st.file}_${r.nombre.replace(/\s/g,'_')}_${r.numero||''}.pdf`);
+  doc.setFillColor(20, 20, 20);
+  doc.rect(0, 283, pageW, 14, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Gracias por confiar en nosotros", pageW / 2, 290, {
+    align: "center"
+  });
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(190, 190, 190);
+  doc.text(pdfCompanyFooterLine(company), pageW / 2, 294.5, {
+    align: "center"
+  });
+  doc.save(`${st.file}_${r.nombre.replace(/\s/g, "_")}_${r.numero || ""}.pdf`);
   showToast(`PDF (${resStatusLabel(r.status)}) descargado ✓`);
 }
+
 async function generateInvoicePDF(id) {
-  const r = allReservas.find(x=>x.id===id); if(!r) return;
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
   const facturaNum = await getOrAssignFacturaNumero(r);
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const {jsPDF: jsPDF} = window.jspdf;
+  const doc = new jsPDF({
+    unit: "mm",
+    format: "a4"
+  });
   const company = pdfCompanyInfo();
   const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
   const margin = 18;
-  const pageW  = 210;
-  const colW   = (pageW - margin*2 - 8) / 2;
-  const col1X  = margin;
-  const col2X  = margin + colW + 8;
-
-  const now = new Date();
-  const fechaHora = now.toLocaleDateString('es-PA') + '  ' + now.toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
-
-  // ── Black header with logo + company data ──
+  const pageW = 210;
+  const colW = (pageW - margin * 2 - 8) / 2;
+  const col1X = margin;
+  const col2X = margin + colW + 8;
+  const now = new Date;
+  const fechaHora = now.toLocaleDateString("es-PA") + "  " + now.toLocaleTimeString("es-PA", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
   const headerH = 38;
-  doc.setFillColor(20,20,20); doc.rect(0, 0, pageW, headerH, 'F');
-
+  doc.setFillColor(20, 20, 20);
+  doc.rect(0, 0, pageW, headerH, "F");
   let logoTextX = margin;
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', margin, 8, 22, 22, undefined, 'FAST');
+      doc.addImage(logoDataUrl, "PNG", margin, 8, 22, 22, undefined, "FAST");
       logoTextX = margin + 28;
-    } catch(e) {}
+    } catch (e) {}
   }
-
-  doc.setTextColor(255,255,255); doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(15);
+  doc.setFont("helvetica", "bold");
   doc.text(company.nombre, logoTextX, 16);
-
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(210, 210, 210);
   let companyLineY = 22;
-  if (company.telefono) { doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY); companyLineY += 4.5; }
-  if (company.email)    { doc.text(company.email, logoTextX, companyLineY); companyLineY += 4.5; }
-  if (company.ubicacion){ const locLines = doc.splitTextToSize(company.ubicacion, 95); doc.text(locLines, logoTextX, companyLineY); }
-
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text(`FACTURA #${facturaNum}`, pageW-margin, 16, {align:'right'});
-  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
-  doc.text(`Emitida: ${fechaHora}`, pageW-margin, 22, {align:'right'});
-  if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv?'  DV: '+company.dv:''}`, pageW-margin, 26.5, {align:'right'});
-
+  if (company.telefono) {
+    doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY);
+    companyLineY += 4.5;
+  }
+  if (company.email) {
+    doc.text(company.email, logoTextX, companyLineY);
+    companyLineY += 4.5;
+  }
+  if (company.ubicacion) {
+    const locLines = doc.splitTextToSize(company.ubicacion, 95);
+    doc.text(locLines, logoTextX, companyLineY);
+  }
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.text(`FACTURA #${facturaNum}`, pageW - margin, 16, {
+    align: "right"
+  });
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 180, 180);
+  doc.text(`Emitida: ${fechaHora}`, pageW - margin, 22, {
+    align: "right"
+  });
+  if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}`, pageW - margin, 26.5, {
+    align: "right"
+  });
   let y = headerH + 12;
-
-  // ── Two-column client + session data ──
-  doc.setFillColor(245,245,245); doc.roundedRect(margin-2, y-5, pageW-(margin*2)+4, 7, 1, 1, 'F');
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('DATOS DEL CLIENTE Y SESIÓN', margin, y); y += 7;
-
-  const leftRows = [['Nombre:', r.nombre], ['Cédula/RUC:', r.clientId||'—'], ['Teléfono:', r.tel||'—'], ['Email:', r.email||'—']];
-  if (r.razonSocial) leftRows.push(['Razón Social:', r.razonSocial]);
-  if (r.address)     leftRows.push(['Dirección:', r.address]);
-
-  const rightRows = [['Fecha de sesión:', r.fechaLabel||r.fecha||'—'], ['Hora:', r.hora||'—'], ['Estado:', resStatusLabel(r.status)], ['Origen:', r.numero||'—']];
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, 7, 1, 1, "F");
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("DATOS DEL CLIENTE Y SESIÓN", margin, y);
+  y += 7;
+  const leftRows = [ [ "Nombre:", r.nombre ], [ "Cédula/RUC:", r.clientId || "—" ], [ "Teléfono:", r.tel || "—" ], [ "Email:", r.email || "—" ] ];
+  if (r.razonSocial) leftRows.push([ "Razón Social:", r.razonSocial ]);
+  if (r.address) leftRows.push([ "Dirección:", r.address ]);
+  const rightRows = [ [ "Fecha de sesión:", r.fechaLabel || r.fecha || "—" ], [ "Hora:", r.hora || "—" ], [ "Estado:", resStatusLabel(r.status) ], [ "Origen:", r.numero || "—" ] ];
   if (r.exterior) {
-    rightRows.push(['Sesión exterior:', 'Sí' + (r.lugar ? ' — ' + r.lugar : '')]);
+    rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
   } else if (r.lugar) {
-    rightRows.push(['Ubicación:', r.lugar]);
+    rightRows.push([ "Ubicación:", r.lugar ]);
   }
   if (r.personasAdicionales > 0) {
-    rightRows.push(['Personas adicionales:', String(r.personasAdicionales) + ' persona(s)']);
+    rightRows.push([ "Personas adicionales:", String(r.personasAdicionales) + " persona(s)" ]);
   }
-
   const startY = y;
   let yL = startY, yR = startY;
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  leftRows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col1X, yL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines = doc.splitTextToSize(String(v), colW-32);
-    doc.text(lines, col1X+32, yL);
-    doc.setFont('helvetica','normal');
-    yL += Math.max(6, lines.length*5);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  leftRows.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col1X, yL);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(String(v), colW - 32);
+    doc.text(lines, col1X + 32, yL);
+    doc.setFont("helvetica", "normal");
+    yL += Math.max(6, lines.length * 5);
   });
-  rightRows.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col2X, yR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold');
-    const lines = doc.splitTextToSize(String(v), colW-32);
-    doc.text(lines, col2X+32, yR);
-    doc.setFont('helvetica','normal');
-    yR += Math.max(6, lines.length*5);
+  rightRows.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col2X, yR);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    const lines = doc.splitTextToSize(String(v), colW - 32);
+    doc.text(lines, col2X + 32, yR);
+    doc.setFont("helvetica", "normal");
+    yR += Math.max(6, lines.length * 5);
   });
   y = Math.max(yL, yR) + 6;
-
-  // ── Boxed items table ──
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
   const items = [];
-  if (r.plan) items.push([r.plan, resPlanPrice(r)]);
+  if (r.plan) items.push([ r.plan, resPlanPrice(r) ]);
   (r.extras || r.addons || []).forEach(a => {
-    items.push([a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0]);
+    items.push([ a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0 ]);
   });
-  if (r.personasAdicionales > 0 && r.costoPersonas > 0)
-    items.push([`Personas adicionales (+${r.personasAdicionales})`, parseFloat(r.costoPersonas)||0]);
-  if (r.exterior && r.costoExterior > 0)
-    items.push([`Sesión exterior — ${r.lugar||''}`, parseFloat(r.costoExterior)||0]);
-
-  const rowH    = 6.5;
+  if (r.personasAdicionales > 0 && r.costoPersonas > 0) items.push([ `Personas adicionales (+${r.personasAdicionales})`, parseFloat(r.costoPersonas) || 0 ]);
+  if (r.exterior && r.costoExterior > 0) items.push([ `Sesión exterior — ${r.lugar || ""}`, parseFloat(r.costoExterior) || 0 ]);
+  const rowH = 6.5;
   const boxPadY = 8;
-  const tableH  = 8 /*header row*/ + (items.length * rowH) + 4;
-  const totalsH = rowH*3 + 6 /*spacing*/ + 12 /*grand total box*/;
-  const boxH    = boxPadY*2 + 7 /*title*/ + tableH + totalsH;
-
-  doc.setDrawColor(199,30,95); doc.setLineWidth(0.6);
-  doc.roundedRect(margin, y, pageW-(margin*2), boxH, 2, 2, 'S');
-
+  const tableH = 8 + items.length * rowH + 4;
+  const totalsH = rowH * 3 + 6 + 12;
+  const boxH = boxPadY * 2 + 7 + tableH + totalsH;
+  doc.setDrawColor(199, 30, 95);
+  doc.setLineWidth(.6);
+  doc.roundedRect(margin, y, pageW - margin * 2, boxH, 2, 2, "S");
   let by = y + boxPadY;
-  doc.setTextColor(199,30,95); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('PLANES Y SERVICIOS', margin+6, by); by += 8;
-
-  doc.setDrawColor(230,230,230); doc.setLineWidth(0.2);
-  doc.setTextColor(140,140,140); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('DESCRIPCIÓN', margin+6, by); doc.text('PRECIO', pageW-margin-6, by, {align:'right'}); by += 3;
-  doc.line(margin+6, by, pageW-margin-6, by); by += 5;
-
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("PLANES Y SERVICIOS", margin + 6, by);
+  by += 8;
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(.2);
+  doc.setTextColor(140, 140, 140);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("DESCRIPCIÓN", margin + 6, by);
+  doc.text("PRECIO", pageW - margin - 6, by, {
+    align: "right"
+  });
+  by += 3;
+  doc.line(margin + 6, by, pageW - margin - 6, by);
+  by += 5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(30, 30, 30);
   items.forEach(([name, price], i) => {
-    if (i === 0 && r.plan) doc.setFont('helvetica','bold'); else doc.setFont('helvetica','normal');
-    doc.text(name, margin+6, by);
-    doc.text(`$${price.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+    if (i === 0 && r.plan) doc.setFont("helvetica", "bold"); else doc.setFont("helvetica", "normal");
+    doc.text(name, margin + 6, by);
+    doc.text(`$${price.toFixed(2)}`, pageW - margin - 6, by, {
+      align: "right"
+    });
     by += rowH;
   });
-
   by += 1;
-  doc.setDrawColor(230,230,230);
-  doc.line(margin+6, by, pageW-margin-6, by); by += 7;
-
+  doc.setDrawColor(230, 230, 230);
+  doc.line(margin + 6, by, pageW - margin - 6, by);
+  by += 7;
   doc.setFontSize(9.5);
-  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Total de plan(es):', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-  doc.text(`$${total.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
-
-  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Abono realizado:', margin+6, by); doc.setFont('helvetica','bold'); doc.setTextColor(22,163,74);
-  doc.text(`$${abono.toFixed(2)}`, pageW-margin-6, by, {align:'right'}); by += rowH;
-
-  doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
-  doc.text('Cancelación completa:', margin+6, by); doc.setFont('helvetica','bold');
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text("Total de plan(es):", margin + 6, by);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(30, 30, 30);
+  doc.text(`$${total.toFixed(2)}`, pageW - margin - 6, by, {
+    align: "right"
+  });
+  by += rowH;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text("Abono realizado:", margin + 6, by);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(22, 163, 74);
+  doc.text(`$${abono.toFixed(2)}`, pageW - margin - 6, by, {
+    align: "right"
+  });
+  by += rowH;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text("Cancelación completa:", margin + 6, by);
+  doc.setFont("helvetica", "bold");
   doc.setTextColor(pend <= 0 ? 22 : 220, pend <= 0 ? 163 : 38, pend <= 0 ? 74 : 38);
-  doc.text(pend <= 0 ? 'PAGADO EN TOTALIDAD' : `Pendiente: $${pend.toFixed(2)}`, pageW-margin-6, by, {align:'right'});
+  doc.text(pend <= 0 ? "PAGADO EN TOTALIDAD" : `Pendiente: $${pend.toFixed(2)}`, pageW - margin - 6, by, {
+    align: "right"
+  });
   by += 9;
-
-  // Grand total bar inside the box
-  doc.setFillColor(199,30,95); doc.roundedRect(margin+4, by-5.5, pageW-(margin*2)-8, 11, 2, 2, 'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  doc.text('TOTAL FACTURADO', margin+10, by+1.5);
-  doc.text(`$${total.toFixed(2)}`, pageW-margin-10, by+1.5, {align:'right'});
-
+  doc.setFillColor(199, 30, 95);
+  doc.roundedRect(margin + 4, by - 5.5, pageW - margin * 2 - 8, 11, 2, 2, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("TOTAL FACTURADO", margin + 10, by + 1.5);
+  doc.text(`$${total.toFixed(2)}`, pageW - margin - 10, by + 1.5, {
+    align: "right"
+  });
   y += boxH + 6;
-
-  // ── Seal box — fija antes del footer ──
   const sealY = 196;
-  doc.setDrawColor(199,30,95); doc.setLineWidth(0.5);
-  doc.roundedRect(margin, sealY, pageW-(margin*2), 16, 2, 2, 'S');
-  doc.setGState(new doc.GState({ opacity: 0.22 }));
-  doc.setTextColor(120,120,120); doc.setFontSize(8.5); doc.setFont('helvetica','bolditalic');
-  doc.text('Factura que no presente sello es nula', pageW/2, sealY+10, {align:'center'});
-  doc.setGState(new doc.GState({ opacity: 1 }));
-
-  // ── Footer fijo ──
+  doc.setDrawColor(199, 30, 95);
+  doc.setLineWidth(.5);
+  doc.roundedRect(margin, sealY, pageW - margin * 2, 16, 2, 2, "S");
+  doc.setGState(new doc.GState({
+    opacity: .22
+  }));
+  doc.setTextColor(120, 120, 120);
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "bolditalic");
+  doc.text("Factura que no presente sello es nula", pageW / 2, sealY + 10, {
+    align: "center"
+  });
+  doc.setGState(new doc.GState({
+    opacity: 1
+  }));
   const footerY = 216;
-  doc.setFillColor(20,20,20); doc.rect(0, footerY, pageW, 18, 'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
-  doc.text('Gracias por confiar en nosotros', pageW/2, footerY+7, {align:'center'});
-  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(190,190,190);
-  doc.text(pdfCompanyFooterLine(company), pageW/2, footerY+13, {align:'center'});
-
-  // ── Constancia pegada al footer ──
+  doc.setFillColor(20, 20, 20);
+  doc.rect(0, footerY, pageW, 18, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Gracias por confiar en nosotros", pageW / 2, footerY + 7, {
+    align: "center"
+  });
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(190, 190, 190);
+  doc.text(pdfCompanyFooterLine(company), pageW / 2, footerY + 13, {
+    align: "center"
+  });
   let cy = footerY + 22;
-  doc.setDrawColor(150,150,150); doc.setLineWidth(0.2);
-  doc.setLineDashPattern([2,2], 0);
-  doc.line(margin, cy, pageW-margin, cy);
+  doc.setDrawColor(150, 150, 150);
+  doc.setLineWidth(.2);
+  doc.setLineDashPattern([ 2, 2 ], 0);
+  doc.line(margin, cy, pageW - margin, cy);
   doc.setLineDashPattern([], 0);
   cy += 4;
-  doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(150,150,150);
-  doc.text("' Constancia — recortar y conservar", pageW/2, cy, {align:'center'});
-  cy += 7;
-
-  doc.setTextColor(199,30,95); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('CONSTANCIA DE FACTURACIÓN', margin, cy); cy += 7;
-
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  const stubLeft = [['Factura:', '#'+facturaNum], ['Origen:', r.numero||'—']];
-  const stubRight = [['Cliente:', r.nombre], ['Plan:', r.plan||'—']];
-  let syL = cy, syR = cy;
-  stubLeft.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col1X, syL);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.text(String(v), col1X+22, syL);
-    doc.setFont('helvetica','normal'); syL += 6;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(150, 150, 150);
+  doc.text("' Constancia — recortar y conservar", pageW / 2, cy, {
+    align: "center"
   });
-  stubRight.forEach(([l,v]) => {
-    doc.setTextColor(120,120,120); doc.text(l, col2X, syR);
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.text(String(v), col2X+22, syR);
-    doc.setFont('helvetica','normal'); syR += 6;
+  cy += 7;
+  doc.setTextColor(199, 30, 95);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("CONSTANCIA DE FACTURACIÓN", margin, cy);
+  cy += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  const stubLeft = [ [ "Factura:", "#" + facturaNum ], [ "Origen:", r.numero || "—" ] ];
+  const stubRight = [ [ "Cliente:", r.nombre ], [ "Plan:", r.plan || "—" ] ];
+  let syL = cy, syR = cy;
+  stubLeft.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col1X, syL);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(v), col1X + 22, syL);
+    doc.setFont("helvetica", "normal");
+    syL += 6;
+  });
+  stubRight.forEach(([l, v]) => {
+    doc.setTextColor(120, 120, 120);
+    doc.text(l, col2X, syR);
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "bold");
+    doc.text(String(v), col2X + 22, syR);
+    doc.setFont("helvetica", "normal");
+    syR += 6;
   });
   cy = Math.max(syL, syR) + 5;
-  doc.setDrawColor(180,180,180); doc.setLineWidth(0.3);
-  doc.line(margin, cy, margin+80, cy);
-  doc.setFontSize(7.5); doc.setTextColor(120,120,120); doc.setFont('helvetica','normal');
-  doc.text('Firma del cliente', margin, cy+4.5);
-
-  doc.save(`Factura_${facturaNum}_${r.nombre.replace(/\s/g,'_')}.pdf`);
-  showToast('Factura descargada ✓');
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(.3);
+  doc.line(margin, cy, margin + 80, cy);
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 120);
+  doc.setFont("helvetica", "normal");
+  doc.text("Firma del cliente", margin, cy + 4.5);
+  doc.save(`Factura_${facturaNum}_${r.nombre.replace(/\s/g, "_")}.pdf`);
+  showToast("Factura descargada ✓");
 }
+
 function handleLogout() {
-  if (window._jansAuthClient) { window._jansAuthClient.auth.signOut(); }
-  sessionStorage.removeItem('jans_master_auth');
-  window.location.replace('../master.html');
+  if (window._jansAuthClient) {
+    window._jansAuthClient.auth.signOut();
+  }
+  sessionStorage.removeItem("jans_master_auth");
+  window.location.replace("../master.html");
 }
 
 function resPlanPrice(r) {
-  // Resolve the MAIN plan's price by name match from publicPlans.
-  // r.plan may come as "Plan Kids" (exact) or "Plan Kids ($45)" (from the public
-  // reservation form, which embeds the price in the displayed/stored string) —
-  // try exact match first, then fall back to matching the name with the price suffix stripped.
   try {
-    const plans = JSON.parse(localStorage.getItem('jans_planes') || '[]');
+    const plans = JSON.parse(localStorage.getItem("jans_planes") || "[]");
     if (!r.plan) return 0;
-
     let match = plans.find(p => p.nombre === r.plan);
     if (match) return parseFloat(match.precio) || 0;
-
-    // Strip a trailing " ($XX)" / " ($XX.XX)" suffix and retry
-    const cleanName = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const cleanName = r.plan.replace(/\s*\(\$[\d.,]+\)\s*$/, "").trim();
     match = plans.find(p => p.nombre === cleanName);
     if (match) return parseFloat(match.precio) || 0;
-
-    // Last resort: if the plan string itself contains a price like "($45)", use that
-    // directly as the price, even if the plan name no longer matches the current catalog
-    // (e.g. the plan was renamed/removed after the reserva was made).
     const priceMatch = r.plan.match(/\(\$([\d.,]+)\)/);
-    if (priceMatch) return parseFloat(priceMatch[1].replace(',', '')) || 0;
-  } catch(e) {}
+    if (priceMatch) return parseFloat(priceMatch[1].replace(",", "")) || 0;
+  } catch (e) {}
   return 0;
 }
 
-// Convertir hora "6:00 PM" / "14:00" a "HH:mm" para input type="time"
 function to24h(horaStr) {
-  if (!horaStr) return '';
+  if (!horaStr) return "";
   horaStr = String(horaStr).trim();
-  // Ya está en formato HH:mm o HH:mm:ss
   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(horaStr)) {
-    const parts = horaStr.split(':');
-    return parts[0].padStart(2,'0') + ':' + parts[1];
+    const parts = horaStr.split(":");
+    return parts[0].padStart(2, "0") + ":" + parts[1];
   }
-  // Formato 12h: "6:00 PM", "11:30 AM"
   const m = horaStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
   if (m) {
     let h = parseInt(m[1]);
     const min = m[2];
     const ampm = m[3].toUpperCase();
-    if (ampm === 'PM' && h !== 12) h += 12;
-    if (ampm === 'AM' && h === 12) h = 0;
-    return String(h).padStart(2,'0') + ':' + min;
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    return String(h).padStart(2, "0") + ":" + min;
   }
-  return '';
+  return "";
 }
 
-// ══════════════════════════════════════════════════════
-//  EXTRAS — funciones que faltaban en master-reservas
-// ══════════════════════════════════════════════════════
+let servData = {
+  items: [],
+  maquillaje: [],
+  impresiones: []
+};
 
-// servData y loader (referenciados desde restoreInventoryForReserva)
-let servData = { items: [], maquillaje: [], impresiones: [] };
-const SA_KEY = 'jans_serv_adicionales';
+const SA_KEY = "jans_serv_adicionales";
+
 function loadServAdicionales() {
   try {
-    const saved = JSON.parse(localStorage.getItem(SA_KEY) || '{}');
+    const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
     if (saved.items) {
       servData = saved;
     } else {
       servData = {
-        items:       [],
-        maquillaje:  Array.isArray(saved.maquillaje)  ? saved.maquillaje  : [],
-        impresiones: Array.isArray(saved.impresiones) ? saved.impresiones : [],
+        items: [],
+        maquillaje: Array.isArray(saved.maquillaje) ? saved.maquillaje : [],
+        impresiones: Array.isArray(saved.impresiones) ? saved.impresiones : []
       };
     }
-  } catch(e) { servData = { items: [], maquillaje: [], impresiones: [] }; }
+  } catch (e) {
+    servData = {
+      items: [],
+      maquillaje: [],
+      impresiones: []
+    };
+  }
 }
 
-// Catálogo plano de todos los servicios adicionales disponibles
 function getExtrasCatalog() {
   loadServAdicionales();
   const all = [];
-  // Formato nuevo (items plano)
   if (Array.isArray(servData.items) && servData.items.length) {
-    servData.items.forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: s.cat||s.categoria||'Servicios' }));
+    servData.items.forEach(s => all.push({
+      nombre: s.nombre,
+      precio: parseFloat(s.precio) || 0,
+      grupo: s.cat || s.categoria || "Servicios"
+    }));
     return all;
   }
-  // Formato antiguo (maquillaje + impresiones)
-  (servData.maquillaje  || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Maquillaje' }));
-  (servData.impresiones || []).forEach(s => all.push({ nombre: s.nombre, precio: parseFloat(s.precio)||0, grupo: 'Impresiones' }));
+  (servData.maquillaje || []).forEach(s => all.push({
+    nombre: s.nombre,
+    precio: parseFloat(s.precio) || 0,
+    grupo: "Maquillaje"
+  }));
+  (servData.impresiones || []).forEach(s => all.push({
+    nombre: s.nombre,
+    precio: parseFloat(s.precio) || 0,
+    grupo: "Impresiones"
+  }));
   return all;
 }
 
-// Renderizar la lista de extras ya añadidos en el modal
-let editingExtraIdx = null; // { resId, idx } o null mientras se edita uno en línea
+let editingExtraIdx = null;
+
 function renderResExtrasList(r) {
   const extras = r.extras || [];
   if (!extras.length) return '<div style="font-size:0.78rem;color:var(--gray);padding:6px 0">Sin servicios adicionales</div>';
   return extras.map((e, i) => {
     if (editingExtraIdx && editingExtraIdx.resId === r.id && editingExtraIdx.idx === i) {
-      return `
-      <div style="display:flex;gap:6px;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
-        <input type="text" id="resExtraEditNombre" value="${escapeHtml(e.nombre)}" style="flex:2;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
-        <input type="number" id="resExtraEditPrecio" value="${e.precio}" step="0.01" style="flex:1;min-width:70px;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />
-        <button onclick="saveResExtraEdit('${r.id}',${i})" style="background:none;border:none;color:#86efac;cursor:pointer;font-size:1rem;padding:0" title="Guardar">✓</button>
-        <button onclick="cancelResExtraEdit('${r.id}')" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.9rem;padding:0" title="Cancelar">✕</button>
-      </div>`;
+      return `\n      <div style="display:flex;gap:6px;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">\n        <input type="text" id="resExtraEditNombre" value="${escapeHtml(e.nombre)}" style="flex:2;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />\n        <input type="number" id="resExtraEditPrecio" value="${e.precio}" step="0.01" style="flex:1;min-width:70px;padding:4px 8px;background:var(--dark);border:1px solid var(--border);border-radius:6px;color:var(--white);font-family:var(--font);font-size:0.8rem" />\n        <button onclick="saveResExtraEdit('${r.id}',${i})" style="background:none;border:none;color:#86efac;cursor:pointer;font-size:1rem;padding:0" title="Guardar">✓</button>\n        <button onclick="cancelResExtraEdit('${r.id}')" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.9rem;padding:0" title="Cancelar">✕</button>\n      </div>`;
     }
-    return `
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">
-      <span style="color:var(--gray-l)">+ ${escapeHtml(e.nombre)}</span>
-      <span style="display:flex;align-items:center;gap:8px">
-        <span style="font-weight:700">$${(parseFloat(e.precio)||0).toFixed(2)}</span>
-        <button onclick="editResExtra('${r.id}',${i})" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.85rem;padding:0" title="Editar">✏</button>
-        <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0" title="Eliminar">✕</button>
-      </span>
-    </div>`;
-  }).join('');
+    return `\n    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;padding:5px 0;border-top:1px solid var(--border)">\n      <span style="color:var(--gray-l)">+ ${escapeHtml(e.nombre)}</span>\n      <span style="display:flex;align-items:center;gap:8px">\n        <span style="font-weight:700">$${(parseFloat(e.precio) || 0).toFixed(2)}</span>\n        <button onclick="editResExtra('${r.id}',${i})" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.85rem;padding:0" title="Editar">✏</button>\n        <button onclick="removeResExtra('${r.id}',${i})" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.95rem;padding:0" title="Eliminar">✕</button>\n      </span>\n    </div>`;
+  }).join("");
 }
 
 function editResExtra(id, idx) {
-  editingExtraIdx = { resId: id, idx };
+  editingExtraIdx = {
+    resId: id,
+    idx: idx
+  };
   const r = allReservas.find(x => x.id === id);
-  const extrasList = document.getElementById('resExtrasList');
+  const extrasList = document.getElementById("resExtrasList");
   if (extrasList && r) extrasList.innerHTML = renderResExtrasList(r);
 }
 
 function cancelResExtraEdit(id) {
   editingExtraIdx = null;
   const r = allReservas.find(x => x.id === id);
-  const extrasList = document.getElementById('resExtrasList');
+  const extrasList = document.getElementById("resExtrasList");
   if (extrasList && r) extrasList.innerHTML = renderResExtrasList(r);
 }
 
 async function saveResExtraEdit(id, idx) {
-  const nombre = document.getElementById('resExtraEditNombre').value.trim();
-  const precio = parseFloat(document.getElementById('resExtraEditPrecio').value) || 0;
-  if (!nombre) { showToast('El nombre no puede estar vacío', 'error'); return; }
-  const rIdx = allReservas.findIndex(x => x.id === id); if (rIdx < 0) return;
-  allReservas[rIdx].extras[idx] = { nombre, precio };
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  const nombre = document.getElementById("resExtraEditNombre").value.trim();
+  const precio = parseFloat(document.getElementById("resExtraEditPrecio").value) || 0;
+  if (!nombre) {
+    showToast("El nombre no puede estar vacío", "error");
+    return;
+  }
+  const rIdx = allReservas.findIndex(x => x.id === id);
+  if (rIdx < 0) return;
+  allReservas[rIdx].extras[idx] = {
+    nombre: nombre,
+    precio: precio
+  };
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   editingExtraIdx = null;
   refreshResFinancialBlock(id);
   renderReservasTable();
   await pushReservaToSupabase(allReservas[rIdx]);
-  showToast('Actualizado ✓');
+  showToast("Actualizado ✓");
 }
 
-// Selector de servicios adicionales disponibles en Supabase/localStorage
 function renderExtrasOptions() {
   const catalog = getExtrasCatalog();
   if (!catalog.length) return '<option value="">— Sin servicios configurados —</option>';
   const groups = {};
-  catalog.forEach(item => { (groups[item.grupo] = groups[item.grupo] || []).push(item); });
+  catalog.forEach(item => {
+    (groups[item.grupo] = groups[item.grupo] || []).push(item);
+  });
   let html = '<option value="">— Seleccionar —</option>';
   Object.entries(groups).forEach(([grupo, items]) => {
     html += `<optgroup label="${grupo}">`;
-    items.forEach(it => { html += `<option value="${it.nombre}||${it.precio}">${it.nombre} — $${it.precio.toFixed(2)}</option>`; });
-    html += '</optgroup>';
+    items.forEach(it => {
+      html += `<option value="${it.nombre}||${it.precio}">${it.nombre} — $${it.precio.toFixed(2)}</option>`;
+    });
+    html += "</optgroup>";
   });
   return html;
 }
 
-// Añadir un extra desde el selector
 async function addResExtra(id) {
-  const sel = document.getElementById('resExtraSelect');
-  if (!sel || !sel.value) { showToast('Selecciona un servicio primero', 'error'); return; }
-  const [nombre, precio] = sel.value.split('||');
-  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const sel = document.getElementById("resExtraSelect");
+  if (!sel || !sel.value) {
+    showToast("Selecciona un servicio primero", "error");
+    return;
+  }
+  const [nombre, precio] = sel.value.split("||");
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   if (!allReservas[idx].extras) allReservas[idx].extras = [];
-  allReservas[idx].extras.push({ nombre, precio: parseFloat(precio) || 0 });
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  sel.value = '';
+  allReservas[idx].extras.push({
+    nombre: nombre,
+    precio: parseFloat(precio) || 0
+  });
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
+  sel.value = "";
   refreshResFinancialBlock(id);
   renderReservasTable();
   await pushReservaToSupabase(allReservas[idx]);
-  showToast('Servicio añadido ✓');
+  showToast("Servicio añadido ✓");
 }
 
-// Añadir un artefacto/servicio con nombre y precio escritos a mano —
-// no necesita existir en el catálogo de Servicios Adicionales, es solo
-// para esta reserva (ej. "Edición momentánea" a $5).
 async function addResExtraCustom(id) {
-  const nombreEl = document.getElementById('resExtraCustomNombre');
-  const precioEl = document.getElementById('resExtraCustomPrecio');
+  const nombreEl = document.getElementById("resExtraCustomNombre");
+  const precioEl = document.getElementById("resExtraCustomPrecio");
   const nombre = nombreEl.value.trim();
   const precio = parseFloat(precioEl.value) || 0;
-  if (!nombre) { showToast('Escribe un nombre para el artefacto', 'error'); return; }
-  if (precio <= 0) { showToast('Coloca un precio mayor a $0', 'error'); return; }
-  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  if (!nombre) {
+    showToast("Escribe un nombre para el artefacto", "error");
+    return;
+  }
+  if (precio <= 0) {
+    showToast("Coloca un precio mayor a $0", "error");
+    return;
+  }
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   if (!allReservas[idx].extras) allReservas[idx].extras = [];
-  allReservas[idx].extras.push({ nombre, precio });
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
-  nombreEl.value = ''; precioEl.value = '';
+  allReservas[idx].extras.push({
+    nombre: nombre,
+    precio: precio
+  });
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
+  nombreEl.value = "";
+  precioEl.value = "";
   refreshResFinancialBlock(id);
   renderReservasTable();
   await pushReservaToSupabase(allReservas[idx]);
-  showToast('Artefacto añadido ✓');
+  showToast("Artefacto añadido ✓");
 }
 
-// Eliminar un extra por índice
 async function removeResExtra(id, extraIdx) {
-  const idx = allReservas.findIndex(x => x.id === id); if (idx < 0) return;
+  const idx = allReservas.findIndex(x => x.id === id);
+  if (idx < 0) return;
   if (!allReservas[idx].extras) return;
   allReservas[idx].extras.splice(extraIdx, 1);
-  localStorage.setItem('jans_reservas', JSON.stringify(allReservas));
+  localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   refreshResFinancialBlock(id);
   renderReservasTable();
   await pushReservaToSupabase(allReservas[idx]);
-  showToast('Servicio eliminado', 'error');
+  showToast("Servicio eliminado", "error");
 }
 
-// Resumen financiero HTML (barra de progreso + totales)
 function renderResFinancialSummary(total, abono, cancelado, pend, prog) {
-  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$' + total.toFixed(2) + '</span></div>'
-    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$' + abono.toFixed(2) + '</span></div>'
-    + (cancelado > 0 ? '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Cancelado</span><span style="font-weight:700;color:#86efac">$' + cancelado.toFixed(2) + '</span></div>' : '')
-    + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:' + (pend > 0 ? '#fca5a5' : '#86efac') + '">$' + pend.toFixed(2) + '</span></div>'
-    + '<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>'
-    + '<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">' + prog + '% pagado</div>';
+  return '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Total</span><span style="font-weight:700">$' + total.toFixed(2) + "</span></div>" + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Abono</span><span style="font-weight:700;color:#86efac">$' + abono.toFixed(2) + "</span></div>" + (cancelado > 0 ? '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span style="color:var(--gray-l)">Cancelado</span><span style="font-weight:700;color:#86efac">$' + cancelado.toFixed(2) + "</span></div>" : "") + '<div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:10px"><span style="color:var(--gray-l)">Pendiente</span><span style="font-weight:700;color:' + (pend > 0 ? "#fca5a5" : "#86efac") + '">$' + pend.toFixed(2) + "</span></div>" + '<div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg,var(--pink),var(--pink-l));transition:width 0.3s"></div></div>' + '<div style="text-align:right;font-size:0.72rem;color:var(--gray);margin-top:4px">' + prog + "% pagado</div>";
 }
 
-// Refrescar solo el bloque financiero del modal sin cerrarlo
 function refreshResFinancialBlock(id) {
-  const r = allReservas.find(x => x.id === id); if (!r) return;
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
   const total = resTotal(r), abono = resAbono(r), cancelado = resCancelado(r), pend = resPendiente(r), prog = resProgress(r);
-  const extrasList = document.getElementById('resExtrasList');
+  const extrasList = document.getElementById("resExtrasList");
   if (extrasList) extrasList.innerHTML = renderResExtrasList(r);
-  const totalInput = document.getElementById('resTotalInput');
+  const totalInput = document.getElementById("resTotalInput");
   if (totalInput) totalInput.value = total.toFixed(2);
-  const pendInput = document.getElementById('resPendienteInput');
-  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend > 0 ? '#fca5a5' : '#86efac'; }
-  const summary = document.getElementById('resFinancialSummary');
+  const pendInput = document.getElementById("resPendienteInput");
+  if (pendInput) {
+    pendInput.value = pend.toFixed(2);
+    pendInput.style.color = pend > 0 ? "#fca5a5" : "#86efac";
+  }
+  const summary = document.getElementById("resFinancialSummary");
   if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
 }
 
-// Recalcular "Pendiente por pagar" mientras el usuario escribe en Abono/Cancelado,
-// usando los valores actuales de los campos (aún sin guardar).
 function updateResPendienteLive(id) {
-  const r = allReservas.find(x => x.id === id); if (!r) return;
+  const r = allReservas.find(x => x.id === id);
+  if (!r) return;
   const total = resTotal(r);
-  const abono     = parseFloat(document.getElementById('resAbonoInput')?.value)     || 0;
-  const cancelado = parseFloat(document.getElementById('resCanceladoInput')?.value) || 0;
+  const abono = parseFloat(document.getElementById("resAbonoInput")?.value) || 0;
+  const cancelado = parseFloat(document.getElementById("resCanceladoInput")?.value) || 0;
   const pend = Math.max(0, total - abono - cancelado);
-  const prog = total > 0 ? Math.min(100, Math.round(((abono + cancelado) / total) * 100)) : 0;
-  const pendInput = document.getElementById('resPendienteInput');
-  if (pendInput) { pendInput.value = pend.toFixed(2); pendInput.style.color = pend > 0 ? '#fca5a5' : '#86efac'; }
-  const summary = document.getElementById('resFinancialSummary');
+  const prog = total > 0 ? Math.min(100, Math.round((abono + cancelado) / total * 100)) : 0;
+  const pendInput = document.getElementById("resPendienteInput");
+  if (pendInput) {
+    pendInput.value = pend.toFixed(2);
+    pendInput.style.color = pend > 0 ? "#fca5a5" : "#86efac";
+  }
+  const summary = document.getElementById("resFinancialSummary");
   if (summary) summary.innerHTML = renderResFinancialSummary(total, abono, cancelado, pend, prog);
 }
 
 function resExtrasTotal(r) {
-  // Sum of additional plans/services added manually in the modal
   return (r.extras || []).reduce((s, e) => s + (parseFloat(e.precio) || 0), 0);
 }
 
+function resAbono(r) {
+  return parseFloat(r.abono) || 0;
+}
 
-function resAbono(r)     { return parseFloat(r.abono)     || 0; }
+function resCancelado(r) {
+  return parseFloat(r.cancelado) || 0;
+}
 
-function resCancelado(r) { return parseFloat(r.cancelado) || 0; }
-
-
-function resProgress(r)  { const t = resTotal(r); return t > 0 ? Math.min(100, Math.round(((resAbono(r)+resCancelado(r))/t)*100)) : 0; }
+function resProgress(r) {
+  const t = resTotal(r);
+  return t > 0 ? Math.min(100, Math.round((resAbono(r) + resCancelado(r)) / t * 100)) : 0;
+}
 
 function restoreInventoryForReserva(r) {
   loadServAdicionales();
   loadPaperTypes();
   const impresiones = servData.impresiones || [];
   if (!impresiones.length || !paperTypes.length) return;
-
-  const lineItems = [r.plan, ...((r.extras || []).map(e => e.nombre))].filter(Boolean);
-
+  const lineItems = [ r.plan, ...(r.extras || []).map(e => e.nombre) ].filter(Boolean);
   let changed = false;
   lineItems.forEach(itemName => {
-    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, '').trim();
+    const cleanName = itemName.replace(/\s*\(\$[\d.,]+\)\s*$/, "").trim();
     const match = impresiones.find(s => s.nombre === itemName || s.nombre === cleanName);
     if (!match || !match.papelTipoId) return;
-
     const paper = paperTypes.find(p => p.id === match.papelTipoId);
     if (!paper) return;
-
     const sheets = match.hojasPorVenta || 1;
     paper.stock = paper.stock + sheets;
-    logInventoryMovement(paper.nombre, 'entrada', sheets, `Reserva revertida: ${r.nombre} (${r.numero||r.id})`);
+    logInventoryMovement(paper.nombre, "entrada", sheets, `Reserva revertida: ${r.nombre} (${r.numero || r.id})`);
     changed = true;
   });
-
   if (changed) {
     localStorage.setItem(INV_KEY, JSON.stringify(paperTypes));
     checkLowStock();
@@ -1788,76 +1903,89 @@ function restoreInventoryForReserva(r) {
 
 function resetBlogImgField() {
   bpFileData = null;
-  document.getElementById('bpFileInput').value      = '';
-  document.getElementById('bpImagen').value         = '';
-  document.getElementById('bpImgPreview').style.display = 'none';
-  document.getElementById('bpImgStatus').style.display  = 'none';
-  document.getElementById('bpDropLabel').textContent    = 'Haz clic o arrastra la imagen aquí';
-  document.getElementById('bpDropZone').style.borderColor = 'rgba(233,30,140,0.35)';
+  document.getElementById("bpFileInput").value = "";
+  document.getElementById("bpImagen").value = "";
+  document.getElementById("bpImgPreview").style.display = "none";
+  document.getElementById("bpImgStatus").style.display = "none";
+  document.getElementById("bpDropLabel").textContent = "Haz clic o arrastra la imagen aquí";
+  document.getElementById("bpDropZone").style.borderColor = "rgba(233,30,140,0.35)";
 }
 
-
-// ── Supabase helpers ──
-
 async function sbUpsert(tabla, datos) {
-  if (!sbClient) { console.warn('sbClient no disponible'); return false; }
+  if (!sbClient) {
+    console.warn("sbClient no disponible");
+    return false;
+  }
   try {
-    const { error } = await sbClient.from(tabla).upsert(
-      Array.isArray(datos) ? datos : [datos],
-      { onConflict: 'id' }
-    );
-    if (error) { console.error(`sbUpsert ${tabla}:`, error); return false; }
+    const {error: error} = await sbClient.from(tabla).upsert(Array.isArray(datos) ? datos : [ datos ], {
+      onConflict: "id"
+    });
+    if (error) {
+      console.error(`sbUpsert ${tabla}:`, error);
+      return false;
+    }
     return true;
-  } catch(e) { console.error(`sbUpsert ${tabla}:`, e); return false; }
+  } catch (e) {
+    console.error(`sbUpsert ${tabla}:`, e);
+    return false;
+  }
 }
 
 async function sbDelete(tabla, id) {
   if (!sbClient) return false;
   try {
-    const { error } = await sbClient.from(tabla).delete().eq('id', id);
+    const {error: error} = await sbClient.from(tabla).delete().eq("id", id);
     return !error;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
 
-async function sbGetAll(tabla, order='created_at') {
+async function sbGetAll(tabla, order = "created_at") {
   if (!sbClient) return null;
   try {
-    const { data, error } = await sbClient.from(tabla).select('*').order(order);
+    const {data: data, error: error} = await sbClient.from(tabla).select("*").order(order);
     if (error) return null;
     return data;
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
-// Guardar en config_sitio
 async function sbSetConfig(clave, valor) {
   if (!sbClient) return false;
   try {
-    const { error } = await sbClient.from('config_sitio').upsert(
-      [{ clave, valor: JSON.stringify(valor), updated_at: new Date().toISOString() }],
-      { onConflict: 'clave' }
-    );
+    const {error: error} = await sbClient.from("config_sitio").upsert([ {
+      clave: clave,
+      valor: JSON.stringify(valor),
+      updated_at: (new Date).toISOString()
+    } ], {
+      onConflict: "clave"
+    });
     return !error;
-  } catch(e) { return false; }
+  } catch (e) {
+    return false;
+  }
 }
 
 async function sbGetConfig(clave) {
   if (!sbClient) return null;
   try {
-    const { data, error } = await sbClient.from('config_sitio').select('valor').eq('clave', clave).single();
+    const {data: data, error: error} = await sbClient.from("config_sitio").select("valor").eq("clave", clave).single();
     if (error || !data) return null;
     return JSON.parse(data.valor);
-  } catch(e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   await syncReservasFromSupabase();
   loadReservasLocal();
   await backfillReservaNumeros();
-  // Si se llega desde otro módulo (ej. Calendario) con ?highlight=id, resalta esa reserva
-  const highlightId = new URLSearchParams(location.search).get('highlight');
+  const highlightId = new URLSearchParams(location.search).get("highlight");
   renderReservasTable(highlightId);
   if (highlightId) viewReserva(highlightId);
-});
-</script>
+});</script>
 </body>
 </html>

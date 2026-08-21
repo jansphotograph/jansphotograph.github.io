@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ══ SEO ══ -->
+  
   <title>Fotografía de Eventos en Panamá | Jans Photograph</title>
   <meta name="description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
   <meta name="keywords"    content="fotografía eventos Panamá, cobertura fotográfica eventos, fotógrafo eventos corporativos" />
@@ -11,7 +11,7 @@
   <meta name="robots"      content="index, follow" />
   <link rel="canonical"    href="https://jansphotograph.com/assets/pages/planes/eventos.html" />
 
-  <!-- Open Graph -->
+  
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="Fotografía de Eventos en Panamá | Jans Photograph" />
   <meta property="og:description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
@@ -20,13 +20,13 @@
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
-  <!-- Twitter Card -->
+  
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Fotografía de Eventos en Panamá | Jans Photograph" />
   <meta name="twitter:description" content="Cobertura fotográfica profesional para eventos corporativos y sociales en Panamá. Planes flexibles para todo tipo de evento." />
   <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
-  <!-- Geo -->
+  
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
@@ -66,14 +66,14 @@
   </nav>
 
 
-    <!-- ── Page Hero ── -->
+    
   <section class="page-hero">
     <span class="section-label">Sesiones fotográficas</span>
     <h1>Eventos</h1>
     <p>Cobertura profesional para tus eventos corporativos y sociales.</p>
   </section>
 
-  <!-- ── Photo Catalog ── -->
+  
   <section class="catalog-section">
     <h2>Galería</h2>
     <div class="catalog-grid" id="catalogGrid">
@@ -160,7 +160,7 @@
     </div>
   </section>
 
-  <!-- ── Plan Cards ── -->
+  
   <section class="plan-cards-section">
     <div class="plan-cards-inner">
       <h2 class="plan-cards-title">Nuestros Planes</h2>
@@ -170,7 +170,7 @@
     </div>
   </section>
 
-  <!-- ── Aclaraciones ── -->
+  
   <section class="aclaraciones-section" id="aclaracionesSection">
     <h2>Preguntas frecuentes</h2>
     <div id="faqContainer">
@@ -211,7 +211,7 @@
   </footer>
 
 
-  <!-- ── Ver Planes FAB ── -->
+  
   <button class="fab-ver-planes" onclick="document.getElementById('planCardsContainer').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Ver planes">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
     Ver Planes
@@ -219,192 +219,137 @@
 
   <script src="../../js/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // Cliente único de Supabase compartido en esta página — evita el
-    // warning "Multiple GoTrueClient instances" que sale si cada bloque de
-    // script crea su propio cliente por separado con la misma llave.
-    function getSbClient(url, key) {
-      if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
-      return window.__sbSharedClient;
+  <script>function getSbClient(url, key) {
+  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+  return window.__sbSharedClient;
+}</script>
+  <script>(function() {
+  const SLUG = "eventos";
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+  const grid = document.getElementById("catalogGrid");
+  if (!grid) return;
+  function resolveGalleryImg(path) {
+    if (/^https?:\/\//i.test(path)) return path;
+    return path.replace(/^assets\//, "../../");
+  }
+  function renderGallery(images) {
+    if (!images.length) return;
+    grid.innerHTML = images.map((img, i) => `\n          <div class="catalog-item">\n            <img src="${resolveGalleryImg(img.imagen)}" alt="eventos foto ${i + 1}" loading="lazy" onerror="this.parentElement.style.display='none'" />\n          </div>`).join("");
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem("jans_galeria_" + SLUG) || "[]");
+    if (local.length) renderGallery(local);
+  } catch (e) {}
+  function loadGalleryFromSupabase() {
+    if (!window.supabase) return;
+    const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
+    sb.from("galeria_categoria").select("*").eq("categoria", SLUG).order("orden", {
+      ascending: true
+    }).then(({data: data, error: error}) => {
+      if (error || !data || !data.length) return;
+      localStorage.setItem("jans_galeria_" + SLUG, JSON.stringify(data));
+      renderGallery(data);
+    }).catch(() => {});
+  }
+  if (window.supabase) loadGalleryFromSupabase(); else window.addEventListener("load", loadGalleryFromSupabase);
+})();</script>
+  <script>document.addEventListener("DOMContentLoaded", async function() {
+  const currentPlan = "eventos";
+  const container = document.getElementById("planCardsContainer");
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+  function renderPlans(allPlans) {
+    const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === "todos");
+    if (!plans.length) {
+      container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
+      return;
     }
-  </script>
-  <script>
-    // ── Galería de fotos — se lee de Supabase (editable desde el panel
-    //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no
-    //    hay fotos administradas ahí, se deja el respaldo fijo (foto_01..16)
-    //    que ya estaba en esta página. ──
-    (function() {
-      const SLUG = 'eventos';
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-      const grid = document.getElementById('catalogGrid');
-      if (!grid) return;
-
-      function resolveGalleryImg(path) {
-        if (/^https?:\/\//i.test(path)) return path;
-        return path.replace(/^assets\//, '../../');
-      }
-      function renderGallery(images) {
-        if (!images.length) return; // deja el respaldo fijo tal cual
-        grid.innerHTML = images.map((img, i) => `
-          <div class="catalog-item">
-            <img src="${resolveGalleryImg(img.imagen)}" alt="eventos foto ${i+1}" loading="lazy" onerror="this.parentElement.style.display='none'" />
-          </div>`).join('');
-      }
-
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_galeria_' + SLUG) || '[]');
-        if (local.length) renderGallery(local);
-      } catch(e) {}
-
-      function loadGalleryFromSupabase() {
-        if (!window.supabase) return;
-        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
-        sb.from('galeria_categoria').select('*').eq('categoria', SLUG).order('orden', { ascending: true })
-          .then(({ data, error }) => {
-            if (error || !data || !data.length) return;
-            localStorage.setItem('jans_galeria_' + SLUG, JSON.stringify(data));
-            renderGallery(data);
-          }).catch(() => {});
-      }
-      if (window.supabase) loadGalleryFromSupabase();
-      else window.addEventListener('load', loadGalleryFromSupabase);
-    })();
-  </script>
-  <script>
-    // ── Load plan cards from GitHub (public repo) with localStorage fallback ──
-    document.addEventListener('DOMContentLoaded', async function() {
-      const currentPlan = 'eventos';
-      const container   = document.getElementById('planCardsContainer');
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-
-      function renderPlans(allPlans) {
-        const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');
-        if (!plans.length) {
-          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';
-          return;
+    container.innerHTML = plans.map(p => {
+      const isPopular = !!p.popular;
+      return `\n          <div class="plan-card-pub${isPopular ? " plan-popular" : ""}">\n            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ""}\n            <div class="pc-name${isPopular ? " pc-name-popular" : ""}">${p.nombre}</div>\n            <div class="pc-price">$${p.precio}<span> USD</span></div>\n            <ul class="pc-includes">\n              ${(p.incluye || []).map(i => `<li>${i}</li>`).join("")}\n            </ul>\n            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"\n              class="btn-agendar">Agendar</a>\n          </div>`;
+    }).join("");
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem("jans_planes") || "[]");
+    if (local.length) {
+      renderPlans(local);
+    }
+  } catch (e) {}
+  function loadPlansForCards() {
+    if (!window.supabase) return;
+    const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
+    sb.from("planes_publicos").select("*").order("orden", {
+      ascending: true
+    }).then(({data: data, error: error}) => {
+      if (error || !data) {
+        if (!document.querySelector(".plan-card-pub")) {
+          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
         }
-        container.innerHTML = plans.map(p => {
-          const isPopular = !!p.popular;
-          return `
-          <div class="plan-card-pub${isPopular ? ' plan-popular' : ''}">
-            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}
-            <div class="pc-name${isPopular ? ' pc-name-popular' : ''}">${p.nombre}</div>
-            <div class="pc-price">$${p.precio}<span> USD</span></div>
-            <ul class="pc-includes">
-              ${(p.incluye || []).map(i => `<li>${i}</li>`).join('')}
-            </ul>
-            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"
-              class="btn-agendar">Agendar</a>
-          </div>`;
-        }).join('');
+        return;
       }
-
-      // 1. Show from localStorage immediately (instant)
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');
-        if (local.length) { renderPlans(local); }
-      } catch(e) {}
-
-      // 2. Supabase — refleja publicaciones al instante, sin depender de que
-      //    GitHub Pages reconstruya el sitio.
-      function loadPlansForCards() {
-        if (!window.supabase) return;
-        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
-        sb.from('planes_publicos').select('*').order('orden', { ascending: true })
-          .then(({ data, error }) => {
-            if (error || !data) {
-              if (!document.querySelector('.plan-card-pub')) {
-                container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-              }
-              return;
-            }
-            if (data.length) {
-              localStorage.setItem('jans_planes', JSON.stringify(data));
-              renderPlans(data);
-            } else if (!document.querySelector('.plan-card-pub')) {
-              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-            }
-          }).catch(() => {
-            if (!document.querySelector('.plan-card-pub')) {
-              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
-            }
-          });
+      if (data.length) {
+        localStorage.setItem("jans_planes", JSON.stringify(data));
+        renderPlans(data);
+      } else if (!document.querySelector(".plan-card-pub")) {
+        container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
       }
-      if (window.supabase) loadPlansForCards();
-      else window.addEventListener('load', loadPlansForCards);
+    }).catch(() => {
+      if (!document.querySelector(".plan-card-pub")) {
+        container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';
+      }
     });
-  </script>
-  <script>
-    // ── Auto-reload when master publishes an update ──
-    (function() {
-      const OWNER   = 'jansphotograph';
-      const REPO    = 'jansphotograph.github.io';
-      const VER_KEY = 'jans_site_version';
-
-      async function checkVersion() {
-        try {
-          const res = await fetch(
-            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
-            { cache: 'no-cache' }
-          );
-          if (!res.ok) return;
-          const data = await res.json();
-          const current = localStorage.getItem(VER_KEY);
-          if (current && current !== String(data.v)) {
-            // New version detected — reload the page
-            localStorage.setItem(VER_KEY, String(data.v));
-            window.location.reload(true);
-          } else {
-            localStorage.setItem(VER_KEY, String(data.v));
-          }
-        } catch(e) {}
+  }
+  if (window.supabase) loadPlansForCards(); else window.addEventListener("load", loadPlansForCards);
+});</script>
+  <script>(function() {
+  const OWNER = "jansphotograph";
+  const REPO = "jansphotograph.github.io";
+  const VER_KEY = "jans_site_version";
+  async function checkVersion() {
+    try {
+      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
+        cache: "no-cache"
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const current = localStorage.getItem(VER_KEY);
+      if (current && current !== String(data.v)) {
+        localStorage.setItem(VER_KEY, String(data.v));
+        window.location.reload(true);
+      } else {
+        localStorage.setItem(VER_KEY, String(data.v));
       }
-
-      // Check on load and every 60 seconds
-      checkVersion();
-      setInterval(checkVersion, 60000);
-    })();
-  </script>
-  <script>
-    // ── Load FAQs dynamically — same visual format as before ──
-    (function() {
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
-
-      function renderFaqs(faqs) {
-        const container = document.getElementById('faqContainer');
-        if (!container) return;
-        if (!faqs || !faqs.length) {
-          container.innerHTML = '';
-          const section = document.getElementById('aclaracionesSection');
-          if (section) section.style.display = 'none';
-          return;
-        }
-        container.innerHTML = faqs.map(f => `
-          <details class="aclaracion-item">
-            <summary>${f.pregunta}</summary>
-            <p>${f.respuesta}</p>
-          </details>`).join('');
-      }
-
-      // localStorage first (instant)
-      try {
-        const local = JSON.parse(localStorage.getItem('jans_faqs') || '[]');
-        if (local.length) renderFaqs(local);
-      } catch(e) {}
-
-      // GitHub for latest
-      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/faqs.json?t=' + Date.now(), { cache: 'no-cache' })
-        .then(r => r.ok ? r.json() : null)
-        .then(faqs => {
-          if (!faqs) return;
-          localStorage.setItem('jans_faqs', JSON.stringify(faqs));
-          renderFaqs(faqs);
-        })
-        .catch(() => {});
-    })();
-  </script>
+    } catch (e) {}
+  }
+  checkVersion();
+  setInterval(checkVersion, 6e4);
+})();</script>
+  <script>(function() {
+  const OWNER = "jansphotograph";
+  const REPO = "jansphotograph.github.io";
+  function renderFaqs(faqs) {
+    const container = document.getElementById("faqContainer");
+    if (!container) return;
+    if (!faqs || !faqs.length) {
+      container.innerHTML = "";
+      const section = document.getElementById("aclaracionesSection");
+      if (section) section.style.display = "none";
+      return;
+    }
+    container.innerHTML = faqs.map(f => `\n          <details class="aclaracion-item">\n            <summary>${f.pregunta}</summary>\n            <p>${f.respuesta}</p>\n          </details>`).join("");
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem("jans_faqs") || "[]");
+    if (local.length) renderFaqs(local);
+  } catch (e) {}
+  fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/faqs.json?t=" + Date.now(), {
+    cache: "no-cache"
+  }).then(r => r.ok ? r.json() : null).then(faqs => {
+    if (!faqs) return;
+    localStorage.setItem("jans_faqs", JSON.stringify(faqs));
+    renderFaqs(faqs);
+  }).catch(() => {});
+})();</script>
 </body>
 </html>

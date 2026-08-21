@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- ══ SEO ══ -->
+  
   <title>Servicios Fotográficos | Jans Photograph Panamá</title>
   <meta name="description" content="Explora todos nuestros planes fotográficos: retratos, XV años, familiares, pre boda, bodas, eventos, graduación y gastronomía en Panamá." />
   <meta name="keywords"    content="planes fotográficos Panamá, servicios fotografía, bodas quinceañeras retratos Panamá" />
@@ -11,7 +11,7 @@
   <meta name="robots"      content="index, follow" />
   <link rel="canonical"    href="https://jansphotograph.com/assets/pages/servicios.html" />
 
-  <!-- Open Graph -->
+  
   <meta property="og:type"        content="website" />
   <meta property="og:title"       content="Servicios Fotográficos | Jans Photograph Panamá" />
   <meta property="og:description" content="Explora todos nuestros planes fotográficos: retratos, XV años, familiares, pre boda, bodas, eventos, graduación y gastronomía en Panamá." />
@@ -20,30 +20,25 @@
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
 
-  <!-- Twitter Card -->
+  
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Servicios Fotográficos | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Explora todos nuestros planes fotográficos: retratos, XV años, familiares, pre boda, bodas, eventos, graduación y gastronomía en Panamá." />
   <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
-  <!-- Geo -->
+  
   <meta name="geo.region"      content="PA" />
   <meta name="geo.placename"   content="Panamá" />
   <link rel="icon" type="image/png" href="../images/icons/JansBlackBag.png" />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet" href="../css/pages.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    // Cliente único de Supabase compartido en esta página — evita el
-    // warning "Multiple GoTrueClient instances" que sale si cada bloque de
-    // script crea su propio cliente por separado con la misma llave.
-    function getSbClient(url, key) {
-      if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
-      return window.__sbSharedClient;
-    }
-  </script>
+  <script>function getSbClient(url, key) {
+  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+  return window.__sbSharedClient;
+}</script>
   <style>
-    /* ── Comentarios de clientes ── */
+    
     .testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
     .testi-card {
       background:#1c1c1c; border:1px solid rgba(255,255,255,.07); border-radius:14px;
@@ -56,7 +51,7 @@
     .testi-plan { font-size:.7rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#e91e8c; background:rgba(233,30,140,.1); border-radius:50px; padding:3px 10px; white-space:nowrap; }
     .testi-empty { color:rgba(255,255,255,0.3); font-size:0.85rem; padding:20px; grid-column:1/-1; }
 
-    /* ── Botón flotante "Ver comentarios" ── */
+    
     .reviews-fab {
       position: fixed;
       bottom: 24px;
@@ -72,7 +67,7 @@
       box-shadow: 0 4px 20px rgba(212,146,10,0.5);
       transition: transform 0.2s, box-shadow 0.2s;
       max-width: 260px;
-      overflow: hidden; /* recorta la barra de brillo dentro de la forma de píldora */
+      overflow: hidden; 
     }
     .reviews-fab:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(212,146,10,0.65); }
     .reviews-fab-icon {
@@ -83,7 +78,7 @@
     .reviews-fab-icon svg { width: 18px; height: 18px; color: #fff; }
     .reviews-fab-text { color: #2b1c00; font-size: 0.8rem; font-weight: 700; line-height: 1.25; position: relative; z-index: 1; }
 
-    /* Brillo que recorre el botón de izquierda a derecha cada 15s, para llamar la atención */
+    
     .reviews-fab-shine {
       position: absolute;
       top: 0;
@@ -159,12 +154,12 @@
       </div>
     </div>
 
-    <!-- Servicios Adicionales también aquí -->
+    
     <section class="services-section" style="margin-top:60px;border-radius:16px;overflow:hidden;" aria-label="Servicios adicionales">
       <div class="services-inner">
         <h2 class="services-title">Servicios Adicionales</h2>
         <div id="servAdicPage">
-          <!-- Defaults — replaced by JS when JSON loads -->
+          
           <div class="services-block">
             <div class="service-group-title">Servicio de Maquillaje y Peinado</div>
             <div class="service-row"><span class="service-name">Maquillaje</span><span class="service-price">$8.00</span></div>
@@ -183,7 +178,7 @@
       </div>
     </section>
 
-    <!-- Comentarios de clientes -->
+    
     <section id="comentarios-clientes" style="margin-top:60px" aria-label="Comentarios de clientes">
       <div style="margin-bottom:28px">
         <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#e91e8c;display:block;margin-bottom:16px">Lo que dicen de nosotros</span>
@@ -195,7 +190,7 @@
     </section>
   </div>
 
-  <!-- Botón flotante — invita a ver los comentarios de clientes -->
+  
   <a href="#comentarios-clientes" class="reviews-fab" id="reviewsFab" aria-label="Ver comentarios de nuestros clientes">
     <span class="reviews-fab-shine" aria-hidden="true"></span>
     <span class="reviews-fab-icon">
@@ -237,225 +232,180 @@
   </footer>
 
   <script src="../js/main.js"></script>
-  <script>
-    // ── Botón flotante de comentarios: al hacer click, centra la sección en pantalla ──
-    (function() {
-      const fab = document.getElementById('reviewsFab');
-      const target = document.getElementById('comentarios-clientes');
-      if (!fab || !target) return;
-      fab.addEventListener('click', function(e) {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    })();
-  </script>
-  <script>
-    // ── Categorías y planes — se leen directo de Supabase (nombre, ícono,
-    //    foto y visibilidad de cada categoría; y qué categorías tienen
-    //    planes activos), para reflejar cambios del panel al instante. ──
-    document.addEventListener('DOMContentLoaded', async function() {
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-      let sb = null;
-      try { if (window.supabase) sb = getSbClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) {}
-
-      const grid = document.getElementById('serviciosGrid');
-
-      function renderGrid(cats, plans) {
-        const activeCats = new Set((plans || []).map(p => p.categoria));
-        const hasTodos   = (plans || []).some(p => p.categoria === 'todos');
-        const visible    = cats.filter(c => !c.oculta && (activeCats.has(c.slug) || hasTodos));
-
-        if (!visible.length) {
-          grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes fotográficos.</div>';
-          return;
-        }
-        grid.innerHTML = visible.map(c => {
-          // La ruta guardada es relativa a la raíz del repo (ej. "assets/images/planes/x/portada.jpeg").
-          // Desde assets/pages/servicios.html hay que subir un nivel en vez de usar esa ruta tal cual.
-          const imgPath = c.imagen
-            ? c.imagen.replace(/^assets\//, '../')
-            : `../images/planes/${c.slug}/portada.jpeg`;
-          return `
-          <a href="planes/${c.slug}.html" style="
-            display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
-            border-radius:14px;overflow:hidden;text-decoration:none;color:#fff;
-            transition:transform 0.25s,box-shadow 0.25s;
-            min-height:300px;position:relative;
-            background:linear-gradient(135deg,#1a1a1a,#0d0d0d);
-            box-shadow:0 4px 20px rgba(0,0,0,0.35);"
-            onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.5)'"
-            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.35)'">
-            <!-- background image -->
-            <div style="position:absolute;inset:0;background:url('${imgPath}') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>
-            <!-- gradient overlay -->
-            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)"></div>
-            <!-- accent line -->
-            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c71e5f,#e91e8c)"></div>
-            <!-- content -->
-            <div style="position:relative;padding:20px;width:100%">
-              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${c.nombre}</div>
-              <div style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#e91e8c">
-                Ver planes
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            </div>
-          </a>`;
-        }).join('');
-      }
-
-      // 1. Caché local — instantáneo
-      let cachedCats = [], cachedPlans = [];
-      try { cachedCats  = JSON.parse(localStorage.getItem('jans_categorias') || '[]'); } catch(e) {}
-      try { cachedPlans = JSON.parse(localStorage.getItem('jans_planes')     || '[]'); } catch(e) {}
-      if (cachedCats.length) renderGrid(cachedCats, cachedPlans);
-
-      // 2. Supabase — datos frescos
-      if (sb) {
-        try {
-          const [catsRes, plansRes] = await Promise.all([
-            sb.from('categorias').select('*').order('orden', { ascending: true }),
-            sb.from('planes_publicos').select('*'),
-          ]);
-          const cats  = catsRes.data  || [];
-          const plans = plansRes.data || [];
-          if (cats.length) {
-            localStorage.setItem('jans_categorias', JSON.stringify(cats));
-            localStorage.setItem('jans_planes', JSON.stringify(plans));
-            renderGrid(cats, plans);
-          } else if (!document.querySelector('#serviciosGrid a')) {
-            grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
-          }
-        } catch(e) {
-          if (!document.querySelector('#serviciosGrid a')) {
-            grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
-          }
-        }
-      }
+  <script>(function() {
+  const fab = document.getElementById("reviewsFab");
+  const target = document.getElementById("comentarios-clientes");
+  if (!fab || !target) return;
+  fab.addEventListener("click", function(e) {
+    e.preventDefault();
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
     });
-  </script>
-  <script>
-    // ── Auto-reload when master publishes an update ──
-    (function() {
-      const OWNER   = 'jansphotograph';
-      const REPO    = 'jansphotograph.github.io';
-      const VER_KEY = 'jans_site_version';
-
-      async function checkVersion() {
-        try {
-          const res = await fetch(
-            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),
-            { cache: 'no-cache' }
-          );
-          if (!res.ok) return;
-          const data = await res.json();
-          const current = localStorage.getItem(VER_KEY);
-          if (current && current !== String(data.v)) {
-            // New version detected — reload the page
-            localStorage.setItem(VER_KEY, String(data.v));
-            window.location.reload(true);
-          } else {
-            localStorage.setItem(VER_KEY, String(data.v));
-          }
-        } catch(e) {}
+  });
+})();</script>
+  <script>document.addEventListener("DOMContentLoaded", async function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+  let sb = null;
+  try {
+    if (window.supabase) sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch (e) {}
+  const grid = document.getElementById("serviciosGrid");
+  function renderGrid(cats, plans) {
+    const activeCats = new Set((plans || []).map(p => p.categoria));
+    const hasTodos = (plans || []).some(p => p.categoria === "todos");
+    const visible = cats.filter(c => !c.oculta && (activeCats.has(c.slug) || hasTodos));
+    if (!visible.length) {
+      grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes fotográficos.</div>';
+      return;
+    }
+    grid.innerHTML = visible.map(c => {
+      const imgPath = c.imagen ? c.imagen.replace(/^assets\//, "../") : `../images/planes/${c.slug}/portada.jpeg`;
+      return `\n          <a href="planes/${c.slug}.html" style="\n            display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;\n            border-radius:14px;overflow:hidden;text-decoration:none;color:#fff;\n            transition:transform 0.25s,box-shadow 0.25s;\n            min-height:300px;position:relative;\n            background:linear-gradient(135deg,#1a1a1a,#0d0d0d);\n            box-shadow:0 4px 20px rgba(0,0,0,0.35);"\n            onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.5)'"\n            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.35)'">\n            \x3c!-- background image --\x3e\n            <div style="position:absolute;inset:0;background:url('${imgPath}') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>\n            \x3c!-- gradient overlay --\x3e\n            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)"></div>\n            \x3c!-- accent line --\x3e\n            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c71e5f,#e91e8c)"></div>\n            \x3c!-- content --\x3e\n            <div style="position:relative;padding:20px;width:100%">\n              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${c.nombre}</div>\n              <div style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#e91e8c">\n                Ver planes\n                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>\n              </div>\n            </div>\n          </a>`;
+    }).join("");
+  }
+  let cachedCats = [], cachedPlans = [];
+  try {
+    cachedCats = JSON.parse(localStorage.getItem("jans_categorias") || "[]");
+  } catch (e) {}
+  try {
+    cachedPlans = JSON.parse(localStorage.getItem("jans_planes") || "[]");
+  } catch (e) {}
+  if (cachedCats.length) renderGrid(cachedCats, cachedPlans);
+  if (sb) {
+    try {
+      const [catsRes, plansRes] = await Promise.all([ sb.from("categorias").select("*").order("orden", {
+        ascending: true
+      }), sb.from("planes_publicos").select("*") ]);
+      const cats = catsRes.data || [];
+      const plans = plansRes.data || [];
+      if (cats.length) {
+        localStorage.setItem("jans_categorias", JSON.stringify(cats));
+        localStorage.setItem("jans_planes", JSON.stringify(plans));
+        renderGrid(cats, plans);
+      } else if (!document.querySelector("#serviciosGrid a")) {
+        grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
       }
-
-      // Check on load and every 60 seconds
-      checkVersion();
-      setInterval(checkVersion, 60000);
-    })();
-  </script>
-  <script>
-    // ── Comentarios de clientes (publicados desde el Master) ──
-    (function() {
-      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';
-      let sbClient = null;
-      function initSupabase() {
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-          sbClient = getSbClient(SUPABASE_URL, SUPABASE_KEY);
-          return true;
-        }
-        return false;
+    } catch (e) {
+      if (!document.querySelector("#serviciosGrid a")) {
+        grid.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:0.85rem;padding:20px;grid-column:1/-1">Próximamente anunciaremos nuestros planes.</div>';
       }
-
-      function escapeHtml(str) {
-        return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+  }
+});</script>
+  <script>(function() {
+  const OWNER = "jansphotograph";
+  const REPO = "jansphotograph.github.io";
+  const VER_KEY = "jans_site_version";
+  async function checkVersion() {
+    try {
+      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
+        cache: "no-cache"
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const current = localStorage.getItem(VER_KEY);
+      if (current && current !== String(data.v)) {
+        localStorage.setItem(VER_KEY, String(data.v));
+        window.location.reload(true);
+      } else {
+        localStorage.setItem(VER_KEY, String(data.v));
       }
-
-      function renderTestimonios(comentarios) {
-        const grid = document.getElementById('testiGrid');
-        if (!grid) return;
-        const published = (comentarios || []).filter(c => c.publicado);
-        if (!published.length) {
-          grid.innerHTML = '<div class="testi-empty">Todavía no hay comentarios publicados. ¡Sé el primero en dejarnos tu reseña!</div>';
-          return;
-        }
-        grid.innerHTML = published.slice(0, 12).map(c => `
-          <div class="testi-card">
-            <svg class="testi-quote-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/></svg>
-            <div class="testi-text">${escapeHtml(c.comentario)}</div>
-            <div class="testi-footer">
-              <span class="testi-name">${escapeHtml(c.nombre)}</span>
-              ${c.plan ? `<span class="testi-plan">${escapeHtml(c.plan)}</span>` : ''}
-            </div>
-          </div>`).join('');
-      }
-
-      // 1. localStorage first (instant — shared cache with the review form / Master panel)
+    } catch (e) {}
+  }
+  checkVersion();
+  setInterval(checkVersion, 6e4);
+})();</script>
+  <script>(function() {
+  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+  let sbClient = null;
+  function initSupabase() {
+    if (window.supabase && typeof window.supabase.createClient === "function") {
+      sbClient = getSbClient(SUPABASE_URL, SUPABASE_KEY);
+      return true;
+    }
+    return false;
+  }
+  function escapeHtml(str) {
+    return String(str || "").replace(/[&<>"']/g, m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[m]));
+  }
+  function renderTestimonios(comentarios) {
+    const grid = document.getElementById("testiGrid");
+    if (!grid) return;
+    const published = (comentarios || []).filter(c => c.publicado);
+    if (!published.length) {
+      grid.innerHTML = '<div class="testi-empty">Todavía no hay comentarios publicados. ¡Sé el primero en dejarnos tu reseña!</div>';
+      return;
+    }
+    grid.innerHTML = published.slice(0, 12).map(c => `\n          <div class="testi-card">\n            <svg class="testi-quote-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z"/></svg>\n            <div class="testi-text">${escapeHtml(c.comentario)}</div>\n            <div class="testi-footer">\n              <span class="testi-name">${escapeHtml(c.nombre)}</span>\n              ${c.plan ? `<span class="testi-plan">${escapeHtml(c.plan)}</span>` : ""}\n            </div>\n          </div>`).join("");
+  }
+  try {
+    const local = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
+    if (local.length) renderTestimonios(local);
+  } catch (e) {}
+  function loadFromSupabase() {
+    if (!sbClient) return;
+    sbClient.from("comentarios").select("*").eq("publicado", true).order("created_at", {
+      ascending: false
+    }).then(({data: data, error: error}) => {
+      if (error || !data) return;
+      renderTestimonios(data);
       try {
-        const local = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
-        if (local.length) renderTestimonios(local);
-      } catch(e) {}
-
-      // 2. Supabase for the latest, cross-device
-      function loadFromSupabase() {
-        if (!sbClient) return;
-        sbClient.from('comentarios').select('*').eq('publicado', true).order('created_at', { ascending: false })
-          .then(({ data, error }) => {
-            if (error || !data) return;
-            renderTestimonios(data);
-            try {
-              // Merge into the shared local cache without dropping unpublished entries the Master may need
-              const cached = JSON.parse(localStorage.getItem('jans_comentarios') || '[]');
-              const byId = new Map(cached.map(c => [c.id, c]));
-              data.forEach(c => byId.set(c.id, c));
-              localStorage.setItem('jans_comentarios', JSON.stringify([...byId.values()]));
-            } catch(e) {}
-          })
-          .catch(() => {});
-      }
-      if (!initSupabase()) window.addEventListener('load', () => { if (initSupabase()) loadFromSupabase(); });
-      else loadFromSupabase();
-    })();
-  </script>
-  <script>
-    // ── Servicios Adicionales ──
-    (function() {
-      const OWNER = 'jansphotograph';
-      const REPO  = 'jansphotograph.github.io';
-
-      function renderServAdic(data, cid) {
-        const c = document.getElementById(cid); if (!c) return;
-        const maq = data.maquillaje || [], imp = data.impresiones || [];
-        if (!maq.length && !imp.length) return;
-        let out = '';
-        if (maq.length) {
-          out += '<div class="services-block"><div class="service-group-title">Servicio de Maquillaje y Peinado</div>';
-          maq.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
-          out += '</div>';
-        }
-        if (imp.length) {
-          out += '<div class="services-block"><div class="service-group-title">Servicio de Impresiones</div>';
-          imp.forEach(s => { out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`; });
-          out += '</div>';
-        }
-        c.innerHTML = out;
-      }
-      try { const l = JSON.parse(localStorage.getItem('jans_serv_adicionales')||'null'); if(l) renderServAdic(l,'servAdicPage'); } catch(e){}
-      fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/data/socialmedia/servicios-adicionales.json?t='+Date.now(),{cache:'no-cache'})
-        .then(r=>r.ok?r.json():null).then(d=>{if(!d)return;localStorage.setItem('jans_serv_adicionales',JSON.stringify(d));renderServAdic(d,'servAdicPage');}).catch(()=>{});
-    })();
-  </script>
+        const cached = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
+        const byId = new Map(cached.map(c => [ c.id, c ]));
+        data.forEach(c => byId.set(c.id, c));
+        localStorage.setItem("jans_comentarios", JSON.stringify([ ...byId.values() ]));
+      } catch (e) {}
+    }).catch(() => {});
+  }
+  if (!initSupabase()) window.addEventListener("load", () => {
+    if (initSupabase()) loadFromSupabase();
+  }); else loadFromSupabase();
+})();</script>
+  <script>(function() {
+  const OWNER = "jansphotograph";
+  const REPO = "jansphotograph.github.io";
+  function renderServAdic(data, cid) {
+    const c = document.getElementById(cid);
+    if (!c) return;
+    const maq = data.maquillaje || [], imp = data.impresiones || [];
+    if (!maq.length && !imp.length) return;
+    let out = "";
+    if (maq.length) {
+      out += '<div class="services-block"><div class="service-group-title">Servicio de Maquillaje y Peinado</div>';
+      maq.forEach(s => {
+        out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`;
+      });
+      out += "</div>";
+    }
+    if (imp.length) {
+      out += '<div class="services-block"><div class="service-group-title">Servicio de Impresiones</div>';
+      imp.forEach(s => {
+        out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`;
+      });
+      out += "</div>";
+    }
+    c.innerHTML = out;
+  }
+  try {
+    const l = JSON.parse(localStorage.getItem("jans_serv_adicionales") || "null");
+    if (l) renderServAdic(l, "servAdicPage");
+  } catch (e) {}
+  fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/servicios-adicionales.json?t=" + Date.now(), {
+    cache: "no-cache"
+  }).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) return;
+    localStorage.setItem("jans_serv_adicionales", JSON.stringify(d));
+    renderServAdic(d, "servAdicPage");
+  }).catch(() => {});
+})();</script>
 </body>
 </html>
