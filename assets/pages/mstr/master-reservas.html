@@ -582,18 +582,43 @@ function pdfCompanyFooterLine(company) {
 
 let allReservas = [];
 
-let PROCESO_OPTIONS = [ "Pendiente", "En Edición", "Pendiente Impresiones", "Entregado" ];
+let PROCESO_OPTIONS = [ {
+  nombre: "Pendiente",
+  color: "#f59e0b"
+}, {
+  nombre: "En Edición",
+  color: "#3b82f6"
+}, {
+  nombre: "Pendiente Impresiones",
+  color: "#a855f7"
+}, {
+  nombre: "Entregado",
+  color: "#22c55e"
+} ];
 
 async function loadProcesoOptions() {
   const cfg = await sbGetConfig("reservas_proceso_opciones");
-  if (Array.isArray(cfg) && cfg.length) PROCESO_OPTIONS = cfg;
+  if (Array.isArray(cfg) && cfg.length) {
+    PROCESO_OPTIONS = cfg.map(o => typeof o === "string" ? {
+      nombre: o,
+      color: "#888888"
+    } : o);
+  }
+}
+
+function getProcesoColor(nombre) {
+  const found = PROCESO_OPTIONS.find(o => o.nombre === nombre);
+  return found ? found.color : "#888888";
 }
 
 function renderProcesoOptionsHtml(current) {
   const opts = [ ...PROCESO_OPTIONS ];
-  if (current && !opts.includes(current)) opts.push(current);
+  if (current && !opts.some(o => o.nombre === current)) opts.push({
+    nombre: current,
+    color: "#888888"
+  });
   let html = `<option value="" ${!current ? "selected" : ""}>Sin definir</option>`;
-  html += opts.map(o => `<option value="${escapeHtml(o)}" ${o === current ? "selected" : ""}>${escapeHtml(o)}</option>`).join("");
+  html += opts.map(o => `<option value="${escapeHtml(o.nombre)}" ${o.nombre === current ? "selected" : ""}>${escapeHtml(o.nombre)}</option>`).join("");
   return html;
 }
 
@@ -603,6 +628,7 @@ async function updateResProceso(id, value) {
   allReservas[idx].proceso = value;
   localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
   pushReservaToSupabase(allReservas[idx]);
+  renderReservasTable();
   showToast("Proceso actualizado ✓");
 }
 
@@ -614,14 +640,17 @@ function openProcesoOptionsModal() {
 function renderProcesoOptionsList() {
   const el = document.getElementById("procesoOptionsList");
   if (!el) return;
-  el.innerHTML = PROCESO_OPTIONS.map((o, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="text" value="${escapeHtml(o)}" data-idx="${i}" class="proceso-opt-input" style="flex:1;padding:8px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeProcesoOption(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5">✕</button>\n    </div>\n  `).join("");
+  el.innerHTML = PROCESO_OPTIONS.map((o, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="color" value="${escapeHtml(o.color || "#888888")}" data-idx="${i}" class="proceso-opt-color" style="width:38px;height:38px;padding:2px;background:var(--dark);border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0" />\n      <input type="text" value="${escapeHtml(o.nombre)}" data-idx="${i}" class="proceso-opt-input" style="flex:1;padding:8px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeProcesoOption(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
 }
 
 function addProcesoOption() {
   const input = document.getElementById("procesoNuevoInput");
   const val = (input?.value || "").trim();
   if (!val) return;
-  PROCESO_OPTIONS.push(val);
+  PROCESO_OPTIONS.push({
+    nombre: val,
+    color: "#888888"
+  });
   input.value = "";
   renderProcesoOptionsList();
 }
@@ -633,11 +662,16 @@ function removeProcesoOption(i) {
 }
 
 function syncProcesoOptionsFromInputs() {
-  const inputs = document.querySelectorAll(".proceso-opt-input");
+  const nameInputs = document.querySelectorAll(".proceso-opt-input");
+  const colorInputs = document.querySelectorAll(".proceso-opt-color");
   const updated = [];
-  inputs.forEach(inp => {
-    const v = inp.value.trim();
-    if (v) updated.push(v);
+  nameInputs.forEach((inp, i) => {
+    const nombre = inp.value.trim();
+    const color = colorInputs[i] ? colorInputs[i].value : "#888888";
+    if (nombre) updated.push({
+      nombre: nombre,
+      color: color
+    });
   });
   PROCESO_OPTIONS = updated;
 }
@@ -933,7 +967,9 @@ function renderReservasTable(highlightId) {
   tbody.innerHTML = list.map(r => {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
     const pagado = resAbono(r) + resCancelado(r);
-    return `\n    <tr id="resrow-${escapeHtml(r.id)}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:var(--dark);border:1px solid var(--border);border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
+    const esEntregado = r.proceso === "Entregado";
+    const procesoColor = getProcesoColor(r.proceso);
+    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
   }).join("");
   if (highlightId) {
     const row = document.getElementById("resrow-" + highlightId);
