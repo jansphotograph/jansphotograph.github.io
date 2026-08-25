@@ -484,7 +484,7 @@ function showNotas(texto) {
 async function syncAvailabilityFromSupabase() {
   if (!sbClient) return;
   try {
-    let {data: data, error: error} = await sbClient.from("reservas").select("id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues").in("status", [ "confirmed", "completed" ]);
+    let {data: data, error: error} = await sbClient.from("reservas").select("id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues,bloqueo_unidad").in("status", [ "confirmed", "completed" ]);
     if (error) {
       console.warn("Reintentando disponibilidad sin columnas de bloqueo:", error.message || JSON.stringify(error));
       const fallback = await sbClient.from("reservas").select("id,fecha,horaVal,status").in("status", [ "confirmed", "completed" ]);
@@ -501,12 +501,14 @@ async function syncAvailabilityFromSupabase() {
       const existing = byId.get(remote.id);
       const bloqueoAntes = remote.bloqueo_antes != null ? remote.bloqueo_antes : 2;
       const bloqueoDespues = remote.bloqueo_despues != null ? remote.bloqueo_despues : 2;
+      const bloqueoUnidad = remote.bloqueo_unidad || "horas";
       if (existing) {
         existing.status = remote.status;
         existing.fecha = remote.fecha;
         existing.horaVal = remote.horaVal;
         existing.bloqueoAntes = bloqueoAntes;
         existing.bloqueoDespues = bloqueoDespues;
+        existing.bloqueoUnidad = bloqueoUnidad;
       } else {
         byId.set(remote.id, {
           id: remote.id,
@@ -514,7 +516,8 @@ async function syncAvailabilityFromSupabase() {
           horaVal: remote.horaVal,
           status: remote.status,
           bloqueoAntes: bloqueoAntes,
-          bloqueoDespues: bloqueoDespues
+          bloqueoDespues: bloqueoDespues,
+          bloqueoUnidad: bloqueoUnidad
         });
       }
     });
@@ -704,10 +707,19 @@ function getBlockedHours(ds) {
   const blocked = new Set;
   if (!ds) return blocked;
   reservas.filter(r => r.fecha === ds && (r.status === "confirmed" || r.status === "completed")).forEach(r => {
+    const unidad = r.bloqueoUnidad || "horas";
+    if (unidad === "dia") {
+      HOUR_VALS.forEach(hv => blocked.add(hv));
+      return;
+    }
     const h = parseInt(r.horaVal);
     if (isNaN(h)) return;
-    const antes = r.bloqueoAntes != null ? parseInt(r.bloqueoAntes) : 2;
-    const despues = r.bloqueoDespues != null ? parseInt(r.bloqueoDespues) : 2;
+    let antes = r.bloqueoAntes != null ? parseInt(r.bloqueoAntes) : 2;
+    let despues = r.bloqueoDespues != null ? parseInt(r.bloqueoDespues) : 2;
+    if (unidad === "minutos") {
+      antes = Math.ceil(antes / 60);
+      despues = Math.ceil(despues / 60);
+    }
     for (let i = h - antes; i <= h + despues; i++) blocked.add(i);
   });
   getDayEvents(ds).forEach(st => {
