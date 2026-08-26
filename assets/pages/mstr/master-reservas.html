@@ -617,8 +617,8 @@ function renderProcesoOptionsHtml(current) {
     nombre: current,
     color: "#888888"
   });
-  let html = `<option value="" ${!current ? "selected" : ""}>Sin definir</option>`;
-  html += opts.map(o => `<option value="${escapeHtml(o.nombre)}" ${o.nombre === current ? "selected" : ""}>${escapeHtml(o.nombre)}</option>`).join("");
+  let html = `<option value="" style="background:#1a1a1a;color:#fff" ${!current ? "selected" : ""}>Sin definir</option>`;
+  html += opts.map(o => `<option value="${escapeHtml(o.nombre)}" style="background:#1a1a1a;color:#fff" ${o.nombre === current ? "selected" : ""}>${escapeHtml(o.nombre)}</option>`).join("");
   return html;
 }
 
