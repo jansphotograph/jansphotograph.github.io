@@ -318,11 +318,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th style="min-width:70px">#</th>
                   <th>Cliente</th>
-                  <th>Fecha</th>
+                  <th style="min-width:100px">Fecha</th>
+                  <th style="min-width:110px">Fecha especial</th>
                   <th>Hora</th>
-                  <th>Plan</th>
+                  <th style="min-width:130px">Plan</th>
                   <th>Proceso</th>
                   <th>Estado</th>
                   <th>Pendiente</th>
@@ -341,8 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>const SESSION_KEY = "jans_master_auth";
 
 const CONFIG = {
-  ADMIN_USER: "admin",
-  ADMIN_PASS: "jans2025",
   COMPANY_NAME: "Jans Photograph",
   COMPANY_PHONE: "+507 6862-2402",
   COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
@@ -961,7 +960,7 @@ function renderReservasTable(highlightId) {
     badge2.style.display = pending > 0 ? "" : "none";
   }
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(r => {
@@ -969,7 +968,7 @@ function renderReservasTable(highlightId) {
     const pagado = resAbono(r) + resCancelado(r);
     const esEntregado = r.proceso === "Entregado";
     const procesoColor = getProcesoColor(r.proceso);
-    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
+    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.85rem;color:#e91e8c">${r.fechaEspecial ? escapeHtml(r.fechaEspecial) : "—"}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
   }).join("");
   if (highlightId) {
     const row = document.getElementById("resrow-" + highlightId);

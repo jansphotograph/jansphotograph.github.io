@@ -618,25 +618,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Cambiar Usuario / Contraseña
+            Usuario / Contraseña de administrador
           </div>
-          <div class="form-row">
-            <div class="field"><label>Usuario actual</label><input type="text" id="credCurrentUser" placeholder="Usuario actual" /></div>
-            <div class="field"><label>Contraseña actual</label><input type="password" id="credCurrentPass" placeholder="Contraseña actual" /></div>
+          <div style="font-size:0.85rem;color:var(--gray-l);line-height:1.7;background:var(--dark);border-radius:10px;padding:16px 18px">
+            El acceso al panel ahora se gestiona con Supabase Auth (sesión real), no desde aquí.
+            Para cambiar tu contraseña o crear otro usuario administrador, hazlo desde
+            <strong style="color:var(--white)">Supabase → Authentication → Users</strong>.
           </div>
-          <hr class="section-divider" />
-          <div class="form-row">
-            <div class="field"><label>Nuevo usuario</label><input type="text" id="credNewUser" placeholder="Nuevo usuario" /></div>
-            <div class="field"><label>Nueva contraseña</label><input type="password" id="credNewPass" placeholder="Nueva contraseña" /></div>
-          </div>
-          <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="credConfirmPass" placeholder="Repite la nueva contraseña" /></div>
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="changeCredentials()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-              Actualizar credenciales
-            </button>
-          </div>
-          <div id="credMsg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:9px;font-size:0.85rem"></div>
         </div>
 
 <div class="card">
@@ -813,8 +801,6 @@ const SESSION_KEY = "jans_master_auth";
 const LS_SALT = "jans-ph-2025-secure";
 
 const CONFIG = {
-  ADMIN_USER: "admin",
-  ADMIN_PASS: "jans2025",
   COMPANY_NAME: "Jans Photograph",
   COMPANY_PHONE: "+507 6862-2402",
   COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
@@ -1650,60 +1636,6 @@ async function saveWebCounter() {
   setTimeout(() => {
     msgEl.style.display = "none";
   }, 4e3);
-}
-
-async function changeCredentials() {
-  const curUser = sanitizeCred(document.getElementById("credCurrentUser").value);
-  const curPass = sanitizeCred(document.getElementById("credCurrentPass").value);
-  const newUser = sanitizeCred(document.getElementById("credNewUser").value);
-  const newPass = sanitizeCred(document.getElementById("credNewPass").value);
-  const confirmP = sanitizeCred(document.getElementById("credConfirmPass").value);
-  const msgEl = document.getElementById("credMsg");
-  function showCredMsg(msg, ok) {
-    msgEl.style.display = "block";
-    msgEl.style.background = ok ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)";
-    msgEl.style.border = ok ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(239,68,68,0.3)";
-    msgEl.style.color = ok ? "#86efac" : "#fca5a5";
-    msgEl.textContent = msg;
-  }
-  if (!curUser || !curPass) {
-    showCredMsg("Completa las credenciales actuales.", false);
-    return;
-  }
-  if (!newUser || !newPass) {
-    showCredMsg("Completa el nuevo usuario y contraseña.", false);
-    return;
-  }
-  if (newPass !== confirmP) {
-    showCredMsg("Las contraseñas nuevas no coinciden.", false);
-    return;
-  }
-  if (newPass.length < 6) {
-    showCredMsg("La contraseña debe tener al menos 6 caracteres.", false);
-    return;
-  }
-  try {
-    const [curUserHash, curPassHash] = await Promise.all([ sha256(curUser), sha256(curPass) ]);
-    const stored = JSON.parse(localStorage.getItem("jans_auth_override") || "{}");
-    const expectedUserHash = stored.userHash || await sha256("admin");
-    const expectedPassHash = stored.passHash || await sha256("jans2025");
-    if (curUserHash !== expectedUserHash || curPassHash !== expectedPassHash) {
-      showCredMsg("Usuario o contraseña actual incorrectos.", false);
-      return;
-    }
-    const [newUserHash, newPassHash] = await Promise.all([ sha256(newUser), sha256(newPass) ]);
-    localStorage.setItem("jans_auth_override", JSON.stringify({
-      userHash: newUserHash,
-      passHash: newPassHash
-    }));
-    [ "credCurrentUser", "credCurrentPass", "credNewUser", "credNewPass", "credConfirmPass" ].forEach(id => {
-      document.getElementById(id).value = "";
-    });
-    showCredMsg("✓ Credenciales actualizadas. Usa las nuevas en tu próximo inicio de sesión.", true);
-    showToast("Credenciales actualizadas ✓");
-  } catch (e) {
-    showCredMsg("Error al procesar. Intenta de nuevo.", false);
-  }
 }
 
 function showSection(name) {
