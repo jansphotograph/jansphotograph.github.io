@@ -238,9 +238,10 @@
             Tus datos
           </div>
           <div class="res-row-2">
-            <div class="res-field"><label>Nombre *</label><input type="text" id="rNombre" placeholder="Tu nombre completo" /></div>
+            <div class="res-field"><label>Nombre de quien recibirá la sesión *</label><input type="text" id="rNombre" placeholder="Nombre completo (cliente, niño/a, quinceañera, etc.)" /></div>
             <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" placeholder="+507 6000-0000" /></div>
           </div>
+          <div class="res-field"><label>Nombre del padre/madre o tutor responsable <span style="color:var(--gray);font-weight:400">(si aplica)</span></label><input type="text" id="rTutor" placeholder="Opcional — solo si la sesión es para un niño/a o quinceañera" /></div>
           <div class="res-field"><label>Correo</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
           <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
@@ -902,9 +903,10 @@ function toggleExterior() {
 
 async function submitReserva() {
   const nombre = document.getElementById("rNombre").value.trim();
+  const tutor = document.getElementById("rTutor").value.trim();
   const tel = document.getElementById("rTel").value.trim();
   if (!nombre || !tel) {
-    alert("Por favor completa tu nombre y teléfono.");
+    alert("Por favor completa el nombre de quien recibirá la sesión y el teléfono.");
     return;
   }
   if (!selectedDate || !selectedHour) {
@@ -943,6 +945,7 @@ async function submitReserva() {
     id: "r_" + Date.now(),
     numero: null,
     nombre: nombre,
+    tutor: tutor,
     tel: tel,
     email: email,
     plan: plan,
@@ -990,7 +993,7 @@ async function submitReserva() {
     if (!ey || !em || !ed) return fechaEspecial;
     return parseInt(ed) + " de " + MONTHS[parseInt(em) - 1] + " " + ey;
   })();
-  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
+  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + (tutor ? "👨‍👩‍👧 Padre/Madre o tutor: " + tutor + "\n" : "") + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
   window.open("https://wa.me/" + WA_NUMBER + "?text=" + msg, "_blank");
   setTimeout(function() {
     if (document.referrer) {
