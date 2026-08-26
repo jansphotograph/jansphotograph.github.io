@@ -779,6 +779,7 @@ async function getOrAssignFacturaNumero(r) {
   if (idx >= 0) {
     allReservas[idx].facturaNumero = num;
     localStorage.setItem("jans_reservas", JSON.stringify(allReservas));
+    pushReservaToSupabase(allReservas[idx]);
   }
   r.facturaNumero = num;
   return num;
@@ -1486,6 +1487,8 @@ async function generateInvoicePDF(id) {
   const r = allReservas.find(x => x.id === id);
   if (!r) return;
   const facturaNum = await getOrAssignFacturaNumero(r);
+  renderReservasTable();
+  if (document.getElementById("reservaModal")?.classList.contains("open")) viewReserva(id);
   const {jsPDF: jsPDF} = window.jspdf;
   const doc = new jsPDF({
     unit: "mm",
