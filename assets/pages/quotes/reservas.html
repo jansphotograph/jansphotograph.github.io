@@ -242,7 +242,7 @@
             <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" placeholder="+507 6000-0000" /></div>
           </div>
           <div class="res-field"><label>Nombre del padre/madre o tutor responsable <span style="color:var(--gray);font-weight:400">(si aplica)</span></label><input type="text" id="rTutor" placeholder="Opcional — solo si la sesión es para un niño/a o quinceañera" /></div>
-          <div class="res-field"><label>Correo</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
+          <div class="res-field"><label>Correo *</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
           <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
@@ -255,7 +255,7 @@
             </div>
           </div>
           <div class="res-field">
-            <label style="line-height:1.4">¿Es para tu cumpleaños? Cuéntanos la fecha <span style="color:#666;font-weight:400;font-size:0.78rem">(opcional, no reemplaza la fecha de la sesión)</span></label>
+            <label style="line-height:1.4">Fecha especial (cumpleaños) *</label>
             <input type="date" id="rFechaEspecial" style="cursor:pointer" />
           </div>
           
@@ -905,8 +905,10 @@ async function submitReserva() {
   const nombre = document.getElementById("rNombre").value.trim();
   const tutor = document.getElementById("rTutor").value.trim();
   const tel = document.getElementById("rTel").value.trim();
-  if (!nombre || !tel) {
-    alert("Por favor completa el nombre de quien recibirá la sesión y el teléfono.");
+  const email = document.getElementById("rEmail").value.trim();
+  const fechaEspecial = document.getElementById("rFechaEspecial")?.value || "";
+  if (!nombre || !tel || !email || !fechaEspecial) {
+    alert("Por favor completa el nombre, teléfono, correo y fecha especial — son obligatorios.");
     return;
   }
   if (!selectedDate || !selectedHour) {
@@ -932,10 +934,8 @@ async function submitReserva() {
   const [y, m, d] = selectedDate.split("-");
   const hora = document.getElementById("rHora").value;
   const plan = document.getElementById("rPlan").value;
-  const email = document.getElementById("rEmail").value;
   const notas = document.getElementById("rNotas").value;
   const metodoAbono = document.getElementById("rMetodoAbono")?.value || "";
-  const fechaEspecial = document.getElementById("rFechaEspecial")?.value || "";
   const exterior = document.getElementById("rExterior").checked;
   const lugar = exterior ? document.getElementById("rLugar").value.trim() || "" : "";
   const personasAdicionales = document.getElementById("rPersonasCheck").checked ? _personasNum : 0;
