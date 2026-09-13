@@ -501,3 +501,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 
 .subnav { top: 108px !important; }
+
+/* Desplegables de categorías (Servicios Adicionales / Inventario) */
+.inv-category summary::-webkit-details-marker,
+.qserv-category summary::-webkit-details-marker { display: none; }
+.inv-category summary::marker,
+.qserv-category summary::marker { content: ''; }
+.inv-category summary,
+.qserv-category summary { outline: none; }

@@ -848,12 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="invCategoryTabs">
-          <button class="btn btn-sm btn-pink" onclick="filterInvCategory('all')" id="invTabAll">Todos</button>
-        </div>
-
-        
-        <div id="invItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+        <div id="invCategoriesAccordion" style="display:flex;flex-direction:column;gap:14px"></div>
         <div id="invEmptyState" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin-bottom:12px;opacity:0.4"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
           <p style="font-size:0.9rem">No hay insumos todavía.<br>Añade una categoría y luego un insumo.</p>
@@ -2725,18 +2720,7 @@ async function deleteInvCategory(id) {
   showToast("Categoría eliminada", "error");
 }
 
-function renderInvCategoryTabs() {
-  loadInvData();
-  const container = document.getElementById("invCategoryTabs");
-  if (!container) return;
-  container.innerHTML = `\n    <button class="btn btn-sm ${invActiveFilter === "all" ? "btn-pink" : "btn-outline"}" onclick="filterInvCategory('all')">Todos</button>\n    ${invCategories.map(c => `\n      <div style="display:flex;align-items:center;gap:4px">\n        <button class="btn btn-sm ${invActiveFilter === c.id ? "btn-pink" : "btn-outline"}" onclick="filterInvCategory('${c.id}')">${c.nombre}</button>\n        <button onclick="openInvCategoryModal('${c.id}')" title="Editar" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.8rem;padding:2px 4px">✏</button>\n        <button onclick="deleteInvCategory('${c.id}')" title="Eliminar" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.8rem;padding:2px 4px">✕</button>\n      </div>`).join("")}`;
-}
-
-function filterInvCategory(id) {
-  invActiveFilter = id;
-  renderInvCategoryTabs();
-  renderInvItems();
-}
+function renderInvCategoryTabs() {}
 
 function openInvItemModal(id) {
   loadInvData();
@@ -2852,22 +2836,54 @@ async function deleteInvItem(id) {
 
 function renderInvItems() {
   loadInvData();
-  const grid = document.getElementById("invItemsGrid");
+  const cont = document.getElementById("invCategoriesAccordion");
   const empty = document.getElementById("invEmptyState");
-  if (!grid) return;
-  const filtered = invActiveFilter === "all" ? invItems : invItems.filter(x => x.categoryId === invActiveFilter);
-  if (!filtered.length) {
-    grid.style.display = "none";
+  if (!cont) return;
+  if (!invItems.length) {
+    cont.innerHTML = "";
+    cont.style.display = "none";
     if (empty) empty.style.display = "";
     return;
   }
-  grid.style.display = "";
+  cont.style.display = "";
   if (empty) empty.style.display = "none";
-  grid.innerHTML = filtered.map(item => {
-    const cat = invCategories.find(c => c.id === item.categoryId);
-    const bestPrice = item.tiendas?.length ? Math.min(...item.tiendas.map(s => parseFloat(s.precio) || Infinity)) : null;
-    return `\n    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden">\n      \x3c!-- Foto --\x3e\n      <div style="height:150px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">\n        ${item.foto ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}\n        ${cat ? `<span style="position:absolute;top:10px;left:10px;background:rgba(0,0,0,0.6);color:var(--white);font-size:0.7rem;font-weight:600;padding:3px 9px;border-radius:20px;backdrop-filter:blur(4px)">${cat.nombre}</span>` : ""}\n      </div>\n      \x3c!-- Info --\x3e\n      <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px">\n        <div style="font-weight:700;font-size:0.95rem;color:var(--white)">${item.titulo}</div>\n        ${item.descripcion ? `<div style="font-size:0.8rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ""}\n        \x3c!-- Stock --\x3e\n        <div style="display:flex;gap:12px;margin-top:4px">\n          <div style="font-size:0.8rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades || 0) > 0 ? "#86efac" : "#fca5a5"}">${item.stockUnidades || 0}</strong></div>\n        </div>\n        ${item.tiendas?.length ? `\n          <div style="margin-top:6px">\n            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:5px">Tiendas</div>\n            ${item.tiendas.map(s => `\n              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;padding:4px 0;border-top:1px solid rgba(255,255,255,0.04)">\n                <span style="color:var(--gray-l)">${s.nombre}</span>\n                <span style="font-weight:700;color:${parseFloat(s.precio) === bestPrice ? "#86efac" : "var(--white)"}">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n              </div>`).join("")}\n          </div>` : `<div style="font-size:0.8rem;color:var(--gray);margin-top:4px">Sin tiendas registradas</div>`}\n      </div>\n      \x3c!-- Acciones --\x3e\n      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">\n        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>\n        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>\n        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>\n      </div>\n    </div>`;
-  }).join("");
+  const bestPriceOf = item => item.tiendas?.length ? Math.min(...item.tiendas.map(s => parseFloat(s.precio) || Infinity)) : null;
+  const cardHtml = item => {
+    const bestPrice = bestPriceOf(item);
+    return `\n    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;max-width:260px">\n      \x3c!-- Foto --\x3e\n      <div style="height:130px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">\n        ${item.foto ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}\n      </div>\n      \x3c!-- Info --\x3e\n      <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:5px">\n        <div style="font-weight:700;font-size:0.9rem;color:var(--white)">${item.titulo}</div>\n        ${item.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ""}\n        <div style="font-size:0.78rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades || 0) > 0 ? "#86efac" : "#fca5a5"}">${item.stockUnidades || 0}</strong></div>\n        ${item.tiendas?.length ? `\n          <div style="margin-top:4px">\n            <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:4px">Tiendas</div>\n            ${item.tiendas.map(s => `\n              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;padding:3px 0;border-top:1px solid rgba(255,255,255,0.04)">\n                <span style="color:var(--gray-l)">${s.nombre}</span>\n                <span style="font-weight:700;color:${parseFloat(s.precio) === bestPrice ? "#86efac" : "var(--white)"}">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n              </div>`).join("")}\n          </div>` : `<div style="font-size:0.76rem;color:var(--gray);margin-top:3px">Sin tiendas registradas</div>`}\n      </div>\n      \x3c!-- Acciones --\x3e\n      <div style="padding:9px 14px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">\n        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>\n        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>\n        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>\n      </div>\n    </div>`;
+  };
+  const grouped = {};
+  invCategories.forEach(c => {
+    grouped[c.id] = {
+      nombre: c.nombre,
+      items: []
+    };
+  });
+  const sinCategoria = [];
+  invItems.forEach(item => {
+    if (item.categoryId && grouped[item.categoryId]) grouped[item.categoryId].items.push(item); else sinCategoria.push(item);
+  });
+  let html = "";
+  Object.entries(grouped).forEach(([catId, g], idx) => {
+    html += `\n    <details class="inv-category" ${idx === 0 ? "open" : ""} style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">\n      <summary style="list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;user-select:none">\n        <span style="display:flex;align-items:center;gap:8px;font-size:0.92rem;font-weight:700;color:var(--white)">\n          <svg class="inv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n          ${g.nombre}\n          <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">(${g.items.length})</span>\n        </span>\n        <span style="display:flex;gap:4px" onclick="event.stopPropagation()">\n          <button onclick="openInvCategoryModal('${catId}')" title="Editar categoría" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.85rem;padding:4px 6px">✏</button>\n          <button onclick="deleteInvCategory('${catId}')" title="Eliminar categoría" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:0.85rem;padding:4px 6px">✕</button>\n        </span>\n      </summary>\n      <div style="padding:0 18px 18px">\n        ${g.items.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,260px));gap:14px">${g.items.map(cardHtml).join("")}</div>` : '<div style="font-size:0.82rem;color:var(--gray);padding:6px 0">Sin insumos en esta categoría todavía.</div>'}\n      </div>\n    </details>`;
+  });
+  if (sinCategoria.length) {
+    html += `\n    <details class="inv-category" style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">\n      <summary style="list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:8px;user-select:none;font-size:0.92rem;font-weight:700;color:var(--white)">\n        <svg class="inv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n        Sin categoría\n        <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">(${sinCategoria.length})</span>\n      </summary>\n      <div style="padding:0 18px 18px">\n        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,260px));gap:14px">${sinCategoria.map(cardHtml).join("")}</div>\n      </div>\n    </details>`;
+  }
+  if (!html) {
+    cont.style.display = "none";
+    if (empty) empty.style.display = "";
+    return;
+  }
+  cont.innerHTML = html;
+  cont.querySelectorAll(".inv-category").forEach(det => {
+    const caret = det.querySelector(".inv-caret");
+    const sync = () => {
+      if (caret) caret.style.transform = det.open ? "rotate(90deg)" : "rotate(0deg)";
+    };
+    sync();
+    det.addEventListener("toggle", sync);
+  });
 }
 
 function logInventoryMovement() {}
