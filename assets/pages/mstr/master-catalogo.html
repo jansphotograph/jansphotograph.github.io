@@ -246,6 +246,12 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
 
       <div class="field">
+        <label>Categoría *</label>
+        <select id="servModalCategoria"></select>
+        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">¿Falta la categoría que necesitas? Usa "Editar categorías" antes de crear el servicio.</div>
+      </div>
+
+      <div class="field">
         <label>Descripción</label>
         <input type="text" id="servModalDesc" placeholder="Descripción breve (opcional)" />
       </div>
@@ -278,6 +284,28 @@ document.addEventListener("DOMContentLoaded", () => {
         <button class="btn btn-pink" onclick="saveServModal()">Guardar servicio</button>
         <button class="btn btn-outline" onclick="closeModal('servModal')">Cancelar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="servCategoriasModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3>Categorías de Servicios Adicionales</h3>
+      <button class="modal-close" onclick="closeModal('servCategoriasModal')">×</button>
+    </div>
+    <p style="font-size:0.8rem;color:var(--gray-l);margin-bottom:14px">
+      Ej. Impresiones, Maquillaje, etc. Puedes añadir tantas como necesites.
+    </p>
+    <div id="servCategoriasList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input type="text" id="servCategoriaNuevaInput" placeholder="Nueva categoría..." style="flex:1;padding:9px 12px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />
+      <button class="btn btn-outline btn-sm" onclick="addServCategoria()">+ Añadir</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-pink" onclick="saveServCategorias()">Guardar</button>
+      <button class="btn btn-outline" onclick="closeModal('servCategoriasModal')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -768,13 +796,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <h2>Servicios Adicionales</h2>
             <p>Gestiona tus servicios y vincúlalos a insumos del inventario</p>
           </div>
-          <button class="btn btn-pink" onclick="openServModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo servicio
-          </button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-outline" onclick="openServCategoriasModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Editar categorías
+            </button>
+            <button class="btn btn-pink" onclick="openServModal()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo servicio
+            </button>
+          </div>
         </div>
 
-        <div id="servAdicList" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="servAdicList" style="display:flex;flex-direction:column;gap:18px"></div>
         <div id="servAdicEmpty" style="display:none;text-align:center;padding:48px 20px;color:var(--gray)">
           <p style="font-size:0.9rem">No hay servicios. Haz clic en "Nuevo servicio" para empezar.</p>
         </div>
@@ -2142,6 +2176,7 @@ async function loadServAdicionalesFromSupabase() {
         id: r.id,
         nombre: r.nombre,
         precio: parseFloat(r.precio) || 0,
+        categoria: r.categoria || "General",
         descripcion: r.descripcion || "",
         usaInsumo: r.usa_insumo || false,
         insumos: r.insumos || []
@@ -2154,6 +2189,60 @@ async function loadServAdicionalesFromSupabase() {
   } catch (e) {
     console.warn("loadServAdicionalesFromSupabase:", e);
   }
+}
+
+let SERV_CATEGORIAS = [ "Maquillaje", "Impresiones" ];
+
+async function loadServCategorias() {
+  const cfg = await sbGetConfig("servicios_categorias");
+  if (Array.isArray(cfg) && cfg.length) SERV_CATEGORIAS = cfg;
+  (servData.items || []).forEach(s => {
+    if (s.categoria && !SERV_CATEGORIAS.includes(s.categoria)) SERV_CATEGORIAS.push(s.categoria);
+  });
+}
+
+function openServCategoriasModal() {
+  renderServCategoriasList();
+  openModal("servCategoriasModal");
+}
+
+function renderServCategoriasList() {
+  const el = document.getElementById("servCategoriasList");
+  if (!el) return;
+  el.innerHTML = SERV_CATEGORIAS.map((c, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="text" value="${c.replace(/"/g, "&quot;")}" data-idx="${i}" class="serv-cat-input" style="flex:1;padding:8px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeServCategoria(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
+}
+
+function addServCategoria() {
+  const input = document.getElementById("servCategoriaNuevaInput");
+  const val = (input?.value || "").trim();
+  if (!val) return;
+  SERV_CATEGORIAS.push(val);
+  input.value = "";
+  renderServCategoriasList();
+}
+
+function removeServCategoria(i) {
+  syncServCategoriasFromInputs();
+  SERV_CATEGORIAS.splice(i, 1);
+  renderServCategoriasList();
+}
+
+function syncServCategoriasFromInputs() {
+  const inputs = document.querySelectorAll(".serv-cat-input");
+  const updated = [];
+  inputs.forEach(inp => {
+    const v = inp.value.trim();
+    if (v) updated.push(v);
+  });
+  SERV_CATEGORIAS = updated;
+}
+
+async function saveServCategorias() {
+  syncServCategoriasFromInputs();
+  const ok = await sbSetConfig("servicios_categorias", SERV_CATEGORIAS);
+  renderServAdicList();
+  closeModal("servCategoriasModal");
+  showToast(ok ? "Categorías guardadas ✓" : "Guardado localmente (sin conexión a Supabase)");
 }
 
 function loadServAdicionales() {
@@ -2170,12 +2259,14 @@ function loadServAdicionales() {
       (saved.maquillaje || []).forEach(s => migrated.push({
         ...s,
         id: s.id || genServId(),
+        categoria: "Maquillaje",
         usaInsumo: false,
         insumos: []
       }));
       (saved.impresiones || []).forEach(s => migrated.push({
         ...s,
         id: s.id || genServId(),
+        categoria: "Impresiones",
         usaInsumo: true,
         insumos: s.insumos || []
       }));
@@ -2183,6 +2274,9 @@ function loadServAdicionales() {
         items: migrated
       };
     }
+    servData.items.forEach(s => {
+      if (!s.categoria) s.categoria = "General";
+    });
   } catch (e) {
     servData = {
       items: []
@@ -2205,14 +2299,24 @@ function renderServAdicList() {
     return;
   }
   if (empty) empty.style.display = "none";
-  el.innerHTML = items.map((s, i) => {
+  const grouped = {};
+  items.forEach((s, i) => {
+    const cat = s.categoria || "General";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push({
+      ...s,
+      _idx: i
+    });
+  });
+  el.innerHTML = Object.entries(grouped).map(([cat, list]) => `\n    <div>\n      <div style="font-size:0.78rem;font-weight:700;color:var(--pink-l);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${cat.replace(/</g, "&lt;")}</div>\n      <div style="display:flex;flex-direction:column;gap:10px">\n        ${list.map(s => {
+    const i = s._idx;
     const insumoNames = (s.insumos || []).map(v => {
       loadInvData();
       const inv = invItems.find(x => x.id === v.insumoId);
       return inv ? `${inv.titulo} (${v.unidades || 0} un)` : "?";
     }).join(", ");
-    return `\n    <div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">\n      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n        <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n        <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n      </div>\n      <div style="flex:1;min-width:160px">\n        <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"}</div>\n        ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n        ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n        ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n      </div>\n      <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n      <div style="display:flex;gap:6px">\n        <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n        <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n      </div>\n    </div>`;
-  }).join("");
+    return `\n          <div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">\n            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n              <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n              <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n            </div>\n            <div style="flex:1;min-width:160px">\n              <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"}</div>\n              ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n              ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n              ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n            </div>\n            <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n            <div style="display:flex;gap:6px">\n              <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n              <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n            </div>\n          </div>`;
+  }).join("")}\n      </div>\n    </div>\n  `).join("");
 }
 
 function openServModal(id) {
@@ -2223,6 +2327,11 @@ function openServModal(id) {
   document.getElementById("servModalNombre").value = s ? s.nombre : "";
   document.getElementById("servModalPrecio").value = s ? s.precio : "";
   document.getElementById("servModalDesc").value = s ? s.descripcion || "" : "";
+  const catActual = s ? s.categoria || "" : "";
+  const catOpts = [ ...SERV_CATEGORIAS ];
+  if (catActual && !catOpts.includes(catActual)) catOpts.push(catActual);
+  const catSel = document.getElementById("servModalCategoria");
+  catSel.innerHTML = catOpts.length ? catOpts.map(c => `<option value="${c.replace(/"/g, "&quot;")}" ${c === catActual ? "selected" : ""}>${c}</option>`).join("") : '<option value="">— Crea una categoría primero —</option>';
   const usaInsumo = s ? !!s.usaInsumo : false;
   document.getElementById("servModalUsaInsumo").checked = usaInsumo;
   document.getElementById("servInsumosBlock").style.display = usaInsumo ? "" : "none";
@@ -2258,8 +2367,13 @@ function renderServInsumosList() {
 function saveServModal() {
   const nombre = document.getElementById("servModalNombre").value.trim();
   const precio = parseFloat(document.getElementById("servModalPrecio").value) || 0;
+  const categoria = document.getElementById("servModalCategoria").value;
   if (!nombre) {
     showToast("El nombre es obligatorio", "error");
+    return;
+  }
+  if (!categoria) {
+    showToast("Selecciona una categoría (créala primero si hace falta)", "error");
     return;
   }
   loadServAdicionales();
@@ -2272,6 +2386,7 @@ function saveServModal() {
     if (s) Object.assign(s, {
       nombre: nombre,
       precio: precio,
+      categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
       insumos: insumos
@@ -2281,6 +2396,7 @@ function saveServModal() {
       id: genServId(),
       nombre: nombre,
       precio: precio,
+      categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
       insumos: insumos
@@ -2323,6 +2439,7 @@ async function saveServAdicionales() {
         id: s.id || genServId(),
         nombre: s.nombre || "",
         precio: parseFloat(s.precio) || 0,
+        categoria: s.categoria || "General",
         descripcion: s.descripcion || "",
         usa_insumo: s.usaInsumo || false,
         insumos: s.insumos || []
@@ -2344,6 +2461,7 @@ async function saveServAdicionales() {
 async function initServAdicionales() {
   await loadServAdicionalesFromSupabase();
   loadServAdicionales();
+  await loadServCategorias();
   renderServAdicList();
 }
 

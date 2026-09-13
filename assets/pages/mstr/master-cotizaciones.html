@@ -508,9 +508,29 @@ function loadPublicPlans() {
   }
 }
 
+async function syncPublicPlansFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const {data: data, error: error} = await sbClient.from("planes_publicos").select("*").order("orden", {
+      ascending: true
+    });
+    if (error || !data) return false;
+    publicPlans = data;
+    localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
+    return true;
+  } catch (e) {
+    console.warn("syncPublicPlansFromSupabase:", e);
+    return false;
+  }
+}
+
 let servData = {
   items: []
 };
+
+function genServId() {
+  return "srv_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5);
+}
 
 function loadServAdicionales() {
   try {
@@ -546,6 +566,31 @@ function loadServAdicionales() {
   }
 }
 
+async function syncServAdicionalesFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const {data: data, error: error} = await sbClient.from("servicios_adicionales").select("*").order("nombre");
+    if (error || !data) return false;
+    const items = data.map(r => ({
+      id: r.id,
+      nombre: r.nombre,
+      precio: parseFloat(r.precio) || 0,
+      categoria: r.categoria || "General",
+      descripcion: r.descripcion || "",
+      usaInsumo: r.usa_insumo || false,
+      insumos: r.insumos || []
+    }));
+    servData = {
+      items: items
+    };
+    localStorage.setItem(SA_KEY, JSON.stringify(servData));
+    return true;
+  } catch (e) {
+    console.warn("syncServAdicionalesFromSupabase:", e);
+    return false;
+  }
+}
+
 let state = {
   quotes: [],
   plans: [],
@@ -554,6 +599,10 @@ let state = {
     print: []
   }
 };
+
+const PP_KEY = "jans_planes";
+
+const SA_KEY = "jans_serv_adicionales";
 
 let clientType = "natural";
 
@@ -633,9 +682,17 @@ function showSection(name) {
   if (name === "newquote") {
     loadPublicPlans();
     updateQPlanSelect();
+    loadServAdicionales();
     renderServiceChecks();
+    refreshCotizacionCatalogData();
   }
   if (name === "eventoForm") initEventoForm();
+}
+
+async function refreshCotizacionCatalogData() {
+  const [okPlanes, okServ] = await Promise.all([ syncPublicPlansFromSupabase(), syncServAdicionalesFromSupabase() ]);
+  if (okPlanes) updateQPlanSelect();
+  if (okServ) renderServiceChecks();
 }
 
 function renderQuotesTable() {
@@ -706,26 +763,20 @@ function toggleEventoPrecio(val) {
 }
 
 function renderServiceChecks() {
-  if (!state.services.makeup.length && !state.services.print.length) {
-    try {
-      const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
-      state.services = {
-        makeup: Array.isArray(saved.makeup) ? saved.makeup : [],
-        print: Array.isArray(saved.print) ? saved.print : []
-      };
-      if (!state.services.makeup.length && !state.services.print.length && Array.isArray(saved.items)) {
-        saved.items.forEach(i => {
-          if (i.cat === "makeup") state.services.makeup.push(i); else state.services.print.push(i);
-        });
-      }
-    } catch (e) {}
-  }
-  const all = [ ...state.services.makeup, ...state.services.print ];
-  if (!all.length) {
-    document.getElementById("qServicesCheck").innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
+  if (!servData.items || !servData.items.length) loadServAdicionales();
+  const items = servData.items || [];
+  const cont = document.getElementById("qServicesCheck");
+  if (!items.length) {
+    cont.innerHTML = '<p style="color:var(--gray-l);font-size:0.82rem">No hay servicios adicionales configurados. Agrégalos en Catálogo → Servicios Adicionales.</p>';
     return;
   }
-  document.getElementById("qServicesCheck").innerHTML = all.map(s => `\n    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">\n      <input type="checkbox" value="${s.name}||${s.price}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />\n      ${s.name} <span style="color:var(--pink-l);margin-left:auto">$${s.price}</span>\n    </label>`).join("");
+  const grouped = {};
+  items.forEach(s => {
+    const cat = s.categoria || "General";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(s);
+  });
+  cont.innerHTML = Object.entries(grouped).map(([cat, list]) => `\n    <div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em;margin-top:6px">${escapeHtml(cat)}</div>\n    ${list.map(s => `\n    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">\n      <input type="checkbox" value="${(s.nombre || "").replace(/"/g, "&quot;")}||${s.precio || 0}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />\n      ${escapeHtml(s.nombre)} <span style="color:var(--pink-l);margin-left:auto">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n    </label>`).join("")}\n  `).join("");
 }
 
 function updateTotal() {
@@ -2057,20 +2108,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadQuotes();
   renderQuotesTable();
   loadPublicPlans();
-  try {
-    const saved = JSON.parse(localStorage.getItem(SA_KEY) || "{}");
-    state.services = {
-      makeup: Array.isArray(saved.makeup) ? saved.makeup : Array.isArray(saved.items) ? saved.items.filter(i => i.cat === "makeup") : [],
-      print: Array.isArray(saved.print) ? saved.print : Array.isArray(saved.items) ? saved.items.filter(i => i.cat === "print") : []
-    };
-  } catch (e) {
-    state.services = {
-      makeup: [],
-      print: []
-    };
-  }
+  loadServAdicionales();
   updateQPlanSelect();
   fetchQuotes();
+  refreshCotizacionCatalogData();
   initEventoForm();
   const highlightId = new URLSearchParams(location.search).get("highlight");
   if (highlightId) setTimeout(() => viewQuote(highlightId), 300);
