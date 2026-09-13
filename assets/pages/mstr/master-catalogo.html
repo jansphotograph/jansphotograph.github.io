@@ -2193,9 +2193,18 @@ async function loadServAdicionalesFromSupabase() {
 
 let SERV_CATEGORIAS = [ "Maquillaje", "Impresiones" ];
 
+const SERV_CAT_KEY = "jans_serv_categorias";
+
 async function loadServCategorias() {
+  try {
+    const localCats = JSON.parse(localStorage.getItem(SERV_CAT_KEY) || "null");
+    if (Array.isArray(localCats) && localCats.length) SERV_CATEGORIAS = localCats;
+  } catch (e) {}
   const cfg = await sbGetConfig("servicios_categorias");
-  if (Array.isArray(cfg) && cfg.length) SERV_CATEGORIAS = cfg;
+  if (Array.isArray(cfg) && cfg.length) {
+    SERV_CATEGORIAS = cfg;
+    localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
+  }
   (servData.items || []).forEach(s => {
     if (s.categoria && !SERV_CATEGORIAS.includes(s.categoria)) SERV_CATEGORIAS.push(s.categoria);
   });
@@ -2239,10 +2248,15 @@ function syncServCategoriasFromInputs() {
 
 async function saveServCategorias() {
   syncServCategoriasFromInputs();
+  localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
   const ok = await sbSetConfig("servicios_categorias", SERV_CATEGORIAS);
   renderServAdicList();
   closeModal("servCategoriasModal");
-  showToast(ok ? "Categorías guardadas ✓" : "Guardado localmente (sin conexión a Supabase)");
+  if (ok) {
+    showToast("Categorías guardadas ✓");
+  } else {
+    showToast("⚠ Se guardó solo en este dispositivo — no se pudo conectar con Supabase", "error");
+  }
 }
 
 function loadServAdicionales() {
