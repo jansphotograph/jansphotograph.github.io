@@ -259,6 +259,18 @@ document.addEventListener("DOMContentLoaded", () => {
       
       <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
         <label class="toggle-switch" style="flex-shrink:0">
+          <input type="checkbox" id="servModalVisible" checked />
+          <span class="toggle-slider"></span>
+        </label>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;color:var(--white)">Mostrar en la página principal</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Desactívalo para ocultarlo del sitio público sin borrarlo (sigue disponible al cotizar)</div>
+        </div>
+      </div>
+
+      
+      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
+        <label class="toggle-switch" style="flex-shrink:0">
           <input type="checkbox" id="servModalUsaInsumo" onchange="toggleServInsumos(this.checked)" />
           <span class="toggle-slider"></span>
         </label>
@@ -2191,7 +2203,8 @@ async function loadServAdicionalesFromSupabase() {
         categoria: r.categoria || "General",
         descripcion: r.descripcion || "",
         usaInsumo: r.usa_insumo || false,
-        insumos: r.insumos || []
+        insumos: r.insumos || [],
+        visible: r.visible !== undefined && r.visible !== null ? r.visible : true
       }));
       const sbData = {
         items: items
@@ -2383,15 +2396,24 @@ function renderServAdicList() {
       _idx: i
     });
   });
-  el.innerHTML = Object.entries(grouped).map(([cat, list]) => `\n    <div>\n      <div style="font-size:0.78rem;font-weight:700;color:var(--pink-l);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${cat.replace(/</g, "&lt;")}</div>\n      <div style="display:flex;flex-direction:column;gap:10px">\n        ${list.map(s => {
+  el.innerHTML = Object.entries(grouped).map(([cat, list], catIdx) => `\n    <details class="inv-category" ${catIdx === 0 ? "open" : ""} style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">\n      <summary style="list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:8px;user-select:none;font-size:0.92rem;font-weight:700;color:var(--white)">\n        <svg class="inv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n        ${cat.replace(/</g, "&lt;")}\n        <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">(${list.length})</span>\n      </summary>\n      <div style="padding:0 18px 18px;display:flex;flex-direction:column;gap:10px">\n        ${list.map(s => {
     const i = s._idx;
     const insumoNames = (s.insumos || []).map(v => {
       loadInvData();
       const inv = invItems.find(x => x.id === v.insumoId);
       return inv ? `${inv.titulo} (${v.unidades || 0} un)` : "?";
     }).join(", ");
-    return `\n          <div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">\n            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n              <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n              <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n            </div>\n            <div style="flex:1;min-width:160px">\n              <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"}</div>\n              ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n              ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n              ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n            </div>\n            <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n            <div style="display:flex;gap:6px">\n              <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n              <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n            </div>\n          </div>`;
-  }).join("")}\n      </div>\n    </div>\n  `).join("");
+    const visible = s.visible !== false;
+    return `\n          <div style="display:flex;align-items:center;gap:10px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap;${visible ? "" : "opacity:0.55"}">\n            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n              <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n              <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n            </div>\n            <div style="flex:1;min-width:160px">\n              <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"} ${visible ? "" : '<span style="font-size:0.68rem;color:var(--gray);font-weight:400">(oculto en la página principal)</span>'}</div>\n              ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n              ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n              ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n            </div>\n            <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n            <div style="display:flex;gap:6px">\n              <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n              <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n            </div>\n          </div>`;
+  }).join("")}\n      </div>\n    </details>\n  `).join("");
+  el.querySelectorAll(".inv-category").forEach(det => {
+    const caret = det.querySelector(".inv-caret");
+    const sync = () => {
+      if (caret) caret.style.transform = det.open ? "rotate(90deg)" : "rotate(0deg)";
+    };
+    sync();
+    det.addEventListener("toggle", sync);
+  });
 }
 
 function openServModal(id) {
@@ -2402,6 +2424,7 @@ function openServModal(id) {
   document.getElementById("servModalNombre").value = s ? s.nombre : "";
   document.getElementById("servModalPrecio").value = s ? s.precio : "";
   document.getElementById("servModalDesc").value = s ? s.descripcion || "" : "";
+  document.getElementById("servModalVisible").checked = s ? s.visible !== false : true;
   const catActual = s ? s.categoria || "" : "";
   const catOpts = [ ...SERV_CATEGORIAS ];
   if (catActual && !catOpts.includes(catActual)) catOpts.push(catActual);
@@ -2454,6 +2477,7 @@ function saveServModal() {
   loadServAdicionales();
   const existingId = document.getElementById("servModalId").value;
   const usaInsumo = document.getElementById("servModalUsaInsumo").checked;
+  const visible = document.getElementById("servModalVisible").checked;
   const desc = document.getElementById("servModalDesc").value.trim();
   const insumos = usaInsumo ? servTempInsumos.filter(v => v.insumoId) : [];
   if (existingId) {
@@ -2464,7 +2488,8 @@ function saveServModal() {
       categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
-      insumos: insumos
+      insumos: insumos,
+      visible: visible
     });
   } else {
     servData.items.push({
@@ -2474,7 +2499,8 @@ function saveServModal() {
       categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
-      insumos: insumos
+      insumos: insumos,
+      visible: visible
     });
   }
   localStorage.setItem(SA_KEY, JSON.stringify(servData));
@@ -2517,7 +2543,8 @@ async function saveServAdicionales() {
         categoria: s.categoria || "General",
         descripcion: s.descripcion || "",
         usa_insumo: s.usaInsumo || false,
-        insumos: s.insumos || []
+        insumos: s.insumos || [],
+        visible: s.visible !== false
       }));
       const {error: error} = await sbClient.from("servicios_adicionales").insert(rows);
       if (error) {

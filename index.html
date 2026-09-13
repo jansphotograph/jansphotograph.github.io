@@ -441,26 +441,37 @@
   <script>(function() {
   const SB_URL = "https://qwwotzscuwnduzlralew.supabase.co";
   const SB_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+  function escapeHtml(str) {
+    return String(str === null || str === undefined ? "" : str).replace(/[&<>"']/g, m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[m]));
+  }
   function renderServAdic(items, containerId) {
     const container = document.getElementById(containerId);
     if (!container || !items || !items.length) return;
+    const visibles = items.filter(s => s.visible !== false);
+    if (!visibles.length) return;
     const grouped = {};
-    items.forEach(s => {
+    visibles.forEach(s => {
       const cat = s.categoria || "general";
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(s);
     });
     let out = "";
     Object.entries(grouped).forEach(([cat, svcs]) => {
-      out += '<div class="services-block"><div class="service-group-title">' + cat + "</div>";
+      out += '<div class="services-block"><div class="service-group-title">' + escapeHtml(cat) + "</div>";
       svcs.forEach(s => {
-        out += '<div class="service-row"><span class="service-name">' + (s.nombre || s.name) + '</span><span class="service-price">$' + (s.precio || s.price || 0) + "</span></div>";
+        out += '<div class="service-row"><span class="service-name">' + escapeHtml(s.nombre || s.name) + '</span><span class="service-price">$' + (s.precio || s.price || 0) + "</span></div>";
       });
       out += "</div>";
     });
     container.innerHTML = out;
   }
-  fetch(SB_URL + "/rest/v1/servicios_adicionales?order=nombre", {
+  fetch(SB_URL + "/rest/v1/servicios_adicionales?visible=eq.true&order=nombre", {
     headers: {
       apikey: SB_KEY,
       Authorization: "Bearer " + SB_KEY
