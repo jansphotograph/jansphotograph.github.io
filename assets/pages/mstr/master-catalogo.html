@@ -259,18 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
       
       <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
         <label class="toggle-switch" style="flex-shrink:0">
-          <input type="checkbox" id="servModalVisible" checked />
-          <span class="toggle-slider"></span>
-        </label>
-        <div>
-          <div style="font-size:0.88rem;font-weight:600;color:var(--white)">Mostrar en la página principal</div>
-          <div style="font-size:0.78rem;color:var(--gray)">Desactívalo para ocultarlo del sitio público sin borrarlo (sigue disponible al cotizar)</div>
-        </div>
-      </div>
-
-      
-      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;padding:14px 16px;background:var(--dark);border-radius:10px">
-        <label class="toggle-switch" style="flex-shrink:0">
           <input type="checkbox" id="servModalUsaInsumo" onchange="toggleServInsumos(this.checked)" />
           <span class="toggle-slider"></span>
         </label>
@@ -2203,8 +2191,7 @@ async function loadServAdicionalesFromSupabase() {
         categoria: r.categoria || "General",
         descripcion: r.descripcion || "",
         usaInsumo: r.usa_insumo || false,
-        insumos: r.insumos || [],
-        visible: r.visible !== undefined && r.visible !== null ? r.visible : true
+        insumos: r.insumos || []
       }));
       const sbData = {
         items: items
@@ -2234,7 +2221,10 @@ async function loadServCategorias() {
       });
       if (!error && data) {
         servCategoriasRows = data;
-        SERV_CATEGORIAS = data.map(r => r.nombre);
+        SERV_CATEGORIAS = data.map(r => ({
+          nombre: r.nombre,
+          visible: r.visible !== false
+        }));
         localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
       } else if (error) {
         console.error("loadServCategorias error:", error.message || JSON.stringify(error));
@@ -2257,25 +2247,29 @@ function renderServCategoriasList() {
     el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Aún no hay categorías. Añade la primera abajo.</div>';
     return;
   }
-  el.innerHTML = SERV_CATEGORIAS.map((c, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="text" value="${c.replace(/"/g, "&quot;")}" data-idx="${i}" class="serv-cat-input" style="flex:1;padding:8px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeServCategoria(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
+  el.innerHTML = SERV_CATEGORIAS.map((c, i) => `\n    <div style="display:flex;gap:8px;align-items:center;background:var(--dark);border-radius:8px;padding:8px 10px 8px 12px">\n      <input type="text" value="${c.nombre.replace(/"/g, "&quot;")}" data-idx="${i}" class="serv-cat-input" style="flex:1;padding:6px 4px;background:transparent;border:none;color:var(--white);font-family:var(--font);outline:none" />\n      <label class="toggle-switch" style="flex-shrink:0" title="Mostrar en la página principal">\n        <input type="checkbox" data-idx="${i}" class="serv-cat-visible-input" ${c.visible !== false ? "checked" : ""} />\n        <span class="toggle-slider"></span>\n      </label>\n      <button class="btn btn-sm btn-outline" onclick="removeServCategoria(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
 }
 
 function addServCategoria() {
   const input = document.getElementById("servCategoriaNuevaInput");
   const val = (input?.value || "").trim();
   if (!val) return;
-  if (SERV_CATEGORIAS.some(c => c.toLowerCase() === val.toLowerCase())) {
+  syncServCategoriasFromInputs();
+  if (SERV_CATEGORIAS.some(c => c.nombre.toLowerCase() === val.toLowerCase())) {
     showToast("Esa categoría ya existe", "error");
     return;
   }
-  SERV_CATEGORIAS.push(val);
+  SERV_CATEGORIAS.push({
+    nombre: val,
+    visible: true
+  });
   input.value = "";
   renderServCategoriasList();
 }
 
 function removeServCategoria(i) {
   syncServCategoriasFromInputs();
-  const cat = SERV_CATEGORIAS[i];
+  const cat = SERV_CATEGORIAS[i].nombre;
   const enUso = (servData.items || []).filter(s => s.categoria === cat);
   if (enUso.length) {
     const ok = confirm(`"${cat}" tiene ${enUso.length} servicio(s) asignado(s). Si la eliminas, esos servicios pasarán a la categoría "General". ¿Continuar?`);
@@ -2290,11 +2284,16 @@ function removeServCategoria(i) {
 }
 
 function syncServCategoriasFromInputs() {
-  const inputs = document.querySelectorAll(".serv-cat-input");
+  const nameInputs = document.querySelectorAll(".serv-cat-input");
+  const visInputs = document.querySelectorAll(".serv-cat-visible-input");
+  if (!nameInputs.length) return;
   const updated = [];
-  inputs.forEach(inp => {
-    const v = inp.value.trim();
-    if (v) updated.push(v);
+  nameInputs.forEach((inp, idx) => {
+    const nombre = inp.value.trim();
+    if (nombre) updated.push({
+      nombre: nombre,
+      visible: visInputs[idx] ? visInputs[idx].checked : true
+    });
   });
   SERV_CATEGORIAS = updated;
 }
@@ -2307,9 +2306,10 @@ async function saveServCategorias() {
     try {
       await sbClient.from("servicios_categorias").delete().neq("id", "00000000-0000-0000-0000-000000000000");
       if (SERV_CATEGORIAS.length) {
-        const rows = SERV_CATEGORIAS.map((nombre, orden) => ({
-          nombre: nombre,
-          orden: orden
+        const rows = SERV_CATEGORIAS.map((c, orden) => ({
+          nombre: c.nombre,
+          orden: orden,
+          visible: c.visible !== false
         }));
         const {error: error} = await sbClient.from("servicios_categorias").insert(rows);
         if (error) {
@@ -2324,6 +2324,7 @@ async function saveServCategorias() {
       console.error("saveServCategorias excepción:", e);
     }
   }
+  await loadServCategorias();
   renderServAdicList();
   closeModal("servCategoriasModal");
   if (ok) {
@@ -2396,16 +2397,18 @@ function renderServAdicList() {
       _idx: i
     });
   });
-  el.innerHTML = Object.entries(grouped).map(([cat, list], catIdx) => `\n    <details class="inv-category" ${catIdx === 0 ? "open" : ""} style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden">\n      <summary style="list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:8px;user-select:none;font-size:0.92rem;font-weight:700;color:var(--white)">\n        <svg class="inv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n        ${cat.replace(/</g, "&lt;")}\n        <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">(${list.length})</span>\n      </summary>\n      <div style="padding:0 18px 18px;display:flex;flex-direction:column;gap:10px">\n        ${list.map(s => {
-    const i = s._idx;
-    const insumoNames = (s.insumos || []).map(v => {
-      loadInvData();
-      const inv = invItems.find(x => x.id === v.insumoId);
-      return inv ? `${inv.titulo} (${v.unidades || 0} un)` : "?";
-    }).join(", ");
-    const visible = s.visible !== false;
-    return `\n          <div style="display:flex;align-items:center;gap:10px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap;${visible ? "" : "opacity:0.55"}">\n            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n              <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n              <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n            </div>\n            <div style="flex:1;min-width:160px">\n              <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"} ${visible ? "" : '<span style="font-size:0.68rem;color:var(--gray);font-weight:400">(oculto en la página principal)</span>'}</div>\n              ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n              ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n              ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n            </div>\n            <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n            <div style="display:flex;gap:6px">\n              <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n              <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n            </div>\n          </div>`;
-  }).join("")}\n      </div>\n    </details>\n  `).join("");
+  el.innerHTML = Object.entries(grouped).map(([cat, list], catIdx) => {
+    const catVisible = getServCategoriaVisible(cat);
+    return `\n    <details class="inv-category" ${catIdx === 0 ? "open" : ""} style="background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;${catVisible ? "" : "opacity:0.6"}">\n      <summary style="list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:8px;user-select:none;font-size:0.92rem;font-weight:700;color:var(--white)">\n        <svg class="inv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n        ${cat.replace(/</g, "&lt;")}\n        <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">(${list.length})</span>\n        ${catVisible ? "" : '<span style="font-size:0.68rem;color:var(--gray);font-weight:400">— oculta en la página principal</span>'}\n      </summary>\n      <div style="padding:0 18px 18px;display:flex;flex-direction:column;gap:10px">\n        ${list.map(s => {
+      const i = s._idx;
+      const insumoNames = (s.insumos || []).map(v => {
+        loadInvData();
+        const inv = invItems.find(x => x.id === v.insumoId);
+        return inv ? `${inv.titulo} (${v.unidades || 0} un)` : "?";
+      }).join(", ");
+      return `\n          <div style="display:flex;align-items:center;gap:10px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap">\n            <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">\n              <button onclick="moveServAdic(${i},-1)" style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === 0 ? "disabled" : ""}>▲</button>\n              <button onclick="moveServAdic(${i},1)"  style="background:none;border:none;color:var(--gray-l);cursor:pointer;font-size:0.75rem;line-height:1;padding:0" ${i === items.length - 1 ? "disabled" : ""}>▼</button>\n            </div>\n            <div style="flex:1;min-width:160px">\n              <div style="font-weight:700;font-size:0.92rem;color:var(--white)">${s.nombre || "Sin nombre"}</div>\n              ${s.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l)">${s.descripcion}</div>` : ""}\n              ${s.usaInsumo && s.insumos?.length ? `<div style="font-size:0.75rem;color:var(--pink-l);margin-top:3px">📦 ${insumoNames}</div>` : ""}\n              ${s.usaInsumo && !s.insumos?.length ? `<div style="font-size:0.75rem;color:#fca5a5;margin-top:3px">⚠ Sin insumos vinculados</div>` : ""}\n            </div>\n            <div style="font-weight:700;color:var(--pink-l);font-size:1rem;white-space:nowrap">$${parseFloat(s.precio || 0).toFixed(2)}</div>\n            <div style="display:flex;gap:6px">\n              <button class="btn btn-sm btn-outline" data-servid="${s.id}" onclick="openServModal(this.dataset.servid)">✏</button>\n              <button class="btn btn-sm btn-red" data-servid="${s.id}" onclick="deleteServAdic(this.dataset.servid)">🗑</button>\n            </div>\n          </div>`;
+    }).join("")}\n      </div>\n    </details>`;
+  }).join("");
   el.querySelectorAll(".inv-category").forEach(det => {
     const caret = det.querySelector(".inv-caret");
     const sync = () => {
@@ -2416,6 +2419,11 @@ function renderServAdicList() {
   });
 }
 
+function getServCategoriaVisible(nombre) {
+  const row = servCategoriasRows.find(c => c.nombre === nombre);
+  return row ? row.visible !== false : true;
+}
+
 function openServModal(id) {
   loadServAdicionales();
   const s = id ? (servData.items || []).find(x => x.id === id) : null;
@@ -2424,9 +2432,8 @@ function openServModal(id) {
   document.getElementById("servModalNombre").value = s ? s.nombre : "";
   document.getElementById("servModalPrecio").value = s ? s.precio : "";
   document.getElementById("servModalDesc").value = s ? s.descripcion || "" : "";
-  document.getElementById("servModalVisible").checked = s ? s.visible !== false : true;
   const catActual = s ? s.categoria || "" : "";
-  const catOpts = [ ...SERV_CATEGORIAS ];
+  const catOpts = SERV_CATEGORIAS.map(c => c.nombre);
   if (catActual && !catOpts.includes(catActual)) catOpts.push(catActual);
   const catSel = document.getElementById("servModalCategoria");
   catSel.innerHTML = catOpts.length ? catOpts.map(c => `<option value="${c.replace(/"/g, "&quot;")}" ${c === catActual ? "selected" : ""}>${c}</option>`).join("") : '<option value="">— Crea una categoría primero —</option>';
@@ -2477,7 +2484,6 @@ function saveServModal() {
   loadServAdicionales();
   const existingId = document.getElementById("servModalId").value;
   const usaInsumo = document.getElementById("servModalUsaInsumo").checked;
-  const visible = document.getElementById("servModalVisible").checked;
   const desc = document.getElementById("servModalDesc").value.trim();
   const insumos = usaInsumo ? servTempInsumos.filter(v => v.insumoId) : [];
   if (existingId) {
@@ -2488,8 +2494,7 @@ function saveServModal() {
       categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
-      insumos: insumos,
-      visible: visible
+      insumos: insumos
     });
   } else {
     servData.items.push({
@@ -2499,8 +2504,7 @@ function saveServModal() {
       categoria: categoria,
       descripcion: desc,
       usaInsumo: usaInsumo,
-      insumos: insumos,
-      visible: visible
+      insumos: insumos
     });
   }
   localStorage.setItem(SA_KEY, JSON.stringify(servData));
@@ -2543,8 +2547,7 @@ async function saveServAdicionales() {
         categoria: s.categoria || "General",
         descripcion: s.descripcion || "",
         usa_insumo: s.usaInsumo || false,
-        insumos: s.insumos || [],
-        visible: s.visible !== false
+        insumos: s.insumos || []
       }));
       const {error: error} = await sbClient.from("servicios_adicionales").insert(rows);
       if (error) {

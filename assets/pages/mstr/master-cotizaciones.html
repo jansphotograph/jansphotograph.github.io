@@ -290,6 +290,13 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="section-label-sm">Servicios Adicionales</span>
           <div id="qServicesCheck" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
 
+          
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:0.82rem;color:var(--gray-l)">¿Falta algo? Añádelo con su precio manualmente</span>
+            <button class="btn btn-sm btn-outline" onclick="addCustomServiceItem()">+ Añadir ítem personalizado</button>
+          </div>
+          <div id="qCustomServicesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+
           <hr class="section-divider"/>
           <span class="section-label-sm">Resumen</span>
           <div style="background:var(--dark);border-radius:var(--radius);padding:20px">
@@ -787,6 +794,28 @@ function renderServiceChecks() {
   });
 }
 
+let customServiceItems = [];
+
+function renderCustomServicesList() {
+  const el = document.getElementById("qCustomServicesList");
+  if (!el) return;
+  el.innerHTML = customServiceItems.map((it, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="text" placeholder="Nombre del servicio" value="${(it.name || "").replace(/"/g, "&quot;")}"\n        oninput="customServiceItems[${i}].name=this.value; updateTotal();"\n        style="flex:2;padding:9px 12px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);font-size:0.85rem;outline:none" />\n      <input type="number" min="0" step="0.01" placeholder="0.00" value="${it.price || ""}"\n        oninput="customServiceItems[${i}].price=parseFloat(this.value)||0; updateTotal();"\n        style="width:110px;padding:9px 12px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);font-size:0.85rem;outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeCustomServiceItem(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
+}
+
+function addCustomServiceItem() {
+  customServiceItems.push({
+    name: "",
+    price: 0
+  });
+  renderCustomServicesList();
+}
+
+function removeCustomServiceItem(i) {
+  customServiceItems.splice(i, 1);
+  renderCustomServicesList();
+  updateTotal();
+}
+
 function updateTotal() {
   const planSel = document.getElementById("qPlan");
   const opt = planSel.options[planSel.selectedIndex];
@@ -803,6 +832,10 @@ function updateTotal() {
     const [name, price] = c.value.split("||");
     addonsTotal += parseFloat(price);
     summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${name}</span><span>$${parseFloat(price).toFixed(2)}</span></div>`;
+  });
+  customServiceItems.filter(it => it.name.trim()).forEach(it => {
+    addonsTotal += it.price || 0;
+    summaryHTML += `<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--gray-l)"><span>+ ${it.name}</span><span>$${(it.price || 0).toFixed(2)}</span></div>`;
   });
   const total = planPrice + addonsTotal;
   document.getElementById("quoteSummary").innerHTML = summaryHTML || '<span style="color:var(--gray)">Selecciona un plan para ver el resumen.</span>';
@@ -834,6 +867,10 @@ async function saveQuote() {
       price: parseFloat(p)
     });
   });
+  customServiceItems.filter(it => it.name.trim()).forEach(it => addons.push({
+    name: it.name.trim(),
+    price: it.price || 0
+  }));
   const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
   const total = planPrice + addonsTotal;
   const numero = await nextNumero("COT");
@@ -944,6 +981,8 @@ function clearQuoteForm() {
   });
   document.getElementById("qPlan").value = "";
   document.querySelectorAll("#qServicesCheck input").forEach(c => c.checked = false);
+  customServiceItems = [];
+  renderCustomServicesList();
   selectClientType("natural");
   updateTotal();
 }

@@ -450,17 +450,18 @@
       "'": "&#39;"
     }[m]));
   }
-  function renderServAdic(items, containerId) {
+  function renderServAdic(items, categoriasVisibles, containerId) {
     const container = document.getElementById(containerId);
     if (!container || !items || !items.length) return;
-    const visibles = items.filter(s => s.visible !== false);
-    if (!visibles.length) return;
+    const visibleSet = new Set(categoriasVisibles.map(c => c.nombre));
     const grouped = {};
-    visibles.forEach(s => {
-      const cat = s.categoria || "general";
+    items.forEach(s => {
+      const cat = s.categoria || "General";
+      if (!visibleSet.has(cat)) return;
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(s);
     });
+    if (!Object.keys(grouped).length) return;
     let out = "";
     Object.entries(grouped).forEach(([cat, svcs]) => {
       out += '<div class="services-block"><div class="service-group-title">' + escapeHtml(cat) + "</div>";
@@ -471,14 +472,19 @@
     });
     container.innerHTML = out;
   }
-  fetch(SB_URL + "/rest/v1/servicios_adicionales?visible=eq.true&order=nombre", {
+  Promise.all([ fetch(SB_URL + "/rest/v1/servicios_categorias?visible=eq.true&select=nombre", {
     headers: {
       apikey: SB_KEY,
       Authorization: "Bearer " + SB_KEY
     }
-  }).then(r => r.ok ? r.json() : null).then(data => {
-    if (!data || !data.length) return;
-    renderServAdic(data, "servAdicIndex");
+  }).then(r => r.ok ? r.json() : []), fetch(SB_URL + "/rest/v1/servicios_adicionales?order=nombre", {
+    headers: {
+      apikey: SB_KEY,
+      Authorization: "Bearer " + SB_KEY
+    }
+  }).then(r => r.ok ? r.json() : []) ]).then(([categorias, servicios]) => {
+    if (!servicios || !servicios.length || !categorias) return;
+    renderServAdic(servicios, categorias, "servAdicIndex");
   }).catch(() => {});
 })();</script>
 </body>
