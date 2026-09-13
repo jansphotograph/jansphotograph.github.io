@@ -2553,9 +2553,17 @@ async function loadInvFromSupabase() {
       }));
       localStorage.setItem(INV_KEY, JSON.stringify(mapped));
     }
-    const cats = await sbGetConfig("inv_categorias");
-    if (cats && Array.isArray(cats)) {
-      localStorage.setItem(INV_CAT_KEY, JSON.stringify(cats));
+    const {data: cats, error: catErr} = await sbClient.from("inventario_categorias").select("*").order("orden", {
+      ascending: true
+    });
+    if (!catErr && cats) {
+      invCategories = cats.map(c => ({
+        id: c.id,
+        nombre: c.nombre
+      }));
+      localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
+    } else if (catErr) {
+      console.error("loadInvFromSupabase (categorías):", catErr.message || JSON.stringify(catErr));
     }
   } catch (e) {
     console.warn("loadInvFromSupabase:", e);
@@ -2587,7 +2595,16 @@ async function saveInvData() {
     return;
   }
   try {
-    await sbSetConfig("inv_categorias", invCategories);
+    await sbClient.from("inventario_categorias").delete().neq("id", "___none___");
+    if (invCategories.length > 0) {
+      const catRows = invCategories.map((c, orden) => ({
+        id: c.id,
+        nombre: c.nombre,
+        orden: orden
+      }));
+      const {error: catError} = await sbClient.from("inventario_categorias").insert(catRows);
+      if (catError) console.error("saveInvData (categorías):", catError.message || JSON.stringify(catError));
+    }
     if (invItems.length > 0) {
       await sbClient.from("inventario").delete().neq("id", "___none___");
       const {error: error} = await sbClient.from("inventario").insert(invItems.map(i => ({
@@ -2635,18 +2652,6 @@ async function syncInvFromGitHub() {
         notes: i.notas || ""
       }));
       localStorage.setItem(INV_KEY, JSON.stringify(invItems));
-    }
-    const {data: cats, error: e2} = await sbClient.from("inventario").select("categoria_id, categoria").neq("categoria_id", "");
-    if (!e2 && cats) {
-      const unique = {};
-      cats.forEach(c => {
-        if (c.categoria_id) unique[c.categoria_id] = {
-          id: c.categoria_id,
-          name: c.categoria || c.categoria_id
-        };
-      });
-      invCategories = Object.values(unique);
-      localStorage.setItem(INV_CAT_KEY, JSON.stringify(invCategories));
     }
     renderInvCategoryTabs();
     showToast("Inventario sincronizado ✓");
