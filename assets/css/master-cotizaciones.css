@@ -489,3 +489,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* Cotizaciones: topbar(64) + master-nav(44) + subnav(48) + espacio(28) = 184px */
 .main-content { padding-top: 184px; }
+
+/* Desplegables de categorías de Servicios Adicionales (Nueva Cotización) */
+.qserv-category summary::-webkit-details-marker { display: none; }
+.qserv-category summary::marker { content: ''; }
+.qserv-category summary { outline: none; }

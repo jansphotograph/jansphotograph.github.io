@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <hr class="section-divider"/>
           <span class="section-label-sm">Servicios Adicionales</span>
-          <div id="qServicesCheck" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;"></div>
+          <div id="qServicesCheck" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
 
           <hr class="section-divider"/>
           <span class="section-label-sm">Resumen</span>
@@ -776,7 +776,15 @@ function renderServiceChecks() {
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(s);
   });
-  cont.innerHTML = Object.entries(grouped).map(([cat, list]) => `\n    <div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em;margin-top:6px">${escapeHtml(cat)}</div>\n    ${list.map(s => `\n    <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">\n      <input type="checkbox" value="${(s.nombre || "").replace(/"/g, "&quot;")}||${s.precio || 0}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />\n      ${escapeHtml(s.nombre)} <span style="color:var(--pink-l);margin-left:auto">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n    </label>`).join("")}\n  `).join("");
+  cont.innerHTML = Object.entries(grouped).map(([cat, list], catIdx) => `\n    <details class="qserv-category" ${catIdx === 0 ? "open" : ""} style="background:var(--dark);border:1px solid var(--border);border-radius:10px;overflow:hidden">\n      <summary style="list-style:none;cursor:pointer;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-size:0.85rem;font-weight:700;color:var(--white);user-select:none">\n        <span style="display:flex;align-items:center;gap:8px">\n          <svg class="qserv-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="transition:transform 0.2s;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>\n          ${escapeHtml(cat)}\n        </span>\n        <span style="font-size:0.72rem;color:var(--gray-l);font-weight:400">${list.length} servicio${list.length === 1 ? "" : "s"}</span>\n      </summary>\n      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:0 16px 14px">\n        ${list.map(s => `\n        <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-size:0.88rem;transition:border-color 0.2s">\n          <input type="checkbox" value="${(s.nombre || "").replace(/"/g, "&quot;")}||${s.precio || 0}" onchange="updateTotal()" style="accent-color:var(--pink);width:15px;height:15px" />\n          ${escapeHtml(s.nombre)} <span style="color:var(--pink-l);margin-left:auto">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n        </label>`).join("")}\n      </div>\n    </details>\n  `).join("");
+  cont.querySelectorAll(".qserv-category").forEach(det => {
+    const caret = det.querySelector(".qserv-caret");
+    const sync = () => {
+      if (caret) caret.style.transform = det.open ? "rotate(90deg)" : "rotate(0deg)";
+    };
+    sync();
+    det.addEventListener("toggle", sync);
+  });
 }
 
 function updateTotal() {
