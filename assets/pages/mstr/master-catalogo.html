@@ -1038,7 +1038,10 @@ function statusLabel(s) {
 }
 
 async function sbSetConfig(clave, valor) {
-  if (!sbClient) return false;
+  if (!sbClient) {
+    console.warn("sbSetConfig: sin conexión a Supabase (sbClient es null)");
+    return false;
+  }
   try {
     const {error: error} = await sbClient.from("config_sitio").upsert([ {
       clave: clave,
@@ -1047,8 +1050,10 @@ async function sbSetConfig(clave, valor) {
     } ], {
       onConflict: "clave"
     });
+    if (error) console.error('sbSetConfig error al guardar "' + clave + '":', error.message || JSON.stringify(error), "| code:", error.code, "| details:", error.details, "| hint:", error.hint);
     return !error;
   } catch (e) {
+    console.error('sbSetConfig excepción al guardar "' + clave + '":', e);
     return false;
   }
 }
