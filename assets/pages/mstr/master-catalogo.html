@@ -376,7 +376,19 @@ document.addEventListener("DOMContentLoaded", () => {
       <input type="hidden" id="invItemId" />
 
       
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:14px 16px;background:var(--dark);border-radius:10px">
+        <label class="toggle-switch" style="flex-shrink:0">
+          <input type="checkbox" id="invItemUsaFoto" checked onchange="toggleInvItemFoto(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;color:var(--white)">¿Este insumo lleva imagen?</div>
+          <div style="font-size:0.78rem;color:var(--gray)">Desactívalo si no necesitas foto para este insumo</div>
+        </div>
+      </div>
+
+      
+      <div id="invItemPhotoBlock" style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
         <div id="invItemPhotoPreview" onclick="document.getElementById('invItemPhotoInput').click()"
           style="width:80px;height:80px;border-radius:12px;background:var(--dark);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0">
           <svg id="invItemPhotoIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28" style="color:var(--gray)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -2542,8 +2554,9 @@ async function loadInvFromSupabase() {
         barcodeValue: r.codigo_barras || "",
         unidad: r.unidad || "unidad",
         precio: parseFloat(r.precio) || 0,
-        tiendas: [],
-        foto: "",
+        tiendas: r.tiendas || [],
+        foto: r.foto || "",
+        usaFoto: r.usa_foto !== undefined && r.usa_foto !== null ? r.usa_foto : !!r.foto,
         creadoEn: r.created_at ? new Date(r.created_at).toLocaleDateString("es-PA") : ""
       }));
       localStorage.setItem(INV_KEY, JSON.stringify(mapped));
@@ -2611,7 +2624,10 @@ async function saveInvData() {
         unidad: i.unidad || "unidad",
         precio: parseFloat(i.precio || i.price) || 0,
         codigo_barras: i.barcodeValue || i.barcode || i.codigo_barras || "",
-        notas: i.descripcion || i.notes || i.notas || ""
+        notas: i.descripcion || i.notes || i.notas || "",
+        foto: i.foto || "",
+        tiendas: i.tiendas || [],
+        usa_foto: i.usaFoto !== undefined ? i.usaFoto : true
       })));
       if (error) {
         console.error("saveInvData:", error);
@@ -2634,20 +2650,8 @@ async function syncInvFromGitHub() {
     return;
   }
   try {
-    const {data: items, error: e1} = await sbClient.from("inventario").select("*").order("nombre");
-    if (!e1 && items) {
-      invItems = items.map(i => ({
-        id: i.id,
-        name: i.nombre,
-        category: i.categoria_id || i.categoria || "",
-        cantidad: i.cantidad || 0,
-        unidad: i.unidad || "unidad",
-        precio: i.precio || 0,
-        barcode: i.codigo_barras || "",
-        notes: i.notas || ""
-      }));
-      localStorage.setItem(INV_KEY, JSON.stringify(invItems));
-    }
+    await loadInvFromSupabase();
+    loadInvData();
     renderInvCategoryTabs();
     showToast("Inventario sincronizado ✓");
   } catch (e) {
@@ -2722,6 +2726,11 @@ async function deleteInvCategory(id) {
 
 function renderInvCategoryTabs() {}
 
+function toggleInvItemFoto(checked) {
+  const block = document.getElementById("invItemPhotoBlock");
+  if (block) block.style.display = checked ? "" : "none";
+}
+
 function openInvItemModal(id) {
   loadInvData();
   const item = id ? invItems.find(x => x.id === id) : null;
@@ -2742,6 +2751,9 @@ function openInvItemModal(id) {
     preview.style.backgroundImage = "";
     if (icon) icon.style.display = "";
   }
+  const usaFoto = item ? item.usaFoto !== undefined ? item.usaFoto : !!item.foto : true;
+  document.getElementById("invItemUsaFoto").checked = usaFoto;
+  toggleInvItemFoto(usaFoto);
   const catSel = document.getElementById("invItemCategory");
   catSel.innerHTML = `<option value="">— Sin categoría —</option>` + invCategories.map(c => `<option value="${c.id}" ${item?.categoryId === c.id ? "selected" : ""}>${c.nombre}</option>`).join("");
   invTempStores = item ? JSON.parse(JSON.stringify(item.tiendas || [])) : [];
@@ -2794,6 +2806,7 @@ async function saveInvItem() {
   const categoryId = document.getElementById("invItemCategory").value;
   const descripcion = document.getElementById("invItemDesc").value.trim();
   const tiendas = invTempStores.filter(s => s.nombre.trim());
+  const usaFoto = document.getElementById("invItemUsaFoto").checked;
   const stockUnidades = parseInt(document.getElementById("invItemStockUnidades").value) || 0;
   if (existingId) {
     const item = invItems.find(x => x.id === existingId);
@@ -2803,7 +2816,8 @@ async function saveInvItem() {
       item.descripcion = descripcion;
       item.tiendas = tiendas;
       item.stockUnidades = stockUnidades;
-      if (invTempPhoto) item.foto = invTempPhoto;
+      item.usaFoto = usaFoto;
+      if (!usaFoto) item.foto = ""; else if (invTempPhoto) item.foto = invTempPhoto;
     }
   } else {
     const newId = genInvId();
@@ -2813,7 +2827,8 @@ async function saveInvItem() {
       categoryId: categoryId,
       descripcion: descripcion,
       tiendas: tiendas,
-      foto: invTempPhoto || "",
+      foto: usaFoto ? invTempPhoto || "" : "",
+      usaFoto: usaFoto,
       stockUnidades: stockUnidades,
       barcodeValue: genBarcodeValue(titulo),
       creadoEn: (new Date).toLocaleDateString("es-PA")
@@ -2850,7 +2865,7 @@ function renderInvItems() {
   const bestPriceOf = item => item.tiendas?.length ? Math.min(...item.tiendas.map(s => parseFloat(s.precio) || Infinity)) : null;
   const cardHtml = item => {
     const bestPrice = bestPriceOf(item);
-    return `\n    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;max-width:260px">\n      \x3c!-- Foto --\x3e\n      <div style="height:130px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">\n        ${item.foto ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}\n      </div>\n      \x3c!-- Info --\x3e\n      <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:5px">\n        <div style="font-weight:700;font-size:0.9rem;color:var(--white)">${item.titulo}</div>\n        ${item.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ""}\n        <div style="font-size:0.78rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades || 0) > 0 ? "#86efac" : "#fca5a5"}">${item.stockUnidades || 0}</strong></div>\n        ${item.tiendas?.length ? `\n          <div style="margin-top:4px">\n            <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:4px">Tiendas</div>\n            ${item.tiendas.map(s => `\n              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;padding:3px 0;border-top:1px solid rgba(255,255,255,0.04)">\n                <span style="color:var(--gray-l)">${s.nombre}</span>\n                <span style="font-weight:700;color:${parseFloat(s.precio) === bestPrice ? "#86efac" : "var(--white)"}">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n              </div>`).join("")}\n          </div>` : `<div style="font-size:0.76rem;color:var(--gray);margin-top:3px">Sin tiendas registradas</div>`}\n      </div>\n      \x3c!-- Acciones --\x3e\n      <div style="padding:9px 14px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">\n        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>\n        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>\n        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>\n      </div>\n    </div>`;
+    return `\n    <div class="card" style="display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;max-width:260px">\n      \x3c!-- Foto (solo si el insumo la usa) --\x3e\n      ${item.usaFoto !== false ? `\n      <div style="height:130px;background:var(--dark);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">\n        ${item.foto ? `<img src="${item.foto}" style="width:100%;height:100%;object-fit:cover" />` : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36" style="color:var(--border)"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}\n      </div>` : ""}\n      \x3c!-- Info --\x3e\n      <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:5px">\n        <div style="font-weight:700;font-size:0.9rem;color:var(--white)">${item.titulo}</div>\n        ${item.descripcion ? `<div style="font-size:0.78rem;color:var(--gray-l);line-height:1.4">${item.descripcion}</div>` : ""}\n        <div style="font-size:0.78rem"><span style="color:var(--gray)">Unidades:</span> <strong style="color:${(item.stockUnidades || 0) > 0 ? "#86efac" : "#fca5a5"}">${item.stockUnidades || 0}</strong></div>\n        ${item.tiendas?.length ? `\n          <div style="margin-top:4px">\n            <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);margin-bottom:4px">Tiendas</div>\n            ${item.tiendas.map(s => `\n              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;padding:3px 0;border-top:1px solid rgba(255,255,255,0.04)">\n                <span style="color:var(--gray-l)">${s.nombre}</span>\n                <span style="font-weight:700;color:${parseFloat(s.precio) === bestPrice ? "#86efac" : "var(--white)"}">$${parseFloat(s.precio || 0).toFixed(2)}</span>\n              </div>`).join("")}\n          </div>` : `<div style="font-size:0.76rem;color:var(--gray);margin-top:3px">Sin tiendas registradas</div>`}\n      </div>\n      \x3c!-- Acciones --\x3e\n      <div style="padding:9px 14px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">\n        <button class="btn btn-sm btn-outline" style="flex:1" onclick="openInvItemModal('${item.id}')">✏ Editar</button>\n        <button class="btn btn-sm btn-blue" onclick="viewInvBarcode('${item.id}')" title="Ver código de barras">▦</button>\n        <button class="btn btn-sm btn-red" onclick="deleteInvItem('${item.id}')">🗑</button>\n      </div>\n    </div>`;
   };
   const grouped = {};
   invCategories.forEach(c => {

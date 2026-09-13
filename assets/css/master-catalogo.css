@@ -509,3 +509,18 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .qserv-category summary::marker { content: ''; }
 .inv-category summary,
 .qserv-category summary { outline: none; }
+
+/* Interruptor (usado en "¿Utiliza insumos?" y "¿Lleva imagen?") */
+.toggle-switch { position:relative; display:inline-block; width:42px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0; background:var(--border);
+  border-radius:24px; cursor:pointer; transition:0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background:var(--pink); }
+.toggle-slider::before {
+  content:''; position:absolute;
+  height:18px; width:18px; left:3px; bottom:3px;
+  background:#fff; border-radius:50%; transition:0.3s;
+}
+.toggle-switch input:checked + .toggle-slider::before { transform:translateX(18px); }
