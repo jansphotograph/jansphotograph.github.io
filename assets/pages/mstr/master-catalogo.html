@@ -2196,7 +2196,9 @@ async function loadServAdicionalesFromSupabase() {
   }
 }
 
-let SERV_CATEGORIAS = [ "Maquillaje", "Impresiones" ];
+let SERV_CATEGORIAS = [];
+
+let servCategoriasRows = [];
 
 const SERV_CAT_KEY = "jans_serv_categorias";
 
@@ -2205,14 +2207,22 @@ async function loadServCategorias() {
     const localCats = JSON.parse(localStorage.getItem(SERV_CAT_KEY) || "null");
     if (Array.isArray(localCats) && localCats.length) SERV_CATEGORIAS = localCats;
   } catch (e) {}
-  const cfg = await sbGetConfig("servicios_categorias");
-  if (Array.isArray(cfg) && cfg.length) {
-    SERV_CATEGORIAS = cfg;
-    localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
+  if (sbClient) {
+    try {
+      const {data: data, error: error} = await sbClient.from("servicios_categorias").select("*").order("orden", {
+        ascending: true
+      });
+      if (!error && data) {
+        servCategoriasRows = data;
+        SERV_CATEGORIAS = data.map(r => r.nombre);
+        localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
+      } else if (error) {
+        console.error("loadServCategorias error:", error.message || JSON.stringify(error));
+      }
+    } catch (e) {
+      console.error("loadServCategorias excepción:", e);
+    }
   }
-  (servData.items || []).forEach(s => {
-    if (s.categoria && !SERV_CATEGORIAS.includes(s.categoria)) SERV_CATEGORIAS.push(s.categoria);
-  });
 }
 
 function openServCategoriasModal() {
@@ -2223,6 +2233,10 @@ function openServCategoriasModal() {
 function renderServCategoriasList() {
   const el = document.getElementById("servCategoriasList");
   if (!el) return;
+  if (!SERV_CATEGORIAS.length) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--gray)">Aún no hay categorías. Añade la primera abajo.</div>';
+    return;
+  }
   el.innerHTML = SERV_CATEGORIAS.map((c, i) => `\n    <div style="display:flex;gap:8px;align-items:center">\n      <input type="text" value="${c.replace(/"/g, "&quot;")}" data-idx="${i}" class="serv-cat-input" style="flex:1;padding:8px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:var(--font);outline:none" />\n      <button class="btn btn-sm btn-outline" onclick="removeServCategoria(${i})" title="Eliminar" style="color:#fca5a5;border-color:#fca5a5;flex-shrink:0">✕</button>\n    </div>\n  `).join("");
 }
 
@@ -2230,6 +2244,10 @@ function addServCategoria() {
   const input = document.getElementById("servCategoriaNuevaInput");
   const val = (input?.value || "").trim();
   if (!val) return;
+  if (SERV_CATEGORIAS.some(c => c.toLowerCase() === val.toLowerCase())) {
+    showToast("Esa categoría ya existe", "error");
+    return;
+  }
   SERV_CATEGORIAS.push(val);
   input.value = "";
   renderServCategoriasList();
@@ -2237,6 +2255,16 @@ function addServCategoria() {
 
 function removeServCategoria(i) {
   syncServCategoriasFromInputs();
+  const cat = SERV_CATEGORIAS[i];
+  const enUso = (servData.items || []).filter(s => s.categoria === cat);
+  if (enUso.length) {
+    const ok = confirm(`"${cat}" tiene ${enUso.length} servicio(s) asignado(s). Si la eliminas, esos servicios pasarán a la categoría "General". ¿Continuar?`);
+    if (!ok) return;
+    enUso.forEach(s => {
+      s.categoria = "General";
+    });
+    localStorage.setItem(SA_KEY, JSON.stringify(servData));
+  }
   SERV_CATEGORIAS.splice(i, 1);
   renderServCategoriasList();
 }
@@ -2254,7 +2282,28 @@ function syncServCategoriasFromInputs() {
 async function saveServCategorias() {
   syncServCategoriasFromInputs();
   localStorage.setItem(SERV_CAT_KEY, JSON.stringify(SERV_CATEGORIAS));
-  const ok = await sbSetConfig("servicios_categorias", SERV_CATEGORIAS);
+  let ok = false;
+  if (sbClient) {
+    try {
+      await sbClient.from("servicios_categorias").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      if (SERV_CATEGORIAS.length) {
+        const rows = SERV_CATEGORIAS.map((nombre, orden) => ({
+          nombre: nombre,
+          orden: orden
+        }));
+        const {error: error} = await sbClient.from("servicios_categorias").insert(rows);
+        if (error) {
+          console.error("saveServCategorias error:", error.message || JSON.stringify(error), "| code:", error.code, "| details:", error.details, "| hint:", error.hint);
+        } else {
+          ok = true;
+        }
+      } else {
+        ok = true;
+      }
+    } catch (e) {
+      console.error("saveServCategorias excepción:", e);
+    }
+  }
   renderServAdicList();
   closeModal("servCategoriasModal");
   if (ok) {
