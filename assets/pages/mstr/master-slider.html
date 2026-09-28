@@ -12,27 +12,7 @@
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>(async function() {
-  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
-  try {
-    window._jansAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: {
-        storage: window.sessionStorage,
-        persistSession: true,
-        autoRefreshToken: true
-      }
-    });
-    const {data: {session: session}} = await window._jansAuthClient.auth.getSession();
-    if (!session) {
-      window.location.replace("../master.html");
-      return;
-    }
-    window._jansAdminEmail = session.user && session.user.email;
-  } catch (e) {
-    window.location.replace("../master.html");
-  }
-})();</script>
+<script src="../../js/admin-guard.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -383,11 +363,9 @@ function closeModal(id) {
 }
 
 function handleLogout() {
-  if (window._jansAuthClient) {
-    window._jansAuthClient.auth.signOut();
-  }
-  sessionStorage.removeItem("jans_master_auth");
-  window.location.replace("../master.html");
+  try { sessionStorage.removeItem("jans_master_auth"); } catch (e) {}
+  if (typeof window.jansLogout === "function") return window.jansLogout();
+  window.location.replace("../auth/auth.html");
 }
 
 function escapeHtml(str) {

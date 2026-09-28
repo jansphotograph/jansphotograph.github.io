@@ -485,16 +485,11 @@ function showNotas(texto) {
 async function syncAvailabilityFromSupabase() {
   if (!sbClient) return;
   try {
-    let {data: data, error: error} = await sbClient.from("reservas").select("id,fecha,horaVal,status,bloqueo_antes,bloqueo_despues,bloqueo_unidad").in("status", [ "confirmed", "completed" ]);
+    // Solo datos de disponibilidad (sin nombres/teléfonos): función pública en Supabase
+    const {data: data, error: error} = await sbClient.rpc("disponibilidad_reservas");
     if (error) {
-      console.warn("Reintentando disponibilidad sin columnas de bloqueo:", error.message || JSON.stringify(error));
-      const fallback = await sbClient.from("reservas").select("id,fecha,horaVal,status").in("status", [ "confirmed", "completed" ]);
-      data = fallback.data;
-      error = fallback.error;
-      if (error) {
-        console.error("syncAvailabilityFromSupabase error:", error.message || JSON.stringify(error), "| code:", error.code, "| details:", error.details, "| hint:", error.hint);
-        return;
-      }
+      console.error("syncAvailabilityFromSupabase error:", error.message || JSON.stringify(error));
+      return;
     }
     if (!data) return;
     const byId = new Map(reservas.map(r => [ r.id, r ]));
