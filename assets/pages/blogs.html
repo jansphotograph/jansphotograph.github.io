@@ -140,18 +140,14 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="privacidad.html">Privacidad</a><span>·</span><a href="cookies.html">Cookies</a><span>·</span><a href="aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
       </div>
     </div>
   </footer>
 
   <script src="../js/main.js"></script>
-  <script>const OWNER = "jansphotograph";
-
-const REPO = "jansphotograph.github.io";
-
-const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
-
-document.getElementById("blogDate").textContent = (new Date).toLocaleDateString("es-PA", {
+  <script src="../js/jans-public.js"></script>
+  <script>document.getElementById("blogDate").textContent = (new Date).toLocaleDateString("es-PA", {
   weekday: "long",
   year: "numeric",
   month: "long",
@@ -184,12 +180,12 @@ function buildFilters(blogs) {
   });
 }
 
-const RAW_BASE = "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main";
+const esc = JansPub.esc;
 
 function imgOrPlaceholder(imagePath) {
-  if (imagePath) {
-    const src = imagePath.startsWith("http") ? imagePath : RAW_BASE + "/" + imagePath;
-    return `<img src="${src}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
+  const src = JansPub.img(imagePath);
+  if (src) {
+    return `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder>📷</div>'" />`;
   }
   return `<div class="img-placeholder">📷</div>`;
 }
@@ -203,25 +199,25 @@ function renderBlogs() {
   }
   let html = "";
   const featured = blogs[0];
-  const link = featured.enlace || null;
-  const titleTag = link ? `<a href="${link}" target="_blank" rel="noopener">${featured.titulo}</a>` : featured.titulo;
-  const readBtn = link ? `<a href="${link}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : "";
-  html += `\n      <div class="blog-featured">\n        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagePath || featured.imagen, "blog-featured-img")}</div>\n        <div class="blog-featured-content">\n          ${featured.categoria ? `<span class="blog-category-tag">${featured.categoria}</span>` : ""}\n          <h2>${titleTag}</h2>\n          <p class="blog-excerpt">${featured.descripcion || ""}</p>\n          <div class="blog-meta">\n            <span>📅 ${featured.fecha || ""}</span>\n          </div>\n          ${readBtn ? `<div style="margin-top:16px">${readBtn}</div>` : ""}\n        </div>\n      </div>`;
+  const link = JansPub.url(featured.enlace) || null;
+  const titleTag = link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(featured.titulo)}</a>` : esc(featured.titulo);
+  const readBtn = link ? `<a href="${esc(link)}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : "";
+  html += `\n      <div class="blog-featured">\n        <div class="blog-featured-img">${imgOrPlaceholder(featured.imagePath || featured.imagen, "blog-featured-img")}</div>\n        <div class="blog-featured-content">\n          ${featured.categoria ? `<span class="blog-category-tag">${esc(featured.categoria)}</span>` : ""}\n          <h2>${titleTag}</h2>\n          <p class="blog-excerpt">${esc(featured.descripcion)}</p>\n          <div class="blog-meta">\n            <span>📅 ${esc(featured.fecha)}</span>\n          </div>\n          ${readBtn ? `<div style="margin-top:16px">${readBtn}</div>` : ""}\n        </div>\n      </div>`;
   const rest = blogs.slice(1);
   if (rest.length) {
     const layout = featured.layout || "grid";
     if (layout === "cards") {
       html += `<div class="blog-section-title">Más publicaciones</div>\n          <div class="blog-cards-row">`;
       rest.forEach(b => {
-        const lk = b.enlace || null;
-        html += `<div class="blog-magazine-card">\n              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              <div class="blog-magazine-card-body">\n                ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ""}\n                <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>\n                <p>${b.descripcion || ""}</p>\n                <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha || ""}</span></div>\n                ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n              </div>\n            </div>`;
+        const lk = JansPub.url(b.enlace) || null;
+        html += `<div class="blog-magazine-card">\n              <div class="blog-magazine-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              <div class="blog-magazine-card-body">\n                ${b.categoria ? `<span class="blog-category-tag">${esc(b.categoria)}</span>` : ""}\n                <h3>${lk ? `<a href="${esc(lk)}" target="_blank" rel="noopener">${esc(b.titulo)}</a>` : esc(b.titulo)}</h3>\n                <p>${esc(b.descripcion)}</p>\n                <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${esc(b.fecha)}</span></div>\n                ${lk ? `<a href="${esc(lk)}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n              </div>\n            </div>`;
       });
       html += `</div>`;
     } else {
       html += `<div class="blog-section-title">Más publicaciones</div>\n          <div class="blog-grid">`;
       rest.forEach(b => {
-        const lk = b.enlace || null;
-        html += `<div class="blog-card">\n              <div class="blog-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              ${b.categoria ? `<span class="blog-category-tag">${b.categoria}</span>` : ""}\n              <h3>${lk ? `<a href="${lk}" target="_blank" rel="noopener">${b.titulo}</a>` : b.titulo}</h3>\n              <p>${b.descripcion || ""}</p>\n              <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${b.fecha || ""}</span></div>\n              ${lk ? `<a href="${lk}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n            </div>`;
+        const lk = JansPub.url(b.enlace) || null;
+        html += `<div class="blog-card">\n              <div class="blog-card-img">${imgOrPlaceholder(b.imagePath || b.imagen)}</div>\n              ${b.categoria ? `<span class="blog-category-tag">${esc(b.categoria)}</span>` : ""}\n              <h3>${lk ? `<a href="${esc(lk)}" target="_blank" rel="noopener">${esc(b.titulo)}</a>` : esc(b.titulo)}</h3>\n              <p>${esc(b.descripcion)}</p>\n              <div class="blog-meta" style="margin-bottom:8px"><span>📅 ${esc(b.fecha)}</span></div>\n              ${lk ? `<a href="${esc(lk)}" target="_blank" rel="noopener" class="blog-read-link">Leer más →</a>` : ""}\n            </div>`;
       });
       html += `</div>`;
     }
@@ -239,11 +235,8 @@ async function loadBlogs() {
     }
   } catch (e) {}
   try {
-    const res = await fetch(`${BASE}/blogs.json?t=${Date.now()}`, {
-      cache: "no-cache"
-    });
-    if (res.ok) {
-      const data = await res.json();
+    const data = await JansPub.json("blogs");
+    if (Array.isArray(data)) {
       if (data.length) {
         allBlogs = data;
         localStorage.setItem("jans_blogs", JSON.stringify(data));
@@ -280,5 +273,6 @@ document.addEventListener("DOMContentLoaded", loadBlogs);
   checkVersion();
   setInterval(checkVersion, 6e4);
 })();</script>
+  <script src="../js/jans-cookies.js"></script>
 </body>
 </html>

@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Cotizaciones - Jans Photograph</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
   <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
@@ -17,6 +19,7 @@
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
+<script src="../../js/jans-cms.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -98,7 +101,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
-    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Acceso Remoto</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -982,7 +985,7 @@ function pdfCompanyInfo() {
 async function loadImageAsDataUrl(path) {
   if (!path) return null;
   try {
-    const url = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+    const url = (p => /^https?:\/\//i.test(p) ? p : "/" + String(p).replace(/^\/+/, ""))(path);
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
@@ -1545,12 +1548,12 @@ function getCompanyData() {
 }
 
 async function loadLogoForPDF() {
-  const base = typeof CONFIG_PUBLIC !== "undefined" && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.REPO ? "https://raw.githubusercontent.com/" + CONFIG_PUBLIC.OWNER + "/" + CONFIG_PUBLIC.REPO + "/main/" : "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/";
+  const resolve = (p => /^https?:\/\//i.test(p) ? p : "/" + String(p).replace(/^\/+/, ""));
   const comp = pdfCompanyInfo();
   const paths = [ comp.logoPath, "assets/images/icons/Janssocialmedialogo.png", "assets/images/icons/Janssocialmedialogo.jpg", "assets/images/icons/Janssocialmedialogo.webp" ].filter(Boolean);
   for (const p of paths) {
     try {
-      const url = base + p;
+      const url = resolve(p);
       const res = await fetch(url);
       if (!res.ok) continue;
       const blob = await res.blob();

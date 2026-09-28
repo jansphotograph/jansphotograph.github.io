@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="../css/pages.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>function getSbClient(url, key) {
-  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return window.__sbSharedClient;
 }</script>
   <style>
@@ -226,12 +226,14 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="privacidad.html">Privacidad</a><span>·</span><a href="cookies.html">Cookies</a><span>·</span><a href="aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
         
       </div>
     </div>
   </footer>
 
   <script src="../js/main.js"></script>
+  <script src="../js/jans-public.js"></script>
   <script>(function() {
   const fab = document.getElementById("reviewsFab");
   const target = document.getElementById("comentarios-clientes");
@@ -261,8 +263,11 @@
       return;
     }
     grid.innerHTML = visible.map(c => {
-      const imgPath = c.imagen ? c.imagen.replace(/^assets\//, "../") : `../images/planes/${c.slug}/portada.jpeg`;
-      return `\n          <a href="planes/${c.slug}.html" style="\n            display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;\n            border-radius:14px;overflow:hidden;text-decoration:none;color:#fff;\n            transition:transform 0.25s,box-shadow 0.25s;\n            min-height:300px;position:relative;\n            background:linear-gradient(135deg,#1a1a1a,#0d0d0d);\n            box-shadow:0 4px 20px rgba(0,0,0,0.35);"\n            onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.5)'"\n            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.35)'">\n            \x3c!-- background image --\x3e\n            <div style="position:absolute;inset:0;background:url('${imgPath}') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>\n            \x3c!-- gradient overlay --\x3e\n            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)"></div>\n            \x3c!-- accent line --\x3e\n            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c71e5f,#e91e8c)"></div>\n            \x3c!-- content --\x3e\n            <div style="position:relative;padding:20px;width:100%">\n              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${c.nombre}</div>\n              <div style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#e91e8c">\n                Ver planes\n                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>\n              </div>\n            </div>\n          </a>`;
+      const STATIC_PAGES = [ "retratos", "xv-anos", "familiares", "pre-boda", "boda", "eventos", "graduacion", "gastronomia", "infantiles", "promo-2026" ];
+      const slug = String(c.slug || "").replace(/[^a-z0-9-]/g, "");
+      const href = STATIC_PAGES.includes(slug) ? `planes/${slug}.html` : `planes/categoria.html?slug=${encodeURIComponent(slug)}`;
+      const imgPath = JansPub.esc(JansPub.img(c.imagen || `assets/images/planes/${slug}/portada.jpeg`)).replace(/'/g, "%27").replace(/\(/g, "%28").replace(/\)/g, "%29");
+      return `\n          <a href="${href}" style="\n            display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;\n            border-radius:14px;overflow:hidden;text-decoration:none;color:#fff;\n            transition:transform 0.25s,box-shadow 0.25s;\n            min-height:300px;position:relative;\n            background:linear-gradient(135deg,#1a1a1a,#0d0d0d);\n            box-shadow:0 4px 20px rgba(0,0,0,0.35);"\n            onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 36px rgba(0,0,0,0.5)'"\n            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.35)'">\n            \x3c!-- background image --\x3e\n            <div style="position:absolute;inset:0;background:url('${imgPath}') center/cover no-repeat;opacity:0.7;transition:opacity 0.3s"></div>\n            \x3c!-- gradient overlay --\x3e\n            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 60%,transparent 100%)"></div>\n            \x3c!-- accent line --\x3e\n            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c71e5f,#e91e8c)"></div>\n            \x3c!-- content --\x3e\n            <div style="position:relative;padding:20px;width:100%">\n              <div style="font-family:'Playfair Display',Georgia,serif;font-size:1.1rem;font-weight:700;margin-bottom:6px">${JansPub.esc(c.nombre)}</div>\n              <div style="display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#e91e8c">\n                Ver planes\n                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>\n              </div>\n            </div>\n          </a>`;
     }).join("");
   }
   let cachedCats = [], cachedPlans = [];
@@ -294,29 +299,7 @@
     }
   }
 });</script>
-  <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const VER_KEY = "jans_site_version";
-  async function checkVersion() {
-    try {
-      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
-        cache: "no-cache"
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const current = localStorage.getItem(VER_KEY);
-      if (current && current !== String(data.v)) {
-        localStorage.setItem(VER_KEY, String(data.v));
-        window.location.reload(true);
-      } else {
-        localStorage.setItem(VER_KEY, String(data.v));
-      }
-    } catch (e) {}
-  }
-  checkVersion();
-  setInterval(checkVersion, 6e4);
-})();</script>
+  <script>JansPub.watchVersion();</script>
   <script>(function() {
   const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
   const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
@@ -371,8 +354,7 @@
   }); else loadFromSupabase();
 })();</script>
   <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
+  const esc = JansPub.esc;
   function renderServAdic(data, cid) {
     const c = document.getElementById(cid);
     if (!c) return;
@@ -382,14 +364,14 @@
     if (maq.length) {
       out += '<div class="services-block"><div class="service-group-title">Servicio de Maquillaje y Peinado</div>';
       maq.forEach(s => {
-        out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`;
+        out += `<div class="service-row"><span class="service-name">${esc(s.nombre)}</span><span class="service-price">$${esc(s.precio)}</span></div>`;
       });
       out += "</div>";
     }
     if (imp.length) {
       out += '<div class="services-block"><div class="service-group-title">Servicio de Impresiones</div>';
       imp.forEach(s => {
-        out += `<div class="service-row"><span class="service-name">${s.nombre}</span><span class="service-price">$${s.precio}</span></div>`;
+        out += `<div class="service-row"><span class="service-name">${esc(s.nombre)}</span><span class="service-price">$${esc(s.precio)}</span></div>`;
       });
       out += "</div>";
     }
@@ -399,13 +381,12 @@
     const l = JSON.parse(localStorage.getItem("jans_serv_adicionales") || "null");
     if (l) renderServAdic(l, "servAdicPage");
   } catch (e) {}
-  fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/servicios-adicionales.json?t=" + Date.now(), {
-    cache: "no-cache"
-  }).then(r => r.ok ? r.json() : null).then(d => {
+  JansPub.json("servicios-adicionales").then(d => {
     if (!d) return;
-    localStorage.setItem("jans_serv_adicionales", JSON.stringify(d));
+    try { localStorage.setItem("jans_serv_adicionales", JSON.stringify(d)); } catch (e) {}
     renderServAdic(d, "servAdicPage");
-  }).catch(() => {});
+  });
 })();</script>
+  <script src="../js/jans-cookies.js"></script>
 </body>
 </html>

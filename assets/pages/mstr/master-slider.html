@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Slider - Jans Photograph</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
 <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
@@ -13,6 +15,7 @@
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
+<script src="../../js/jans-cms.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -94,7 +97,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
-    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Acceso Remoto</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -228,22 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const LS_KEY = "jans_slider";
 
-const CONFIG_PUBLIC = {
-  get OWNER() {
-    return localStorage.getItem("jans_public_owner") || "jansphotograph";
-  },
-  get REPO() {
-    return localStorage.getItem("jans_public_repo") || "jansphotograph.github.io";
-  }
-};
-
-function getGHConfig() {
-  try {
-    return JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
-  } catch (e) {
-    return {};
-  }
-}
 
 const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
@@ -271,72 +258,7 @@ try {
   });
 } catch (e) {}
 
-async function ghPutPublicFile(path, base64Content, commitMsg) {
-  const token = (getGHConfig().token || "").replace(/\s+/g, "");
-  if (!token) {
-    showToast("Configura el token de GitHub primero", "error");
-    return false;
-  }
-  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
-  let sha = null;
-  try {
-    const r = await fetch(apiUrl, {
-      headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (r.ok) {
-      const j = await r.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const body = {
-    message: commitMsg || `upload ${path}`,
-    content: base64Content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(apiUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
-}
 
-async function ghDeletePublicFile(path, commitMsg) {
-  const token = (getGHConfig().token || "").replace(/\s+/g, "");
-  if (!token) return false;
-  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
-  try {
-    const r = await fetch(apiUrl, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (!r.ok) return false;
-    const j = await r.json();
-    const del = await fetch(apiUrl, {
-      method: "DELETE",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: commitMsg || `remove ${path}`,
-        sha: j.sha
-      })
-    });
-    return del.ok;
-  } catch (e) {
-    return false;
-  }
-}
 
 let slides = [];
 
@@ -381,7 +303,7 @@ function escapeHtml(str) {
 function imgUrl(path) {
   if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
-  return `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}?t=${Date.now()}`;
+  return "/" + String(path).replace(/^\/+/, "");
 }
 
 function loadSlidesLocal() {
@@ -543,26 +465,16 @@ async function saveSlide() {
   saveBtn.disabled = true;
   saveBtn.textContent = "Guardando...";
   if (slidePhotoData) {
-    const hasGH = (getGHConfig().token || "").trim();
-    if (!hasGH) {
-      setSlideModalMsg("Configura el token de GitHub en Config para poder subir fotos.", "error");
-      saveBtn.disabled = false;
-      saveBtn.textContent = "Guardar slide";
-      return;
-    }
     setSlideModalMsg("Subiendo foto...", "info");
-    const newPath = `assets/images/slider/slider_${numero}.${slidePhotoData.extension}`;
-    if (existing?.imagen && existing.imagen !== newPath) {
-      await ghDeletePublicFile(existing.imagen, `remove old slider image ${numero}`);
-    }
-    const ok = await ghPutPublicFile(newPath, slidePhotoData.base64, `slider_${numero}: ${titulo}`);
-    if (!ok) {
-      setSlideModalMsg("Error al subir la foto. Verifica el token de GitHub.", "error");
+    const url = await JansCMS.uploadBase64(`slider/slider_${numero}.${slidePhotoData.extension}`, slidePhotoData.base64);
+    if (!url) {
+      setSlideModalMsg("Error al subir la foto a Supabase Storage.", "error");
       saveBtn.disabled = false;
       saveBtn.textContent = "Guardar slide";
       return;
     }
-    imagen = newPath;
+    if (existing?.imagen && existing.imagen.split("?")[0] !== url.split("?")[0]) await JansCMS.remove(existing.imagen);
+    imagen = url;
   }
   const slide = {
     id: slideId,
@@ -610,9 +522,7 @@ async function deleteSlide(id) {
   slides = slides.filter(x => x.id !== id);
   localStorage.setItem(LS_KEY, JSON.stringify(slides));
   renderSlides();
-  if (s.imagen && (getGHConfig().token || "").trim()) {
-    await ghDeletePublicFile(s.imagen, `remove slider image ${s.numero}`);
-  }
+  if (s.imagen) await JansCMS.remove(s.imagen);
   if (sbClient) {
     const {error: error} = await sbClient.from("sliders").delete().eq("id", id);
     if (error) console.error("deleteSlide Supabase error:", error.message || JSON.stringify(error));

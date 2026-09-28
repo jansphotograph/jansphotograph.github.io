@@ -30,15 +30,45 @@
   hideStyle.textContent = "html{visibility:hidden!important}";
   document.head.appendChild(hideStyle);
 
+  // Datos privados que el panel guarda en caché en este navegador (clientes, cotizaciones,
+  // contadores, inventario…). Se borran al salir para no dejar nada en equipos compartidos.
+  var PRIVATE_KEYS = /^(sb-|supabase\.|jans_(reservas|quotes|comentarios|inventario|factura_counter|cot_counter|web_counter|master_auth|remote_pass|polling_enabled|gh_|public_owner|public_repo|social))/;
+
+  function clearCookies() {
+    try {
+      var host = location.hostname, parts = host.split(".");
+      var domains = ["", host];
+      for (var i = 1; i < parts.length - 1; i++) domains.push("." + parts.slice(i).join("."));
+      var paths = ["/"], segs = location.pathname.split("/");
+      for (var j = 1; j < segs.length; j++) paths.push(segs.slice(0, j).join("/") || "/");
+      document.cookie.split(";").forEach(function (c) {
+        var name = c.split("=")[0].trim();
+        if (!name) return;
+        domains.forEach(function (d) {
+          paths.forEach(function (pth) {
+            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=" + pth + (d ? "; domain=" + d : "") + "; SameSite=Lax";
+          });
+        });
+      });
+    } catch (e) {}
+  }
+
+  function purgeAdminData() {
+    try { sessionStorage.clear(); } catch (e) {}
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (PRIVATE_KEYS.test(k)) localStorage.removeItem(k);
+      });
+    } catch (e) {}
+    clearCookies();
+  }
+  window.jansPurgeAdminData = purgeAdminData;
+
   var redirecting = false;
   function toAuth(reason) {
     if (redirecting) return;
     redirecting = true;
-    try {
-      Object.keys(sessionStorage).forEach(function (k) {
-        if (k.indexOf("sb-") === 0 || k === "jans_master_auth") sessionStorage.removeItem(k);
-      });
-    } catch (e) {}
+    purgeAdminData();
     location.replace(AUTH_URL + (reason ? "?e=" + encodeURIComponent(reason) : ""));
   }
 
@@ -54,11 +84,22 @@
   window._jansAuthClient = client;
 
   var loggingOut = false;
-  window.jansLogout = async function () {
+  window.jansLogout = async function (reason) {
     loggingOut = true;
-    try { await client.auth.signOut(); } catch (e) {}
-    toAuth();
+    try { await client.auth.signOut({ scope: "local" }); } catch (e) {}
+    toAuth(reason);
   };
+
+  // Cierre automático tras 30 minutos sin actividad
+  var IDLE_MS = 30 * 60 * 1000, idleTimer = null;
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () { window.jansLogout("inactividad"); }, IDLE_MS);
+  }
+  ["click", "keydown", "mousemove", "touchstart", "scroll"].forEach(function (ev) {
+    window.addEventListener(ev, resetIdle, { passive: true });
+  });
+  resetIdle();
 
   window.jansAdminReady = (async function () {
     try {

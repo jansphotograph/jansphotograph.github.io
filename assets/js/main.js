@@ -30,7 +30,7 @@ document.querySelectorAll('.nav-drawer a').forEach(a => a.addEventListener('clic
 // ── Slider — Ping-pong (1→2→3→...→N→...→2→1→2…) ──
 // Reescrito para soportar cualquier cantidad de slides (antes estaba fijo a 5).
 // initSlider() es reutilizable: index.html la llama cada vez que renderiza
-// los slides (caché local y luego datos frescos desde GitHub).
+// los slides (caché local y luego datos frescos desde Supabase).
 window.__sliderState = { current: 0, direction: 1, total: 0, timer: null };
 
 window.initSlider = function initSlider() {

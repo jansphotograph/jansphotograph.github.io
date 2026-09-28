@@ -279,6 +279,7 @@
 
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="assets/pages/privacidad.html">Privacidad</a><span>·</span><a href="assets/pages/cookies.html">Cookies</a><span>·</span><a href="assets/pages/aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
         
       </div>
     </div>
@@ -319,7 +320,7 @@
   } catch (e) {}
   function loadFromSupabase() {
     if (!window.supabase || typeof window.supabase.createClient !== "function") return;
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
     sb.from("sliders").select("*").order("orden", {
       ascending: true
     }).then(({data: data, error: error}) => {
@@ -330,108 +331,86 @@
   }
   if (window.supabase) loadFromSupabase(); else window.addEventListener("load", loadFromSupabase);
 })();</script>
+  <script src="assets/js/jans-public.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function() {
-  const LS_KEY = "jans_ig_preview";
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
-  function applyIgImage(imagePath, focusX, focusY) {
-    if (!imagePath) return;
+  const esc = JansPub.esc;
+  function applyIg(ig) {
+    if (!ig) return;
+    const igUrl = JansPub.url(ig.igUrl) || "https://www.instagram.com/jans_photograph/";
+    const link = document.getElementById("igPostLink");
+    if (link) link.href = igUrl;
+    const igCta = document.querySelector(".ig-cta");
+    if (igCta) igCta.href = igUrl;
+    const likesEl = document.getElementById("igLikesText");
+    if (likesEl) likesEl.innerHTML = `<a href="${esc(igUrl)}" target="_blank" rel="noopener" style="color:inherit">Ver publicación en Instagram →</a>`;
+    if (ig.igCaption) {
+      const capEl = document.getElementById("igCaptionText");
+      if (capEl) capEl.textContent = ig.igCaption;
+    }
     const img = document.getElementById("igLastPost");
-    if (!img) return;
-    img.onerror = function() {
-      this.style.display = "none";
-    };
-    img.style.display = "block";
-    img.src = `${RAW}/${imagePath}?t=${Date.now()}`;
-    const fx = focusX !== undefined && focusX !== null ? focusX : 50;
-    const fy = focusY !== undefined && focusY !== null ? focusY : 50;
-    img.style.objectPosition = `${fx}% ${fy}%`;
+    const src = JansPub.img(ig.igImagePath);
+    if (img && src) {
+      img.onerror = function() { this.style.display = "none"; };
+      img.style.display = "block";
+      img.src = src;
+      const fx = Number.isFinite(+ig.igFocusX) ? +ig.igFocusX : 50;
+      const fy = Number.isFinite(+ig.igFocusY) ? +ig.igFocusY : 50;
+      img.style.objectPosition = `${fx}% ${fy}%`;
+    }
   }
-  try {
-    const ig = JSON.parse(localStorage.getItem(LS_KEY));
-    if (ig) {
-      const igUrl = ig.igUrl || "https://www.instagram.com/jans_photograph/";
-      const link = document.getElementById("igPostLink");
-      if (link) link.href = igUrl;
-      const igCta = document.querySelector(".ig-cta");
-      if (igCta) igCta.href = igUrl;
-      const likesEl = document.getElementById("igLikesText");
-      if (likesEl) likesEl.innerHTML = `<a href="${igUrl}" target="_blank" rel="noopener" style="color:inherit">Ver publicación en Instagram →</a>`;
-      if (ig.igCaption) {
-        const capEl = document.getElementById("igCaptionText");
-        if (capEl) capEl.textContent = ig.igCaption;
-      }
-      if (ig.igImagePath) applyIgImage(ig.igImagePath, ig.igFocusX, ig.igFocusY);
+  let lastYt = null;
+  window.addEventListener("jans-consent", () => { if (lastYt) applyYt(lastYt); });
+  function applyYt(yt) {
+    lastYt = yt;
+    if (!yt || !yt.ytId || !/^[A-Za-z0-9_-]{6,20}$/.test(yt.ytId)) return;
+    const wrap = document.querySelector(".yt-embed-wrap");
+    if (!wrap) return;
+    const id = yt.ytId;
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+    const videoUrl = "https://www.youtube.com/watch?v=" + id;
+    const embedUrl = "https://www.youtube-nocookie.com/embed/" + id + "?rel=0&modestbranding=1&playsinline=1";
+    const thumbUrl = JansPub.img(yt.thumbPath) || "https://img.youtube.com/vi/" + id + "/hqdefault.jpg";
+    const channelUrl = JansPub.url(yt.channelUrl) || "https://www.youtube.com/@jansphotograph";
+    const allowEmbed = window.JansConsent ? JansConsent.allows("externos") : false;
+    if (isMobile || !allowEmbed) {
+      wrap.innerHTML = `
+              <a href="${videoUrl}" target="_blank" rel="noopener"
+                style="display:block;position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:inherit;overflow:hidden;text-decoration:none">
+                <img src="${esc(thumbUrl)}" alt="Ver video en YouTube"
+                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.88"
+                  onerror="this.onerror=null;this.src='https://img.youtube.com/vi/${id}/hqdefault.jpg'" />
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+                  <div style="width:68px;height:68px;background:rgba(255,0,0,0.92);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.55)">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                  </div>
+                </div>
+                <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.75);font-size:0.72rem;font-family:Inter,sans-serif;letter-spacing:0.03em">▶ ${isMobile ? "Toca" : "Haz clic"} para ver en YouTube</div>
+              </a>`;
+    } else {
+      wrap.innerHTML = `<div class="yt-video-container"><iframe
+              src="${embedUrl}"
+              title="Último video Jans Photograph"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy">
+            </iframe></div>`;
     }
-  } catch (e) {}
-  fetch(`${RAW}/data/socialmedia/instagram.json?t=${Date.now()}`, {
-    cache: "no-cache"
-  }).then(r => r.ok ? r.json() : null).then(data => {
-    if (!data) return;
-    const existing = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-    const merged = {
-      ...existing,
-      ...data
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(merged));
-    if (data.igUrl) {
-      const link = document.getElementById("igPostLink");
-      if (link) link.href = data.igUrl;
-      const igCta = document.querySelector(".ig-cta");
-      if (igCta) igCta.href = data.igUrl;
-      const likesEl = document.getElementById("igLikesText");
-      if (likesEl) likesEl.innerHTML = `<a href="${data.igUrl}" target="_blank" rel="noopener" style="color:inherit">Ver publicación en Instagram →</a>`;
-    }
-    if (data.igImagePath) applyIgImage(data.igImagePath, data.igFocusX, data.igFocusY);
-  }).catch(() => {});
-  try {
-    const yt = JSON.parse(localStorage.getItem("jans_yt_preview"));
-    if (yt && yt.ytId) {
-      const wrap = document.querySelector(".yt-embed-wrap");
-      if (!wrap) return;
-      const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
-      const videoUrl = "https://www.youtube.com/watch?v=" + yt.ytId;
-      const embedUrl = "https://www.youtube-nocookie.com/embed/" + yt.ytId + "?rel=0&modestbranding=1&playsinline=1";
-      const thumbUrl = yt.thumbPath ? "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/" + yt.thumbPath + "?t=" + Date.now() : "https://img.youtube.com/vi/" + yt.ytId + "/hqdefault.jpg";
-      const channelUrl = yt.channelUrl || "https://www.youtube.com/@jansphotograph";
-      const deepLink = isMobile ? "vnd.youtube://" + yt.ytId : videoUrl;
-      if (isMobile) {
-        wrap.innerHTML = `\n              <a href="${videoUrl}" target="_blank" rel="noopener"\n                onclick="try{window.location='vnd.youtube://${yt.ytId}';setTimeout(()=>window.open('${videoUrl}','_blank'),300);return false;}catch(e){}"\n                style="display:block;position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:inherit;overflow:hidden;text-decoration:none">\n                <img src="${thumbUrl}" alt="Ver video en YouTube"\n                  style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.88"\n                  onerror="this.src='https://img.youtube.com/vi/${yt.ytId}/hqdefault.jpg'" />\n                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">\n                  <div style="width:68px;height:68px;background:rgba(255,0,0,0.92);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,0.55)">\n                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>\n                  </div>\n                </div>\n                <div style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.75);font-size:0.72rem;font-family:Inter,sans-serif;letter-spacing:0.03em">▶ Toca para ver en YouTube</div>\n              </a>`;
-      } else {
-        wrap.innerHTML = `<div class="yt-video-container"><iframe\n              src="${embedUrl}"\n              title="Último video Jans Photograph"\n              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"\n              allowfullscreen loading="lazy">\n            </iframe></div>`;
-      }
-      document.querySelectorAll('a[href*="youtube.com/@"]').forEach(a => {
-        a.href = channelUrl;
-      });
-    }
-  } catch (e) {}
+    document.querySelectorAll('a[href*="youtube.com/@"]').forEach(a => { a.href = channelUrl; });
+  }
+  try { applyIg(JSON.parse(localStorage.getItem("jans_ig_preview") || "null")); } catch (e) {}
+  try { applyYt(JSON.parse(localStorage.getItem("jans_yt_preview") || "null")); } catch (e) {}
+  JansPub.json("instagram").then(d => {
+    if (!d) return;
+    try { localStorage.setItem("jans_ig_preview", JSON.stringify(d)); } catch (e) {}
+    applyIg(d);
+  });
+  JansPub.json("youtube").then(d => {
+    if (!d) return;
+    try { localStorage.setItem("jans_yt_preview", JSON.stringify(d)); } catch (e) {}
+    applyYt(d);
+  });
+  JansPub.watchVersion();
 });</script>
-  <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const VER_KEY = "jans_site_version";
-  async function checkVersion() {
-    try {
-      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
-        cache: "no-cache"
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const current = localStorage.getItem(VER_KEY);
-      if (current && current !== String(data.v)) {
-        localStorage.setItem(VER_KEY, String(data.v));
-        window.location.reload(true);
-      } else {
-        localStorage.setItem(VER_KEY, String(data.v));
-      }
-    } catch (e) {}
-  }
-  checkVersion();
-  setInterval(checkVersion, 6e4);
-})();</script>
 
-  
   <a class="wa-fab" href="https://wa.me/50768622402" target="_blank" rel="noopener" aria-label="WhatsApp">
     <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -487,5 +466,6 @@
     renderServAdic(servicios, categorias, "servAdicIndex");
   }).catch(() => {});
 })();</script>
+  <script src="assets/js/jans-cookies.js"></script>
 </body>
 </html>

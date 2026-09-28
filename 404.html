@@ -8,9 +8,9 @@
   <meta name="description" content="La página que buscas no existe o fue movida. Vuelve al inicio de Jans Photograph para seguir explorando." />
   <meta name="robots" content="noindex, follow" />
   <link rel="canonical" href="https://jansphotograph.com/404.html" />
-  <link rel="icon" type="image/png" href="assets/images/icons/JansBlackBag.png" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/pages.css" />
+  <link rel="icon" type="image/png" href="/assets/images/icons/JansBlackBag.png" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/assets/css/pages.css" />
   <style>
     .error-hero {
       margin-top: 72px;
@@ -102,6 +102,9 @@
     .error-links a { color: rgba(255,255,255,0.5); transition: color 0.2s ease; }
     .error-links a:hover { color: var(--pink); }
     .error-links span { color: rgba(255,255,255,0.2); }
+    .error-path { font-family: monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4); margin: -20px auto 26px; word-break: break-all; max-width: 440px; }
+    .error-suggest { margin: -12px auto 30px; font-size: 0.92rem; color: rgba(255,255,255,0.75); }
+    .error-suggest a { color: var(--pink); text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -112,9 +115,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         <span>Regresar</span>
       </button>
-      <a href="index.html"><img src="assets/images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
+      <a href="/"><img src="/assets/images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>
     </div>
-    <a href="index.html" class="header-title">Jans <span>Photograph</span></a>
+    <a href="/" class="header-title">Jans <span>Photograph</span></a>
     <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -123,13 +126,13 @@
   <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
   <nav class="nav-drawer" id="navDrawer" role="navigation" aria-label="Menú principal">
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="assets/pages/servicios.html">Servicios</a></li>
-      <li><a href="assets/pages/nosotros.html">Sobre Nosotros</a></li>
-      <li><a href="assets/pages/blogs.html">Blogs</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/assets/pages/servicios.html">Servicios</a></li>
+      <li><a href="/assets/pages/nosotros.html">Sobre Nosotros</a></li>
+      <li><a href="/assets/pages/blogs.html">Blogs</a></li>
     </ul>
     <hr class="nav-lock-divider" />
-    <a href="assets/pages/auth/auth.html" class="nav-lock-link">
+    <a href="/assets/pages/auth/auth.html" class="nav-lock-link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Master
     </a>
@@ -152,22 +155,24 @@
         La página que buscas no existe, cambió de lugar o el enlace ya venció.
         Pero tranquilo, seguimos aquí para ayudarte a encontrar lo que necesitas.
       </p>
+      <p class="error-path" id="errorPath" hidden></p>
+      <div class="error-suggest" id="errorSuggest" hidden></div>
       <div class="error-actions">
-        <a href="index.html" class="error-btn error-btn-primary">
+        <a href="/" class="error-btn error-btn-primary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           Ir al inicio
         </a>
-        <a href="assets/pages/servicios.html" class="error-btn error-btn-outline">
+        <a href="/assets/pages/servicios.html" class="error-btn error-btn-outline">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           Ver servicios
         </a>
       </div>
       <div class="error-links">
-        <a href="assets/pages/nosotros.html">Sobre nosotros</a>
+        <a href="/assets/pages/nosotros.html">Sobre nosotros</a>
         <span>·</span>
-        <a href="assets/pages/blogs.html">Blogs</a>
+        <a href="/assets/pages/blogs.html">Blogs</a>
         <span>·</span>
-        <a href="assets/pages/quotes/reservas.html">Reservar sesión</a>
+        <a href="/assets/pages/quotes/reservas.html">Reservar sesión</a>
       </div>
     </div>
   </section>
@@ -221,7 +226,7 @@
             Somos apasionados de la fotografía con años de experiencia capturando
             momentos únicos. Cada sesión es una historia que merece ser contada.
           </p>
-          <a class="knowus-link" href="assets/pages/nosotros.html">
+          <a class="knowus-link" href="/assets/pages/nosotros.html">
             ¡Conócenos dando clic aquí! →
           </a>
         </div>
@@ -230,10 +235,51 @@
 
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="/assets/pages/privacidad.html">Privacidad</a><span>·</span><a href="/assets/pages/cookies.html">Cookies</a><span>·</span><a href="/assets/pages/aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
       </div>
     </div>
   </footer>
 
-  <script src="assets/js/main.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script>(function() {
+  // Muestra la ruta pedida (como texto, nunca como HTML) y sugiere la página más parecida
+  var path = decodeURIComponent(location.pathname || "/");
+  if (path && path !== "/404.html") {
+    var el = document.getElementById("errorPath");
+    el.textContent = path.slice(0, 160);
+    el.hidden = false;
+  }
+  var p = path.toLowerCase();
+  var map = [
+    [/pre-?boda/, "/assets/pages/planes/pre-boda.html", "Pre boda"],
+    [/boda|wedding/, "/assets/pages/planes/boda.html", "Fotografía de bodas"],
+    [/xv|quince/, "/assets/pages/planes/xv-anos.html", "XV años"],
+    [/retrato/, "/assets/pages/planes/retratos.html", "Retratos"],
+    [/famil/, "/assets/pages/planes/familiares.html", "Sesiones familiares"],
+    [/evento/, "/assets/pages/planes/eventos.html", "Eventos"],
+    [/gradua/, "/assets/pages/planes/graduacion.html", "Graduaciones"],
+    [/gastro|comida/, "/assets/pages/planes/gastronomia.html", "Gastronomía"],
+    [/infant|nino|niño/, "/assets/pages/planes/infantiles.html", "Sesiones infantiles"],
+    [/reserv|agenda|cita/, "/assets/pages/quotes/reservas.html", "Reservar una sesión"],
+    [/blog/, "/assets/pages/blogs.html", "Blog"],
+    [/nosotros|about|equipo/, "/assets/pages/nosotros.html", "Sobre nosotros"],
+    [/servicio|plan|precio/, "/assets/pages/servicios.html", "Servicios y planes"],
+    [/privacidad|privacy/, "/assets/pages/privacidad.html", "Política de privacidad"],
+    [/cookie/, "/assets/pages/cookies.html", "Política de cookies"],
+    [/legal|terminos|términos/, "/assets/pages/aviso-legal.html", "Aviso legal"]
+  ];
+  for (var i = 0; i < map.length; i++) {
+    if (map[i][0].test(p)) {
+      var box = document.getElementById("errorSuggest");
+      var a = document.createElement("a");
+      a.href = map[i][1];
+      a.textContent = map[i][2];
+      box.append("¿Quizá buscabas ", a, "?");
+      box.hidden = false;
+      break;
+    }
+  }
+})();</script>
+  <script src="/assets/js/jans-cookies.js"></script>
 </body>
 </html>

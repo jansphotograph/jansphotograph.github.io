@@ -179,61 +179,49 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="privacidad.html">Privacidad</a><span>·</span><a href="cookies.html">Cookies</a><span>·</span><a href="aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
         
       </div>
     </div>
   </footer>
 
   <script src="../js/main.js"></script>
+  <script src="../js/jans-public.js"></script>
   <script>(async function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
+  const esc = JansPub.esc;
   const grid = document.getElementById("teamGrid");
   if (!grid) return;
+  const AVATAR = `<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
   try {
-    const res = await fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/team.json?t=${Date.now()}`, {
-      cache: "no-cache"
-    });
-    if (!res.ok) {
-      grid.innerHTML = "";
-      return;
-    }
-    const members = await res.json();
+    const members = await JansPub.json("team");
     if (!Array.isArray(members) || !members.length) {
       grid.innerHTML = "";
       return;
     }
     grid.innerHTML = members.map(m => {
-      const photoHtml = m.fotoPath ? `<img src="https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${m.fotoPath}?t=${Date.now()}"\n                 alt="Foto de ${m.nombre}" loading="lazy"\n                 onerror="this.parentElement.innerHTML=\`<svg width='90' height='90' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='0.8'><circle cx='12' cy='8' r='4'/><path d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/></svg>\`" />` : `<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
-      return `\n          <div class="team-card">\n            <div class="team-photo">\n              ${photoHtml}\n              <div class="team-photo-accent"></div>\n            </div>\n            <div class="team-info">\n              <div class="team-name">${m.nombre || ""}</div>\n              <div class="team-role">${m.rol || ""}</div>\n              ${m.bio ? `<p class="team-bio">${m.bio}</p>` : ""}\n            </div>\n          </div>`;
+      const src = JansPub.img(m.fotoPath);
+      const photoHtml = src ? `<img src="${esc(src)}" alt="Foto de ${esc(m.nombre)}" loading="lazy" data-fallback="1" />` : AVATAR;
+      return `
+          <div class="team-card">
+            <div class="team-photo">
+              ${photoHtml}
+              <div class="team-photo-accent"></div>
+            </div>
+            <div class="team-info">
+              <div class="team-name">${esc(m.nombre)}</div>
+              <div class="team-role">${esc(m.rol)}</div>
+              ${m.bio ? `<p class="team-bio">${esc(m.bio)}</p>` : ""}
+            </div>
+          </div>`;
     }).join("");
+    grid.querySelectorAll("img[data-fallback]").forEach(img => {
+      img.addEventListener("error", () => { img.outerHTML = AVATAR; }, { once: true });
+    });
   } catch (e) {
     grid.innerHTML = "";
   }
 })();
-
-(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const VER_KEY = "jans_site_version";
-  async function checkVersion() {
-    try {
-      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
-        cache: "no-cache"
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const current = localStorage.getItem(VER_KEY);
-      if (current && current !== String(data.v)) {
-        localStorage.setItem(VER_KEY, String(data.v));
-        window.location.reload(true);
-      } else {
-        localStorage.setItem(VER_KEY, String(data.v));
-      }
-    } catch (e) {}
-  }
-  checkVersion();
-  setInterval(checkVersion, 6e4);
-})();</script>
+JansPub.watchVersion();</script>
+  <script src="../js/jans-cookies.js"></script>
 </body>
 </html>

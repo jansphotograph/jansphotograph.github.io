@@ -77,86 +77,6 @@
   <section class="catalog-section">
     <h2>Galería</h2>
     <div class="catalog-grid" id="catalogGrid">
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_01.jpeg"
-          alt="Familiares foto 1"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_02.jpeg"
-          alt="Familiares foto 2"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_03.jpeg"
-          alt="Familiares foto 3"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_04.jpeg"
-          alt="Familiares foto 4"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_05.jpeg"
-          alt="Familiares foto 5"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_06.jpeg"
-          alt="Familiares foto 6"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_07.jpeg"
-          alt="Familiares foto 7"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_08.jpeg"
-          alt="Familiares foto 8"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_09.jpeg"
-          alt="Familiares foto 9"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_10.jpeg"
-          alt="Familiares foto 10"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_11.jpeg"
-          alt="Familiares foto 11"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_12.jpeg"
-          alt="Familiares foto 12"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_13.jpeg"
-          alt="Familiares foto 13"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_14.jpeg"
-          alt="Familiares foto 14"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_15.jpeg"
-          alt="Familiares foto 15"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
-      <div class="catalog-item">
-        <img src="../../images/planes/familiares/foto_16.jpeg"
-          alt="Familiares foto 16"
-          onerror="this.parentElement.style.display='none'" />
-      </div>
     </div>
   </section>
 
@@ -205,6 +125,7 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="../privacidad.html">Privacidad</a><span>·</span><a href="../cookies.html">Cookies</a><span>·</span><a href="../aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
         
       </div>
     </div>
@@ -218,9 +139,10 @@
   </button>
 
   <script src="../../js/main.js"></script>
+  <script src="../../js/jans-public.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>function getSbClient(url, key) {
-  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);
+  if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   return window.__sbSharedClient;
 }</script>
   <script>(function() {
@@ -267,7 +189,7 @@
     }
     container.innerHTML = plans.map(p => {
       const isPopular = !!p.popular;
-      return `\n          <div class="plan-card-pub${isPopular ? " plan-popular" : ""}">\n            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ""}\n            <div class="pc-name${isPopular ? " pc-name-popular" : ""}">${p.nombre}</div>\n            <div class="pc-price">$${p.precio}<span> USD</span></div>\n            <ul class="pc-includes">\n              ${(p.incluye || []).map(i => `<li>${i}</li>`).join("")}\n            </ul>\n            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"\n              class="btn-agendar">Agendar</a>\n          </div>`;
+      return `\n          <div class="plan-card-pub${isPopular ? " plan-popular" : ""}">\n            ${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ""}\n            <div class="pc-name${isPopular ? " pc-name-popular" : ""}">${JansPub.esc(p.nombre)}</div>\n            <div class="pc-price">$${JansPub.esc(p.precio)}<span> USD</span></div>\n            <ul class="pc-includes">\n              ${(p.incluye || []).map(i => `<li>${JansPub.esc(i)}</li>`).join("")}\n            </ul>\n            <a href="../quotes/reservas.html?plan=${encodeURIComponent(p.nombre)}&precio=${encodeURIComponent(p.precio)}"\n              class="btn-agendar">Agendar</a>\n          </div>`;
     }).join("");
   }
   try {
@@ -302,54 +224,34 @@
   }
   if (window.supabase) loadPlansForCards(); else window.addEventListener("load", loadPlansForCards);
 });</script>
+  <script>JansPub.watchVersion();</script>
   <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const VER_KEY = "jans_site_version";
-  async function checkVersion() {
-    try {
-      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
-        cache: "no-cache"
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const current = localStorage.getItem(VER_KEY);
-      if (current && current !== String(data.v)) {
-        localStorage.setItem(VER_KEY, String(data.v));
-        window.location.reload(true);
-      } else {
-        localStorage.setItem(VER_KEY, String(data.v));
-      }
-    } catch (e) {}
-  }
-  checkVersion();
-  setInterval(checkVersion, 6e4);
-})();</script>
-  <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
+  const esc = JansPub.esc;
   function renderFaqs(faqs) {
     const container = document.getElementById("faqContainer");
     if (!container) return;
-    if (!faqs || !faqs.length) {
+    if (!Array.isArray(faqs) || !faqs.length) {
       container.innerHTML = "";
       const section = document.getElementById("aclaracionesSection");
       if (section) section.style.display = "none";
       return;
     }
-    container.innerHTML = faqs.map(f => `\n          <details class="aclaracion-item">\n            <summary>${f.pregunta}</summary>\n            <p>${f.respuesta}</p>\n          </details>`).join("");
+    container.innerHTML = faqs.map(f => `
+          <details class="aclaracion-item">
+            <summary>${esc(f.pregunta)}</summary>
+            <p>${esc(f.respuesta)}</p>
+          </details>`).join("");
   }
   try {
     const local = JSON.parse(localStorage.getItem("jans_faqs") || "[]");
     if (local.length) renderFaqs(local);
   } catch (e) {}
-  fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/faqs.json?t=" + Date.now(), {
-    cache: "no-cache"
-  }).then(r => r.ok ? r.json() : null).then(faqs => {
+  JansPub.json("faqs").then(faqs => {
     if (!faqs) return;
-    localStorage.setItem("jans_faqs", JSON.stringify(faqs));
+    try { localStorage.setItem("jans_faqs", JSON.stringify(faqs)); } catch (e) {}
     renderFaqs(faqs);
-  }).catch(() => {});
+  });
 })();</script>
+  <script src="../../js/jans-cookies.js"></script>
 </body>
 </html>

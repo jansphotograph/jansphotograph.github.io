@@ -1,8 +1,11 @@
 User-agent: *
 Allow: /
 
+# Panel de administración y páginas internas
 Disallow: /assets/pages/auth/
 Disallow: /assets/pages/master.html
 Disallow: /assets/pages/mstr/
+Disallow: /assets/pages/event/
+Disallow: /assets/pages/info/
 
 Sitemap: https://jansphotograph.com/sitemap.xml

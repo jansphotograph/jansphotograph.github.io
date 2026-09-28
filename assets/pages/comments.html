@@ -119,6 +119,7 @@
           <div class="cm-char-count"><span id="cTextCount">0</span>/600</div>
         </div>
 
+        <p style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin:0 0 12px;line-height:1.5">Al enviar tu reseña aceptas que la publiquemos con tu nombre y plan tras revisarla, según nuestra <a href="privacidad.html" style="color:#e91e8c">Política de Privacidad</a>.</p>
         <button type="submit" class="cm-submit" id="submitBtn">Enviar reseña</button>
         <div class="cm-msg" id="cMsg"></div>
       </form>
@@ -152,16 +153,15 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="privacidad.html">Privacidad</a><span>·</span><a href="cookies.html">Cookies</a><span>·</span><a href="aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
       </div>
     </div>
   </footer>
 
   <script src="../js/main.js"></script>
-  <script>const OWNER = "jansphotograph";
-
-const REPO = "jansphotograph.github.io";
-
-const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+  <script src="../js/jans-public.js"></script>
+  <script src="../js/jans-form.js"></script>
+  <script>const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
 
@@ -169,7 +169,7 @@ let sbClient = null;
 
 function initSupabase() {
   if (window.supabase && typeof window.supabase.createClient === "function") {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
     return true;
   }
   return false;
@@ -204,9 +204,9 @@ function renderPlanOptions(plans) {
   let html = '<option value="" disabled selected>Elige el plan que reservaste</option>';
   Object.keys(byCat).forEach(cat => {
     const label = CAT_LABELS[cat] || cat;
-    html += `<optgroup label="${label}">`;
+    html += `<optgroup label="${JansPub.esc(label)}">`;
     byCat[cat].forEach(p => {
-      html += `<option value="${p.nombre}">${p.nombre}</option>`;
+      html += `<option value="${JansPub.esc(p.nombre)}">${JansPub.esc(p.nombre)}</option>`;
     });
     html += "</optgroup>";
   });
@@ -219,10 +219,10 @@ try {
   if (local.length) renderPlanOptions(local);
 } catch (e) {}
 
-fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia/planes.json?t=${Date.now()}`, {
-  cache: "no-cache"
+fetch(`${JansPub.SB_URL}/rest/v1/planes_publicos?select=nombre,categoria&order=orden`, {
+  headers: { apikey: JansPub.SB_KEY, Authorization: "Bearer " + JansPub.SB_KEY }
 }).then(r => r.ok ? r.json() : null).then(plans => {
-  if (!plans) return;
+  if (!Array.isArray(plans) || !plans.length) return;
   localStorage.setItem("jans_planes", JSON.stringify(plans));
   renderPlanOptions(plans);
 }).catch(() => {
@@ -250,12 +250,34 @@ function showMsg(text, type) {
   msgEl.className = "cm-msg " + type;
 }
 
+JansForm.protect(form, "comentarios", { max: 3, windowMin: 30 });
+
+function showSuccess() {
+  document.getElementById("formCard").querySelector(".cm-card-title").style.display = "none";
+  document.getElementById("formCard").querySelector(".cm-card-sub").style.display = "none";
+  form.style.display = "none";
+  document.getElementById("successBox").style.display = "block";
+}
+
 form.addEventListener("submit", async function(e) {
   e.preventDefault();
-  const nombre = document.getElementById("cName").value.trim();
-  const plan = document.getElementById("cPlan").value;
-  const comentario = cText.value.trim();
-  if (!nombre) {
+  const nombre = JansForm.clean(document.getElementById("cName").value, 80);
+  const plan = JansForm.clean(document.getElementById("cPlan").value, 120);
+  const comentario = JansForm.clean(cText.value, 600);
+  const guard = JansForm.check("comentarios");
+  if (guard.bot) {
+    showSuccess();
+    return;
+  }
+  if (!guard.ok) {
+    showMsg(guard.msg, "err");
+    return;
+  }
+  if (JansForm.hasCode(document.getElementById("cName").value) || JansForm.hasCode(cText.value)) {
+    showMsg("Tu mensaje contiene caracteres o código no permitidos.", "err");
+    return;
+  }
+  if (nombre.length < 2) {
     showMsg("Por favor ingresa tu nombre.", "err");
     return;
   }
@@ -275,37 +297,34 @@ form.addEventListener("submit", async function(e) {
   submitBtn.textContent = "Enviando...";
   msgEl.className = "cm-msg";
   const payload = {
-    id: "c_" + Date.now(),
+    id: "c_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
     nombre: nombre,
     plan: plan,
     comentario: comentario,
     publicado: false,
     created_at: (new Date).toISOString()
   };
-  let savedOk = false;
+  let savedOk = false, serverMsg = "";
   if (sbClient) {
     try {
       const {error: error} = await sbClient.from("comentarios").insert([ payload ]);
-      if (!error) savedOk = true; else console.error("Supabase insert error:", error);
+      if (!error) savedOk = true; else {
+        serverMsg = JansForm.serverMessage(error);
+        console.error("Supabase insert error:", error);
+      }
     } catch (err) {
       console.error("Supabase unreachable:", err);
     }
   }
-  try {
-    const all = JSON.parse(localStorage.getItem("jans_comentarios") || "[]");
-    all.push(payload);
-    localStorage.setItem("jans_comentarios", JSON.stringify(all));
-  } catch (e) {}
   submitBtn.disabled = false;
   submitBtn.textContent = "Enviar reseña";
-  if (!savedOk && !sbClient) {
-    showMsg("No pudimos conectar en este momento. Intenta de nuevo en unos segundos.", "err");
+  if (!savedOk) {
+    showMsg(serverMsg || "No pudimos enviar tu reseña en este momento. Intenta de nuevo en unos minutos.", "err");
     return;
   }
-  document.getElementById("formCard").querySelector(".cm-card-title").style.display = "none";
-  document.getElementById("formCard").querySelector(".cm-card-sub").style.display = "none";
-  form.style.display = "none";
-  document.getElementById("successBox").style.display = "block";
+  JansForm.sent("comentarios");
+  showSuccess();
 });</script>
+  <script src="../js/jans-cookies.js"></script>
 </body>
 </html>

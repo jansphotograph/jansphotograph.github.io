@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Configuracion - Jans Photograph</title>
 <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,6 +15,7 @@
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
+<script src="../../js/jans-cms.js"></script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -94,7 +97,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
-    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Acceso Remoto</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -166,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <button class="subnav-btn active" id="btn-company" onclick="showSection('company')">Empresa</button>
   <button class="subnav-btn" id="btn-social" onclick="showSection('social')">Redes Sociales</button>
   <button class="subnav-btn" id="btn-config" onclick="showSection('config')">Facturas</button>
-  <button class="subnav-btn" id="btn-recargar" onclick="showSection('recargar')">Acceso Remoto</button>
+  <button class="subnav-btn" id="btn-recargar" onclick="showSection('recargar')">Publicación</button>
 </div>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 <main class="main-content" style="padding-top:156px">
@@ -232,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Código QR de Yappy
           </div>
           <p style="font-size:0.85rem;color:var(--gray-l);margin-bottom:16px">
-            Esta imagen se muestra en la página pública de abono (infoselect). Se sube directamente a tu repositorio de GitHub.
+            Esta imagen se muestra en la página pública de abono (infoselect). Se guarda en Supabase Storage.
           </p>
 
           <div class="field">
@@ -373,8 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
 <div id="section-config" style="display:none">
 <div id="view-config">
         <div class="page-header">
-          <h2>Configuración GitHub</h2>
-          <p>Ingresa tu token para publicar cambios en el repositorio público del sitio</p>
+          <h2>Facturas y numeración</h2>
+          <p>Controla la numeración de facturas, cotizaciones y reservas web</p>
         </div>
 
         
@@ -491,110 +494,6 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 <div id="section-recargar" style="display:none">
 
-<div class="card" style="border-color:rgba(233,30,140,0.25)">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
-            Acceso desde otros dispositivos
-          </div>
-          <p style="font-size:0.88rem;color:var(--gray-l);line-height:1.7;margin-bottom:16px">
-            Para acceder al Master desde tu celular u otro dispositivo, solo necesitas ingresar tu <strong style="color:var(--white)">usuario y contraseña</strong> en la pantalla de login. El token de GitHub se puede configurar después desde <strong style="color:var(--white)">Configuración → Token de GitHub</strong>.
-          </p>
-          <div style="background:var(--dark);border-radius:10px;padding:16px 18px;font-size:0.82rem;color:var(--gray-l)">
-            <div style="margin-bottom:8px;color:var(--white);font-weight:600">Sin token configurado puedes:</div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <span>✓ Ver y gestionar reservas</span>
-              <span>✓ Crear y editar planes, blogs</span>
-              <span>✓ Ver el calendario</span>
-              <span style="color:rgba(255,255,255,0.35)">✗ Publicar cambios al sitio web (requiere token)</span>
-            </div>
-          </div>
-          <div style="margin-top:16px;font-size:0.78rem;color:var(--gray);background:rgba(233,30,140,0.07);border:1px solid rgba(233,30,140,0.15);border-radius:8px;padding:10px 14px">
-            🔐 El token se guarda <strong style="color:var(--pink-l)">cifrado con AES-256</strong> — nunca en texto plano. Es seguro guardarlo en el dispositivo.
-          </div>
-        </div>
-
-
-
-<div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-            Credenciales de GitHub
-          </div>
-          <div class="field">
-            <label>Token Personal de GitHub *
-              <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener"
-                style="color:var(--pink-l);font-size:0.72rem;font-weight:400;margin-left:8px;text-decoration:underline">
-                ¿Cómo obtenerlo? →
-              </a>
-            </label>
-            <div style="position:relative">
-              <input type="password" id="cfgToken" placeholder="ghp_XXXXXXXXXXXXXXXXXXXX" style="padding-right:44px" />
-              <button onclick="toggleTokenVisibility()" title="Mostrar/ocultar token"
-                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-l);cursor:pointer;padding:4px;display:flex;align-items:center">
-                <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-            </div>
-            <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">
-              El token necesita permiso <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">repo</code> para poder publicar cambios en el repositorio público del sitio. Se guarda localmente en tu navegador.
-            </div>
-          </div>
-          <hr class="section-divider" />
-          <span class="section-label-sm">Repositorio Público (GitHub Pages)</span>
-          <p style="font-size:0.78rem;color:var(--gray);margin-bottom:14px;line-height:1.6">
-            El repositorio donde está alojada tu página web. Los enlaces de Instagram y YouTube se guardan aquí en <code>data/socialmedia/</code> y son leídos por todos los visitantes sin necesidad de token.
-          </p>
-          <div class="form-row">
-            <div class="field">
-              <label>Usuario GitHub (página)</label>
-              <input type="text" id="cfgPublicOwner" placeholder="tu-usuario-github" oninput="savePublicRepoConfig()" />
-            </div>
-            <div class="field">
-              <label>Repositorio de la página</label>
-              <input type="text" id="cfgPublicRepo" placeholder="jans-photograph" oninput="savePublicRepoConfig()" />
-            </div>
-          </div>
-          <div style="background:var(--dark);border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:0.82rem;color:var(--gray-l);display:flex;align-items:center;gap:10px">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray)" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-            Repo público: <code id="ghPublicRepoDisplay" style="color:var(--white)">—</code>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-pink" onclick="saveGithubConfig()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Guardar configuración
-            </button>
-            <button class="btn btn-outline" onclick="testGithubConnection()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Probar conexión
-            </button>
-            <button class="btn btn-red" onclick="clearGithubConfig()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-              Limpiar
-            </button>
-          </div>
-        </div>
-
-<div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Estado de Conexión
-          </div>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div id="ghPublicStatusDot" style="width:12px;height:12px;border-radius:50%;background:var(--gray);flex-shrink:0;transition:background 0.3s"></div>
-              <span style="font-size:0.78rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.05em">Repo público</span>
-              <span id="ghPublicStatusText" style="font-size:0.88rem;color:var(--gray-l)">Sin verificar</span>
-            </div>
-          </div>
-          <div style="font-size:0.8rem;color:var(--gray);line-height:2;background:var(--dark);border-radius:10px;padding:14px 18px">
-            Archivos sincronizados:<br/>
-            <code style="color:var(--gray-l)">data/planes.json</code> ·
-            <code style="color:var(--gray-l)">data/popular.json</code> ·
-            <code style="color:var(--gray-l)">data/blogs.json</code> ·
-            <code style="color:var(--gray-l)">data/team.json</code> ·
-            <code style="color:var(--gray-l)">data/version.json</code>
-          </div>
-        </div>
-
 <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -619,24 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>
           </div>
         </div>
-
-<div class="card">
-          <div class="card-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Guía de configuración
-          </div>
-          <div style="font-size:0.85rem;color:var(--gray-l);line-height:2">
-            <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
-              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
-              <span>Ve a <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--pink-l)">GitHub → Settings → Developer settings → Personal access tokens</a> y genera un token con permiso <code>repo</code></span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start">
-              <span style="background:var(--pink);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
-              <span>Ingresa el token y los datos del repositorio público arriba, guarda y prueba la conexión</span>
-            </div>
-          </div>
-        </div>
-
 
 <div id="view-recargar">
         <div class="page-header">
@@ -691,7 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Publicar actualización
           </div>
           <p style="font-size:0.9rem;color:var(--gray-l);line-height:1.75;margin-bottom:24px">
-            Al presionar <strong style="color:var(--white)">Recargar Sitio</strong>, se sube un nuevo <code>version.json</code> al repositorio público.
+            Al presionar <strong style="color:var(--white)">Recargar Sitio</strong>, se publica una nueva versión en Supabase.
             Todas las páginas del sitio detectan el cambio automáticamente y se recargan para mostrar
             los últimos planes, precios, disponibilidad e imágenes.
           </p>
@@ -764,12 +645,6 @@ const COMPANY_KEY = "jans_company";
 
 const SOCIAL_KEY = "jans_social";
 
-const GH_KEY = "jans_gh_config";
-
-const LS_KEY = "jans_gh_config";
-
-const LS_KEY_ENC = "jans_gh_token_enc";
-
 const REMOTE_PASS_KEY = "jans_remote_pass";
 
 let yappyQrFileData = null;
@@ -787,16 +662,11 @@ const CONFIG = {
   COMPANY_WEB: "jansphotograph.com"
 };
 
-const CONFIG_PUBLIC = {
-  get OWNER() {
-    return localStorage.getItem("jans_public_owner") || "jansphotograph";
-  },
-  get REPO() {
-    return localStorage.getItem("jans_public_repo") || "jansphotograph.github.io";
-  }
-};
-
-const GH_BASE_PUBLIC = () => `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/data`;
+// Ruta de sitio → URL para mostrar (las nuevas subidas ya son URLs completas de Supabase Storage)
+function siteImg(path) {
+  if (!path) return "";
+  return /^https?:\/\//i.test(path) ? path : "/" + String(path).replace(/^\/+/, "");
+}
 
 const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
@@ -821,7 +691,7 @@ try {
       }
     });
   } else {
-    console.warn("Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.");
+    console.warn("Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales.");
   }
 } catch (e) {
   console.warn("No se pudo inicializar Supabase:", e);
@@ -886,83 +756,13 @@ const CAT_LABELS = {
   todos: "Todas las categorías"
 };
 
-async function ghPutPublic(file, data) {
-  const token = (getGHConfig().token || "").replace(/\s+/g, "");
-  if (!token) {
-    showToast("Configura el token de GitHub primero", "error");
-    return false;
-  }
-  const url = `${GH_BASE_PUBLIC()}/${file}`;
-  let sha = null;
-  try {
-    const getRes = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (getRes.ok) {
-      const j = await getRes.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const body = {
-    message: `update ${file}`,
-    content: content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  const resJson = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    console.error("ghPutPublic FAILED:", res.status, JSON.stringify(resJson));
-    showToast("Error GitHub " + res.status + ": " + (resJson.message || "sin detalle"), "error");
-  }
-  return res.ok;
+async function publicarContenido(file, data) {
+  // Publica contenido público en Supabase (config_sitio, clave "pub:<archivo>")
+  const ok = await JansCMS.putJson(file, data);
+  if (!ok) showToast("No se pudo publicar " + file + " en Supabase", "error");
+  return ok;
 }
 
-async function ghPutPublicFile(path, base64Content, commitMsg) {
-  const token = (JSON.parse(localStorage.getItem("jans_gh_config") || "{}").token || "").replace(/\s+/g, "");
-  if (!token) {
-    showToast("Configura el token de GitHub primero", "error");
-    return false;
-  }
-  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
-  let sha = null;
-  try {
-    const r = await fetch(apiUrl, {
-      headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (r.ok) {
-      const j = await r.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const body = {
-    message: commitMsg || `upload ${path}`,
-    content: base64Content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(apiUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
-}
 
 let igFileData = null;
 
@@ -1002,7 +802,7 @@ async function saveIgFocusOnly() {
       igFocusY: igFocusY,
       updatedAt: (new Date).toISOString()
     });
-    const ok = await ghPutPublic("instagram.json", updated);
+    const ok = await publicarContenido("instagram.json", updated);
     if (ok) {
       localStorage.setItem("jans_ig_preview", JSON.stringify(updated));
       showToast("Focus actualizado");
@@ -1089,8 +889,7 @@ async function loadCompanyUI() {
   document.getElementById("compDistrito").value = data.distrito || "";
   document.getElementById("compCalle").value = data.calle || "";
   if (data.logoPath) {
-    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${data.logoPath}`;
-    document.getElementById("compLogoImg").src = rawUrl;
+    document.getElementById("compLogoImg").src = siteImg(data.logoPath);
     document.getElementById("compLogoPreview").style.display = "block";
     document.getElementById("compLogoLabel").textContent = "✓ Logo actual: " + data.logoPath.split("/").pop();
     document.getElementById("compLogoZone").style.borderColor = "rgba(34,197,94,0.4)";
@@ -1102,40 +901,12 @@ async function saveCompanyData() {
   const msgEl = document.getElementById("compMsg");
   let logoPath = JSON.parse(localStorage.getItem(COMPANY_KEY) || "{}").logoPath || "";
   if (companyLogoFileData) {
-    const imgPath = `assets/images/company/logo.${companyLogoFileData.extension}`;
-    const hasGH = (getGHConfig().token || "").replace(/\s+/g, "") && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-    if (hasGH) {
-      try {
-        let sha = null;
-        const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-          headers: {
-            Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-            Accept: "application/vnd.github.v3+json"
-          }
-        });
-        if (getRes.ok) {
-          const j = await getRes.json();
-          sha = j.sha;
-        }
-        const body = {
-          message: "update company logo",
-          content: companyLogoFileData.base64
-        };
-        if (sha) body.sha = sha;
-        const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-            Accept: "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(body)
-        });
-        if (res.ok) {
-          logoPath = imgPath;
-          companyLogoFileData = null;
-        }
-      } catch (e) {}
+    const url = await JansCMS.uploadBase64(`company/logo.${companyLogoFileData.extension}`, companyLogoFileData.base64);
+    if (url) {
+      logoPath = url;
+      companyLogoFileData = null;
+    } else {
+      showToast("No se pudo subir el logo", "error");
     }
   }
   const data = {
@@ -1151,12 +922,16 @@ async function saveCompanyData() {
     updatedAt: (new Date).toISOString()
   };
   localStorage.setItem(COMPANY_KEY, JSON.stringify(data));
+  const prev = getCompanyData();
+  if (prev.yappyQrUrl) data.yappyQrUrl = prev.yappyQrUrl;
+  if (prev.yappyQrExt) data.yappyQrExt = prev.yappyQrExt;
   const ok = await sbSetConfig("company", data);
+  await JansCMS.putJson("company.json", data);
   msgEl.style.display = "block";
   msgEl.style.background = ok ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)";
   msgEl.style.border = ok ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(245,158,11,0.3)";
   msgEl.style.color = ok ? "#86efac" : "#fcd34d";
-  msgEl.textContent = ok ? "✓ Datos de empresa publicados" : "✓ Guardados localmente (configura GitHub para publicar)";
+  msgEl.textContent = ok ? "✓ Datos de empresa publicados" : "✓ Guardados localmente (sin conexión a Supabase)";
   showToast(ok ? "Datos de empresa actualizados ✓" : "Guardado localmente ✓");
 }
 
@@ -1168,8 +943,7 @@ async function loadSocialLinksUI() {
       updateIgOpenLink(ig.igUrl);
     }
     if (ig && ig.igImagePath) {
-      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${ig.igImagePath}`;
-      document.getElementById("igPreviewImg").src = rawUrl;
+      document.getElementById("igPreviewImg").src = siteImg(ig.igImagePath);
       document.getElementById("igPreviewWrap").style.display = "block";
     }
   } catch (e) {}
@@ -1180,8 +954,7 @@ async function loadSocialLinksUI() {
       previewYT();
       if (yt.channelUrl && document.getElementById("ytChannelUrl")) document.getElementById("ytChannelUrl").value = yt.channelUrl;
       if (yt.thumbPath) {
-        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${yt.thumbPath}`;
-        document.getElementById("ytThumbImg").src = rawUrl;
+        document.getElementById("ytThumbImg").src = siteImg(yt.thumbPath);
         document.getElementById("ytThumbPreview").style.display = "block";
         document.getElementById("ytThumbLabel").textContent = "✓ Thumbnail actual: " + yt.thumbPath.split("/").pop();
         document.getElementById("ytThumbZone").style.borderColor = "rgba(34,197,94,0.4)";
@@ -1228,88 +1001,27 @@ async function saveIgLink() {
     return;
   }
   const igUrl = document.getElementById("igPostUrl").value.trim();
-  const imagePath = `assets/images/social/ig/lastpost.${igFileData.extension}`;
   const prevData = JSON.parse(localStorage.getItem("jans_ig_preview") || "{}");
-  localStorage.setItem("jans_ig_preview", JSON.stringify({
-    igUrl: igUrl,
-    igImagePath: imagePath,
-    updatedAt: (new Date).toISOString()
-  }));
   updateIgOpenLink(igUrl);
   igSetStatus("info", "Subiendo imagen...");
-  const hasGH = (getGHConfig().token || "").replace(/\s+/g, "") && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    igSetStatus("success", "✓ URL guardada. Configura GitHub para subir la imagen al repo.");
-    showToast("URL guardada ✓ — configura GitHub para la imagen");
-    igFileData = null;
-    return;
-  }
   try {
-    if (prevData.igImagePath && prevData.igImagePath !== imagePath) {
-      try {
-        const oldRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`, {
-          headers: {
-            Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-            Accept: "application/vnd.github.v3+json"
-          }
-        });
-        if (oldRes.ok) {
-          const oldJson = await oldRes.json();
-          await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${prevData.igImagePath}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-              Accept: "application/vnd.github.v3+json",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: "remove old instagram image",
-              sha: oldJson.sha
-            })
-          });
-        }
-      } catch (e) {}
-    }
-    let sha = null;
-    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`, {
-      headers: {
-        Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (getRes.ok) {
-      const j = await getRes.json();
-      sha = j.sha;
-    }
-    const body = {
-      message: "update lastpost instagram",
-      content: igFileData.base64
+    const url = await JansCMS.uploadBase64(`social/ig/lastpost.${igFileData.extension}`, igFileData.base64, igFileData.mimeType);
+    if (!url) throw new Error("upload");
+    if (prevData.igImagePath && prevData.igImagePath.split("?")[0] !== url.split("?")[0]) await JansCMS.remove(prevData.igImagePath);
+    const payload = {
+      igUrl: igUrl,
+      igImagePath: url,
+      igFocusX: igFocusX,
+      igFocusY: igFocusY,
+      updatedAt: (new Date).toISOString()
     };
-    if (sha) body.sha = sha;
-    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) {
-      await ghPutPublic("instagram.json", {
-        igUrl: igUrl,
-        igImagePath: imagePath,
-        updatedAt: (new Date).toISOString()
-      });
-      igSetStatus("success", `✓ Imagen publicada en ${imagePath}`);
-      showToast("Instagram publicado ✓");
-    } else {
-      igSetStatus("error", "Error al subir — verifica token y repo");
-      showToast("Error al subir imagen", "error");
-    }
+    localStorage.setItem("jans_ig_preview", JSON.stringify(payload));
+    await publicarContenido("instagram.json", payload);
+    igSetStatus("success", "✓ Imagen publicada");
+    showToast("Instagram publicado ✓");
   } catch (e) {
-    igSetStatus("error", "Sin conexión a GitHub");
-    showToast("Sin conexión", "error");
+    igSetStatus("error", "Error al subir la imagen a Supabase");
+    showToast("Error al subir imagen", "error");
   }
   igFileData = null;
 }
@@ -1329,43 +1041,13 @@ async function saveYtLink() {
   let thumbPath = null;
   if (ytThumbFileData) {
     setYtThumbStatus("info", "Subiendo thumbnail...");
-    const imgName = `thumbnail.${ytThumbFileData.extension}`;
-    const imgPath = `assets/images/social/youtube/${imgName}`;
-    try {
-      let sha = null;
-      const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-        headers: {
-          Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-          Accept: "application/vnd.github.v3+json"
-        }
-      });
-      if (getRes.ok) {
-        const j = await getRes.json();
-        sha = j.sha;
-      }
-      const body = {
-        message: "update youtube thumbnail",
-        content: ytThumbFileData.base64
-      };
-      if (sha) body.sha = sha;
-      const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        thumbPath = imgPath;
-        setYtThumbStatus("success", "✓ Thumbnail subido");
-        ytThumbFileData = null;
-      } else {
-        setYtThumbStatus("error", "Error al subir thumbnail");
-      }
-    } catch (e) {
-      setYtThumbStatus("error", "Sin conexión");
+    const url = await JansCMS.uploadBase64(`social/youtube/thumbnail.${ytThumbFileData.extension}`, ytThumbFileData.base64);
+    if (url) {
+      thumbPath = url;
+      setYtThumbStatus("success", "✓ Thumbnail subido");
+      ytThumbFileData = null;
+    } else {
+      setYtThumbStatus("error", "Error al subir thumbnail");
     }
   } else {
     try {
@@ -1380,38 +1062,23 @@ async function saveYtLink() {
     thumbPath: thumbPath,
     updatedAt: (new Date).toISOString()
   };
-  const ok = await ghPutPublic("youtube.json", payload);
+  const ok = await publicarContenido("youtube.json", payload);
   localStorage.setItem("jans_yt_preview", JSON.stringify(payload));
-  if (ok) showToast("YouTube actualizado y publicado ✓"); else showToast("Guardado localmente — verifica token para publicar", "error");
+  if (ok) showToast("YouTube actualizado y publicado ✓"); else showToast("Guardado localmente — no se pudo publicar en Supabase", "error");
 }
 
 async function loadLastReloadInfo() {
   const el = document.getElementById("lastReloadInfo");
   if (!el) return;
-  const gh = getGHConfig();
-  if (!gh.token) {
-    el.textContent = "Configura el token de GitHub para ver el estado.";
+  const data = await JansCMS.getJson("version.json");
+  if (!data || !data.ts) {
+    el.textContent = "Sin publicaciones previas.";
     return;
   }
-  try {
-    const owner = gh.owner || "jansphotograph";
-    const publicRepo = owner + ".github.io";
-    const res = await fetch(`https://api.github.com/repos/${owner}/${publicRepo}/contents/data/version.json`, {
-      headers: {
-        Authorization: `token ${gh.token}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (!res.ok) {
-      el.textContent = "Sin publicaciones previas.";
-      return;
-    }
-    const d = await res.json();
-    const data = JSON.parse(atob(d.content.replace(/\n/g, "")));
-    el.innerHTML = `Última publicación: <strong>${new Date(data.ts).toLocaleString("es-PA")}</strong> — ${data.note || "Actualización general"}`;
-  } catch (e) {
-    el.textContent = "No se pudo verificar la última publicación.";
-  }
+  el.textContent = "";
+  const strong = document.createElement("strong");
+  strong.textContent = new Date(data.ts).toLocaleString("es-PA");
+  el.append("Última publicación: ", strong, " — " + (data.note || "Actualización general"));
 }
 
 function updatePollUI(active) {
@@ -1635,32 +1302,6 @@ function showSection(name) {
   if (name === "recargar") loadLastReloadInfo();
 }
 
-async function saveGithubConfig() {
-  const publicOwner = document.getElementById("cfgPublicOwner").value.trim();
-  const publicRepo = document.getElementById("cfgPublicRepo").value.trim();
-  const _saved = getGHConfig();
-  const tokenInput = document.getElementById("cfgToken").value.replace(/\s+/g, "").trim();
-  const token = tokenInput || (_saved.token || "").replace(/\s+/g, "").trim() || "";
-  if (!token) {
-    showToast("Completa el token de GitHub", "error");
-    return;
-  }
-  const ghConfig = {
-    token: token,
-    publicOwner: publicOwner,
-    publicRepo: publicRepo
-  };
-  localStorage.setItem("jans_gh_config", JSON.stringify(ghConfig));
-  localStorage.setItem(LS_KEY, JSON.stringify({
-    publicOwner: publicOwner,
-    publicRepo: publicRepo
-  }));
-  localStorage.setItem(LS_KEY_ENC, btoa(token));
-  if (publicOwner) localStorage.setItem("jans_public_owner", publicOwner);
-  if (publicRepo) localStorage.setItem("jans_public_repo", publicRepo);
-  const synced = await sbSetConfig("gh_config", ghConfig);
-  showToast(synced ? "Configuración guardada y sincronizada en todos tus dispositivos ✓" : "Guardada en este navegador (sin conexión a Supabase para sincronizar)");
-}
 
 async function saveYappyQr() {
   const msgEl = document.getElementById("qrMsg");
@@ -1668,90 +1309,34 @@ async function saveYappyQr() {
     showToast("Selecciona una imagen primero", "error");
     return;
   }
-  const hasGH = (getGHConfig().token || "").replace(/\s+/g, "") && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    showToast("Configura tu conexión a GitHub primero (Configuración → GitHub)", "error");
+  const ext = (yappyQrFileData.extension || "png").toLowerCase();
+  const KNOWN_EXTS = [ "png", "jpg", "jpeg", "webp", "gif" ];
+  const safeExt = KNOWN_EXTS.includes(ext) ? ext : "png";
+  function msg(ok, text) {
+    msgEl.style.display = "block";
+    msgEl.style.background = ok ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)";
+    msgEl.style.border = ok ? "1px solid rgba(34,197,94,0.3)" : "1px solid rgba(239,68,68,0.3)";
+    msgEl.style.color = ok ? "#86efac" : "#fca5a5";
+    msgEl.textContent = text;
+  }
+  const url = await JansCMS.uploadBase64(`company/yappy-qr.${safeExt}`, yappyQrFileData.base64);
+  if (!url) {
+    msg(false, "No se pudo publicar el QR. Verifica tu conexión.");
+    showToast("Error al publicar el QR", "error");
     return;
   }
-  const ext = (yappyQrFileData.extension || "png").toLowerCase();
-  const KNOWN_EXTS = [ "png", "jpg", "jpeg", "webp", "gif", "svg" ];
-  const safeExt = KNOWN_EXTS.includes(ext) ? ext : "png";
-  const imgPath = `assets/images/company/yappy-qr.${safeExt}`;
-  try {
-    for (const oldExt of KNOWN_EXTS) {
-      if (oldExt === safeExt) continue;
-      const oldPath = `assets/images/company/yappy-qr.${oldExt}`;
-      try {
-        const checkRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`, {
-          headers: {
-            Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-            Accept: "application/vnd.github.v3+json"
-          }
-        });
-        if (checkRes.ok) {
-          const j = await checkRes.json();
-          await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${oldPath}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-              Accept: "application/vnd.github.v3+json",
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: "remove stale yappy qr format",
-              sha: j.sha
-            })
-          });
-        }
-      } catch (e) {}
-    }
-    let sha = null;
-    const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-      headers: {
-        Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (getRes.ok) {
-      const j = await getRes.json();
-      sha = j.sha;
-    }
-    const body = {
-      message: "update yappy qr",
-      content: yappyQrFileData.base64
-    };
-    if (sha) body.sha = sha;
-    const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imgPath}`, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${(getGHConfig().token || "").replace(/\s+/g, "")}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error("GitHub upload failed");
-    const companyData = getCompanyData();
-    companyData.yappyQrExt = safeExt;
-    localStorage.setItem(COMPANY_KEY, JSON.stringify(companyData));
-    await ghPutPublic("company.json", companyData);
-    yappyQrFileData = null;
-    document.getElementById("qrZoneLabel").textContent = "✓ QR publicado — haz clic para reemplazarlo";
-    document.getElementById("qrZone").style.borderColor = "rgba(34,197,94,0.4)";
-    msgEl.style.display = "block";
-    msgEl.style.background = "rgba(34,197,94,0.1)";
-    msgEl.style.border = "1px solid rgba(34,197,94,0.3)";
-    msgEl.style.color = "#86efac";
-    msgEl.textContent = "✓ QR de Yappy publicado en GitHub — ya está visible en la página de abono.";
-    showToast("QR de Yappy publicado ✓");
-  } catch (e) {
-    msgEl.style.display = "block";
-    msgEl.style.background = "rgba(239,68,68,0.1)";
-    msgEl.style.border = "1px solid rgba(239,68,68,0.3)";
-    msgEl.style.color = "#fca5a5";
-    msgEl.textContent = "No se pudo publicar el QR. Verifica tu conexión a GitHub en Configuración.";
-    showToast("Error al publicar el QR", "error");
-  }
+  const companyData = getCompanyData();
+  if (companyData.yappyQrUrl && companyData.yappyQrUrl.split("?")[0] !== url.split("?")[0]) await JansCMS.remove(companyData.yappyQrUrl);
+  companyData.yappyQrExt = safeExt;
+  companyData.yappyQrUrl = url;
+  localStorage.setItem(COMPANY_KEY, JSON.stringify(companyData));
+  await sbSetConfig("company", companyData);
+  await publicarContenido("company.json", companyData);
+  yappyQrFileData = null;
+  document.getElementById("qrZoneLabel").textContent = "✓ QR publicado — haz clic para reemplazarlo";
+  document.getElementById("qrZone").style.borderColor = "rgba(34,197,94,0.4)";
+  msg(true, "✓ QR de Yappy publicado — ya está visible en la página de abono.");
+  showToast("QR de Yappy publicado ✓");
 }
 
 function handleLogout() {
@@ -1760,54 +1345,7 @@ function handleLogout() {
   window.location.replace("../auth/auth.html");
 }
 
-function clearGithubConfig() {
-  if (!confirm("¿Limpiar la configuración de GitHub guardada?")) return;
-  localStorage.removeItem(LS_KEY);
-  localStorage.removeItem(LS_KEY_ENC);
-  localStorage.removeItem("jans_public_owner");
-  localStorage.removeItem("jans_public_repo");
-  document.getElementById("cfgToken").value = "";
-  document.getElementById("cfgPublicOwner").value = "";
-  document.getElementById("cfgPublicRepo").value = "";
-  document.getElementById("ghPublicRepoDisplay").textContent = "—";
-  const pubDotEl = document.getElementById("ghPublicStatusDot");
-  const pubTxtEl = document.getElementById("ghPublicStatusText");
-  if (pubDotEl) pubDotEl.style.background = "var(--gray)";
-  if (pubTxtEl) pubTxtEl.textContent = "Sin verificar";
-  showToast("Configuración limpiada", "error");
-}
 
-async function testGithubConnection() {
-  const pubDot = document.getElementById("ghPublicStatusDot");
-  const pubText = document.getElementById("ghPublicStatusText");
-  const pubOwner = document.getElementById("cfgPublicOwner")?.value.trim() || getGHConfig().publicOwner || "";
-  const pubRepo = document.getElementById("cfgPublicRepo")?.value.trim() || getGHConfig().publicRepo || "";
-  if (pubOwner && pubRepo && pubDot && pubText) {
-    pubDot.style.background = "var(--amber)";
-    pubText.textContent = "Verificando repo público…";
-    try {
-      const pubRes = await fetch(`https://api.github.com/repos/${pubOwner}/${pubRepo}`);
-      if (pubRes.ok) {
-        const pd = await pubRes.json();
-        pubDot.style.background = "var(--green)";
-        pubText.textContent = `Conectado ✓ — ${pd.full_name} (${pd.private ? "Privado" : "Público"})`;
-        showToast("GitHub conectado correctamente ✓");
-      } else {
-        pubDot.style.background = "var(--red)";
-        pubText.textContent = `Error ${pubRes.status} — verifica usuario y repositorio público`;
-        showToast(`Error ${pubRes.status}: verifica el repositorio público`, "error");
-      }
-    } catch (e) {
-      pubDot.style.background = "var(--red)";
-      pubText.textContent = "Sin conexión";
-      showToast("Sin conexión", "error");
-    }
-  } else if (pubDot && pubText) {
-    pubDot.style.background = "var(--gray)";
-    pubText.textContent = "Configura el repo público para verificarlo";
-    showToast("Completa usuario y repositorio público primero", "error");
-  }
-}
 
 async function cleanupStaleCalendarDays() {
   const resultEl = document.getElementById("cleanupResult");
@@ -1828,7 +1366,7 @@ async function cleanupStaleCalendarDays() {
     localStorage.setItem("jans_calendar", JSON.stringify(calData));
     state.calendar = calData;
     renderCalendar?.();
-    await ghPutPublic("calendar.json", calData);
+    await publicarContenido("calendar.json", calData);
   }
   let clearedHoursCount = 0;
   const clearedReservas = [];
@@ -1912,7 +1450,7 @@ async function publishReload() {
     note: note
   };
   const vLog = addLog("Subiendo version.json...", null);
-  const vOk = await ghPutPublic("version.json", versionPayload);
+  const vOk = await publicarContenido("version.json", versionPayload);
   vLog.style.background = vOk ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)";
   vLog.style.color = vOk ? "#86efac" : "#fca5a5";
   vLog.innerHTML = (vOk ? "✓" : "✗") + " version.json — " + (vOk ? "OK" : "Error");
@@ -1986,7 +1524,7 @@ async function publishReload() {
       continue;
     }
     const tLog = addLog("Subiendo " + task.label + "...", null);
-    const ok = await ghPutPublic(task.label, task.data);
+    const ok = await publicarContenido(task.label, task.data);
     tLog.style.background = ok ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)";
     tLog.style.color = ok ? "#86efac" : "#fca5a5";
     tLog.innerHTML = (ok ? "✓" : "✗") + " " + task.label + " — " + (ok ? "OK" : "Error");
@@ -1999,34 +1537,21 @@ async function publishReload() {
   showToast("Sitio actualizado y publicado ✓");
 }
 
-function toggleTokenVisibility() {
-  const inp = document.getElementById("cfgToken");
-  const icon = document.getElementById("eyeIcon");
-  if (inp.type === "password") {
-    inp.type = "text";
-    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
-  } else {
-    inp.type = "password";
-    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  }
-}
 
 function loadYappyQrPreview() {
   if (yappyQrFileData) return;
-  const hasGH = CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) return;
-  const ext = (getCompanyData().yappyQrExt || "png").toLowerCase();
-  const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/assets/images/company/yappy-qr.${ext}?t=${Date.now()}`;
+  const c = getCompanyData();
+  const src = c.yappyQrUrl || siteImg(`assets/images/company/yappy-qr.${(c.yappyQrExt || "png").toLowerCase()}`);
   const img = document.getElementById("qrPreviewImg");
   const testImg = new Image;
   testImg.onload = () => {
-    img.src = rawUrl;
+    img.src = src;
     document.getElementById("qrPreviewWrap").style.display = "block";
     document.getElementById("qrZoneLabel").textContent = "✓ QR actual — haz clic para reemplazarlo";
     document.getElementById("qrZone").style.borderColor = "rgba(34,197,94,0.4)";
   };
   testImg.onerror = () => {};
-  testImg.src = rawUrl;
+  testImg.src = src;
 }
 
 function updateFacturaNextPreview() {
@@ -2038,13 +1563,6 @@ function updateFacturaNextPreview() {
   preview.textContent = `Factura #${String(next).padStart(3, "0")}`;
 }
 
-function savePublicRepoConfig() {
-  const owner = document.getElementById("cfgPublicOwner").value.trim();
-  const repo = document.getElementById("cfgPublicRepo").value.trim();
-  localStorage.setItem("jans_public_owner", owner);
-  localStorage.setItem("jans_public_repo", repo);
-  document.getElementById("ghPublicRepoDisplay").textContent = owner && repo ? `${owner}/${repo}` : "—";
-}
 
 function getCompanyData() {
   try {
@@ -2062,44 +1580,13 @@ function getSocialData() {
   }
 }
 
-function getGHConfig() {
-  try {
-    return JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
-  } catch (e) {
-    return {};
-  }
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
   loadCompanyUI();
+  // El token de GitHub ya no se usa: se elimina de este navegador y de Supabase
   try {
-    let gh = JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
-    if (!gh.token) {
-      const remote = await sbGetConfig("gh_config");
-      if (remote && remote.token) {
-        gh = remote;
-        localStorage.setItem("jans_gh_config", JSON.stringify(gh));
-      }
-    } else {
-      const remote = await sbGetConfig("gh_config");
-      if (!remote || !remote.token) {
-        await sbSetConfig("gh_config", gh);
-      }
-    }
-    if (gh.token) {
-      const el = document.getElementById("cfgToken");
-      if (el) el.value = gh.token;
-    }
-    if (gh.publicOwner) {
-      const el = document.getElementById("cfgPublicOwner");
-      if (el) el.value = gh.publicOwner;
-      localStorage.setItem("jans_public_owner", gh.publicOwner);
-    }
-    if (gh.publicRepo) {
-      const el = document.getElementById("cfgPublicRepo");
-      if (el) el.value = gh.publicRepo;
-      localStorage.setItem("jans_public_repo", gh.publicRepo);
-    }
+    ["jans_gh_config", "jans_gh_token_enc", "jans_public_owner", "jans_public_repo"].forEach(k => localStorage.removeItem(k));
+    if (sbClient) await sbClient.from("config_sitio").delete().eq("clave", "gh_config");
   } catch (e) {}
 });</script>
 <script>if (typeof showSection === "function") {

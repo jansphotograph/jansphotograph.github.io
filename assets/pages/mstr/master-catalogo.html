@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Catalogo - Jans Photograph</title>
 <link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
   <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
@@ -16,6 +18,7 @@
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
+<script src="../../js/jans-cms.js"></script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -97,7 +100,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
-    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Acceso Remoto</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -555,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div id="invBarcodeCode" style="font-family:monospace;font-size:0.8rem;color:var(--gray);margin-top:8px"></div>
       <div class="btn-row" style="justify-content:center;margin-top:16px;flex-wrap:wrap">
         <button class="btn btn-pink" onclick="downloadBarcode()">⬇ Descargar JPG</button>
-        <button class="btn btn-outline" onclick="uploadBarcodeToGitHub()">☁ Subir a GitHub</button>
+        <button class="btn btn-outline" onclick="uploadBarcodeImage()">☁ Subir imagen</button>
       </div>
       <div id="invBarcodeMsg" style="margin-top:10px;font-size:0.82rem;color:var(--gray)"></div>
     </div>
@@ -922,24 +925,17 @@ const CONFIG = {
   COMPANY_NAME: "Jans Photograph",
   COMPANY_PHONE: "+507 6862-2402",
   COMPANY_EMAIL: "jansphotograph.contact@gmail.com",
-  COMPANY_WEB: "jansphotograph.com",
-  get GH_TOKEN() {
-    try {
-      return (JSON.parse(localStorage.getItem("jans_gh_config") || "{}").token || "").replace(/\s+/g, "");
-    } catch (e) {
-      return "";
-    }
-  }
+  COMPANY_WEB: "jansphotograph.com"
 };
 
-const CONFIG_PUBLIC = {
-  get OWNER() {
-    return localStorage.getItem("jans_public_owner") || "jansphotograph";
-  },
-  get REPO() {
-    return localStorage.getItem("jans_public_repo") || "jansphotograph.github.io";
-  }
-};
+// Ruta de sitio → URL para mostrar (las nuevas subidas ya son URLs completas de Supabase Storage)
+function siteImg(path) {
+  if (!path) return "";
+  return /^https?:\/\//i.test(path) ? path : "/" + String(path).replace(/^\/+/, "");
+}
+
+// Páginas de categoría que existen como archivo; las nuevas usan la plantilla categoria.html?slug=
+const STATIC_CAT_PAGES = [ "retratos", "xv-anos", "familiares", "pre-boda", "boda", "eventos", "graduacion", "gastronomia", "infantiles", "promo-2026" ];
 
 const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
 
@@ -957,7 +953,7 @@ try {
       }
     });
   } else {
-    console.warn("Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales/GitHub.");
+    console.warn("Supabase SDK no cargó a tiempo — el Master seguirá funcionando solo con datos locales.");
   }
 } catch (e) {
   console.warn("No se pudo inicializar Supabase:", e);
@@ -1056,120 +1052,27 @@ async function sbGetConfig(clave) {
   }
 }
 
-function getGHPublicBase() {
-  const gh = JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
-  const owner = gh.publicOwner || localStorage.getItem("jans_public_owner") || "jansphotograph";
-  const repo = gh.publicRepo || localStorage.getItem("jans_public_repo") || "jansphotograph.github.io";
-  return `https://api.github.com/repos/${owner}/${repo}/contents/data`;
+
+async function publicarContenido(file, data) {
+  // Publica contenido público en Supabase (config_sitio, clave "pub:<archivo>")
+  const ok = await JansCMS.putJson(file, data);
+  if (!ok) showToast("No se pudo publicar " + file + " en Supabase", "error");
+  return ok;
 }
 
-async function ghPutPublic(file, data) {
-  const gh = JSON.parse(localStorage.getItem("jans_gh_config") || "{}");
-  const token = (gh.token || "").replace(/\s+/g, "");
-  if (!token) {
-    showToast("Configura el token de GitHub primero", "error");
-    return false;
-  }
-  const url = `${getGHPublicBase()}/${file}`;
-  let sha = null;
-  try {
-    const getRes = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (getRes.ok) {
-      const j = await getRes.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const body = {
-    message: `update ${file}`,
-    content: content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
+async function uploadTeamPhoto(id, base64, ext, oldExt) {
+  const url = await JansCMS.uploadBase64(`team/${id}.${ext}`, base64);
+  return url ? { path: url, ext: ext } : null;
 }
 
-async function ghPutPublicFile(path, base64Content, commitMsg) {
-  const token = CONFIG.GH_TOKEN || JSON.parse(localStorage.getItem("jans_gh_config") || "{}").token;
-  if (!token) {
-    showToast("Configura el token de GitHub primero", "error");
-    return false;
-  }
-  const apiUrl = `https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`;
-  let sha = null;
-  try {
-    const r = await fetch(apiUrl, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (r.ok) {
-      const j = await r.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const body = {
-    message: commitMsg || `upload ${path}`,
-    content: base64Content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(apiUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
+async function deleteTeamPhoto(id, ext) {
+  loadTeamLocal();
+  const m = teamMembers.find(x => x.id === id);
+  if (m && m.fotoPath) await JansCMS.remove(m.fotoPath);
 }
 
-async function ghPutFile(path, contentStr, sha, message) {
-  const body = {
-    message: message || `update ${path}`,
-    content: btoa(unescape(encodeURIComponent(contentStr)))
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
-}
 
-async function ghGetFile(path) {
-  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`, {
-    headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
-      Accept: "application/vnd.github.v3+json"
-    }
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  return {
-    content: decodeURIComponent(escape(atob(json.content.replace(/\n/g, "")))),
-    sha: json.sha
-  };
-}
+
 
 function loadPublicPlans() {
   try {
@@ -1348,36 +1251,6 @@ function handleNewCatPhoto(file) {
   reader.readAsDataURL(file);
 }
 
-async function ghPutBinaryFile(path, base64Content, message) {
-  let sha = null;
-  try {
-    const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`, {
-      headers: {
-        Authorization: `token ${CONFIG.GH_TOKEN}`,
-        Accept: "application/vnd.github.v3+json"
-      }
-    });
-    if (r.ok) {
-      const j = await r.json();
-      sha = j.sha;
-    }
-  } catch (e) {}
-  const body = {
-    message: message || `upload ${path}`,
-    content: base64Content
-  };
-  if (sha) body.sha = sha;
-  const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${path}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${CONFIG.GH_TOKEN}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
-  return res.ok;
-}
 
 async function createNewCategory() {
   const name = document.getElementById("newCatName").value.trim();
@@ -1401,36 +1274,15 @@ async function createNewCategory() {
     setCatStatus("error", "Selecciona una foto de portada para la categoría.");
     return;
   }
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    setCatStatus("error", "Configura tu token de GitHub en Configuración antes de crear categorías.");
-    return;
-  }
   btn.disabled = true;
   btn.textContent = "Creando...";
   setCatStatus("info", "Iniciando creación de la categoría...");
   await syncCategoriasFromSupabase();
   try {
     CAT_LABELS[slug] = name;
-    const navSlugs = getVisibleSlugs([ ...ALL_PLAN_SLUGS, slug ]);
-    setCatStatus("info", `Creando página assets/pages/planes/${slug}.html...`);
-    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs);
-    const ok1 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, null, `create category page: ${slug}`);
-    if (!ok1) throw new Error("No se pudo crear la página de la categoría.");
     setCatStatus("info", "Subiendo foto de portada...");
-    const ok2 = await ghPutBinaryFile(`assets/images/planes/${slug}/portada.jpeg`, newCatFileData.base64, `cover photo: ${slug}`);
-    if (!ok2) throw new Error("No se pudo subir la foto de portada.");
-    setCatStatus("info", "Actualizando página de Servicios...");
-    try {
-      const svc = await ghGetFile("assets/pages/servicios.html");
-      if (svc) {
-        const insertion = `        { slug:'${slug}',  name:'${name}',  icon:'${icon}' },\n      ];`;
-        const updatedSvc = svc.content.replace(/(\s*)\];(\s*\n\s*const grid)/, (match, p1, p2) => `${p1}${insertion}${p2}`);
-        if (updatedSvc !== svc.content) {
-          await ghPutFile("assets/pages/servicios.html", updatedSvc, svc.sha, `add ${slug} category card`);
-        }
-      }
-    } catch (e) {}
+    const portadaUrl = await JansCMS.uploadBase64(`planes/${slug}/portada.jpeg`, newCatFileData.base64, "image/jpeg");
+    if (!portadaUrl) throw new Error("No se pudo subir la foto de portada.");
     ALL_PLAN_SLUGS.push(slug);
     if (!CAT_ORDER.includes(slug)) CAT_ORDER.splice(CAT_ORDER.length - 1, 0, slug);
     addCategoryToSelects(slug, name);
@@ -1440,7 +1292,7 @@ async function createNewCategory() {
         nombre: name,
         icono: icon,
         subtitulo: subtitle,
-        imagen: `assets/images/planes/${slug}/portada.jpeg`,
+        imagen: portadaUrl,
         oculta: false,
         orden: ALL_PLAN_SLUGS.length - 1
       } ], {
@@ -1448,7 +1300,7 @@ async function createNewCategory() {
       });
       if (error) console.error("createNewCategory Supabase error:", error.message || JSON.stringify(error));
     }
-    await ghPutPublic("version.json", {
+    await publicarContenido("version.json", {
       v: Date.now(),
       ts: (new Date).toISOString(),
       note: `Nueva categoría: ${name}`
@@ -1510,7 +1362,7 @@ function renderManageCategoriesList() {
     list.innerHTML = '<div class="empty-state">No hay categorías en Supabase todavía. Crea una con "+ Nueva Categoría", o corre el SQL de siembra si ya tenías categorías desde antes.</div>';
     return;
   }
-  list.innerHTML = categoriasList.map(c => `\n    <div style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 14px;${c.oculta ? "opacity:0.55" : ""}">\n      <div style="width:44px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#111;display:flex;align-items:center;justify-content:center;font-size:1.3rem">\n        ${c.imagen ? `<img src="https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${c.imagen}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${c.icono || "📸"}'" />` : c.icono || "📸"}\n      </div>\n      <div style="flex:1;min-width:0">\n        <div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px">\n          ${escapeHtmlCat(c.nombre)}\n          ${c.oculta ? '<span style="font-size:.68rem;font-weight:600;color:var(--gray);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:50px">Oculta</span>' : ""}\n        </div>\n        <div style="font-size:.76rem;color:var(--gray-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtmlCat(c.subtitulo || "")}</div>\n      </div>\n      <div style="display:flex;gap:6px;flex-shrink:0">\n        <button class="btn btn-sm btn-outline" onclick="openEditCategoryModal('${c.slug}')" title="Editar">✏</button>\n        <button class="btn btn-sm btn-outline" onclick="openGalleryManageModal('${c.slug}')" title="Galería de fotos">🖼</button>\n        <button class="btn btn-sm btn-outline" onclick="toggleCategoryHidden('${c.slug}')" title="${c.oculta ? "Mostrar" : "Ocultar"}">${c.oculta ? "👁" : "🙈"}</button>\n        <button class="btn btn-sm btn-red" onclick="deleteCategory('${c.slug}')" title="Eliminar">✕</button>\n      </div>\n    </div>`).join("");
+  list.innerHTML = categoriasList.map(c => `\n    <div style="display:flex;align-items:center;gap:12px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:12px 14px;${c.oculta ? "opacity:0.55" : ""}">\n      <div style="width:44px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#111;display:flex;align-items:center;justify-content:center;font-size:1.3rem">\n        ${c.imagen ? `<img src="${siteImg(c.imagen)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.textContent='${c.icono || "📸"}'" />` : c.icono || "📸"}\n      </div>\n      <div style="flex:1;min-width:0">\n        <div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px">\n          ${escapeHtmlCat(c.nombre)}\n          ${c.oculta ? '<span style="font-size:.68rem;font-weight:600;color:var(--gray);background:rgba(255,255,255,.06);padding:1px 7px;border-radius:50px">Oculta</span>' : ""}\n        </div>\n        <div style="font-size:.76rem;color:var(--gray-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtmlCat(c.subtitulo || "")}</div>\n      </div>\n      <div style="display:flex;gap:6px;flex-shrink:0">\n        <button class="btn btn-sm btn-outline" onclick="openEditCategoryModal('${c.slug}')" title="Editar">✏</button>\n        <button class="btn btn-sm btn-outline" onclick="openGalleryManageModal('${c.slug}')" title="Galería de fotos">🖼</button>\n        <button class="btn btn-sm btn-outline" onclick="toggleCategoryHidden('${c.slug}')" title="${c.oculta ? "Mostrar" : "Ocultar"}">${c.oculta ? "👁" : "🙈"}</button>\n        <button class="btn btn-sm btn-red" onclick="deleteCategory('${c.slug}')" title="Eliminar">✕</button>\n      </div>\n    </div>`).join("");
 }
 
 function escapeHtmlCat(str) {
@@ -1532,7 +1384,7 @@ function openEditCategoryModal(slug) {
   document.getElementById("editCatIcon").value = c.icono || "📸";
   document.getElementById("editCatSubtitle").value = c.subtitulo || "";
   document.getElementById("editCatFileInput").value = "";
-  document.getElementById("editCatImgPreviewEl").src = c.imagen ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${c.imagen}?t=${Date.now()}` : "";
+  document.getElementById("editCatImgPreviewEl").src = c.imagen ? `${siteImg(c.imagen)}` : "";
   document.getElementById("editCatDropLabel").textContent = "Haz clic o arrastra una foto nueva aquí";
   document.getElementById("editCatDropZone").style.borderColor = "rgba(233,30,140,0.35)";
   document.getElementById("editCatStatus").style.display = "none";
@@ -1593,11 +1445,6 @@ async function saveEditedCategory() {
     setEditCatStatus("error", "No se encontró la categoría.");
     return;
   }
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    setEditCatStatus("error", "Configura tu token de GitHub en Configuración.");
-    return;
-  }
   btn.disabled = true;
   btn.textContent = "Guardando...";
   setEditCatStatus("info", "Actualizando categoría...");
@@ -1605,42 +1452,12 @@ async function saveEditedCategory() {
     CAT_LABELS[slug] = name;
     let imagen = existing.imagen || `assets/images/planes/${slug}/portada.jpeg`;
     if (editCatFileData) {
-      const newPath = `assets/images/planes/${slug}/portada.jpeg`;
       setEditCatStatus("info", "Subiendo nueva foto...");
-      const ok = await ghPutBinaryFile(newPath, editCatFileData.base64, `update cover photo: ${slug}`);
-      if (!ok) throw new Error("No se pudo subir la nueva foto.");
-      if (imagen && imagen !== newPath) {
-        try {
-          const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagen}`, {
-            headers: {
-              Authorization: `token ${CONFIG.GH_TOKEN}`,
-              Accept: "application/vnd.github.v3+json"
-            }
-          });
-          if (r.ok) {
-            const j = await r.json();
-            await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagen}`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `token ${CONFIG.GH_TOKEN}`,
-                Accept: "application/vnd.github.v3+json",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                message: `remove legacy cover photo: ${slug}`,
-                sha: j.sha
-              })
-            });
-          }
-        } catch (e) {}
-      }
-      imagen = newPath;
+      const url = await JansCMS.uploadBase64(`planes/${slug}/portada.jpeg`, editCatFileData.base64, "image/jpeg");
+      if (!url) throw new Error("No se pudo subir la nueva foto.");
+      if (imagen && imagen.split("?")[0] !== url.split("?")[0]) await JansCMS.remove(imagen);
+      imagen = url;
     }
-    setEditCatStatus("info", "Actualizando página de la categoría...");
-    const file = await ghGetFile(`assets/pages/planes/${slug}.html`);
-    const pageHTML = buildCategoryPageHTML(slug, name, icon, subtitle, getVisibleSlugs(ALL_PLAN_SLUGS));
-    const ok2 = await ghPutFile(`assets/pages/planes/${slug}.html`, pageHTML, file?.sha, `edit category: ${slug}`);
-    if (!ok2) throw new Error("No se pudo actualizar la página de la categoría.");
     if (sbClient) {
       const {error: error} = await sbClient.from("categorias").update({
         nombre: name,
@@ -1650,7 +1467,7 @@ async function saveEditedCategory() {
       }).eq("slug", slug);
       if (error) console.error("saveEditedCategory Supabase error:", error.message || JSON.stringify(error));
     }
-    await ghPutPublic("version.json", {
+    await publicarContenido("version.json", {
       v: Date.now(),
       ts: (new Date).toISOString(),
       note: `Categoría editada: ${name}`
@@ -1695,39 +1512,12 @@ async function deleteCategory(slug) {
   const planesDeLaCategoria = publicPlans.filter(p => p.categoria === slug).length;
   const warning = planesDeLaCategoria ? `¿Eliminar "${c.nombre}"? Esto también eliminará sus ${planesDeLaCategoria} plan(es) asociado(s). Esta acción no se puede deshacer.` : `¿Eliminar "${c.nombre}"? Esta acción no se puede deshacer.`;
   if (!confirm(warning)) return;
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
   try {
     if (sbClient) {
       await sbClient.from("planes_publicos").delete().eq("categoria", slug);
       try {
         const {data: galImgs} = await sbClient.from("galeria_categoria").select("*").eq("categoria", slug);
-        if (galImgs && galImgs.length && hasGH) {
-          for (const img of galImgs) {
-            try {
-              const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
-                headers: {
-                  Authorization: `token ${CONFIG.GH_TOKEN}`,
-                  Accept: "application/vnd.github.v3+json"
-                }
-              });
-              if (r.ok) {
-                const j = await r.json();
-                await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
-                  method: "DELETE",
-                  headers: {
-                    Authorization: `token ${CONFIG.GH_TOKEN}`,
-                    Accept: "application/vnd.github.v3+json",
-                    "Content-Type": "application/json"
-                  },
-                  body: JSON.stringify({
-                    message: `delete gallery image: ${slug}`,
-                    sha: j.sha
-                  })
-                });
-              }
-            } catch (e) {}
-          }
-        }
+        for (const img of galImgs || []) await JansCMS.remove(img.imagen);
       } catch (e) {}
       await sbClient.from("galeria_categoria").delete().eq("categoria", slug);
       await sbClient.from("categorias").delete().eq("slug", slug);
@@ -1735,57 +1525,16 @@ async function deleteCategory(slug) {
     publicPlans = publicPlans.filter(p => p.categoria !== slug);
     localStorage.setItem(PP_KEY, JSON.stringify(publicPlans));
     localStorage.removeItem("jans_galeria_" + slug);
-    if (hasGH) {
-      const page = await ghGetFile(`assets/pages/planes/${slug}.html`);
-      if (page) {
-        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/assets/pages/planes/${slug}.html`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `token ${CONFIG.GH_TOKEN}`,
-            Accept: "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `delete category page: ${slug}`,
-            sha: page.sha
-          })
-        });
-      }
-      if (c.imagen) {
-        try {
-          const imgRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${c.imagen}`, {
-            headers: {
-              Authorization: `token ${CONFIG.GH_TOKEN}`,
-              Accept: "application/vnd.github.v3+json"
-            }
-          });
-          if (imgRes.ok) {
-            const imgJson = await imgRes.json();
-            await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${c.imagen}`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `token ${CONFIG.GH_TOKEN}`,
-                Accept: "application/vnd.github.v3+json",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                message: `delete cover photo: ${slug}`,
-                sha: imgJson.sha
-              })
-            });
-          }
-        } catch (e) {}
-      }
-      ALL_PLAN_SLUGS.splice(ALL_PLAN_SLUGS.indexOf(slug), 1);
-      const idxOrder = CAT_ORDER.indexOf(slug);
-      if (idxOrder !== -1) CAT_ORDER.splice(idxOrder, 1);
-      delete CAT_LABELS[slug];
-      await ghPutPublic("version.json", {
-        v: Date.now(),
-        ts: (new Date).toISOString(),
-        note: `Categoría eliminada: ${c.nombre}`
-      });
-    }
+    if (c.imagen) await JansCMS.remove(c.imagen);
+    ALL_PLAN_SLUGS.splice(ALL_PLAN_SLUGS.indexOf(slug), 1);
+    const idxOrder = CAT_ORDER.indexOf(slug);
+    if (idxOrder !== -1) CAT_ORDER.splice(idxOrder, 1);
+    delete CAT_LABELS[slug];
+    await publicarContenido("version.json", {
+      v: Date.now(),
+      ts: (new Date).toISOString(),
+      note: `Categoría eliminada: ${c.nombre}`
+    });
     categoriasList = categoriasList.filter(x => x.slug !== slug);
     localStorage.setItem("jans_categorias", JSON.stringify(categoriasList));
     renderManageCategoriesList();
@@ -1822,7 +1571,7 @@ function renderGalleryManageGrid() {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Sin fotos administradas todavía — añade la primera arriba.</div>';
     return;
   }
-  grid.innerHTML = galleryManageList.map((img, i) => `\n    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/5;background:#111">\n      <img src="https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${img.imagen}?t=${Date.now()}"\n        style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.opacity='0.2'" />\n      <button onclick="deleteGalleryImage('${img.id}')" title="Eliminar"\n        style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:#fff;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>\n    </div>`).join("");
+  grid.innerHTML = galleryManageList.map((img, i) => `\n    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/5;background:#111">\n      <img src="${siteImg(img.imagen)}"\n        style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.opacity='0.2'" />\n      <button onclick="deleteGalleryImage('${img.id}')" title="Eliminar"\n        style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:#fff;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>\n    </div>`).join("");
 }
 
 function handleGalleryUpload(file) {
@@ -1832,11 +1581,6 @@ function handleGalleryUpload(file) {
     return;
   }
   const slug = document.getElementById("galleryManageSlug").value;
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (!hasGH) {
-    showToast("Configura tu token de GitHub en Configuración.", "error");
-    return;
-  }
   const label = document.getElementById("galleryAddLabel");
   label.textContent = "Subiendo...";
   const reader = new FileReader;
@@ -1850,9 +1594,8 @@ function handleGalleryUpload(file) {
       const jpegDataUrl = canvas.toDataURL("image/jpeg", .9);
       const base64 = jpegDataUrl.split(",")[1];
       const id = "gal_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-      const path = `assets/images/planes/${slug}/${id}.jpeg`;
-      const ok = await ghPutBinaryFile(path, base64, `add gallery photo: ${slug}`);
-      if (!ok) {
+      const path = await JansCMS.uploadBase64(`planes/${slug}/${id}.jpeg`, base64, "image/jpeg");
+      if (!path) {
         showToast("No se pudo subir la foto", "error");
         label.textContent = "Haz clic para añadir una foto nueva a la galería";
         return;
@@ -1896,32 +1639,7 @@ async function deleteGalleryImage(id) {
     const {error: error} = await sbClient.from("galeria_categoria").delete().eq("id", id);
     if (error) console.error("deleteGalleryImage Supabase error:", error.message || JSON.stringify(error));
   }
-  const hasGH = CONFIG.GH_TOKEN && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" && CONFIG_PUBLIC.REPO;
-  if (hasGH) {
-    try {
-      const r = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
-        headers: {
-          Authorization: `token ${CONFIG.GH_TOKEN}`,
-          Accept: "application/vnd.github.v3+json"
-        }
-      });
-      if (r.ok) {
-        const j = await r.json();
-        await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${img.imagen}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `token ${CONFIG.GH_TOKEN}`,
-            Accept: "application/vnd.github.v3+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: `remove gallery photo: ${img.categoria}`,
-            sha: j.sha
-          })
-        });
-      }
-    } catch (e) {}
-  }
+  await JansCMS.remove(img.imagen);
   showToast("Foto eliminada de la galería");
 }
 
@@ -1956,22 +1674,6 @@ function setCatStatus(type, msg) {
   el.textContent = msg;
 }
 
-function buildCategoryPageHTML(slug, name, icon, subtitle, navSlugs) {
-  const galleryItems = Array.from({
-    length: 16
-  }, (_, i) => {
-    const n = String(i + 1).padStart(2, "0");
-    return `      <div class="catalog-item">\n        <img src="../../images/planes/${slug}/foto_${n}.jpeg"\n          alt="${name} foto ${i + 1}"\n          onerror="this.parentElement.style.display='none'" />\n      </div>`;
-  }).join("\n");
-  const title = `Fotografía de ${name} en Panamá | Jans Photograph`;
-  const desc = subtitle || `Sesiones de ${name.toLowerCase()} profesionales en Panamá. Ve nuestros planes y precios.`;
-  const url = `https://jansphotograph.com/assets/pages/planes/${slug}.html`;
-  const OPEN_SCRIPT = "<" + "script>";
-  const CLOSE_SCRIPT = "<" + "/script>";
-  const OPEN_SCRIPT_SUPABASE = "<" + 'script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">' + "<" + "/script>";
-  const MAIN_JS_TAG = "<" + 'script src="../../js/main.js">' + "<" + "/script>";
-  return `<!DOCTYPE html>\n<html lang="es">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  \x3c!-- ══ SEO ══ --\x3e\n  <title>${title}</title>\n  <meta name="description" content="${desc}" />\n  <meta name="keywords"    content="${name.toLowerCase()} Panamá, fotografía de ${name.toLowerCase()}, sesión de fotos ${name.toLowerCase()} Panamá" />\n  <meta name="author"      content="Jans Photograph" />\n  <meta name="robots"      content="index, follow" />\n  <link rel="canonical"    href="${url}" />\n\n  \x3c!-- Open Graph --\x3e\n  <meta property="og:type"        content="website" />\n  <meta property="og:title"       content="${title}" />\n  <meta property="og:description" content="${desc}" />\n  <meta property="og:url"         content="${url}" />\n  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />\n  <meta property="og:site_name"   content="Jans Photograph" />\n  <meta property="og:locale"      content="es_PA" />\n\n  \x3c!-- Twitter Card --\x3e\n  <meta name="twitter:card"        content="summary_large_image" />\n  <meta name="twitter:title"       content="${title}" />\n  <meta name="twitter:description" content="${desc}" />\n  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />\n\n  \x3c!-- Geo --\x3e\n  <meta name="geo.region"      content="PA" />\n  <meta name="geo.placename"   content="Panamá" />\n  \n  <link rel="preconnect" href="https://fonts.googleapis.com" />\n  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />\n  <link rel="stylesheet" href="../../css/style.css" />\n  <link rel="stylesheet" href="../../css/pages.css" />\n \n</head>\n<body>\n\n  <header>\n    <div class="header-logo">\n      <a href="../../../index.html"><img src="../../images/icons/Janssocialmedialogo.png" alt="Jans Photograph Logo" height="48" style="width:auto;max-height:48px;" /></a>\n    </div>\n    <a href="../../../index.html" class="header-title">Jans <span>Photograph</span></a>\n    <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">\n      <span></span><span></span><span></span>\n    </button>\n  </header>\n\n  <div class="nav-overlay" id="navOverlay"></div>\n  <nav class="nav-drawer" id="navDrawer">\n    <div class="nav-drawer-title">Jans <span>Photograph</span></div>\n    <ul>\n      <li><a href="../../../index.html">Home</a></li>\n      <li><a href="../servicios.html">Servicios</a></li>\n      <li><a href="../nosotros.html">Sobre Nosotros</a></li>\n      <li><a href="../blogs.html">Blogs</a></li>\n    </ul>\n    <hr class="nav-lock-divider" />\n    <a href="../auth/auth.html" class="nav-lock-link">\n      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>\n      Master\n    </a>\n  </nav>\n\n  \x3c!-- ── Page Hero ── --\x3e\n  <section class="page-hero">\n    <span class="section-label">Sesiones fotográficas</span>\n    <h1>${icon} ${name}</h1>\n    <p>${subtitle || `Sesiones de ${name.toLowerCase()} a tu medida.`}</p>\n  </section>\n\n  \x3c!-- ── Photo Catalog ── --\x3e\n  <section class="catalog-section">\n    <h2>Galería</h2>\n    <div class="catalog-grid" id="catalogGrid">\n${galleryItems}\n    </div>\n  </section>\n\n  \x3c!-- ── Plan Cards ── --\x3e\n  <section class="plan-cards-section">\n    <div class="plan-cards-inner">\n      <h2 class="plan-cards-title">Nuestros Planes</h2>\n      <div class="plan-cards-grid" id="planCardsContainer">\n        <div class="plans-empty">Cargando planes...</div>\n      </div>\n    </div>\n  </section>\n\n  \x3c!-- ── Aclaraciones ── --\x3e\n  <section class="aclaraciones-section" id="aclaracionesSection">\n    <h2>Preguntas frecuentes</h2>\n    <div id="faqContainer">\n      <div class="aclaracion-item" style="opacity:0.4"><summary style="cursor:default">Cargando preguntas frecuentes...</summary></div>\n    </div>\n  </section>\n\n    <footer>\n    <div class="footer-inner">\n      <div class="footer-columns">\n        <div class="footer-col">\n          <h3 class="footer-col-title">Síguenos</h3>\n          <div class="social-icons">\n            <a class="social-icon" href="https://www.instagram.com/jans_photograph/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>\n            <a class="social-icon" href="https://www.tiktok.com/@jansphotograph" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-2.75V.5h-3.86v14.3a2.58 2.58 0 01-2.59 2.2 2.58 2.58 0 01-2.59-2.58 2.58 2.58 0 012.59-2.58c.24 0 .47.04.69.09V8.05a6.49 6.49 0 00-.69-.04 6.44 6.44 0 00-6.44 6.44 6.44 6.44 0 006.44 6.44 6.44 6.44 0 006.44-6.44V8.69a8.65 8.65 0 005.06 1.62V6.46a4.84 4.84 0 01-1.28.23z"/></svg></a>\n            <a class="social-icon" href="https://www.pexels.com/@jansphotograph" target="_blank" rel="noopener" aria-label="Pexels"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.006 6.193A4.797 4.797 0 0 0 9.209 1.4H2.398v21.2h3.196v-6.394h3.615a4.797 4.797 0 0 0 4.797-4.797V6.193zm-3.196 5.215a1.6 1.6 0 0 1-1.601 1.601H5.594V4.596h3.615a1.6 1.6 0 0 1 1.601 1.597v5.215z"/></svg></a>\n            <a class="social-icon" href="https://www.pinterest.com/jansphotograph" target="_blank" rel="noopener" aria-label="Pinterest"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg></a>\n          </div>\n        </div>\n        <div class="footer-col">\n          <h3 class="footer-col-title">Contáctanos</h3>\n          <div class="contact-items">\n            <a class="contact-item" href="https://wa.me/50768622402" target="_blank" rel="noopener"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div><span>+507 6862-2402</span></a>\n            <a class="contact-item" href="mailto:jansphotograph.contact@gmail.com"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><span>jansphotograph.contact@gmail.com</span></a>\n          </div>\n        </div>\n        <div class="footer-col">\n          <h3 class="footer-col-title">Conócenos</h3>\n          <p class="knowus-text">Somos apasionados de la fotografía. Cada sesión es una historia que merece ser contada.</p>\n          <a class="knowus-link" href="../nosotros.html">¡Conócenos dando clic aquí! →</a>\n        </div>\n      </div>\n      <div class="footer-bottom">\n        <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>\n      </div>\n    </div>\n  </footer>\n\n  \x3c!-- ── Ver Planes FAB ── --\x3e\n  <button class="fab-ver-planes" onclick="document.getElementById('planCardsContainer').scrollIntoView({behavior:'smooth',block:'start'})" aria-label="Ver planes">\n    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>\n    Ver Planes\n  </button>\n\n  ${MAIN_JS_TAG}\n  ${OPEN_SCRIPT_SUPABASE}\n  ${OPEN_SCRIPT}\n    // Cliente único de Supabase compartido en esta página — evita el\n    // warning "Multiple GoTrueClient instances" que sale si cada bloque de\n    // script crea su propio cliente por separado con la misma llave.\n    function getSbClient(url, key) {\n      if (!window.__sbSharedClient) window.__sbSharedClient = window.supabase.createClient(url, key);\n      return window.__sbSharedClient;\n    }\n  ${CLOSE_SCRIPT}\n  ${OPEN_SCRIPT}\n    // ── Galería de fotos — se lee de Supabase (editable desde el panel\n    //    Master → Catálogo → Gestionar Categorías → Galería). Si todavía no\n    //    hay fotos administradas ahí, se deja el respaldo fijo de arriba. ──\n    (function() {\n      const SLUG = '${slug}';\n      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';\n      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';\n      const grid = document.getElementById('catalogGrid');\n      if (!grid) return;\n\n      function resolveGalleryImg(path) {\n        if (/^https?://[^']*/i.test(path)) return path;\n        return path.replace(/^assets//, '../../');\n      }\n      function renderGallery(images) {\n        if (!images.length) return;\n        grid.innerHTML = images.map((img, i) => \`\n          <div class="catalog-item">\n            <img src="\${resolveGalleryImg(img.imagen)}" alt="${slug} foto \${i+1}" loading="lazy" onerror="this.parentElement.style.display='none'" />\n          </div>\`).join('');\n      }\n\n      try {\n        const local = JSON.parse(localStorage.getItem('jans_galeria_' + SLUG) || '[]');\n        if (local.length) renderGallery(local);\n      } catch(e) {}\n\n      function loadGalleryFromSupabase() {\n        if (!window.supabase) return;\n        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);\n        sb.from('galeria_categoria').select('*').eq('categoria', SLUG).order('orden', { ascending: true })\n          .then(({ data, error }) => {\n            if (error || !data || !data.length) return;\n            localStorage.setItem('jans_galeria_' + SLUG, JSON.stringify(data));\n            renderGallery(data);\n          }).catch(() => {});\n      }\n      if (window.supabase) loadGalleryFromSupabase();\n      else window.addEventListener('load', loadGalleryFromSupabase);\n    })();\n  ${CLOSE_SCRIPT}\n  ${OPEN_SCRIPT}\n    // ── Load plan cards from Supabase, with localStorage fallback ──\n    document.addEventListener('DOMContentLoaded', async function() {\n      const currentPlan = '${slug}';\n      const container   = document.getElementById('planCardsContainer');\n      const SUPABASE_URL = 'https://qwwotzscuwnduzlralew.supabase.co';\n      const SUPABASE_KEY = 'sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g';\n\n      function renderPlans(allPlans) {\n        const plans = allPlans.filter(p => p.categoria === currentPlan || p.categoria === 'todos');\n        if (!plans.length) {\n          container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes para esta categoría.<br/>Contáctanos para más información.</div>';\n          return;\n        }\n        container.innerHTML = plans.map(p => {\n          const isPopular = !!p.popular;\n          return \`\n          <div class="plan-card-pub\${isPopular ? ' plan-popular' : ''}">\n            \${isPopular ? '<div class="popular-badge">⭐ Más Popular</div>' : ''}\n            <div class="pc-name\${isPopular ? ' pc-name-popular' : ''}">\${p.nombre}</div>\n            <div class="pc-price">$\${p.precio}<span> USD</span></div>\n            <ul class="pc-includes">\n              \${(p.incluye || []).map(i => \`<li>\${i}</li>\`).join('')}\n            </ul>\n            <a href="../quotes/reservas.html?plan=\${encodeURIComponent(p.nombre)}&precio=\${encodeURIComponent(p.precio)}&personasIncluidas=\${p.personasIncluidas||1}&maxPersonasExtra=\${p.maxPersonasExtra||0}&precioPersonaExtra=\${p.precioPersonaExtra||0}&tipoUbicacion=\${encodeURIComponent(p.tipoUbicacion||'estudio')}"\n              class="btn-agendar">Agendar</a>\n          </div>\`;\n        }).join('');\n      }\n\n      try {\n        const local = JSON.parse(localStorage.getItem('jans_planes') || '[]');\n        if (local.length) { renderPlans(local); }\n      } catch(e) {}\n\n      function loadPlansForCards() {\n        if (!window.supabase) return;\n        const sb = getSbClient(SUPABASE_URL, SUPABASE_KEY);\n        sb.from('planes_publicos').select('*').order('orden', { ascending: true })\n          .then(({ data, error }) => {\n            if (error || !data) {\n              if (!document.querySelector('.plan-card-pub')) {\n                container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';\n              }\n              return;\n            }\n            if (data.length) {\n              localStorage.setItem('jans_planes', JSON.stringify(data));\n              renderPlans(data);\n            } else if (!document.querySelector('.plan-card-pub')) {\n              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';\n            }\n          }).catch(() => {\n            if (!document.querySelector('.plan-card-pub')) {\n              container.innerHTML = '<div class="plans-empty">Próximamente publicaremos nuestros planes.<br/>Contáctanos para más información.</div>';\n            }\n          });\n      }\n      if (window.supabase) loadPlansForCards();\n      else window.addEventListener('load', loadPlansForCards);\n    });\n  ${CLOSE_SCRIPT}\n  ${OPEN_SCRIPT}\n    // ── Auto-reload when master publishes an update ──\n    (function() {\n      const OWNER   = 'jansphotograph';\n      const REPO    = 'jansphotograph.github.io';\n      const VER_KEY = 'jans_site_version';\n\n      async function checkVersion() {\n        try {\n          const res = await fetch(\n            'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/version.json?t=' + Date.now(),\n            { cache: 'no-cache' }\n          );\n          if (!res.ok) return;\n          const data = await res.json();\n          const current = localStorage.getItem(VER_KEY);\n          if (current && current !== String(data.v)) {\n            localStorage.setItem(VER_KEY, String(data.v));\n            window.location.reload(true);\n          } else {\n            localStorage.setItem(VER_KEY, String(data.v));\n          }\n        } catch(e) {}\n      }\n\n      checkVersion();\n      setInterval(checkVersion, 60000);\n    })();\n  ${CLOSE_SCRIPT}\n  ${OPEN_SCRIPT}\n    // ── Load FAQs dynamically — same visual format as before ──\n    (function() {\n      const OWNER = 'jansphotograph';\n      const REPO  = 'jansphotograph.github.io';\n\n      function renderFaqs(faqs) {\n        const container = document.getElementById('faqContainer');\n        if (!container) return;\n        if (!faqs || !faqs.length) {\n          container.innerHTML = '';\n          const section = document.getElementById('aclaracionesSection');\n          if (section) section.style.display = 'none';\n          return;\n        }\n        container.innerHTML = faqs.map(f => \`\n          <details class="aclaracion-item">\n            <summary>\${f.pregunta}</summary>\n            <p>\${f.respuesta}</p>\n          </details>\`).join('');\n      }\n\n      try {\n        const local = JSON.parse(localStorage.getItem('jans_faqs') || '[]');\n        if (local.length) renderFaqs(local);\n      } catch(e) {}\n\n      fetch('https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/data/socialmedia/faqs.json?t=' + Date.now(), { cache: 'no-cache' })\n        .then(r => r.ok ? r.json() : null)\n        .then(faqs => {\n          if (!faqs) return;\n          localStorage.setItem('jans_faqs', JSON.stringify(faqs));\n          renderFaqs(faqs);\n        })\n        .catch(() => {});\n    })();\n  ${CLOSE_SCRIPT}\n</body>\n</html>`;
-}
 
 function addCategoryToSelects(slug, name) {
   const categorySelectIds = [ "filterPlanCat", "ppCategoria" ];
@@ -2003,7 +1705,7 @@ function renderBlogPosts() {
     container.innerHTML = '<div style="color:var(--gray);font-size:0.9rem;padding:20px 0">Sin publicaciones. Crea la primera haciendo clic en "Nueva publicación".</div>';
     return;
   }
-  container.innerHTML = blogPosts.map((p, i) => `\n    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start">\n      ${p.imagePath || p.imagen ? `<img src="${(p.imagePath || "").startsWith("http") ? p.imagePath || p.imagen : "https://raw.githubusercontent.com/jansphotograph/jansphotograph.github.io/main/" + (p.imagePath || p.imagen)}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}\n      <div style="flex:1;min-width:0">\n        ${p.categoria ? `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink-l);margin-bottom:4px">${p.categoria}</div>` : ""}\n        <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>\n        <div style="font-size:0.8rem;color:var(--gray-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.descripcion || ""}</div>\n        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">${p.fecha || ""} · ${p.layout === "cards" ? "Tarjetas" : "Cuadrícula"}</div>\n      </div>\n      <div style="display:flex;gap:6px;flex-shrink:0">\n        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},-1)" title="Subir" ${i === 0 ? "disabled" : ""}>↑</button>\n        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},1)"  title="Bajar" ${i === blogPosts.length - 1 ? "disabled" : ""}>↓</button>\n        <button class="btn btn-sm btn-outline" onclick="editBlogPost(${i})">✏</button>\n        <button class="btn btn-sm btn-red"     onclick="deleteBlogPost(${i})">✕</button>\n      </div>\n    </div>`).join("");
+  container.innerHTML = blogPosts.map((p, i) => `\n    <div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start">\n      ${p.imagePath || p.imagen ? `<img src="${siteImg(p.imagePath || p.imagen)}" style="width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'" />` : '<div style="width:80px;height:60px;background:var(--dark);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--gray);font-size:1.2rem">📷</div>'}\n      <div style="flex:1;min-width:0">\n        ${p.categoria ? `<div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink-l);margin-bottom:4px">${p.categoria}</div>` : ""}\n        <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.titulo}</div>\n        <div style="font-size:0.8rem;color:var(--gray-l);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.descripcion || ""}</div>\n        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px">${p.fecha || ""} · ${p.layout === "cards" ? "Tarjetas" : "Cuadrícula"}</div>\n      </div>\n      <div style="display:flex;gap:6px;flex-shrink:0">\n        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},-1)" title="Subir" ${i === 0 ? "disabled" : ""}>↑</button>\n        <button class="btn btn-sm btn-outline" onclick="moveBlogPost(${i},1)"  title="Bajar" ${i === blogPosts.length - 1 ? "disabled" : ""}>↓</button>\n        <button class="btn btn-sm btn-outline" onclick="editBlogPost(${i})">✏</button>\n        <button class="btn btn-sm btn-red"     onclick="deleteBlogPost(${i})">✕</button>\n      </div>\n    </div>`).join("");
 }
 
 function moveBlogPost(idx, dir) {
@@ -2038,7 +1740,7 @@ function editBlogPost(idx) {
   resetBlogImgField();
   if (p.imagePath) {
     document.getElementById("bpImagen").value = p.imagePath;
-    const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${p.imagePath}`;
+    const rawUrl = `${siteImg(p.imagePath)}`;
     document.getElementById("bpImgPreviewEl").src = rawUrl;
     document.getElementById("bpImgPreview").style.display = "block";
     document.getElementById("bpDropLabel").textContent = "✓ Imagen actual: " + p.imagePath.split("/").pop();
@@ -2084,42 +1786,15 @@ async function saveBlogModal() {
     setBpImgStatus("info", "Subiendo imagen...");
     const postId = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : "b_" + Date.now();
     const imgName = `blog_${postId}.${bpFileData.extension}`;
-    imagePath = `assets/images/blogs/${imgName}`;
-    try {
-      let sha = null;
-      const getRes = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`, {
-        headers: {
-          Authorization: `token ${CONFIG.GH_TOKEN}`,
-          Accept: "application/vnd.github.v3+json"
-        }
-      });
-      if (getRes.ok) {
-        const j = await getRes.json();
-        sha = j.sha;
-      }
-      const body = {
-        message: `add blog image ${imgName}`,
-        content: bpFileData.base64
-      };
-      if (sha) body.sha = sha;
-      const res = await fetch(`https://api.github.com/repos/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/contents/${imagePath}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${CONFIG.GH_TOKEN}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        setBpImgStatus("success", "✓ Imagen subida: " + imagePath);
-      } else {
-        setBpImgStatus("error", "Error al subir imagen");
-        imagePath = "";
-      }
-    } catch (e) {
-      setBpImgStatus("error", "Sin conexión — imagen no subida");
-      imagePath = "";
+    const prevPath = imagePath;
+    const url = await JansCMS.uploadBase64(`blogs/${imgName}`, bpFileData.base64, bpFileData.mimeType);
+    if (url) {
+      if (prevPath && prevPath.split("?")[0] !== url.split("?")[0]) await JansCMS.remove(prevPath);
+      imagePath = url;
+      setBpImgStatus("success", "✓ Imagen subida");
+    } else {
+      setBpImgStatus("error", "Error al subir imagen");
+      imagePath = prevPath;
     }
   }
   const postId = editingBlogIdx !== null ? blogPosts[editingBlogIdx].id : "b_" + Date.now();
@@ -2154,8 +1829,8 @@ function deleteBlogPost(idx) {
 
 async function saveBlogPosts() {
   localStorage.setItem(BLOG_KEY, JSON.stringify(blogPosts));
-  const ok = await ghPutPublic("blogs.json", blogPosts);
-  if (ok) showToast("Blog publicado en GitHub ✓"); else showToast("Guardado localmente ✓ (configura GitHub para publicar)", "error");
+  const ok = await publicarContenido("blogs.json", blogPosts);
+  if (ok) showToast("Blog publicado ✓"); else showToast("Guardado localmente ✓ (no se pudo publicar en Supabase)", "error");
 }
 
 async function loadServAdicionalesFromSupabase() {
@@ -2654,7 +2329,7 @@ async function saveInvData() {
   }
 }
 
-async function syncInvFromGitHub() {
+async function syncInvFromSupabase() {
   if (!sbClient) {
     showToast("Supabase no disponible", "error");
     return;
@@ -2679,11 +2354,11 @@ async function initInventario() {
   renderInvCategoryTabs();
   renderInvItems();
   try {
-    await syncInvFromGitHub();
+    await syncInvFromSupabase();
     renderInvCategoryTabs();
     renderInvItems();
   } catch (e) {
-    console.warn("Inventario: sync GitHub falló", e);
+    console.warn("Inventario: sincronización falló", e);
   }
 }
 
@@ -2984,8 +2659,12 @@ async function saveFaqs() {
     respuesta: f.respuesta || f.answer,
     orden: i
   })));
+  const okPub = await publicarContenido("faqs.json", faqsData.map(f => ({
+    pregunta: f.pregunta || f.question,
+    respuesta: f.respuesta || f.answer
+  })));
   renderFaqsList();
-  if (ok) showToast("Preguntas frecuentes publicadas ✓"); else showToast("Guardadas localmente — verifica GitHub para publicar", "error");
+  if (ok || okPub) showToast("Preguntas frecuentes publicadas ✓"); else showToast("Guardadas localmente — no se pudo publicar", "error");
 }
 
 function deleteFaq(idx) {
@@ -3025,7 +2704,7 @@ function renderTeamList() {
   }
   const cards = teamMembers.map((m, i) => {
     const av = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    const rawUrl = m.fotoPath && CONFIG_PUBLIC.OWNER && CONFIG_PUBLIC.OWNER !== "tu-usuario-github" ? `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}` : null;
+    const rawUrl = m.fotoPath ? siteImg(m.fotoPath) : null;
     const avatarHtml = rawUrl ? `<img src="${rawUrl}" alt="${m.nombre}"\n           style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block"\n           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />\n         <div style="display:none;width:72px;height:72px;border-radius:50%;background:${av.bg};align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>` : `<div style="width:72px;height:72px;border-radius:50%;background:${av.bg};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:${av.color}">${getInitials(m.nombre)}</div>`;
     return `\n    <div style="background:var(--dark);border:1px solid var(--border);border-radius:14px;overflow:hidden">\n\n      \x3c!-- Avatar strip --\x3e\n      <div style="background:rgba(255,255,255,0.03);padding:20px 20px 16px;display:flex;align-items:center;gap:14px;position:relative;border-bottom:1px solid var(--border)">\n        <div style="flex-shrink:0;position:relative">${avatarHtml}</div>\n        <div style="flex:1;min-width:0">\n          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.rol || "—"}</div>\n          <div style="font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nombre || "—"}</div>\n        </div>\n        \x3c!-- Pink accent line bottom --\x3e\n        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),#f472b6)"></div>\n      </div>\n\n      \x3c!-- Bio --\x3e\n      <div style="padding:14px 20px 16px;min-height:60px">\n        ${m.bio ? `<p style="font-size:0.82rem;color:var(--gray-l);line-height:1.65;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${m.bio}</p>` : `<p style="font-size:0.8rem;color:var(--gray);font-style:italic;margin:0">Sin descripción</p>`}\n      </div>\n\n      \x3c!-- Actions --\x3e\n      <div style="padding:0 14px 14px;display:flex;gap:8px">\n        <button class="btn btn-sm btn-outline" onclick="openTeamMemberForm('${m.id}')" style="flex:1;justify-content:center;gap:6px">\n          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>\n          Editar\n        </button>\n        <button class="btn btn-sm" onclick="confirmDeleteTeamMember('${m.id}','${(m.nombre || "").replace(/'/g, "\\'")}')"\n          style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5;padding:0 12px">\n          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>\n        </button>\n      </div>\n    </div>`;
   }).join("");
@@ -3036,17 +2715,11 @@ function renderTeamList() {
 async function initTeam() {
   loadTeamLocal();
   if (!teamMembers.length) {
-    try {
-      const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/data/socialmedia/${TEAM_FILE}?t=${Date.now()}`;
-      const res = await fetch(rawUrl);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length) {
-          teamMembers = data;
-          localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-        }
-      }
-    } catch (e) {}
+    const data = await JansCMS.getJson(TEAM_FILE);
+    if (Array.isArray(data) && data.length) {
+      teamMembers = data;
+      localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
+    }
   }
   renderTeamList();
 }
@@ -3102,10 +2775,10 @@ async function saveTeamMember() {
     teamMembers.push(member);
   }
   localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  const ok = await publicarContenido(TEAM_FILE, teamMembers);
   closeModal("teamMemberModal");
   renderTeamList();
-  showToast(ok ? "Miembro guardado y publicado ✓" : "Guardado localmente — verifica GitHub", ok ? "success" : "error");
+  showToast(ok ? "Miembro guardado y publicado ✓" : "Guardado localmente — no se pudo publicar", ok ? "success" : "error");
 }
 
 async function deleteTeamMember() {
@@ -3118,10 +2791,10 @@ async function deleteTeamMember() {
   if (m.fotoPath && m.fotoExt) await deleteTeamPhoto(id, m.fotoExt);
   teamMembers = teamMembers.filter(x => x.id !== id);
   localStorage.setItem(TEAM_KEY, JSON.stringify(teamMembers));
-  const ok = await ghPutPublic(TEAM_FILE, teamMembers);
+  const ok = await publicarContenido(TEAM_FILE, teamMembers);
   closeModal("teamMemberModal");
   renderTeamList();
-  showToast(ok ? "Miembro eliminado ✓" : "Eliminado localmente — verifica GitHub", ok ? "success" : "error");
+  showToast(ok ? "Miembro eliminado ✓" : "Eliminado localmente — no se pudo publicar", ok ? "success" : "error");
 }
 
 function showSection(name) {
@@ -3241,7 +2914,7 @@ function openTeamMemberForm(id) {
       document.getElementById("teamMemberRol").value = m.rol || "";
       document.getElementById("teamMemberBio").value = m.bio || "";
       if (m.fotoPath) {
-        const rawUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${m.fotoPath}?t=${Date.now()}`;
+        const rawUrl = `${siteImg(m.fotoPath)}`;
         const testImg = new Image;
         testImg.onload = () => {
           document.getElementById("teamPhotoPreview").src = rawUrl;
@@ -3267,27 +2940,27 @@ function downloadBarcode() {
   link.click();
 }
 
-async function uploadBarcodeToGitHub() {
+async function uploadBarcodeImage() {
   if (!currentBarcodeItem) return;
   const msg = document.getElementById("invBarcodeMsg");
-  msg.textContent = "Subiendo a GitHub...";
+  msg.textContent = "Subiendo...";
   const canvas = document.getElementById("invBarcodeCanvas");
   const base64 = canvas.toDataURL("image/jpeg", .95).split(",")[1];
   const slug = currentBarcodeItem.titulo.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-  const path = `assets/images/barcodes/${slug}.jpg`;
-  const ok = await ghPutPublicFile(path, base64, `barcode: ${currentBarcodeItem.titulo}`);
+  const ok = await JansCMS.uploadBase64(`barcodes/${slug}.jpg`, base64, "image/jpeg");
+  const path = ok;
   if (ok) {
     loadInvData();
     const item = invItems.find(x => x.id === currentBarcodeItem.id);
     if (item) {
       item.barcodePath = path;
-      item.barcodeUrl = `https://raw.githubusercontent.com/${CONFIG_PUBLIC.OWNER}/${CONFIG_PUBLIC.REPO}/main/${path}`;
+      item.barcodeUrl = `${siteImg(path)}`;
       await saveInvData();
     }
-    msg.textContent = `✓ Subido: ${path}`;
+    msg.textContent = "✓ Código subido";
     msg.style.color = "#86efac";
   } else {
-    msg.textContent = "Error al subir. Verifica el token de GitHub.";
+    msg.textContent = "Error al subir la imagen.";
     msg.style.color = "#fca5a5";
   }
 }

@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Acceso — Jans Photograph</title>
   <link rel="icon" type="image/png" href="../../images/icons/JansBlackBag.png" />
@@ -199,7 +201,7 @@
 
     <div class="login-error" id="loginError" role="alert" aria-live="polite">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <span id="loginErrorText">Usuario o contraseña incorrectos.</span>
+      <span id="loginErrorText"></span>
     </div>
 
     <!-- PASO 1: correo -->
@@ -307,6 +309,23 @@ function lockedMessage(min) {
   return `Demasiados intentos. Espera ${min} minuto(s) e inténtalo de nuevo.`;
 }
 
+/* ---------- Limpieza: no dejar sesiones, tokens ni cookies sueltas ---------- */
+function purgeLeftovers() {
+  const PRIVATE = /^(sb-|supabase\.|jans_(reservas|quotes|comentarios|inventario|factura_counter|cot_counter|web_counter|master_auth|remote_pass|polling_enabled|gh_|public_owner|public_repo|social))/;
+  try { Object.keys(sessionStorage).forEach(k => { if (PRIVATE.test(k)) sessionStorage.removeItem(k); }); } catch (e) {}
+  try { Object.keys(localStorage).forEach(k => { if (PRIVATE.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+  try {
+    document.cookie.split(";").forEach(c => {
+      const name = c.split("=")[0].trim();
+      if (!name) return;
+      ["/", "/assets", "/assets/pages", "/assets/pages/auth"].forEach(p => {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${p}`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${p}; domain=${location.hostname}`;
+      });
+    });
+  } catch (e) {}
+}
+
 /* ---------- ¿El usuario de la sesión es admin? ---------- */
 async function sessionIsAdmin() {
   const { data, error } = await sbClient.rpc("es_admin");
@@ -318,13 +337,14 @@ async function sessionIsAdmin() {
   const params = new URLSearchParams(location.search);
   if (params.get("e") === "noadmin") showError("Esta cuenta no tiene acceso al panel de administración.");
   if (params.get("e") === "expirada") showError("Tu sesión expiró. Vuelve a iniciar sesión.");
-  if (!sbClient) return;
+  if (params.get("e") === "inactividad") showError("Se cerró la sesión por inactividad.");
+  if (!sbClient) { purgeLeftovers(); return; }
   try {
     const { data: { session } } = await sbClient.auth.getSession();
-    if (!session) return;
-    if (await sessionIsAdmin()) window.location.replace(MASTER_URL);
-    else await sbClient.auth.signOut();
+    if (session && await sessionIsAdmin()) return window.location.replace(MASTER_URL);
+    if (session) await sbClient.auth.signOut({ scope: "local" });
   } catch (e) {}
+  purgeLeftovers();
 })();
 
 /* ---------- PASO 1: validar correo ---------- */
@@ -396,7 +416,7 @@ stepPass.addEventListener("submit", async ev => {
       return showError("Esta cuenta no tiene acceso al panel de administración.");
     }
 
-    // Contraseña incorrecta (u otro error de auth)
+    // Falló la autenticación (cualquier motivo)
     let info = null;
     try { info = (await sbClient.rpc("registrar_fallo_login")).data; } catch (e) {}
     $("loginPass").value = "";
@@ -405,10 +425,8 @@ stepPass.addEventListener("submit", async ev => {
       goToStep(1);
       return showError(lockedMessage(15));
     }
-    const msg = error && /confirm/i.test(error.message || "")
-      ? "Debes confirmar tu correo antes de ingresar."
-      : "Contraseña incorrecta.";
-    showError(msg + (info && typeof info.restantes === "number" ? ` ${info.restantes} intento(s) restante(s).` : ""));
+    // Mensaje genérico: no revelar qué dato falló
+    showError("No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo." + (info && typeof info.restantes === "number" ? ` ${info.restantes} intento(s) restante(s).` : ""));
     $("loginPass").focus();
   } catch (e) {
     console.error("login:", e);

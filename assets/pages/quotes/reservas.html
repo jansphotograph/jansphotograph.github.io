@@ -238,12 +238,12 @@
             Tus datos
           </div>
           <div class="res-row-2">
-            <div class="res-field"><label>Nombre de quien recibirá la sesión *</label><input type="text" id="rNombre" placeholder="Nombre completo (cliente, niño/a, quinceañera, etc.)" /></div>
-            <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" placeholder="+507 6000-0000" /></div>
+            <div class="res-field"><label>Nombre de quien recibirá la sesión *</label><input type="text" id="rNombre" maxlength="120" placeholder="Nombre completo (cliente, niño/a, quinceañera, etc.)" /></div>
+            <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" maxlength="25" autocomplete="tel" inputmode="tel" placeholder="+507 6000-0000" /></div>
           </div>
-          <div class="res-field"><label>Nombre del padre/madre o tutor responsable <span style="color:var(--gray);font-weight:400">(si aplica)</span></label><input type="text" id="rTutor" placeholder="Opcional — solo si la sesión es para un niño/a o quinceañera" /></div>
-          <div class="res-field"><label>Correo *</label><input type="email" id="rEmail" placeholder="tu@correo.com" /></div>
-          <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" placeholder="Sin plan específico" /></div>
+          <div class="res-field"><label>Nombre del padre/madre o tutor responsable <span style="color:var(--gray);font-weight:400">(si aplica)</span></label><input type="text" id="rTutor" maxlength="120" placeholder="Opcional — solo si la sesión es para un niño/a o quinceañera" /></div>
+          <div class="res-field"><label>Correo *</label><input type="email" id="rEmail" maxlength="160" autocomplete="email" placeholder="tu@correo.com" /></div>
+          <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" maxlength="150" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
               <label>Fecha de la sesión *</label>
@@ -266,7 +266,7 @@
             </label>
             <div id="exteriorField" style="display:none;margin-top:12px">
               <label style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Nombre del lugar</label>
-              <input type="text" id="rLugar" placeholder="Ej: Parque Omar, Playa Coronado, Escuela de Jujucal..."
+              <input type="text" id="rLugar" maxlength="200" placeholder="Ej: Parque Omar, Playa Coronado, Escuela de Jujucal..."
                 style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#fff;font-size:0.88rem;padding:10px 14px;outline:none;font-family:inherit" />
               <p style="font-size:0.75rem;color:#f59e0b;margin-top:8px;display:flex;align-items:flex-start;gap:6px">
                 <span style="flex-shrink:0">⚠️</span>
@@ -304,7 +304,7 @@
           </div>
 
           
-          <div class="res-field"><label>Notas</label><textarea id="rNotas" placeholder="Locación, requerimientos especiales..."></textarea></div>
+          <div class="res-field"><label>Notas</label><textarea id="rNotas" maxlength="1000" placeholder="Locación, requerimientos especiales..."></textarea></div>
 
           
           <div id="resumenPrecio" style="display:none;background:rgba(199,30,95,0.08);border:1px solid rgba(199,30,95,0.2);border-radius:12px;padding:14px 16px;margin-bottom:4px">
@@ -324,7 +324,7 @@
           <div style="margin-bottom:4px">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.85rem;color:#ccc;line-height:1.5">
               <input type="checkbox" id="rTerminos" onchange="updateReservaBtn()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0;margin-top:2px" />
-              <span>Acepto los <strong style="color:#fff">Términos de Reserva</strong> — entiendo que esta solicitud queda pendiente de confirmación y que se me contactará por WhatsApp. <a href="#terminosSection" onclick="document.getElementById('terminosSection').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#e91e8c;text-decoration:underline;font-weight:600;white-space:nowrap" onclick="const s=document.getElementById('notasSection');if(s){s.style.display='block';s.style.visibility='visible';setTimeout(()=>{s.scrollIntoView({behavior:'smooth',block:'start'});},80);}else{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}return false;">Ver Términos Aquí</a></span>
+              <span>Acepto los <strong style="color:#fff">Términos de Reserva</strong> — entiendo que esta solicitud queda pendiente de confirmación y que se me contactará por WhatsApp. También acepto la <a href="../privacidad.html" target="_blank" rel="noopener" style="color:#e91e8c;text-decoration:underline">Política de Privacidad</a>. <a href="#terminosSection" onclick="document.getElementById('terminosSection').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="color:#e91e8c;text-decoration:underline;font-weight:600;white-space:nowrap" onclick="const s=document.getElementById('notasSection');if(s){s.style.display='block';s.style.visibility='visible';setTimeout(()=>{s.scrollIntoView({behavior:'smooth',block:'start'});},80);}else{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}return false;">Ver Términos Aquí</a></span>
             </label>
             <div id="terminosError" style="display:none;margin-top:8px;font-size:0.78rem;color:#fca5a5;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 12px">
               ⚠️ Para realizar la solicitud debes haber leído y aceptado los Términos de Reserva.
@@ -408,11 +408,15 @@
       </div>
       <div class="footer-bottom">
         <p>© 2025 <span>Jans Photograph</span>. Todos los derechos reservados.</p>
+        <p class="footer-legal"><a href="../privacidad.html">Privacidad</a><span>·</span><a href="../cookies.html">Cookies</a><span>·</span><a href="../aviso-legal.html">Aviso legal</a><span>·</span><a href="#" data-cookie-prefs>Preferencias de cookies</a></p>
       </div>
     </div>
   </footer>
 
   <script src="../../js/main.js"></script>
+  <script src="../../js/jans-public.js"></script>
+  <script src="../../js/jans-form.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", () => JansForm.protect(document.getElementById("formCard"), "reservas", { max: 3, windowMin: 60 }));</script>
   <script>const WA_NUMBER = "50768622402";
 
 const MONTHS = [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ];
@@ -431,7 +435,7 @@ let sbClient = null;
 
 function initSupabase() {
   if (window.supabase && typeof window.supabase.createClient === "function") {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
     return true;
   }
   return false;
@@ -466,12 +470,6 @@ let reservas = [];
 let selectedDate = null;
 
 let selectedHour = null;
-
-const OWNER = "jansphotograph";
-
-const REPO = "jansphotograph.github.io";
-
-const BASE = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/data/socialmedia`;
 
 function showNotas(texto) {
   if (!texto || !texto.trim()) return;
@@ -605,11 +603,8 @@ document.addEventListener("DOMContentLoaded", async function() {
   });
   if (!calendarSyncedFromSupabase) {
     try {
-      const calRes = await fetch(`${BASE}/calendar.json?t=${Date.now()}`, {
-        cache: "no-cache"
-      });
-      if (calRes.ok) {
-        const ghCal = await calRes.json();
+      const ghCal = await JansPub.json("calendar");
+      if (ghCal && typeof ghCal === "object") {
         if (Object.keys(ghCal).length >= Object.keys(calData).length) {
           calData = ghCal;
           localStorage.setItem("jans_calendar", JSON.stringify(calData));
@@ -897,13 +892,33 @@ function toggleExterior() {
 }
 
 async function submitReserva() {
-  const nombre = document.getElementById("rNombre").value.trim();
-  const tutor = document.getElementById("rTutor").value.trim();
-  const tel = document.getElementById("rTel").value.trim();
-  const email = document.getElementById("rEmail").value.trim();
+  const val = id => (document.getElementById(id) || {}).value || "";
+  const raw = [ "rNombre", "rTutor", "rTel", "rEmail", "rPlan", "rNotas", "rLugar" ].map(val).join(" ");
+  const guard = JansForm.check("reservas");
+  if (guard.bot) return;
+  if (!guard.ok) {
+    alert(guard.msg);
+    return;
+  }
+  if (JansForm.hasCode(raw)) {
+    alert("Algún campo contiene caracteres o código no permitidos. Revisa tus datos.");
+    return;
+  }
+  const nombre = JansForm.clean(val("rNombre"), 120);
+  const tutor = JansForm.clean(val("rTutor"), 120);
+  const tel = JansForm.clean(val("rTel"), 25);
+  const email = JansForm.clean(val("rEmail"), 160).toLowerCase();
   const fechaEspecial = document.getElementById("rFechaEspecial")?.value || "";
   if (!nombre || !tel || !email || !fechaEspecial) {
     alert("Por favor completa el nombre, teléfono, correo y fecha especial — son obligatorios.");
+    return;
+  }
+  if (!JansForm.isPhone(tel)) {
+    alert("Escribe un número de teléfono válido.");
+    return;
+  }
+  if (!JansForm.isEmail(email)) {
+    alert("Escribe un correo válido.");
     return;
   }
   if (!selectedDate || !selectedHour) {
@@ -928,16 +943,16 @@ async function submitReserva() {
   }
   const [y, m, d] = selectedDate.split("-");
   const hora = document.getElementById("rHora").value;
-  const plan = document.getElementById("rPlan").value;
-  const notas = document.getElementById("rNotas").value;
+  const plan = JansForm.clean(val("rPlan"), 150);
+  const notas = JansForm.clean(val("rNotas"), 1000);
   const metodoAbono = document.getElementById("rMetodoAbono")?.value || "";
   const exterior = document.getElementById("rExterior").checked;
-  const lugar = exterior ? document.getElementById("rLugar").value.trim() || "" : "";
+  const lugar = exterior ? JansForm.clean(val("rLugar"), 200) : "";
   const personasAdicionales = document.getElementById("rPersonasCheck").checked ? _personasNum : 0;
   const costoPersonas = personasAdicionales * PRECIO_PERSONA;
   const fechaLabel = parseInt(d) + " de " + MONTHS[parseInt(m) - 1] + " " + y;
   const reserva = {
-    id: "r_" + Date.now(),
+    id: "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
     numero: null,
     nombre: nombre,
     tutor: tutor,
@@ -969,7 +984,19 @@ async function submitReserva() {
   if (sbClient) {
     try {
       const {error: error} = await sbClient.from("reservas").insert([ sbPayload ]);
-      if (!error) savedOk = true; else console.error("Supabase insert error:", error);
+      if (!error) {
+        savedOk = true;
+        JansForm.sent("reservas");
+      } else {
+        console.error("Supabase insert error:", error);
+        const m = JansForm.serverMessage(error);
+        if (m) {
+          alert(m);
+          if (btn) btn.disabled = false;
+          if (typeof updateReservaBtn === "function") updateReservaBtn();
+          return;
+        }
+      }
     } catch (e) {
       console.error("Supabase unreachable:", e);
     }
@@ -998,29 +1025,7 @@ async function submitReserva() {
     }
   }, 600);
 }</script>
-  <script>(function() {
-  const OWNER = "jansphotograph";
-  const REPO = "jansphotograph.github.io";
-  const VER_KEY = "jans_site_version";
-  async function checkVersion() {
-    try {
-      const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/main/data/socialmedia/version.json?t=" + Date.now(), {
-        cache: "no-cache"
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const current = localStorage.getItem(VER_KEY);
-      if (current && current !== String(data.v)) {
-        localStorage.setItem(VER_KEY, String(data.v));
-        window.location.reload(true);
-      } else {
-        localStorage.setItem(VER_KEY, String(data.v));
-      }
-    } catch (e) {}
-  }
-  checkVersion();
-  setInterval(checkVersion, 6e4);
-})();</script>
+  <script>JansPub.watchVersion();</script>
   
   <button class="fab-importante" id="fabImportante" onclick="scrollToNotas()" aria-label="Ver notas importantes" style="display:none">
     <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1071,5 +1076,6 @@ document.addEventListener("DOMContentLoaded", function() {
     passive: true
   });
 });</script>
+  <script src="../../js/jans-cookies.js"></script>
 </body>
 </html>
