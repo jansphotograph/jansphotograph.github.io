@@ -3,6 +3,7 @@
  * (master-reservas, master-cotizaciones, master-historial).
  *
  *  JansList.PER_PAGE                 → 15 registros por página
+ *  (requiere jans-dates.js cargado antes)
  *  JansList.createdTs(rec, kind)     → timestamp (ms) de la fecha en que se creó el registro
  *  JansList.createdLabel(ts)         → "08/10/2026"
  *  JansList.norm(str)                → texto en minúsculas y sin acentos (para buscar)
@@ -16,62 +17,14 @@
 
   var PER_PAGE = 15;
 
-  function valid(y, m, d) {
-    if (!(y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31)) return null;
-    var dt = new Date(y, m - 1, d, 12, 0, 0);
-    return dt.getMonth() === m - 1 ? dt : null;
-  }
-
-  function sameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  }
-
-  /*
-   * Fecha de creación de un registro.
-   *  - iso:  created_at de Supabase (fiable, con hora) → se usa siempre que coincida con el texto visible.
-   *  - txt:  createdAt mostrado en el panel. Formatos posibles:
-   *            "8/10/2026"  → D/M/AAAA (cotizaciones y fechas editadas a mano en el panel)
-   *            "10/08/2026" → MM/DD/AAAA (reservas web, toLocaleDateString("es-PA"))
-   *            "2026-10-08" → ISO
-   *    Si el texto no coincide con created_at (porque el admin lo editó), manda el texto.
-   */
+  // Las fechas se resuelven con jans-dates.js (formato único del sitio)
   function createdTs(rec, kind) {
-    if (!rec) return 0;
-    var iso = rec.createdAtISO || rec.created_at || "";
-    var txt = String(rec.createdAt || "").trim();
-    var isoDate = iso ? new Date(iso) : null;
-    if (isoDate && isNaN(isoDate.getTime())) isoDate = null;
-
-    var cands = [];
-    var m;
-    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(txt))) {
-      cands.push(valid(+m[1], +m[2], +m[3]));
-    } else if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(txt))) {
-      var a = +m[1], b = +m[2], y = +m[3];
-      var dm = valid(y, b, a);  // D/M
-      var md = valid(y, a, b);  // M/D
-      // Reserva web sin editar: "10/08/2026" (ambos con 2 dígitos) → M/D primero
-      var webStyle = kind === "reserva" && m[1].length === 2 && m[2].length === 2;
-      cands = webStyle ? [md, dm] : [dm, md];
-    }
-    cands = cands.filter(Boolean);
-
-    if (isoDate) {
-      if (!cands.length || cands.some(function (c) { return sameDay(c, isoDate); })) return isoDate.getTime();
-      return cands[0].getTime(); // fecha editada a mano en el panel
-    }
-    if (cands.length) return cands[0].getTime();
-    // Último recurso: ids con marca de tiempo (q_1712345678901, r_1712345678901_x)
-    var idm = /^[a-z]+_(\d{12,13})/.exec(String(rec.id || ""));
-    return idm ? +idm[1] : 0;
+    var d = window.JansDate ? window.JansDate.created(rec, kind) : null;
+    return d ? d.getTime() : 0;
   }
-
-  function pad(n) { return (n < 10 ? "0" : "") + n; }
 
   function createdLabel(ts) {
-    if (!ts) return "—";
-    var d = new Date(ts);
-    return pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + "/" + d.getFullYear();
+    return ts && window.JansDate ? window.JansDate.fmt(new Date(ts)) : "—";
   }
 
   function norm(s) {

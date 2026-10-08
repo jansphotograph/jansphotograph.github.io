@@ -416,6 +416,7 @@
   <script src="../../js/main.js"></script>
   <script src="../../js/jans-public.js"></script>
   <script src="../../js/jans-form.js"></script>
+  <script src="../../js/jans-dates.js"></script>
   <script>document.addEventListener("DOMContentLoaded", () => JansForm.protect(document.getElementById("formCard"), "reservas", { max: 3, windowMin: 60 }));</script>
   <script>const WA_NUMBER = "50768622402";
 
@@ -992,7 +993,8 @@ async function submitReserva() {
     status: "pending",
     abono: 0,
     origin: "web",
-    createdAt: (new Date).toLocaleDateString("es-PA")
+    // Formato único: ISO "AAAA-MM-DD" (antes "10/08/2026" = MM/DD por el locale es-PA, se confundía con D/M)
+    createdAt: window.JansDate ? JansDate.today() : toLocalDateStr(new Date)
   };
   const {personasAdicionales: _pa, costoPersonas: _cp, fechaEspecial: _fe, metodoAbono: _ma, ...sbPayload} = reserva;
   sbPayload.personas_adicionales = personasAdicionales;

@@ -627,6 +627,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
 <script src="../../js/jans-cms.js"></script>
+<script src="../../js/jans-dates.js"></script>
 <header class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -1195,7 +1196,7 @@ async function fetchCalendarData() {
           plan: r.plan,
           total: r.total,
           status: r.status,
-          createdAt: r.created_at
+          createdAt: JansDate.iso(r.created_at)
         }));
         localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
       }
@@ -1326,7 +1327,11 @@ async function syncReservasFromSupabase() {
         address: remote.address || prev.address,
         origin: remote.origin || prev.origin || "web",
         facturaNumero: remote.facturaNumero || prev.facturaNumero,
-        createdAt: remote.createdAt || prev.createdAt,
+        createdAt: JansDate.createdISO({
+          id: remote.id,
+          createdAt: remote.createdAt || prev.createdAt,
+          created_at: remote.created_at
+        }, "reserva"),
         fechaEspecial: remote.fecha_especial || prev.fechaEspecial || "",
         exterior: remote.exterior || prev.exterior || false,
         lugar: remote.lugar || prev.lugar || "",
