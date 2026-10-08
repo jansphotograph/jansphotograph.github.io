@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Historial - Jans Photograph</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/icons/JansBlackBag.png" />
+  <link rel="shortcut icon" href="../../images/icons/JansBlackBag.png" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="../../css/master-reservas.css" />
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../../js/admin-guard.js"></script>
+<script src="../../js/jans-cms.js"></script>
+<script src="../../js/jans-pager.js"></script>
+<header class="topbar">
+<div style="display:flex;align-items:center;gap:12px">
+<a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+<img src="../../images/icons/Janssocialmedialogo.png" height="36" style="width:auto" alt="Logo" />
+</a>
+<span class="master-badge">MASTER</span>
+<span style="color:var(--gray);font-size:0.8rem">/ Historial</span>
+</div>
+<nav style="display:flex;gap:4px">
+<a href="../master.html" class="topbar-link">Inicio</a>
+<button onclick="handleLogout()" class="btn btn-sm btn-outline topbar-logout-btn">Salir</button>
+<button class="master-nav-toggle" id="masterNavToggle" onclick="toggleMasterNav()" aria-label="Menu" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+</nav>
+</header>
+
+<nav class="master-nav" id="masterNav">
+  <a href="../master.html" id="nav-inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Inicio
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-dashboard.html" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="master-reservas.html" id="nav-reservas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Reservas
+  </a>
+  <a href="master-cotizaciones.html" id="nav-cotizaciones" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubCotizaciones')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Cotizaciones
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubCotizaciones">
+    <a href="master-cotizaciones.html?section=quotes" class="nav-submenu-item" data-section="quotes" onclick="return navSubmenuClick(event,'quotes')">Cotizaciones</a>
+    <a href="master-cotizaciones.html?section=newquote" class="nav-submenu-item" data-section="newquote" onclick="return navSubmenuClick(event,'newquote')">Nueva Cotización</a>
+    <a href="master-cotizaciones.html?section=eventoForm" class="nav-submenu-item" data-section="eventoForm" onclick="return navSubmenuClick(event,'eventoForm')">Formulario Evento</a>
+  </div>
+  <a href="master-historial.html" id="nav-historial">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+    Historial
+  </a>
+  <a href="master-calendario.html" id="nav-calendario">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendario
+  </a>
+  <a href="master-panel.html" id="nav-panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Panel
+  </a>
+  <a href="master-comentarios.html" id="nav-comentarios">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Comentarios
+  </a>
+  <a href="master-slider.html" id="nav-slider">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    Slider
+  </a>
+  <div class="nav-sep"></div>
+  <a href="master-catalogo.html" id="nav-catalogo" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubCatalogo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Catálogo
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubCatalogo">
+    <a href="master-catalogo.html?section=planes" class="nav-submenu-item" data-section="planes" onclick="return navSubmenuClick(event,'planes')">Planes Públicos</a>
+    <a href="master-catalogo.html?section=blog" class="nav-submenu-item" data-section="blog" onclick="return navSubmenuClick(event,'blog')">Blog</a>
+    <a href="master-catalogo.html?section=serv" class="nav-submenu-item" data-section="serv" onclick="return navSubmenuClick(event,'serv')">Servicios Adicionales</a>
+    <a href="master-catalogo.html?section=inventario" class="nav-submenu-item" data-section="inventario" onclick="return navSubmenuClick(event,'inventario')">Inventario</a>
+    <a href="master-catalogo.html?section=faqs" class="nav-submenu-item" data-section="faqs" onclick="return navSubmenuClick(event,'faqs')">FAQ</a>
+    <a href="master-catalogo.html?section=equipo" class="nav-submenu-item" data-section="equipo" onclick="return navSubmenuClick(event,'equipo')">Equipo</a>
+  </div>
+  <a href="master-config.html" id="nav-config" class="nav-has-sub" onclick="return toggleNavSub(event,'navSubConfig')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+    <svg class="nav-sub-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+  </a>
+  <div class="nav-submenu" id="navSubConfig">
+    <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
+    <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
+    <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
+    <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
+  </div>
+  <button class="nav-logout" onclick="handleLogout()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Salir
+  </button>
+</nav>
+<script>function toggleMasterNav() {
+  const nav = document.getElementById("masterNav");
+  const btn = document.getElementById("masterNavToggle");
+  if (!nav) return;
+  const isOpen = nav.classList.toggle("nav-open");
+  if (btn) btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
+function toggleNavSub(event, id) {
+  if (!window.matchMedia("(max-width: 768px)").matches) return true;
+  event.preventDefault();
+  const sub = document.getElementById(id);
+  const link = event.currentTarget;
+  if (!sub) return false;
+  const isOpen = sub.classList.toggle("open");
+  if (link) link.classList.toggle("nav-sub-open", isOpen);
+  return false;
+}
+
+function navSubmenuClick(event, section) {
+  if (typeof showSection === "function" && document.getElementById("section-" + section)) {
+    event.preventDefault();
+    showSection(section);
+    const nav = document.getElementById("masterNav");
+    if (nav) nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+    return false;
+  }
+  return true;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const nav = document.getElementById("masterNav");
+  if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
+    nav.classList.remove("nav-open");
+    const btn = document.getElementById("masterNavToggle");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+  }));
+});</script>
+<script>(function() {
+  const page = window.location.pathname.split("/").pop().replace(".html", "");
+  const map = {
+    "master-dashboard": "nav-dashboard",
+    "master-reservas": "nav-reservas",
+    "master-cotizaciones": "nav-cotizaciones",
+    "master-historial": "nav-historial",
+    "master-calendario": "nav-calendario",
+    "master-panel": "nav-panel",
+    "master-comentarios": "nav-comentarios",
+    "master-slider": "nav-slider",
+    "master-catalogo": "nav-catalogo",
+    "master-config": "nav-config",
+    master: "nav-inicio"
+  };
+  const id = map[page];
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  }
+})();</script>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<main class="main-content" style="padding-top:120px">
+<div id="view-historial">
+  <div class="page-header">
+    <h2>Historial</h2>
+    <p>Reservas y cotizaciones en un solo lugar, ordenadas por la fecha en que se registraron</p>
+  </div>
+
+  <div class="hist-stats" id="histStats"></div>
+
+  <div class="jl-filters">
+    <input type="search" id="hFilterName" class="jl-grow" placeholder="Buscar por nombre…" oninput="onHistFilterChange()" />
+    <input type="search" id="hFilterCed" placeholder="Cédula / RUC" oninput="onHistFilterChange()" style="width:170px" />
+    <select id="hFilterYear" onchange="onHistFilterChange()" title="Año de registro"><option value="">Todos los años</option></select>
+    <select id="hFilterType" onchange="onHistFilterChange()" title="Tipo">
+      <option value="">Reservas y cotizaciones</option>
+      <option value="reserva">Solo reservas</option>
+      <option value="cotizacion">Solo cotizaciones</option>
+    </select>
+    <select id="hSortDir" onchange="onHistFilterChange()" title="Orden">
+      <option value="desc">Más recientes primero</option>
+      <option value="asc">Más antiguas primero</option>
+    </select>
+    <button class="btn btn-sm btn-outline" onclick="clearHistFilters()">Limpiar filtros</button>
+    <button class="btn btn-sm btn-outline" onclick="loadHistorial(true)" title="Volver a cargar desde Supabase">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="min-width:90px">Registro</th>
+            <th>Tipo</th>
+            <th style="min-width:70px">#</th>
+            <th>Cliente</th>
+            <th>Cédula / RUC</th>
+            <th style="min-width:130px">Plan</th>
+            <th style="min-width:110px">Sesión</th>
+            <th style="text-align:right">Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="histTableBody"><tr><td colspan="10" style="text-align:center;color:var(--gray);padding:28px">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="histPager"></div>
+  </div>
+</div>
+</main>
+
+<style>
+.hist-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.hist-stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.hist-stat-n{font-size:1.5rem;font-weight:700;color:var(--white);font-variant-numeric:tabular-nums}
+.hist-stat-l{font-size:.72rem;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+#histTableBody td{vertical-align:middle}
+</style>
+
+<script>
+const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
+let sbClient = null;
+try {
+  sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true }
+  });
+} catch (e) {
+  console.warn("Supabase init:", e);
+}
+
+let toastTimer;
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3e3);
+}
+
+function handleLogout() {
+  if (typeof window.jansLogout === "function") return window.jansLogout();
+  window.location.replace("../auth/auth.html");
+}
+
+function escapeHtml(str) {
+  return String(str == null ? "" : str).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+const STATUS = {
+  pending: [ "Pendiente", "status-pending" ],
+  confirmed: [ "Confirmada", "status-approved" ],
+  approved: [ "Confirmada", "status-approved" ],
+  booked: [ "Confirmada", "status-approved" ],
+  completed: [ "Completada", "status-approved" ],
+  postponed: [ "Aplazada", "status-postponed" ],
+  declined: [ "Declinada", "status-rejected" ],
+  cancelled: [ "Cancelada", "status-rejected" ],
+  rejected: [ "Cancelada", "status-rejected" ]
+};
+
+function parseMoney(v) {
+  const n = parseFloat(String(v == null ? "" : v).replace(/[^0-9.\-]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+function parseJsonArr(v) {
+  if (Array.isArray(v)) return v;
+  try {
+    const a = JSON.parse(v || "[]");
+    return Array.isArray(a) ? a : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// Total aproximado de una reserva (mismo criterio que la página de reservas)
+function reservaTotal(r) {
+  let base;
+  if (r.totalManual !== undefined && r.totalManual !== null && r.totalManual !== "") base = parseMoney(r.totalManual); else {
+    const plan = String(r.plan || "");
+    const clean = plan.replace(/\s*\(\$[\d.,]+\)\s*$/, "").trim();
+    let planes = [];
+    try { planes = JSON.parse(localStorage.getItem("jans_planes") || "[]"); } catch (e) {}
+    const match = planes.find(p => p && (p.nombre === plan || p.nombre === clean));
+    const m = /\(\$([\d.,]+)\)/.exec(plan);
+    base = match ? parseMoney(match.precio) : m ? parseMoney(m[1]) : 0;
+  }
+  const extras = parseJsonArr(r.extras).reduce((s, e) => s + parseMoney(e && (e.precio != null ? e.precio : e.price)), 0);
+  return base + extras + parseMoney(r.costo_personas != null ? r.costo_personas : r.costoPersonas) + parseMoney(r.costo_exterior != null ? r.costo_exterior : r.costoExterior);
+}
+
+function fromReserva(r) {
+  return {
+    kind: "reserva",
+    id: r.id,
+    numero: r.numero || "",
+    nombre: r.nombre || "",
+    extraName: r.tutor || "",
+    tel: r.tel || "",
+    cedula: r.clientId || r.client_id || "",
+    plan: r.plan || "",
+    sesion: r.fechaLabel || r.fecha || "",
+    hora: r.hora || "",
+    total: reservaTotal(r),
+    status: r.status || "pending",
+    createdAt: r.createdAt || "",
+    createdAtISO: r.created_at || r.createdAtISO || "",
+    link: "master-reservas.html?highlight=" + encodeURIComponent(r.id)
+  };
+}
+
+function fromCotizacion(q) {
+  const remote = "client_name" in q;
+  const sd = remote ? q.session_date : q.sessionDate;
+  return {
+    kind: "cotizacion",
+    id: q.id,
+    numero: q.numero || "",
+    nombre: (remote ? q.client_name : q.clientName) || "",
+    extraName: (remote ? q.razon_social : q.razonSocial) || "",
+    tel: q.phone || "",
+    cedula: (remote ? q.client_id : q.clientId) || "",
+    plan: q.plan || "",
+    sesion: sd ? fmtDate(sd) : "",
+    hora: (remote ? q.session_time : q.sessionTime) || "",
+    total: parseMoney(q.total),
+    status: q.status || "pending",
+    // En Supabase solo existe created_at; localmente createdAt "D/M/AAAA"
+    createdAt: remote ? "" : q.createdAt || "",
+    createdAtISO: q.created_at || q.createdAtISO || "",
+    link: "master-cotizaciones.html?highlight=" + encodeURIComponent(q.id)
+  };
+}
+
+const MONTHS = [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ];
+function fmtDate(ds) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ds));
+  return m ? parseInt(m[3]) + " de " + MONTHS[parseInt(m[2]) - 1] + " " + m[1] : String(ds);
+}
+
+let histAll = [];
+let histPage = 1;
+let histSource = "";
+
+async function loadHistorial(manual) {
+  let reservas = null, cotizaciones = null;
+  if (sbClient) {
+    try {
+      const [rRes, rCot] = await Promise.all([
+        sbClient.from("reservas").select("*").neq("status", "deleted"),
+        sbClient.from("cotizaciones").select("*")
+      ]);
+      if (rRes.error) console.error("historial reservas:", rRes.error); else reservas = rRes.data || [];
+      if (rCot.error) console.error("historial cotizaciones:", rCot.error); else cotizaciones = rCot.data || [];
+    } catch (e) {
+      console.error("historial:", e);
+    }
+  }
+  histSource = reservas && cotizaciones ? "supabase" : "local";
+  // Respaldo: copia local de este navegador
+  if (!reservas) {
+    try { reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]"); } catch (e) { reservas = []; }
+  }
+  if (!cotizaciones) {
+    try { cotizaciones = JSON.parse(localStorage.getItem("jans_quotes") || "[]"); } catch (e) { cotizaciones = []; }
+  }
+  // Las "reservas espejo" de cotizaciones (origin manual / id q_…) ya se listan como cotización
+  const reales = reservas.filter(r => r && r.status !== "deleted" && r.origin !== "manual" && !/^q_/.test(String(r.id || "")));
+  histAll = reales.map(fromReserva).concat(cotizaciones.filter(Boolean).map(fromCotizacion));
+  histAll.forEach(x => { x._ts = JansList.createdTs(x, x.kind); });
+  if (histSource !== "supabase") showToast("No se pudo leer Supabase — mostrando la copia local", "error"); else if (manual) showToast("Historial actualizado ✓");
+  renderHistorial();
+}
+
+const onHistFilterChange = JansList.debounce(() => {
+  histPage = 1;
+  renderHistorial();
+}, 180);
+
+function clearHistFilters() {
+  [ "hFilterName", "hFilterCed", "hFilterYear", "hFilterType" ].forEach(id => { document.getElementById(id).value = ""; });
+  document.getElementById("hSortDir").value = "desc";
+  histPage = 1;
+  renderHistorial();
+}
+
+function goHistPage(p) {
+  histPage = p;
+  renderHistorial();
+  document.querySelector("#view-historial .card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderHistorial() {
+  const fName = JansList.norm(document.getElementById("hFilterName").value);
+  const fCed = JansList.normId(document.getElementById("hFilterCed").value);
+  const fYear = document.getElementById("hFilterYear").value;
+  const fType = document.getElementById("hFilterType").value;
+  const dir = document.getElementById("hSortDir").value === "asc" ? 1 : -1;
+  JansList.fillYears(document.getElementById("hFilterYear"), histAll.map(x => x._ts));
+  const list = histAll.filter(x => {
+    if (fType && x.kind !== fType) return false;
+    if (fName && !JansList.norm(x.nombre + " " + x.extraName).includes(fName)) return false;
+    if (fCed && !JansList.normId(x.cedula).includes(fCed)) return false;
+    if (fYear && (!x._ts || String(new Date(x._ts).getFullYear()) !== fYear)) return false;
+    return true;
+  }).sort((a, b) => (a._ts - b._ts) * dir || String(a.numero).localeCompare(String(b.numero), "es", { numeric: true }) * dir);
+
+  const nRes = list.filter(x => x.kind === "reserva").length;
+  const nCot = list.length - nRes;
+  const monto = list.reduce((s, x) => s + (x.status === "cancelled" || x.status === "declined" || x.status === "rejected" ? 0 : x.total), 0);
+  document.getElementById("histStats").innerHTML =
+    stat(list.length, "Registros") + stat(nRes, "Reservas") + stat(nCot, "Cotizaciones") +
+    stat("$" + monto.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), "Monto (sin canceladas)");
+
+  const pg = JansList.paginate(list, histPage);
+  histPage = pg.page;
+  JansList.renderPager(document.getElementById("histPager"), pg, goHistPage);
+  const tbody = document.getElementById("histTableBody");
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--gray);padding:28px">' + (histAll.length ? "Ningún registro coincide con los filtros" : "Todavía no hay reservas ni cotizaciones") + "</td></tr>";
+    return;
+  }
+  tbody.innerHTML = pg.items.map(x => {
+    const st = STATUS[x.status] || [ x.status, "" ];
+    return `<tr>
+      <td style="font-size:.8rem;color:var(--gray-l);white-space:nowrap">${JansList.createdLabel(x._ts)}</td>
+      <td><span class="jl-type ${x.kind === "reserva" ? "jl-type-res" : "jl-type-cot"}">${x.kind === "reserva" ? "Reserva" : "Cotización"}</span></td>
+      <td style="font-family:monospace;font-size:.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(x.numero) || "—"}</td>
+      <td><div style="font-weight:600">${escapeHtml(x.nombre) || "—"}</div><div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(x.tel)}</div></td>
+      <td style="font-size:.82rem">${escapeHtml(x.cedula) || '<span style="color:var(--gray)">—</span>'}</td>
+      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(x.plan) || "—"}</td>
+      <td style="font-size:.82rem">${escapeHtml(x.sesion) || "—"}${x.hora ? `<div style="font-size:.72rem;color:var(--gray-l)">${escapeHtml(x.hora)}</div>` : ""}</td>
+      <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${x.total ? "$" + x.total.toFixed(2) : '<span style="color:var(--gray);font-weight:400">—</span>'}</td>
+      <td><span class="badge-status ${st[1]}">${escapeHtml(st[0])}</span></td>
+      <td><a class="btn btn-sm btn-outline" href="${x.link}">Ver</a></td>
+    </tr>`;
+  }).join("");
+}
+
+function stat(n, label) {
+  return `<div class="hist-stat"><div class="hist-stat-n">${n}</div><div class="hist-stat-l">${label}</div></div>`;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (window.jansAdminReady) {
+    const ok = await window.jansAdminReady;
+    if (!ok) return;
+  }
+  loadHistorial(false);
+});
+</script>
+</body>
+</html>

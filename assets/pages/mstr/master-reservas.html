@@ -20,6 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
 <script src="../../js/jans-cms.js"></script>
+<script src="../../js/jans-pager.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -61,6 +62,10 @@
     <a href="master-cotizaciones.html?section=newquote" class="nav-submenu-item" data-section="newquote" onclick="return navSubmenuClick(event,'newquote')">Nueva Cotización</a>
     <a href="master-cotizaciones.html?section=eventoForm" class="nav-submenu-item" data-section="eventoForm" onclick="return navSubmenuClick(event,'eventoForm')">Formulario Evento</a>
   </div>
+  <a href="master-historial.html" id="nav-historial">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+    Historial
+  </a>
   <a href="master-calendario.html" id="nav-calendario">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendario
@@ -153,6 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "master-dashboard": "nav-dashboard",
     "master-reservas": "nav-reservas",
     "master-cotizaciones": "nav-cotizaciones",
+    "master-historial": "nav-historial",
     "master-calendario": "nav-calendario",
     "master-panel": "nav-panel",
     "master-comentarios": "nav-comentarios",
@@ -268,19 +274,32 @@ document.addEventListener("DOMContentLoaded", () => {
 <div id="view-reservas">
         <div class="page-header">
           <h2>Reservas</h2>
-          <p>Solicitudes de sesiones recibidas desde la página web</p>
+          <p>Solicitudes de sesiones recibidas desde la página web — ordenadas por fecha de registro</p>
+        </div>
+
+        <div class="jl-filters">
+          <input type="search" id="resFilterName" class="jl-grow" placeholder="Buscar por nombre…" oninput="onResFilterChange()" />
+          <input type="search" id="resFilterCed" placeholder="Cédula / RUC" oninput="onResFilterChange()" style="width:170px" />
+          <select id="resFilterYear" onchange="onResFilterChange()" title="Año de registro"><option value="">Todos los años</option></select>
+          <select id="resSortDir" onchange="onResFilterChange()" title="Orden">
+            <option value="desc">Más recientes primero</option>
+            <option value="asc">Más antiguas primero</option>
+          </select>
+          <button class="btn btn-sm btn-outline" onclick="clearResFilters()">Limpiar filtros</button>
         </div>
 
         
         <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-          <select id="filterResStatus" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
+          <select id="filterResStatus" onchange="onResFilterChange()" title="Estado" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
             <option value="">Todos los estados</option>
             <option value="pending">Pendiente</option>
             <option value="confirmed">Confirmada</option>
             <option value="declined">Declinada</option>
             <option value="cancelled">Cancelada</option>
+            <option value="completed">Completada</option>
+            <option value="postponed">Aplazada</option>
           </select>
-          <input type="month" id="filterResMonth" onchange="renderReservasTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
+          <input type="month" id="filterResMonth" onchange="onResFilterChange()" title="Mes de la sesión" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
           <div style="flex:1"></div>
           <button class="btn btn-sm btn-outline" onclick="hardSyncReservas()" title="Vuelve a traer todas las reservas desde Supabase, descartando la copia local">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
@@ -302,8 +321,9 @@ document.addEventListener("DOMContentLoaded", () => {
               <thead>
                 <tr>
                   <th style="min-width:70px">#</th>
+                  <th style="min-width:90px">Registro</th>
                   <th>Cliente</th>
-                  <th style="min-width:100px">Fecha</th>
+                  <th style="min-width:100px">Fecha sesión</th>
                   <th style="min-width:110px">Fecha especial</th>
                   <th>Hora</th>
                   <th style="min-width:130px">Plan</th>
@@ -316,6 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <tbody id="reservasTableBody"></tbody>
             </table>
           </div>
+          <div id="reservasPager"></div>
         </div>
       </div>
 
@@ -813,6 +834,7 @@ async function syncReservasFromSupabase() {
         origin: remote.origin || prev.origin || "web",
         facturaNumero: remote.facturaNumero || prev.facturaNumero,
         createdAt: remote.createdAt || prev.createdAt,
+        createdAtISO: remote.created_at || prev.createdAtISO || "",
         fechaEspecial: remote.fecha_especial || prev.fechaEspecial || "",
         exterior: remote.exterior || prev.exterior || false,
         lugar: remote.lugar || prev.lugar || "",
@@ -923,18 +945,64 @@ async function purgeSupabaseReservas() {
   showToast(failed > 0 ? deleted + " eliminadas, " + failed + " fallaron" : deleted + " reserva(s) eliminadas de Supabase", failed > 0 ? "error" : "");
 }
 
+// Las cotizaciones crean una "reserva espejo" (origin manual, id q_...) solo para el calendario.
+// Esta página muestra únicamente las reservas reales.
+function isQuoteMirror(r) {
+  return !!r && (r.origin === "manual" || /^q_/.test(String(r.id || "")));
+}
+
+let resPage = 1;
+
+const onResFilterChange = JansList.debounce(() => {
+  resPage = 1;
+  renderReservasTable();
+}, 180);
+
+function clearResFilters() {
+  [ "resFilterName", "resFilterCed", "resFilterYear", "filterResStatus", "filterResMonth" ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  const sd = document.getElementById("resSortDir");
+  if (sd) sd.value = "desc";
+  resPage = 1;
+  renderReservasTable();
+}
+
+function goResPage(p) {
+  resPage = p;
+  renderReservasTable();
+  const card = document.getElementById("reservasTableBody");
+  if (card) card.closest(".card").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
 function renderReservasTable(highlightId) {
   loadReservasLocal();
   const filterStatus = document.getElementById("filterResStatus")?.value || "";
   const filterMonth = document.getElementById("filterResMonth")?.value || "";
-  let list = [ ...allReservas ].reverse().filter(r => {
+  const fName = JansList.norm(document.getElementById("resFilterName")?.value || "");
+  const fCed = JansList.normId(document.getElementById("resFilterCed")?.value || "");
+  const fYear = document.getElementById("resFilterYear")?.value || "";
+  const dir = document.getElementById("resSortDir")?.value === "asc" ? 1 : -1;
+  const reales = allReservas.filter(r => !isQuoteMirror(r) && r.status !== "deleted");
+  reales.forEach(r => {
+    r._ts = JansList.createdTs(r, "reserva");
+  });
+  JansList.fillYears(document.getElementById("resFilterYear"), reales.map(r => r._ts));
+  let list = reales.filter(r => {
     if (filterStatus && r.status !== filterStatus) return false;
     if (filterMonth && !r.fecha?.startsWith(filterMonth)) return false;
+    if (fName && !JansList.norm([ r.nombre, r.tutor ].join(" ")).includes(fName)) return false;
+    if (fCed && !JansList.normId(r.clientId || r.cedula || "").includes(fCed)) return false;
+    if (fYear && (!r._ts || String(new Date(r._ts).getFullYear()) !== fYear)) return false;
     return true;
-  });
+  }).sort((a, b) => (a._ts - b._ts) * dir || String(a.numero || "").localeCompare(String(b.numero || "")) * dir);
   const tbody = document.getElementById("reservasTableBody");
   if (!tbody) return;
-  const pending = allReservas.filter(r => r.status === "pending").length;
+  const pending = reales.filter(r => r.status === "pending").length;
   const badge = document.getElementById("reservasBadge");
   const badge2 = document.getElementById("reservasBadge2");
   if (badge) {
@@ -945,16 +1013,21 @@ function renderReservasTable(highlightId) {
     badge2.textContent = pending;
     badge2.style.display = pending > 0 ? "" : "none";
   }
+  if (highlightId) resPage = JansList.pageOf(list, highlightId);
+  const pg = JansList.paginate(list, resPage);
+  resPage = pg.page;
+  JansList.renderPager(document.getElementById("reservasPager"), pg, goResPage);
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--gray);padding:28px">Sin reservas</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--gray);padding:28px">' + (reales.length ? "Ninguna reserva coincide con los filtros" : "Sin reservas") + "</td></tr>";
     return;
   }
+  list = pg.items;
   tbody.innerHTML = list.map(r => {
     const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
     const pagado = resAbono(r) + resCancelado(r);
     const esEntregado = r.proceso === "Entregado";
     const procesoColor = getProcesoColor(r.proceso);
-    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.85rem;color:#e91e8c">${r.fechaEspecial ? escapeHtml(r.fechaEspecial) : "—"}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
+    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td style="font-size:.8rem;color:var(--gray-l);white-space:nowrap">${JansList.createdLabel(r._ts)}</td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.85rem;color:#e91e8c">${r.fechaEspecial ? escapeHtml(r.fechaEspecial) : "—"}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
   }).join("");
   if (highlightId) {
     const row = document.getElementById("resrow-" + highlightId);
@@ -1213,6 +1286,10 @@ function goToReservaInTable(id) {
   const filterMonth = document.getElementById("filterResMonth");
   if (filterStatus) filterStatus.value = "";
   if (filterMonth) filterMonth.value = "";
+  [ "resFilterName", "resFilterCed", "resFilterYear" ].forEach(fid => {
+    const el = document.getElementById(fid);
+    if (el) el.value = "";
+  });
   switchView("reservas", document.querySelector(".sidebar-item[onclick*='reservas']"));
   setTimeout(() => renderReservasTable(id), 80);
 }
