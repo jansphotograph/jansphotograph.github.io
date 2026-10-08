@@ -1343,7 +1343,8 @@ async function blockCalendarForQuote(q, silent) {
     } catch (e) {}
     const horaInicio = Math.max(0, hh - 2);
     const horaFin = Math.min(23, hh + Math.ceil(durHoras) + 1);
-    const titulo = "Cotizacion " + (q.numero || "") + " - " + q.clientName;
+    // Sin el nombre del cliente: los bloqueos del calendario se leen desde la página pública
+    const titulo = "Cotización " + (q.numero || "");
     const evId = "q_" + q.id;
     function dayEventsOf(v) {
       if (!v) return [];

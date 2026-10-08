@@ -481,6 +481,19 @@ function showNotas(texto) {
   section.style.display = "block";
 }
 
+// La página pública solo necesita saber qué horarios están ocupados: nunca guarda datos personales
+function availOnly(list) {
+  return (Array.isArray(list) ? list : []).filter(r => r && r.id).map(r => ({
+    id: r.id,
+    fecha: r.fecha,
+    horaVal: r.horaVal,
+    status: r.status,
+    bloqueoAntes: r.bloqueoAntes,
+    bloqueoDespues: r.bloqueoDespues,
+    bloqueoUnidad: r.bloqueoUnidad
+  }));
+}
+
 async function syncAvailabilityFromSupabase() {
   if (!sbClient) return;
   try {
@@ -516,7 +529,7 @@ async function syncAvailabilityFromSupabase() {
         });
       }
     });
-    reservas = Array.from(byId.values());
+    reservas = availOnly(Array.from(byId.values()));
     localStorage.setItem("jans_reservas", JSON.stringify(reservas));
     renderCal();
     if (selectedDate) renderTimeSlots(selectedDate);
@@ -529,7 +542,9 @@ async function syncAvailabilityFromSupabase() {
 async function refreshCalendarioFromSupabase() {
   if (!sbClient) return false;
   try {
-    const {data: calRows, error: calErr} = await sbClient.from("calendario").select("*").order("fecha", {
+    // Solo las columnas necesarias para bloquear horarios: el título y las notas (que pueden
+    // llevar nombres de clientes) no se piden desde la página pública.
+    const {data: calRows, error: calErr} = await sbClient.from("calendario").select("id,fecha,block_type,hora_inicio,hora_fin,status").order("fecha", {
       ascending: true
     });
     if (calErr || !calRows) return false;
@@ -540,9 +555,6 @@ async function refreshCalendarioFromSupabase() {
       const ev = {
         id: row.id,
         type: "event",
-        titulo: row.titulo || "",
-        descripcion: row.notas || "",
-        color: row.color || "pink",
         blockType: row.block_type || "day",
         horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
         horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
@@ -576,7 +588,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     calData = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
   } catch (e) {}
   try {
-    reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    reservas = availOnly(JSON.parse(localStorage.getItem("jans_reservas") || "[]"));
+    localStorage.setItem("jans_reservas", JSON.stringify(reservas));
   } catch (e) {}
   renderCal();
   const calendarSyncedFromSupabase = await refreshCalendarioFromSupabase();
@@ -1023,8 +1036,15 @@ async function submitReserva() {
     }
   }
   try {
+    // En el navegador del visitante solo se guarda lo necesario para la disponibilidad
+    // (sin nombre, teléfono ni correo), por si usa un equipo compartido.
     const all = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
-    all.push(reserva);
+    all.push({
+      id: reserva.id,
+      fecha: reserva.fecha,
+      horaVal: reserva.horaVal,
+      status: reserva.status
+    });
     localStorage.setItem("jans_reservas", JSON.stringify(all));
   } catch (e) {}
   if (!savedOk) {

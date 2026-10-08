@@ -18,6 +18,26 @@
 (function () {
   "use strict";
 
+  // ── Datos de clientes solo en sessionStorage ──────────────────────────────
+  // Las copias locales con datos personales (reservas, cotizaciones, comentarios, calendario)
+  // se guardan en sessionStorage: se borran al cerrar la pestaña aunque no se pulse "Salir",
+  // y no quedan en el equipo para quien abra luego el inspector del navegador.
+  // El resto del código sigue usando localStorage.getItem/setItem sin cambios.
+  var SESSION_ONLY = /^jans_(reservas|quotes|comentarios|calendar)$/;
+  try {
+    var LS = window.localStorage, SS = window.sessionStorage;
+    var SP = Object.getPrototypeOf(LS);
+    var oGet = SP.getItem, oSet = SP.setItem, oRem = SP.removeItem;
+    Object.keys(LS).forEach(function (k) {
+      if (!SESSION_ONLY.test(k)) return;
+      if (oGet.call(SS, k) == null) oSet.call(SS, k, oGet.call(LS, k));
+      oRem.call(LS, k);
+    });
+    SP.getItem = function (k) { return this === LS && SESSION_ONLY.test(k) ? oGet.call(SS, k) : oGet.call(this, k); };
+    SP.setItem = function (k, v) { return this === LS && SESSION_ONLY.test(k) ? oSet.call(SS, k, v) : oSet.call(this, k, v); };
+    SP.removeItem = function (k) { return this === LS && SESSION_ONLY.test(k) ? oRem.call(SS, k) : oRem.call(this, k); };
+  } catch (e) {}
+
   var SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
   var SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
 
@@ -32,7 +52,7 @@
 
   // Datos privados que el panel guarda en caché en este navegador (clientes, cotizaciones,
   // contadores, inventario…). Se borran al salir para no dejar nada en equipos compartidos.
-  var PRIVATE_KEYS = /^(sb-|supabase\.|jans_(reservas|quotes|comentarios|inventario|factura_counter|cot_counter|web_counter|master_auth|remote_pass|polling_enabled|gh_|public_owner|public_repo|social))/;
+  var PRIVATE_KEYS = /^(sb-|supabase\.|jans_(reservas|quotes|comentarios|calendar|inventario|factura_counter|cot_counter|web_counter|master_auth|remote_pass|polling_enabled|gh_|public_owner|public_repo|social))/;
 
   function clearCookies() {
     try {

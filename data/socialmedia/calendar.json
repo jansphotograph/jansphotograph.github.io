@@ -1,22 +1,13 @@
 {
   "2026-12-12": {
-    "type": "event",
-    "titulo": "Boda Abdiel & Osiris",
-    "descripcion": "",
-    "color": "pink"
+    "type": "event"
   },
   "2026-07-04": {
-    "type": "event",
-    "titulo": "Boda de Oro El CopÃÂÃÂ©",
-    "descripcion": "Desfile de Aniversario del Colegio",
-    "color": "pink"
+    "type": "event"
   },
   "2026-06-24": "available",
   "2026-06-26": {
     "type": "event",
-    "titulo": "Sesión con Maria Laura",
-    "descripcion": "",
-    "color": "pink",
     "blockType": "hours",
     "horaInicio": 17,
     "horaFin": 19
