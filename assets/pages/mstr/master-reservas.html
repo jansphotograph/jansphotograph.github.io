@@ -15,6 +15,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="../../css/master-reservas.css" />
+<style>
+/* Lista de reservas — mismo estilo compacto que Cotizaciones */
+.main-content { max-width: none; }
+.res-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.res-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.res-tools svg { width: 14px !important; height: 14px !important; }
+.res-table .res-num { font-family: monospace; font-size: 0.78rem; color: var(--pink-l); font-weight: 700; white-space: nowrap; }
+.res-table .res-nowrap { white-space: nowrap; }
+.res-table .res-sub { font-size: 0.75rem; color: var(--gray-l); margin-top: 2px; }
+.res-table .res-client { min-width: 160px; }
+.res-table .res-proceso { min-width: 120px; padding: 6px 8px; border: 1px solid; border-radius: 7px; color: var(--white); font-family: var(--font); font-size: 0.78rem; outline: none; }
+.res-table .res-proceso option { background: var(--panel); }
+.res-table td .btn + .btn { margin-left: 4px; }
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -272,64 +286,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <main class="main-content" style="padding-top:120px">
 <div id="view-reservas">
-        <div class="page-header">
-          <h2>Reservas</h2>
-          <p>Solicitudes de sesiones recibidas desde la página web — ordenadas por fecha de registro</p>
-        </div>
-
-        <div class="jl-filters">
-          <input type="search" id="resFilterName" class="jl-grow" placeholder="Buscar por nombre…" oninput="onResFilterChange()" />
-          <input type="search" id="resFilterCed" placeholder="Cédula / RUC" oninput="onResFilterChange()" style="width:170px" />
-          <select id="resFilterYear" onchange="onResFilterChange()" title="Año de registro"><option value="">Todos los años</option></select>
-          <select id="resSortDir" onchange="onResFilterChange()" title="Orden">
-            <option value="desc">Más recientes primero</option>
-            <option value="asc">Más antiguas primero</option>
-          </select>
-          <button class="btn btn-sm btn-outline" onclick="clearResFilters()">Limpiar filtros</button>
-        </div>
-
-        
-        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-          <select id="filterResStatus" onchange="onResFilterChange()" title="Estado" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none">
-            <option value="">Todos los estados</option>
-            <option value="pending">Pendiente</option>
-            <option value="confirmed">Confirmada</option>
-            <option value="declined">Declinada</option>
-            <option value="cancelled">Cancelada</option>
-            <option value="completed">Completada</option>
-            <option value="postponed">Aplazada</option>
-          </select>
-          <input type="month" id="filterResMonth" onchange="onResFilterChange()" title="Mes de la sesión" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none" />
-          <div style="flex:1"></div>
-          <button class="btn btn-sm btn-outline" onclick="hardSyncReservas()" title="Vuelve a traer todas las reservas desde Supabase, descartando la copia local">
+        <div class="page-header res-header">
+          <div>
+            <h2>Reservas</h2>
+            <p>Solicitudes de sesiones recibidas desde la página web — ordenadas por fecha de registro</p>
+          </div>
+          <div class="res-tools">
+            <button class="btn btn-sm btn-outline" onclick="hardSyncReservas()" title="Vuelve a traer todas las reservas desde Supabase, descartando la copia local">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
             Re-sincronizar
           </button>
-          <button class="btn btn-sm btn-outline" onclick="purgeSupabaseReservas()" title="Elimina en Supabase las reservas que ya no están en esta lista local (útil tras corregir permisos de borrado)">
+            <button class="btn btn-sm btn-outline" onclick="purgeSupabaseReservas()" title="Elimina en Supabase las reservas que ya no están en esta lista local (útil tras corregir permisos de borrado)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
             Limpiar fantasmas en Supabase
           </button>
-          <button class="btn btn-sm btn-outline" onclick="openProcesoOptionsModal()" title="Añade, edita o elimina las opciones de la columna Proceso">
+            <button class="btn btn-sm btn-outline" onclick="openProcesoOptionsModal()" title="Añade, edita o elimina las opciones de la columna Proceso">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             Editar lista de Proceso
           </button>
+          </div>
         </div>
 
         <div class="card">
+          <div class="jl-filters">
+            <input type="search" id="resFilterName" class="jl-grow" placeholder="Buscar por nombre…" oninput="onResFilterChange()" />
+            <input type="search" id="resFilterCed" placeholder="Cédula / RUC" oninput="onResFilterChange()" style="width:150px" />
+            <select id="resFilterYear" onchange="onResFilterChange()" title="Año de registro"><option value="">Todos los años</option></select>
+            <select id="filterResStatus" onchange="onResFilterChange()" title="Estado">
+              <option value="">Todos los estados</option>
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmada</option>
+              <option value="completed">Completada</option>
+              <option value="postponed">Aplazada</option>
+              <option value="declined">Declinada</option>
+              <option value="cancelled">Cancelada</option>
+            </select>
+            <input type="month" id="filterResMonth" onchange="onResFilterChange()" title="Mes de la sesión" />
+            <select id="resSortDir" onchange="onResFilterChange()" title="Orden">
+              <option value="desc">Más recientes primero</option>
+              <option value="asc">Más antiguas primero</option>
+            </select>
+            <button class="btn btn-sm btn-outline" onclick="clearResFilters()">Limpiar filtros</button>
+          </div>
           <div class="table-wrap">
-            <table>
+            <table class="res-table">
               <thead>
                 <tr>
-                  <th style="min-width:70px">#</th>
-                  <th style="min-width:90px">Registro</th>
+                  <th>#</th>
+                  <th>Fecha</th>
                   <th>Cliente</th>
-                  <th style="min-width:100px">Fecha sesión</th>
-                  <th style="min-width:110px">Fecha especial</th>
-                  <th>Hora</th>
-                  <th style="min-width:130px">Plan</th>
+                  <th>Sesión</th>
+                  <th>Plan</th>
                   <th>Proceso</th>
+                  <th>Total</th>
                   <th>Estado</th>
-                  <th>Pendiente</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -979,6 +989,12 @@ function goResPage(p) {
   });
 }
 
+// "2026-12-12" → "12/12/2026" (corto, para que no se parta en varias líneas)
+function fmtShortDate(ds) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ds || ""));
+  return m ? m[3] + "/" + m[2] + "/" + m[1] : String(ds || "");
+}
+
 function renderReservasTable(highlightId) {
   loadReservasLocal();
   const filterStatus = document.getElementById("filterResStatus")?.value || "";
@@ -1018,16 +1034,35 @@ function renderReservasTable(highlightId) {
   resPage = pg.page;
   JansList.renderPager(document.getElementById("reservasPager"), pg, goResPage);
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--gray);padding:28px">' + (reales.length ? "Ninguna reserva coincide con los filtros" : "Sin reservas") + "</td></tr>";
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:28px">' + (reales.length ? "Ninguna reserva coincide con los filtros" : "Sin reservas") + "</td></tr>";
     return;
   }
   list = pg.items;
   tbody.innerHTML = list.map(r => {
-    const total = resTotal(r), pend = resPendiente(r), prog = resProgress(r);
-    const pagado = resAbono(r) + resCancelado(r);
-    const esEntregado = r.proceso === "Entregado";
+    const total = resTotal(r), pend = resPendiente(r);
     const procesoColor = getProcesoColor(r.proceso);
-    return `\n    <tr id="resrow-${escapeHtml(r.id)}" style="${esEntregado ? "background:rgba(34,197,94,0.12)" : ""}">\n      <td>\n        <span style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(r.numero) || "—"}</span>\n        ${r.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}\n      </td>\n      <td style="font-size:.8rem;color:var(--gray-l);white-space:nowrap">${JansList.createdLabel(r._ts)}</td>\n      <td>\n        <div style="font-weight:600">${escapeHtml(r.nombre)}</div>\n        <div style="font-size:.75rem;color:var(--gray-l)">${escapeHtml(r.tel)}</div>\n      </td>\n      <td style="font-size:.88rem">${escapeHtml(r.fechaLabel || r.fecha)}</td>\n      <td style="font-size:.85rem;color:#e91e8c">${r.fechaEspecial ? escapeHtml(r.fechaEspecial) : "—"}</td>\n      <td style="font-size:.88rem">${escapeHtml(r.hora) || "—"}</td>\n      <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>\n      <td style="min-width:150px">\n        <select onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="width:100%;padding:6px 8px;background:${procesoColor}22;border:1px solid ${procesoColor};border-radius:7px;color:var(--white);font-family:var(--font);font-size:0.78rem;outline:none">\n          ${renderProcesoOptionsHtml(r.proceso)}\n        </select>\n      </td>\n      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>\n      <td style="min-width:110px">\n        ${total > 0 ? `\n          <div style="font-size:.78rem;font-weight:700;color:${pend > 0 ? "#fca5a5" : "#86efac"}">$${pagado.toFixed(2)} / $${total.toFixed(2)}</div>\n          <div style="height:5px;background:var(--dark);border-radius:4px;overflow:hidden;margin-top:3px">\n            <div style="height:100%;width:${prog}%;background:linear-gradient(90deg,var(--pink),var(--pink-l))"></div>\n          </div>\n        ` : '<span style="font-size:.75rem;color:var(--gray)">Sin definir</span>'}\n      </td>\n      <td>\n        <div style="display:flex;gap:5px;flex-wrap:wrap">\n          <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>\n          <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')">✏</button>\n        </div>\n      </td>\n    </tr>`;
+    const sesion = fmtShortDate(r.fecha);
+    const especial = r.fechaEspecial ? fmtShortDate(r.fechaEspecial) : "";
+    const payLine = total <= 0 ? '<div class="res-sub">Sin definir</div>' : pend > 0 ? `<div class="res-sub" style="color:#fca5a5">Pend. $${pend.toFixed(2)}</div>` : '<div class="res-sub" style="color:#86efac">Pagado</div>';
+    return `
+    <tr id="resrow-${escapeHtml(r.id)}">
+      <td class="res-num">${escapeHtml(r.numero) || "—"}${r.facturaNumero ? `<div class="res-sub" style="color:#86efac;font-family:var(--font)">Fact. #${escapeHtml(r.facturaNumero)}</div>` : ""}</td>
+      <td class="res-nowrap" style="color:var(--gray-l)">${JansList.createdLabel(r._ts)}</td>
+      <td class="res-client"><div style="font-weight:600">${escapeHtml(r.nombre)}</div><div class="res-sub">${escapeHtml(r.tel) || ""}${especial ? ` · <span style="color:var(--pink-l)" title="Fecha especial">🎉 ${escapeHtml(especial)}</span>` : ""}</div></td>
+      <td class="res-nowrap">${escapeHtml(sesion) || "—"}<div class="res-sub">${escapeHtml(r.hora) || ""}</div></td>
+      <td style="color:var(--gray-l)">${escapeHtml(r.plan) || "—"}</td>
+      <td>
+        <select class="res-proceso" onchange="updateResProceso('${escapeJsAttr(r.id)}', this.value)" style="background:${procesoColor}22;border-color:${procesoColor}">
+          ${renderProcesoOptionsHtml(r.proceso)}
+        </select>
+      </td>
+      <td class="res-nowrap"><div style="font-weight:700">${total > 0 ? "$" + total.toFixed(2) : "—"}</div>${payLine}</td>
+      <td><span class="badge-status ${resStatusClass(r.status)}">${resStatusLabel(r.status)}</span></td>
+      <td class="res-nowrap">
+        <button class="btn btn-sm btn-outline" onclick="viewReserva('${escapeJsAttr(r.id)}')">Ver</button>
+        <button class="btn btn-sm btn-outline" onclick="openEditReserva('${escapeJsAttr(r.id)}')" title="Editar">✏</button>
+      </td>
+    </tr>`;
   }).join("");
   if (highlightId) {
     const row = document.getElementById("resrow-" + highlightId);
