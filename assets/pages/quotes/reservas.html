@@ -524,6 +524,43 @@ async function syncAvailabilityFromSupabase() {
   }
 }
 
+// Eventos/bloqueos del calendario (incluye los bloqueos de cotizaciones confirmadas: id "q_...")
+async function refreshCalendarioFromSupabase() {
+  if (!sbClient) return false;
+  try {
+    const {data: calRows, error: calErr} = await sbClient.from("calendario").select("*").order("fecha", {
+      ascending: true
+    });
+    if (calErr || !calRows) return false;
+    const cal = {};
+    calRows.forEach(row => {
+      if (!row.fecha) return;
+      const fecha = String(row.fecha).slice(0, 10);
+      const ev = {
+        id: row.id,
+        type: "event",
+        titulo: row.titulo || "",
+        descripcion: row.notas || "",
+        color: row.color || "pink",
+        blockType: row.block_type || "day",
+        horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
+        horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
+        status: row.status || "evento"
+      };
+      if (!cal[fecha]) cal[fecha] = [];
+      cal[fecha].push(ev);
+    });
+    calData = cal;
+    localStorage.setItem("jans_calendar", JSON.stringify(calData));
+    renderCal();
+    if (selectedDate) renderTimeSlots(selectedDate);
+    return true;
+  } catch (e) {
+    console.warn("sync calendario:", e);
+    return false;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async function() {
   const p = new URLSearchParams(window.location.search);
   if (p.get("plan")) {
@@ -541,41 +578,12 @@ document.addEventListener("DOMContentLoaded", async function() {
     reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
   } catch (e) {}
   renderCal();
-  let calendarSyncedFromSupabase = false;
-  if (sbClient) {
-    try {
-      const {data: calRows, error: calErr} = await sbClient.from("calendario").select("*").order("fecha", {
-        ascending: true
-      });
-      if (!calErr && calRows) {
-        const cal = {};
-        calRows.forEach(row => {
-          if (!row.fecha) return;
-          const ev = {
-            id: row.id,
-            type: "event",
-            titulo: row.titulo || "",
-            descripcion: row.notas || "",
-            color: row.color || "pink",
-            blockType: row.block_type || "day",
-            horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
-            horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
-            status: row.status || "evento"
-          };
-          if (!cal[row.fecha]) cal[row.fecha] = [];
-          cal[row.fecha].push(ev);
-        });
-        calData = cal;
-        localStorage.setItem("jans_calendar", JSON.stringify(calData));
-        renderCal();
-        calendarSyncedFromSupabase = true;
-      }
-    } catch (e) {
-      console.warn("sync calendario:", e);
-    }
-  }
+  const calendarSyncedFromSupabase = await refreshCalendarioFromSupabase();
   await syncAvailabilityFromSupabase();
-  setInterval(syncAvailabilityFromSupabase, 6e4);
+  setInterval(() => {
+    refreshCalendarioFromSupabase();
+    syncAvailabilityFromSupabase();
+  }, 6e4);
   try {
     const cached = localStorage.getItem("jans_notas_reservas");
     if (cached) {
@@ -923,6 +931,17 @@ async function submitReserva() {
   }
   if (!selectedDate || !selectedHour) {
     alert("Selecciona fecha y hora.");
+    return;
+  }
+  // Revalidar contra la agenda más reciente (una cotización pudo confirmarse mientras la página estaba abierta)
+  await refreshCalendarioFromSupabase();
+  await syncAvailabilityFromSupabase();
+  if (isDayBlocked(selectedDate) || getBlockedHours(selectedDate).has(selectedHour)) {
+    alert("Ese horario acaba de ocuparse. Por favor elige otra fecha u hora.");
+    selectedHour = null;
+    document.getElementById("rHora").value = "";
+    renderCal();
+    renderTimeSlots(selectedDate);
     return;
   }
   const terminosOk = document.getElementById("rTerminos").checked;

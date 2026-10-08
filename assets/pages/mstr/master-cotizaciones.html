@@ -881,9 +881,13 @@ async function saveQuote() {
       return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
     }()
   };
-  state.quotes.push(quote);
-  if (sbClient) {
-    sbClient.from("cotizaciones").upsert([ {
+  if (!sbClient) {
+    showToast("Sin conexión a Supabase — la cotización no se guardó", "error");
+    return;
+  }
+  const saveBtn = document.querySelector('#section-newquote [onclick*="saveQuote"]');
+  if (saveBtn) saveBtn.disabled = true;
+  const sbRow = {
       id: quote.id,
       numero: quote.numero,
       client_name: quote.clientName,
@@ -894,8 +898,9 @@ async function saveQuote() {
       phone: quote.phone,
       email: quote.email,
       address: quote.address || "",
-      session_date: quote.sessionDate || "",
-      session_time: quote.sessionTime || "",
+      // Fechas vacías van como null (una cadena vacía rompe columnas date/time)
+      session_date: quote.sessionDate || null,
+      session_time: quote.sessionTime || null,
       location: quote.location || "",
       plan: quote.plan,
       plan_price: quote.planPrice,
@@ -903,11 +908,17 @@ async function saveQuote() {
       total: quote.total,
       notes: quote.notes || "",
       status: quote.status,
-      created_at: quote.createdAt
-    } ]).then(({error: error}) => {
-      if (error) console.error("Supabase cotizacion error:", error);
-    });
+      // ISO real: "8/10/2026" se interpretaba como 10 de agosto y fallaba con días > 12
+      created_at: (new Date).toISOString()
+  };
+  const sbError = await insertQuoteRow(sbRow);
+  if (saveBtn) saveBtn.disabled = false;
+  if (sbError) {
+    console.error("Supabase cotizacion error:", sbError);
+    showToast("No se guardó en Supabase: " + (sbError.message || sbError.code || "error desconocido"), "error");
+    return;
   }
+  state.quotes.push(quote);
   localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   try {
     const reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
@@ -942,17 +953,44 @@ async function saveQuote() {
     };
     reservas.push(reservaRecord);
     localStorage.setItem("jans_reservas", JSON.stringify(reservas));
-    if (sbClient) {
-      sbClient.from("reservas").insert([ reservaRecord ]).then(({error: error}) => {
-        if (error) console.error("Supabase insert (manual quote) error:", error);
-      });
-    }
-  } catch (e) {}
+    const {error: resErr} = await sbClient.from("reservas").insert([ {
+      ...reservaRecord,
+      fecha: reservaRecord.fecha || null
+    } ]);
+    if (resErr) console.error("Supabase insert (manual quote) error:", resErr);
+  } catch (e) {
+    console.warn("reserva espejo de cotización:", e);
+  }
   showToast("Cotización " + numero + " guardada ✓");
   clearQuoteForm();
-  updateDashboard();
+  // updateDashboard no existe en esta página: antes lanzaba un error y la lista nunca se refrescaba
+  if (typeof updateDashboard === "function") updateDashboard();
   renderQuotesTable();
   showSection("quotes");
+  fetchQuotes();
+}
+
+// Inserta la cotización en Supabase. Si la tabla no tiene alguna columna opcional,
+// la quita y reintenta (PostgREST: "Could not find the 'x' column ..."). Devuelve el error o null.
+async function insertQuoteRow(row) {
+  const optional = new Set([ "razon_social", "dv", "address", "location", "session_time", "notes" ]);
+  let payload = {
+    ...row
+  };
+  for (let i = 0; i < 6; i++) {
+    const {error: error} = await sbClient.from("cotizaciones").insert([ payload ]);
+    if (!error) return null;
+    const m = /Could not find the '([^']+)' column/.exec(error.message || "");
+    if (m && optional.has(m[1]) && m[1] in payload) {
+      console.warn("Columna inexistente en cotizaciones, se omite:", m[1]);
+      delete payload[m[1]];
+      continue;
+    }
+    return error;
+  }
+  return {
+    message: "demasiados reintentos"
+  };
 }
 
 function clearQuoteForm() {
@@ -1148,9 +1186,13 @@ function changeQuoteStatus(id, status) {
     sbClient.from("cotizaciones").update({
       status: status
     }).eq("id", id).then(function(r) {
-      if (r.error) console.warn("sbUpdate status:", r.error.message);
+      if (r.error) {
+        console.warn("sbUpdate status:", r.error.message);
+        showToast("No se actualizó el estado en Supabase: " + r.error.message, "error");
+      }
     });
   }
+  syncQuoteLock(q);
   const badge = document.getElementById("qStatusBadge");
   if (badge) {
     badge.className = "badge-status " + statusClassQ(status);
@@ -1169,13 +1211,57 @@ function changeQuoteStatus(id, status) {
   });
 }
 
-async function blockCalendarForQuote(q) {
+// Estados que ocupan la agenda (mismos que usa reservas.html para bloquear)
+const LOCKING_STATUSES = [ "confirmed", "completed", "approved", "booked" ];
+
+// Mantiene sincronizado el bloqueo del calendario público con el estado de la cotización:
+// confirmada/completada → bloquea; cualquier otro estado → libera.
+async function syncQuoteLock(q, silent) {
+  if (!q) return;
+  const lock = LOCKING_STATUSES.includes(q.status);
+  if (lock && q.sessionDate) await blockCalendarForQuote(q, silent); else await unblockCalendarForQuote(q);
+  // La cotización también tiene una reserva espejo (mismo id) que alimenta disponibilidad_reservas
   try {
+    const all = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
+    const r = all.find(x => x.id === q.id);
+    if (r) {
+      r.status = q.status;
+      localStorage.setItem("jans_reservas", JSON.stringify(all));
+    }
+  } catch (e) {}
+  if (sbClient) {
+    const {error: error} = await sbClient.from("reservas").update({
+      status: q.status
+    }).eq("id", q.id);
+    if (error) console.warn("sync reserva espejo:", error.message);
+  }
+}
+
+async function unblockCalendarForQuote(q) {
+  const evId = "q_" + q.id;
+  try {
+    const cal = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
+    Object.keys(cal).forEach(ds => {
+      if (Array.isArray(cal[ds])) {
+        cal[ds] = cal[ds].filter(e => !(e && e.id === evId));
+        if (!cal[ds].length) delete cal[ds];
+      }
+    });
+    localStorage.setItem("jans_calendar", JSON.stringify(cal));
+  } catch (e) {}
+  if (sbClient) await sbDelete("calendario", evId);
+}
+
+async function blockCalendarForQuote(q, silent) {
+  try {
+    const hasTime = !!(q.sessionTime && /^\d{1,2}:/.test(q.sessionTime));
     const parts = (q.sessionTime || "0:0").split(":");
     const hh = parseInt(parts[0]) || 0;
     const durHoras = q.eventoData?.horas || 1;
     const fecha = q.sessionDate;
     if (!fecha) return;
+    // Si la fecha cambió, quitar el bloqueo anterior antes de crear el nuevo
+    await unblockCalendarForQuote(q);
     let cal = {};
     try {
       cal = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
@@ -1190,12 +1276,14 @@ async function blockCalendarForQuote(q) {
       if (typeof v === "object" && v.type === "event") return [ v ];
       return [];
     }
+    // Sin hora definida → se bloquea el día completo
+    const blockType = hasTime ? "hours" : "day";
     const evObj = {
       id: evId,
       type: "event",
-      blockType: "hours",
-      horaInicio: horaInicio,
-      horaFin: horaFin,
+      blockType: blockType,
+      horaInicio: hasTime ? horaInicio : null,
+      horaFin: hasTime ? horaFin : null,
       quoteLock: q.id,
       titulo: titulo,
       color: "pink"
@@ -1204,20 +1292,21 @@ async function blockCalendarForQuote(q) {
     list.push(evObj);
     cal[fecha] = list;
     localStorage.setItem("jans_calendar", JSON.stringify(cal));
+    let ok = true;
     if (sbClient) {
-      await sbUpsert("calendario", {
+      ok = await sbUpsert("calendario", {
         id: evId,
         fecha: fecha,
         titulo: titulo,
         notas: "",
         color: "pink",
-        block_type: "hours",
-        hora_inicio: horaInicio,
-        hora_fin: horaFin,
+        block_type: blockType,
+        hora_inicio: hasTime ? horaInicio : null,
+        hora_fin: hasTime ? horaFin : null,
         status: "evento"
       });
     }
-    showToast("Calendario bloqueado: " + fecha + " OK");
+    if (!ok) showToast("No se pudo bloquear el calendario en Supabase (ver consola)", "error"); else if (!silent) showToast("Calendario bloqueado: " + fecha + (hasTime ? "" : " (día completo)") + " ✓");
   } catch (e) {
     console.warn("blockCalendar", e);
   }
@@ -1261,7 +1350,7 @@ async function saveQuoteChanges(id) {
       }
     });
   }
-  if (q.status === "confirmed" && q.sessionDate && q.sessionTime) await blockCalendarForQuote(q);
+  await syncQuoteLock(q, true);
   localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   renderQuotesTable();
   closeModal("quoteModal");
