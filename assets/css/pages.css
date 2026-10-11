@@ -416,3 +416,4 @@
 .pc-ubicacion-exterior { background: rgba(34,197,94,0.1); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
 .plan-cards-grid .js-state, .catalog-grid .js-state { grid-column: 1 / -1; }
 .catalog-grid .js-skel-tile { border-radius: 10px; }
+.pc-ubicacion-ambos { background: rgba(233,30,140,0.1); color: #f9a8d4; border: 1px solid rgba(233,30,140,0.28); }

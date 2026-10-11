@@ -871,15 +871,15 @@ function updateSubmitBtn() {
 let _personasNum = 1;
 
 // ── Tarifario y tipo de plan ──
-window._planUbicacion = "estudio";   // "estudio" | "exterior" (según el plan elegido)
+window._planUbicacion = "estudio";   // "estudio" | "exterior" | "ambos" (según el plan elegido)
 window._tarifaExterior = 0;          // se carga desde Configuración → Tarifas
 window._planId = "";
 
 function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
 
 function cambioAExterior() {
-  // Aplica tarifa solo si el plan es de estudio y el cliente pidió exterior
-  return document.getElementById("rExterior").checked && window._planUbicacion !== "exterior";
+  // Aplica tarifa solo si el plan es SOLO de estudio y el cliente pidió exterior
+  return document.getElementById("rExterior").checked && window._planUbicacion === "estudio";
 }
 
 function renderExteriorAviso() {
@@ -888,7 +888,12 @@ function renderExteriorAviso() {
   const ackText = document.getElementById("exteriorAckText");
   if (!aviso) return;
   const tarifa = window._tarifaExterior;
-  if (window._planUbicacion === "exterior") {
+  if (window._planUbicacion === "ambos") {
+    aviso.innerHTML = '<strong>Tu plan permite sesión en estudio o en exterior</strong>, así que no tiene tarifa de cambio. ' +
+      'Al elegir exterior solo se sumará el <strong>costo de transporte</strong>, que depende de la distancia al lugar. ' +
+      'Te enviaremos un <strong>PDF con el detalle final</strong> del valor total de tu sesión.';
+    ackText.textContent = "Entiendo que se sumará el costo de transporte según la distancia y que recibiré un PDF con el detalle del valor total de mi sesión.";
+  } else if (window._planUbicacion === "exterior") {
     aviso.innerHTML = '<strong>Tu plan ya es en exterior.</strong> Solo se sumará el <strong>costo de transporte</strong>, que depende de la distancia al lugar. ' +
       'Te enviaremos un <strong>PDF con el detalle final</strong> del valor total de tu sesión.';
     ackText.textContent = "Entiendo que se sumará el costo de transporte según la distancia y que recibiré un PDF con el detalle del valor total de mi sesión.";
@@ -918,8 +923,9 @@ function applyPlanUbicacion() {
   } else {
     ext.disabled = false;
     label.classList.remove("is-locked");
-    text.textContent = "¿Te gustaría hacer las fotos en exterior?";
-    note.hidden = true;
+    text.textContent = window._planUbicacion === "ambos" ? "¿Quieres la sesión en exterior? (tu plan lo incluye)" : "¿Te gustaría hacer las fotos en exterior?";
+    note.hidden = window._planUbicacion !== "ambos";
+    if (window._planUbicacion === "ambos") note.textContent = "🏠🌿 Este plan es para estudio o exterior: elige donde prefieras, sin tarifa de cambio.";
   }
   renderExteriorAviso();
   updateResumen();
@@ -931,7 +937,7 @@ async function loadTarifasYPlan(params) {
     if (cached && Number.isFinite(+cached.exterior)) window._tarifaExterior = +cached.exterior;
   } catch (e) {}
   const ub = (params.get("ubicacion") || "").toLowerCase();
-  if (ub === "exterior" || ub === "estudio") window._planUbicacion = ub;
+  if (ub === "exterior" || ub === "estudio" || ub === "ambos") window._planUbicacion = ub;
   window._planId = (params.get("plan_id") || "").slice(0, 80);
   applyPlanUbicacion();
   const tareas = [ JansPub.json("tarifas").then(t => {
@@ -945,12 +951,12 @@ async function loadTarifasYPlan(params) {
     tareas.push(JansPub.table("planes_publicos?select=id,nombre,precio,ubicacion&id=eq." + encodeURIComponent(window._planId)).then(rows => {
       const pl = rows && rows[0];
       if (!pl) return;
-      window._planUbicacion = pl.ubicacion === "exterior" ? "exterior" : "estudio";
+      window._planUbicacion = pl.ubicacion === "exterior" || pl.ubicacion === "ambos" ? pl.ubicacion : "estudio";
       const precio = parseFloat(pl.precio) || 0;
       window._planPrecio = precio;
       document.getElementById("rPlan").value = pl.nombre + " ($" + precio + ")";
       const badge = document.getElementById("planBadge");
-      badge.textContent = "Plan: " + pl.nombre + " — $" + precio + (window._planUbicacion === "exterior" ? " · 🌿 Exterior" : " · 🏠 Estudio");
+      badge.textContent = "Plan: " + pl.nombre + " — $" + precio + (window._planUbicacion === "exterior" ? " · 🌿 Exterior" : window._planUbicacion === "ambos" ? " · 🏠🌿 Estudio o exterior" : " · 🏠 Estudio");
     }).catch(() => {}));
   }
   await Promise.all(tareas);
@@ -1108,7 +1114,7 @@ async function submitReserva() {
     lugar: lugar,
     planId: window._planId || "",
     planUbicacion: window._planUbicacion,
-    costoExterior: exterior && window._planUbicacion !== "exterior" ? window._tarifaExterior || 0 : 0,
+    costoExterior: exterior && window._planUbicacion === "estudio" ? window._tarifaExterior || 0 : 0,
     costoTransporte: 0,
     personasAdicionales: personasAdicionales,
     costoPersonas: costoPersonas,
@@ -1166,7 +1172,7 @@ async function submitReserva() {
     if (!ey || !em || !ed) return fechaEspecial;
     return parseInt(ed) + " de " + MONTHS[parseInt(em) - 1] + " " + ey;
   })();
-  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + (tutor ? "👨‍👩‍👧 Padre/Madre o tutor: " + tutor + "\n" : "") + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" + (window._planUbicacion !== "exterior" ? "➕ Tarifa de exterior: " + ((window._tarifaExterior || 0) > 0 ? money(window._tarifaExterior) : "sin costo") + "\n" : "") + "🚗 Transporte: por confirmar según la distancia (lo recibiré en el PDF con el total final)\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
+  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + (tutor ? "👨‍👩‍👧 Padre/Madre o tutor: " + tutor + "\n" : "") + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" + (window._planUbicacion === "estudio" ? "➕ Tarifa de exterior: " + ((window._tarifaExterior || 0) > 0 ? money(window._tarifaExterior) : "sin costo") + "\n" : "") + "🚗 Transporte: por confirmar según la distancia (lo recibiré en el PDF con el total final)\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
   window.open("https://wa.me/" + WA_NUMBER + "?text=" + msg, "_blank");
   setTimeout(function() {
     if (document.referrer) {

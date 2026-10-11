@@ -540,15 +540,21 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="field">
       <label>Tipo de sesión *</label>
-      <div style="display:flex;gap:10px;flex-wrap:wrap" role="radiogroup" aria-label="Tipo de sesión">
-        <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:600;font-size:0.85rem">
-          <input type="radio" name="ppUbicacion" value="estudio" checked style="accent-color:var(--pink)" /> 🏠 Estudio
-        </label>
-        <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:600;font-size:0.85rem">
-          <input type="radio" name="ppUbicacion" value="exterior" style="accent-color:var(--pink)" /> 🌿 Exterior
-        </label>
+      <style>
+        .pp-tipo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .pp-tipo label { display: flex !important; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; margin: 0 !important;
+          background: var(--dark); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; cursor: pointer;
+          font-weight: 600; font-size: 0.85rem; text-transform: none !important; letter-spacing: normal !important; color: var(--white) !important; }
+        .pp-tipo input { width: auto !important; flex: 0 0 auto; margin: 0; accent-color: var(--pink); }
+        .pp-tipo label:has(input:checked) { border-color: var(--pink); background: rgba(233,30,140,0.08); }
+        @media (max-width: 480px) { .pp-tipo { grid-template-columns: 1fr; } }
+      </style>
+      <div class="pp-tipo" role="radiogroup" aria-label="Tipo de sesión">
+        <label><input type="radio" name="ppUbicacion" value="estudio" checked /> 🏠 Estudio</label>
+        <label><input type="radio" name="ppUbicacion" value="exterior" /> 🌿 Exterior</label>
+        <label><input type="radio" name="ppUbicacion" value="ambos" /> 🏠🌿 Ambos</label>
       </div>
-      <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">Si es de estudio y el cliente pide exterior, se suma la tarifa de exterior de <a href="master-config.html?section=tarifas" style="color:var(--pink-l)">Configuración → Tarifas</a>.</div>
+      <div style="font-size:0.75rem;color:var(--gray);margin:8px 0 4px;line-height:1.55"><strong>Estudio:</strong> si el cliente pide exterior se suma la tarifa de <a href="master-config.html?section=tarifas" style="color:var(--pink-l)">Configuración → Tarifas</a> + transporte. <strong>Ambos:</strong> el cliente elige estudio o exterior sin tarifa de cambio (solo transporte si es exterior). <strong>Exterior:</strong> siempre en exterior.</div>
     </div>
     <div class="field">
       <label>¿Qué incluye? <span style="color:var(--gray);font-weight:400">(una línea por ítem)</span></label>
@@ -1161,7 +1167,7 @@ function renderPublicPlans() {
     catGrid.innerHTML = plans.map(p => {
       const realIdx = publicPlans.indexOf(p);
       const isPopular = !!p.popular;
-      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">\n        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">\n          <button onclick="togglePopular(${realIdx})" title="${isPopular ? "Quitar Más Popular" : "Marcar como Más Popular"}"\n            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular ? "1" : "0.3"};filter:${isPopular ? "none" : "grayscale(1)"};transition:all 0.2s">⭐</button>\n          <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>\n          <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>\n        </div>\n        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${escapeHtmlCat(p.nombre)}</div>\n        <div style="display:inline-block;font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:999px;margin-bottom:8px;${p.ubicacion === "exterior" ? "background:rgba(34,197,94,0.12);color:#86efac" : "background:rgba(255,255,255,0.07);color:var(--gray-l)"}">${p.ubicacion === "exterior" ? "🌿 Exterior" : "🏠 Estudio"}</div>\n        <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${escapeHtmlCat(p.precio)}</div>\n        <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">\n          ${(p.incluye || []).map(x => `<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${escapeHtmlCat(x)}</li>`).join("")}\n        </ul>\n      </div>`;
+      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">\n        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">\n          <button onclick="togglePopular(${realIdx})" title="${isPopular ? "Quitar Más Popular" : "Marcar como Más Popular"}"\n            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular ? "1" : "0.3"};filter:${isPopular ? "none" : "grayscale(1)"};transition:all 0.2s">⭐</button>\n          <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>\n          <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>\n        </div>\n        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${escapeHtmlCat(p.nombre)}</div>\n        <div style="display:inline-block;font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:999px;margin-bottom:8px;${p.ubicacion === "exterior" ? "background:rgba(34,197,94,0.12);color:#86efac" : p.ubicacion === "ambos" ? "background:rgba(233,30,140,0.12);color:#f9a8d4" : "background:rgba(255,255,255,0.07);color:var(--gray-l)"}">${p.ubicacion === "exterior" ? "🌿 Exterior" : p.ubicacion === "ambos" ? "🏠🌿 Estudio o exterior" : "🏠 Estudio"}</div>\n        <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${escapeHtmlCat(p.precio)}</div>\n        <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">\n          ${(p.incluye || []).map(x => `<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${escapeHtmlCat(x)}</li>`).join("")}\n        </ul>\n      </div>`;
     }).join("");
     container.appendChild(catGrid);
   });
@@ -1213,13 +1219,13 @@ async function togglePopular(idx) {
 }
 
 function setPlanUbicacion(v) {
-  const val = v === "exterior" ? "exterior" : "estudio";
+  const val = v === "exterior" || v === "ambos" ? v : "estudio";
   document.querySelectorAll('input[name="ppUbicacion"]').forEach(r => { r.checked = r.value === val; });
 }
 
 function getPlanUbicacion() {
   const r = document.querySelector('input[name="ppUbicacion"]:checked');
-  return r && r.value === "exterior" ? "exterior" : "estudio";
+  return r && (r.value === "exterior" || r.value === "ambos") ? r.value : "estudio";
 }
 
 function openNewPlanModal() {

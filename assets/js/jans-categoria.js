@@ -18,20 +18,23 @@
 
   var UBIC = {
     estudio: { icon: "🏠", label: "Sesión en estudio" },
-    exterior: { icon: "🌿", label: "Sesión en exterior" }
+    exterior: { icon: "🌿", label: "Sesión en exterior" },
+    ambos: { icon: "🏠🌿", label: "Estudio o exterior" }
   };
+  function normUbic(v) { return v === "exterior" || v === "ambos" ? v : "estudio"; }
 
   function planCard(p) {
     var popular = !!p.popular;
-    var ub = UBIC[p.ubicacion] || UBIC.estudio;
+    var tipo = normUbic(p.ubicacion);
+    var ub = UBIC[tipo];
     var href = "../quotes/reservas.html?plan=" + encodeURIComponent(p.nombre || "") +
       "&precio=" + encodeURIComponent(p.precio || 0) +
       (p.id ? "&plan_id=" + encodeURIComponent(p.id) : "") +
-      "&ubicacion=" + encodeURIComponent(p.ubicacion === "exterior" ? "exterior" : "estudio");
+      "&ubicacion=" + encodeURIComponent(tipo);
     return '<div class="plan-card-pub' + (popular ? " plan-popular" : "") + '">' +
       (popular ? '<div class="popular-badge">⭐ Más Popular</div>' : "") +
       '<div class="pc-name' + (popular ? " pc-name-popular" : "") + '">' + esc(p.nombre) + "</div>" +
-      '<div class="pc-ubicacion pc-ubicacion-' + (p.ubicacion === "exterior" ? "exterior" : "estudio") + '">' + ub.icon + " " + ub.label + "</div>" +
+      '<div class="pc-ubicacion pc-ubicacion-' + tipo + '">' + ub.icon + " " + ub.label + "</div>" +
       '<div class="pc-price">$' + esc(p.precio) + "<span> USD</span></div>" +
       '<ul class="pc-includes">' + (p.incluye || []).map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>" +
       '<a href="' + esc(href) + '" class="btn-agendar">Agendar</a></div>';
