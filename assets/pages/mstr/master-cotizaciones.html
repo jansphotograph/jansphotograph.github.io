@@ -20,8 +20,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
 <script src="../../js/jans-cms.js"></script>
-<script src="../../js/jans-dates.js"></script>
-<script src="../../js/jans-pager.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -64,10 +62,6 @@
     <a href="master-cotizaciones.html?section=newquote" class="nav-submenu-item" data-section="newquote" onclick="return navSubmenuClick(event,'newquote')">Nueva Cotización</a>
     <a href="master-cotizaciones.html?section=eventoForm" class="nav-submenu-item" data-section="eventoForm" onclick="return navSubmenuClick(event,'eventoForm')">Formulario Evento</a>
   </div>
-  <a href="master-historial.html" id="nav-historial">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-    Historial
-  </a>
   <a href="master-calendario.html" id="nav-calendario">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendario
@@ -107,6 +101,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
+    <a href="master-config.html?section=tarifas" class="nav-submenu-item" data-section="tarifas" onclick="return navSubmenuClick(event,'tarifas')">Tarifas</a>
     <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
@@ -160,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "master-dashboard": "nav-dashboard",
     "master-reservas": "nav-reservas",
     "master-cotizaciones": "nav-cotizaciones",
-    "master-historial": "nav-historial",
     "master-calendario": "nav-calendario",
     "master-panel": "nav-panel",
     "master-comentarios": "nav-comentarios",
@@ -198,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="page-header" style="display:flex;align-items:center;justify-content:space-between">
           <div>
             <h2>Cotizaciones</h2>
-            <p>Registro de todas las cotizaciones — ordenadas por fecha de creación</p>
+            <p>Registro de todas las cotizaciones</p>
           </div>
           <button class="btn btn-pink" onclick="showSection('newquote')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -206,31 +200,22 @@ document.addEventListener("DOMContentLoaded", () => {
           </button>
         </div>
         <div class="card">
-          <div class="jl-filters">
-            <input type="search" id="searchQuotes" class="jl-grow" placeholder="Buscar por nombre…" oninput="onQuoteFilterChange()" />
-            <input type="search" id="searchQuotesCed" placeholder="Cédula / RUC" oninput="onQuoteFilterChange()" style="width:170px" />
-            <select id="filterQuoteYear" onchange="onQuoteFilterChange()" title="Año de creación"><option value="">Todos los años</option></select>
-            <select id="filterStatus" onchange="onQuoteFilterChange()" title="Estado">
-              <option value="">Todos los estados</option>
+          <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+            <input type="text" id="searchQuotes" placeholder="Buscar cliente..." oninput="renderQuotesTable()" style="flex:1;min-width:180px;padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;" />
+            <select id="filterStatus" onchange="renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
+              <option value="">Todos</option>
               <option value="pending">Pendiente</option>
-              <option value="confirmed">Confirmada</option>
-              <option value="completed">Completada</option>
-              <option value="postponed">Aplazada</option>
-              <option value="cancelled">Cancelada</option>
+              <option value="approved">Aprobada</option>
+              <option value="booked">Reservada</option>
+              <option value="rejected">Rechazada</option>
             </select>
-            <select id="quoteSortDir" onchange="onQuoteFilterChange()" title="Orden">
-              <option value="desc">Más recientes primero</option>
-              <option value="asc">Más antiguas primero</option>
-            </select>
-            <button class="btn btn-sm btn-outline" onclick="clearQuoteFilters()">Limpiar filtros</button>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Cédula / RUC</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>#</th><th>Cliente</th><th>Tipo</th><th>Plan</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
               <tbody id="quotesTable"></tbody>
             </table>
           </div>
-          <div id="quotesPager"></div>
         </div>
       </div>
 
@@ -626,7 +611,7 @@ async function fetchQuotes() {
       const {data: data, error: error} = await sbClient.from("cotizaciones").select("*").order("created_at", {
         ascending: false
       });
-      if (!error && Array.isArray(data)) {
+      if (!error && data && data.length > 0) {
         const mapped = data.map(r => ({
           id: r.id,
           numero: r.numero,
@@ -649,13 +634,18 @@ async function fetchQuotes() {
           pagado: parseFloat(r.pagado) || 0,
           notes: r.notes || "",
           status: r.status,
-          createdAtISO: r.created_at || "",
-          createdAt: JansDate.iso(r.created_at)
+          createdAt: function(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return iso;
+            return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+          }(r.created_at)
         }));
-        // Solo lo que existe en Supabase: así no aparecen cotizaciones "fantasma"
-        // que quedaron en este navegador de intentos de guardado fallidos.
-        state.quotes = mapped;
-        localStorage.setItem("jans_quotes", JSON.stringify(mapped));
+        const local = JSON.parse(localStorage.getItem("jans_quotes") || "[]");
+        const ids = new Set(mapped.map(q => q.id));
+        const merged = [ ...mapped, ...local.filter(q => !ids.has(q.id)) ];
+        state.quotes = merged;
+        localStorage.setItem("jans_quotes", JSON.stringify(merged));
         renderQuotesTable();
         return;
       }
@@ -694,86 +684,20 @@ async function refreshCotizacionCatalogData() {
   if (okServ) renderServiceChecks();
 }
 
-let quotePage = 1;
-
-const onQuoteFilterChange = JansList.debounce(() => {
-  quotePage = 1;
-  renderQuotesTable();
-}, 180);
-
-function clearQuoteFilters() {
-  [ "searchQuotes", "searchQuotesCed", "filterQuoteYear", "filterStatus" ].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = "";
-  });
-  const sd = document.getElementById("quoteSortDir");
-  if (sd) sd.value = "desc";
-  quotePage = 1;
-  renderQuotesTable();
-}
-
-function goQuotePage(p) {
-  quotePage = p;
-  renderQuotesTable();
-  const tb = document.getElementById("quotesTable");
-  if (tb) tb.closest(".card").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-}
-
-function renderQuotesTable(highlightId) {
-  const search = JansList.norm(document.getElementById("searchQuotes")?.value || "");
-  const ced = JansList.normId(document.getElementById("searchQuotesCed")?.value || "");
-  const year = document.getElementById("filterQuoteYear")?.value || "";
-  const filter = document.getElementById("filterStatus")?.value || "";
-  const dir = document.getElementById("quoteSortDir")?.value === "asc" ? 1 : -1;
-  state.quotes.forEach(q => {
-    q._ts = JansList.createdTs(q, "cotizacion");
-  });
-  JansList.fillYears(document.getElementById("filterQuoteYear"), state.quotes.map(q => q._ts));
+function renderQuotesTable() {
+  const search = (document.getElementById("searchQuotes").value || "").toLowerCase();
+  const filter = document.getElementById("filterStatus").value;
   let quotes = state.quotes.filter(q => {
-    if (search && !JansList.norm([ q.clientName, q.razonSocial ].join(" ")).includes(search)) return false;
-    if (ced && !JansList.normId(q.clientId).includes(ced)) return false;
-    if (year && (!q._ts || String(new Date(q._ts).getFullYear()) !== year)) return false;
-    if (filter && statusLabel(q.status) !== statusLabel(filter)) return false;
-    return true;
-  }).sort((a, b) => (a._ts - b._ts) * dir || String(a.numero || "").localeCompare(String(b.numero || ""), "es", {
-    numeric: true
-  }) * dir);
+    const matchSearch = !search || q.clientName.toLowerCase().includes(search);
+    const matchStatus = !filter || q.status === filter;
+    return matchSearch && matchStatus;
+  }).reverse();
   const tbody = document.getElementById("quotesTable");
-  if (highlightId) quotePage = JansList.pageOf(quotes, highlightId);
-  const pg = JansList.paginate(quotes, quotePage);
-  quotePage = pg.page;
-  JansList.renderPager(document.getElementById("quotesPager"), pg, goQuotePage);
   if (!quotes.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="color:var(--gray);text-align:center;padding:24px">' + (state.quotes.length ? "Ninguna cotización coincide con los filtros" : "Sin cotizaciones") + "</td></tr>";
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--gray);text-align:center;padding:24px">Sin cotizaciones</td></tr>';
     return;
   }
-  tbody.innerHTML = pg.items.map(q => `
-    <tr id="qrow-${escapeHtml(q.id)}">
-      <td style="font-family:monospace;font-size:0.78rem;color:var(--pink-l);font-weight:700">${escapeHtml(q.numero) || "—"}</td>
-      <td style="font-size:0.8rem;color:var(--gray-l);white-space:nowrap">${JansList.createdLabel(q._ts)}</td>
-      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email) || ""}</div></td>
-      <td style="font-size:0.82rem">${escapeHtml(q.clientId) || "—"}</td>
-      <td>${q.clientType === "juridica" ? "Jurídica" : "Natural"}</td>
-      <td>${escapeHtml(q.plan) || "—"}</td>
-      <td style="font-weight:700">$${(parseFloat(q.total) || 0).toFixed(2)}</td>
-      <td><span class="badge-status ${statusClassQ(q.status)}">${statusLabel(q.status)}</span></td>
-      <td>
-        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>
-      </td>
-    </tr>`).join("");
-  if (highlightId) {
-    const row = document.getElementById("qrow-" + highlightId);
-    if (row) {
-      row.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-      row.classList.add("jl-flash");
-    }
-  }
+  tbody.innerHTML = quotes.map((q, i) => `\n    <tr>\n      <td style="color:var(--gray-l);font-size:0.78rem">#${String(state.quotes.length - i).padStart(3, "0")}</td>\n      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email) || ""}</div></td>\n      <td>${q.clientType === "juridica" ? "Jurídica" : "Natural"}</td>\n      <td>${escapeHtml(q.plan) || "—"}</td>\n      <td style="font-weight:700">$${(q.total || 0).toFixed(2)}</td>\n      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>\n      <td style="font-size:0.8rem;color:var(--gray-l)">${escapeHtml(q.createdAt) || "—"}</td>\n      <td>\n        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>\n      </td>\n    </tr>`).join("");
 }
 
 async function deleteQuote(id) {
@@ -953,16 +877,14 @@ async function saveQuote() {
     total: total,
     notes: document.getElementById("qNotes").value,
     status: "pending",
-    createdAtISO: (new Date).toISOString(),
-    createdAt: JansDate.today()
+    createdAt: function() {
+      const d = new Date;
+      return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+    }()
   };
-  if (!sbClient) {
-    showToast("Sin conexión a Supabase — la cotización no se guardó", "error");
-    return;
-  }
-  const saveBtn = document.querySelector('#section-newquote [onclick*="saveQuote"]');
-  if (saveBtn) saveBtn.disabled = true;
-  const sbRow = {
+  state.quotes.push(quote);
+  if (sbClient) {
+    sbClient.from("cotizaciones").upsert([ {
       id: quote.id,
       numero: quote.numero,
       client_name: quote.clientName,
@@ -973,9 +895,8 @@ async function saveQuote() {
       phone: quote.phone,
       email: quote.email,
       address: quote.address || "",
-      // Fechas vacías van como null (una cadena vacía rompe columnas date/time)
-      session_date: quote.sessionDate || null,
-      session_time: quote.sessionTime || null,
+      session_date: quote.sessionDate || "",
+      session_time: quote.sessionTime || "",
       location: quote.location || "",
       plan: quote.plan,
       plan_price: quote.planPrice,
@@ -983,17 +904,11 @@ async function saveQuote() {
       total: quote.total,
       notes: quote.notes || "",
       status: quote.status,
-      // ISO real: "8/10/2026" se interpretaba como 10 de agosto y fallaba con días > 12
-      created_at: (new Date).toISOString()
-  };
-  const sbError = await insertQuoteRow(sbRow);
-  if (saveBtn) saveBtn.disabled = false;
-  if (sbError) {
-    console.error("Supabase cotizacion error:", sbError);
-    showToast("No se guardó en Supabase: " + (sbError.message || sbError.code || "error desconocido"), "error");
-    return;
+      created_at: quote.createdAt
+    } ]).then(({error: error}) => {
+      if (error) console.error("Supabase cotizacion error:", error);
+    });
   }
-  state.quotes.push(quote);
   localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   try {
     const reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
@@ -1028,44 +943,17 @@ async function saveQuote() {
     };
     reservas.push(reservaRecord);
     localStorage.setItem("jans_reservas", JSON.stringify(reservas));
-    const {error: resErr} = await sbClient.from("reservas").insert([ {
-      ...reservaRecord,
-      fecha: reservaRecord.fecha || null
-    } ]);
-    if (resErr) console.error("Supabase insert (manual quote) error:", resErr);
-  } catch (e) {
-    console.warn("reserva espejo de cotización:", e);
-  }
+    if (sbClient) {
+      sbClient.from("reservas").insert([ reservaRecord ]).then(({error: error}) => {
+        if (error) console.error("Supabase insert (manual quote) error:", error);
+      });
+    }
+  } catch (e) {}
   showToast("Cotización " + numero + " guardada ✓");
   clearQuoteForm();
-  // updateDashboard no existe en esta página: antes lanzaba un error y la lista nunca se refrescaba
-  if (typeof updateDashboard === "function") updateDashboard();
+  updateDashboard();
   renderQuotesTable();
   showSection("quotes");
-  fetchQuotes();
-}
-
-// Inserta la cotización en Supabase. Si la tabla no tiene alguna columna opcional,
-// la quita y reintenta (PostgREST: "Could not find the 'x' column ..."). Devuelve el error o null.
-async function insertQuoteRow(row) {
-  const optional = new Set([ "razon_social", "dv", "address", "location", "session_time", "notes" ]);
-  let payload = {
-    ...row
-  };
-  for (let i = 0; i < 6; i++) {
-    const {error: error} = await sbClient.from("cotizaciones").insert([ payload ]);
-    if (!error) return null;
-    const m = /Could not find the '([^']+)' column/.exec(error.message || "");
-    if (m && optional.has(m[1]) && m[1] in payload) {
-      console.warn("Columna inexistente en cotizaciones, se omite:", m[1]);
-      delete payload[m[1]];
-      continue;
-    }
-    return error;
-  }
-  return {
-    message: "demasiados reintentos"
-  };
 }
 
 function clearQuoteForm() {
@@ -1261,13 +1149,9 @@ function changeQuoteStatus(id, status) {
     sbClient.from("cotizaciones").update({
       status: status
     }).eq("id", id).then(function(r) {
-      if (r.error) {
-        console.warn("sbUpdate status:", r.error.message);
-        showToast("No se actualizó el estado en Supabase: " + r.error.message, "error");
-      }
+      if (r.error) console.warn("sbUpdate status:", r.error.message);
     });
   }
-  syncQuoteLock(q);
   const badge = document.getElementById("qStatusBadge");
   if (badge) {
     badge.className = "badge-status " + statusClassQ(status);
@@ -1286,65 +1170,20 @@ function changeQuoteStatus(id, status) {
   });
 }
 
-// Estados que ocupan la agenda (mismos que usa reservas.html para bloquear)
-const LOCKING_STATUSES = [ "confirmed", "completed", "approved", "booked" ];
-
-// Mantiene sincronizado el bloqueo del calendario público con el estado de la cotización:
-// confirmada/completada → bloquea; cualquier otro estado → libera.
-async function syncQuoteLock(q, silent) {
-  if (!q) return;
-  const lock = LOCKING_STATUSES.includes(q.status);
-  if (lock && q.sessionDate) await blockCalendarForQuote(q, silent); else await unblockCalendarForQuote(q);
-  // La cotización también tiene una reserva espejo (mismo id) que alimenta disponibilidad_reservas
+async function blockCalendarForQuote(q) {
   try {
-    const all = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
-    const r = all.find(x => x.id === q.id);
-    if (r) {
-      r.status = q.status;
-      localStorage.setItem("jans_reservas", JSON.stringify(all));
-    }
-  } catch (e) {}
-  if (sbClient) {
-    const {error: error} = await sbClient.from("reservas").update({
-      status: q.status
-    }).eq("id", q.id);
-    if (error) console.warn("sync reserva espejo:", error.message);
-  }
-}
-
-async function unblockCalendarForQuote(q) {
-  const evId = "q_" + q.id;
-  try {
-    const cal = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
-    Object.keys(cal).forEach(ds => {
-      if (Array.isArray(cal[ds])) {
-        cal[ds] = cal[ds].filter(e => !(e && e.id === evId));
-        if (!cal[ds].length) delete cal[ds];
-      }
-    });
-    localStorage.setItem("jans_calendar", JSON.stringify(cal));
-  } catch (e) {}
-  if (sbClient) await sbDelete("calendario", evId);
-}
-
-async function blockCalendarForQuote(q, silent) {
-  try {
-    const hasTime = !!(q.sessionTime && /^\d{1,2}:/.test(q.sessionTime));
     const parts = (q.sessionTime || "0:0").split(":");
     const hh = parseInt(parts[0]) || 0;
     const durHoras = q.eventoData?.horas || 1;
     const fecha = q.sessionDate;
     if (!fecha) return;
-    // Si la fecha cambió, quitar el bloqueo anterior antes de crear el nuevo
-    await unblockCalendarForQuote(q);
     let cal = {};
     try {
       cal = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
     } catch (e) {}
     const horaInicio = Math.max(0, hh - 2);
     const horaFin = Math.min(23, hh + Math.ceil(durHoras) + 1);
-    // Sin el nombre del cliente: los bloqueos del calendario se leen desde la página pública
-    const titulo = "Cotización " + (q.numero || "");
+    const titulo = "Cotizacion " + (q.numero || "") + " - " + q.clientName;
     const evId = "q_" + q.id;
     function dayEventsOf(v) {
       if (!v) return [];
@@ -1352,14 +1191,12 @@ async function blockCalendarForQuote(q, silent) {
       if (typeof v === "object" && v.type === "event") return [ v ];
       return [];
     }
-    // Sin hora definida → se bloquea el día completo
-    const blockType = hasTime ? "hours" : "day";
     const evObj = {
       id: evId,
       type: "event",
-      blockType: blockType,
-      horaInicio: hasTime ? horaInicio : null,
-      horaFin: hasTime ? horaFin : null,
+      blockType: "hours",
+      horaInicio: horaInicio,
+      horaFin: horaFin,
       quoteLock: q.id,
       titulo: titulo,
       color: "pink"
@@ -1368,21 +1205,20 @@ async function blockCalendarForQuote(q, silent) {
     list.push(evObj);
     cal[fecha] = list;
     localStorage.setItem("jans_calendar", JSON.stringify(cal));
-    let ok = true;
     if (sbClient) {
-      ok = await sbUpsert("calendario", {
+      await sbUpsert("calendario", {
         id: evId,
         fecha: fecha,
         titulo: titulo,
         notas: "",
         color: "pink",
-        block_type: blockType,
-        hora_inicio: hasTime ? horaInicio : null,
-        hora_fin: hasTime ? horaFin : null,
+        block_type: "hours",
+        hora_inicio: horaInicio,
+        hora_fin: horaFin,
         status: "evento"
       });
     }
-    if (!ok) showToast("No se pudo bloquear el calendario en Supabase (ver consola)", "error"); else if (!silent) showToast("Calendario bloqueado: " + fecha + (hasTime ? "" : " (día completo)") + " ✓");
+    showToast("Calendario bloqueado: " + fecha + " OK");
   } catch (e) {
     console.warn("blockCalendar", e);
   }
@@ -1401,11 +1237,7 @@ async function saveQuoteChanges(id) {
   const newCat = document.getElementById("qCreatedAtInput")?.value;
   if (newCat) {
     const [cy, cm, cd] = newCat.split("-");
-    const prevTs = JansList.createdTs(q, "cotizacion");
-    const prev = prevTs ? new Date(prevTs) : null;
-    const changed = !prev || prev.getFullYear() !== +cy || prev.getMonth() + 1 !== +cm || prev.getDate() !== +cd;
-    q.createdAt = newCat;
-    if (changed) q.createdAtISO = new Date(+cy, +cm - 1, +cd, 12, 0, 0).toISOString();
+    q.createdAt = parseInt(cd) + "/" + parseInt(cm) + "/" + cy;
   }
   if (sbClient) {
     const sbPayload = {
@@ -1415,7 +1247,6 @@ async function saveQuoteChanges(id) {
       abono: q.abono || 0,
       pagado: q.pagado || 0
     };
-    if (q.createdAtISO) sbPayload.created_at = q.createdAtISO;
     sbClient.from("cotizaciones").update(sbPayload).eq("id", id).then(({error: error}) => {
       if (error) {
         console.warn("sbUpdate cotizacion:", error.message);
@@ -1431,7 +1262,7 @@ async function saveQuoteChanges(id) {
       }
     });
   }
-  await syncQuoteLock(q, true);
+  if (q.status === "confirmed" && q.sessionDate && q.sessionTime) await blockCalendarForQuote(q);
   localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
   renderQuotesTable();
   closeModal("quoteModal");
@@ -1444,7 +1275,24 @@ function sanitizeText(str) {
 }
 
 function toDateInputVal(str) {
-  return JansDate.iso(str);
+  if (!str || str === "—") return "";
+  str = String(str).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const p = str.substring(0, 10).split("-").map(Number);
+    if (p[1] > 12) return p[0] + "-" + String(p[2]).padStart(2, "0") + "-" + String(p[1]).padStart(2, "0");
+    return str.substring(0, 10);
+  }
+  const parts = str.split("/").map(Number);
+  if (parts.length === 3) {
+    let [a, b, y] = parts;
+    if (y > 31) {
+      const day = a > 12 ? a : b;
+      const mon = a > 12 ? b : a;
+      return y + "-" + String(mon).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+    }
+    return String(a) + "-" + String(b).padStart(2, "0") + "-" + String(y).padStart(2, "0");
+  }
+  return "";
 }
 
 function viewQuote(id) {
@@ -1547,7 +1395,7 @@ function viewQuote(id) {
     const qId = inp ? inp.dataset.qid : "";
     updateQFinancials(qId);
   }
-  document.getElementById("quoteModalBody").innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>' + '<div style="font-weight:700">' + escapeHtml(q.clientName) + "</div>" + '<div style="color:var(--gray-l);font-size:0.82rem">' + (q.clientType === "juridica" ? "Juridica" : "Natural") + " - " + escapeHtml(q.clientId || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>' + '<span id="qStatusBadge" class="badge-status ' + statusClassQ(q.status) + '">' + statusLabel(q.status) + "</span></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>' + escapeHtml(q.phone || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>' + escapeHtml(q.email || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>' + '<input type="date" id="qCreatedAtInput" value="' + escapeHtml(toDateInputVal(q.createdAt)) + '" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />' + "</div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">' + escapeHtml(q.sessionDate ? JansDate.fmt(q.sessionDate) : "—") + " " + escapeHtml(q.sessionTime || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>' + escapeHtml(q.location || "—") + "</div></div>" + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Plan &amp; Servicios</span>' + '<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">' + '<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>' + escapeHtml(q.plan || "Sin plan") + "</span><span>$" + (q.planPrice || 0).toFixed(2) + "</span></div>" + addonsPos + addonsZero + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>' + '<div id="modalExtrasList" style="margin-bottom:12px">' + _buildExtrasHTML() + "</div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>' + '<div style="display:flex;gap:8px;align-items:center">' + '<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">' + modalSAOptions + "</select>" + '<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>' + "</div></div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>' + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' + '<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>' + "</div></div>" + '<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>' + '<input type="number" id="qTotalInput" data-qid="' + escapeHtml(q.id) + '" min="0" step="0.01" value="' + total.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Control Financiero</span>' + '<div class="form-row" style="margin-bottom:8px">' + '<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="' + abono.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="' + pagado.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + "</div>" + '<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">' + renderQFinancialSummary(total, abono, pagado, pendiente, prog) + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Estado</span>' + '<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">' + statusBtns + "</div>" + (q.notes ? '<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">' + escapeHtml(q.notes) + "</p>" : "");
+  document.getElementById("quoteModalBody").innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">' + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Cliente</div>' + '<div style="font-weight:700">' + escapeHtml(q.clientName) + "</div>" + '<div style="color:var(--gray-l);font-size:0.82rem">' + (q.clientType === "juridica" ? "Juridica" : "Natural") + " - " + escapeHtml(q.clientId || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray);text-transform:uppercase">Estado</div>' + '<span id="qStatusBadge" class="badge-status ' + statusClassQ(q.status) + '">' + statusLabel(q.status) + "</span></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Telefono</div><div>' + escapeHtml(q.phone || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Email</div><div>' + escapeHtml(q.email || "—") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📋 Fecha de cotización</div>' + '<input type="date" id="qCreatedAtInput" value="' + escapeHtml(toDateInputVal(q.createdAt)) + '" style="background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:6px 10px;width:100%;outline:none;margin-top:4px" />' + "</div>" + '<div><div style="font-size:.72rem;color:var(--gray)">📸 Fecha de sesión</div><div style="font-weight:600;color:var(--pink-l)">' + escapeHtml(q.sessionDate || "—") + " " + escapeHtml(q.sessionTime || "") + "</div></div>" + '<div><div style="font-size:.72rem;color:var(--gray)">Lugar</div><div>' + escapeHtml(q.location || "—") + "</div></div>" + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Plan &amp; Servicios</span>' + '<div style="background:var(--dark);border-radius:10px;padding:12px 16px;margin-bottom:16px">' + '<div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px"><span>' + escapeHtml(q.plan || "Sin plan") + "</span><span>$" + (q.planPrice || 0).toFixed(2) + "</span></div>" + addonsPos + addonsZero + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Extras &amp; Servicios Adicionales</span>' + '<div id="modalExtrasList" style="margin-bottom:12px">' + _buildExtrasHTML() + "</div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:10px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Desde Servicios Adicionales</div>' + '<div style="display:flex;gap:8px;align-items:center">' + '<select id="modalSASelect" style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none">' + modalSAOptions + "</select>" + '<button onclick="addModalSAExtra()" class="btn btn-pink btn-sm">+ Añadir</button>' + "</div></div>" + '<div style="background:var(--dark);border-radius:10px;padding:14px;margin-bottom:16px">' + '<div style="font-size:0.75rem;font-weight:700;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Item Personalizado</div>' + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' + '<input id="modalCustomName" type="text" placeholder="Nombre del item" style="flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<input id="modalCustomPrice" type="number" placeholder="$0.00" min="0" step="0.01" style="width:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.85rem;padding:8px 12px;outline:none" />' + '<button onclick="addModalCustomExtra()" class="btn btn-outline btn-sm">+ Añadir</button>' + "</div></div>" + '<div class="field" style="margin-bottom:16px"><label>Total cotizacion ($)</label>' + '<input type="number" id="qTotalInput" data-qid="' + escapeHtml(q.id) + '" min="0" step="0.01" value="' + total.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Control Financiero</span>' + '<div class="form-row" style="margin-bottom:8px">' + '<div class="field"><label>Abono recibido ($)</label><input type="number" id="qAbonoInput" min="0" step="0.01" value="' + abono.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + '<div class="field"><label>Pago completado ($)</label><input type="number" id="qPagadoInput" min="0" step="0.01" value="' + pagado.toFixed(2) + '" oninput="updateQFinancials(\'' + escapeJsAttr(q.id) + "')\" /></div>" + "</div>" + '<div id="qFinancialSummary" style="background:var(--dark);border-radius:10px;padding:14px 16px;margin-bottom:16px">' + renderQFinancialSummary(total, abono, pagado, pendiente, prog) + "</div>" + '<hr class="section-divider"/>' + '<span class="section-label-sm">Estado</span>' + '<div class="btn-row" style="flex-wrap:wrap;margin-bottom:8px">' + statusBtns + "</div>" + (q.notes ? '<hr class="section-divider"/><span class="section-label-sm">Notas</span><p style="color:var(--gray-l);font-size:0.88rem">' + escapeHtml(q.notes) + "</p>" : "");
   const fEl = document.getElementById("quoteModalFooter");
   if (fEl) fEl.innerHTML = '<button class="btn btn-pink" onclick="saveQuoteChanges(\'' + escapeJsAttr(q.id) + "')\">" + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar' + "</button>" + '<button class="btn btn-outline" onclick="generateQuotePDF(\'' + escapeJsAttr(q.id) + "')\">PDF</button>" + '<button class="btn btn-outline" onclick="generateQuoteInvoicePDF(\'' + escapeJsAttr(q.id) + "')\">Factura</button>" + '<button class="btn btn-ghost" onclick="closeModal(\'quoteModal\')">Cancelar</button>' + '<button class="btn btn-red" onclick="deleteQuote(\'' + escapeJsAttr(q.id) + "')\">Eliminar</button>";
   openModal("quoteModal");
@@ -1558,7 +1406,7 @@ function showPDF(id) {
   if (!q) return;
   state.currentPDFQuote = q;
   const qNum = String(state.quotes.indexOf(q) + 1).padStart(4, "0");
-  document.getElementById("pdfPreview").innerHTML = `\n    <div class="pdf-header">\n      <div class="pdf-company">\n        <h1>${CONFIG.COMPANY_NAME}</h1>\n        <p>${CONFIG.COMPANY_PHONE}</p>\n        <p>${CONFIG.COMPANY_EMAIL}</p>\n        <p>${CONFIG.COMPANY_WEB}</p>\n      </div>\n      <div class="pdf-quote-info">\n        <h2>COTIZACIÓN</h2>\n        <p><strong>#${qNum}</strong></p>\n        <p>Fecha: ${escapeHtml(JansDate.fmt(JansDate.created(q, "cotizacion")))}</p>\n        <p>Sesión: ${escapeHtml(q.sessionDate ? JansDate.fmt(q.sessionDate) : "Por confirmar")} ${escapeHtml(q.sessionTime || "")}</p>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Datos del Cliente</h3>\n      <div class="pdf-grid">\n        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${escapeHtml(q.clientName)}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${escapeHtml(q.clientId) || "—"}</div></div>\n        ${q.clientType === "juridica" ? `\n        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${escapeHtml(q.razonSocial) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${escapeHtml(q.dv) || "—"}</div></div>` : ""}\n        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${escapeHtml(q.phone) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${escapeHtml(q.email) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${escapeHtml(q.address) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${escapeHtml(q.location) || "—"}</div></div>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Detalle de Servicios</h3>\n      <table class="pdf-table">\n        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>\n        <tbody>\n          ${q.plan ? `<tr><td><strong>${escapeHtml(q.plan)}</strong></td><td style="text-align:right">$${(q.planPrice || 0).toFixed(2)}</td></tr>` : ""}\n          ${(q.addons || []).map(a => `<tr><td>${escapeHtml(a.name)}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join("")}\n          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total || 0).toFixed(2)}</td></tr>\n        </tbody>\n      </table>\n    </div>\n    ${q.notes ? `<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${escapeHtml(q.notes)}</p></div>` : ""}\n    <div class="pdf-footer">\n      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>\n      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}\n    </div>`;
+  document.getElementById("pdfPreview").innerHTML = `\n    <div class="pdf-header">\n      <div class="pdf-company">\n        <h1>${CONFIG.COMPANY_NAME}</h1>\n        <p>${CONFIG.COMPANY_PHONE}</p>\n        <p>${CONFIG.COMPANY_EMAIL}</p>\n        <p>${CONFIG.COMPANY_WEB}</p>\n      </div>\n      <div class="pdf-quote-info">\n        <h2>COTIZACIÓN</h2>\n        <p><strong>#${qNum}</strong></p>\n        <p>Fecha: ${escapeHtml(q.createdAt)}</p>\n        <p>Sesión: ${escapeHtml(q.sessionDate || "Por confirmar")} ${escapeHtml(q.sessionTime || "")}</p>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Datos del Cliente</h3>\n      <div class="pdf-grid">\n        <div class="pdf-field"><div class="pdf-label">Nombre</div><div class="pdf-value">${escapeHtml(q.clientName)}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Cédula / RUC</div><div class="pdf-value">${escapeHtml(q.clientId) || "—"}</div></div>\n        ${q.clientType === "juridica" ? `\n        <div class="pdf-field"><div class="pdf-label">Razón Social</div><div class="pdf-value">${escapeHtml(q.razonSocial) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">DV</div><div class="pdf-value">${escapeHtml(q.dv) || "—"}</div></div>` : ""}\n        <div class="pdf-field"><div class="pdf-label">Teléfono</div><div class="pdf-value">${escapeHtml(q.phone) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Email</div><div class="pdf-value">${escapeHtml(q.email) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Dirección</div><div class="pdf-value">${escapeHtml(q.address) || "—"}</div></div>\n        <div class="pdf-field"><div class="pdf-label">Lugar de sesión</div><div class="pdf-value">${escapeHtml(q.location) || "—"}</div></div>\n      </div>\n    </div>\n    <div class="pdf-section">\n      <h3>Detalle de Servicios</h3>\n      <table class="pdf-table">\n        <thead><tr><th>Descripción</th><th style="text-align:right">Precio</th></tr></thead>\n        <tbody>\n          ${q.plan ? `<tr><td><strong>${escapeHtml(q.plan)}</strong></td><td style="text-align:right">$${(q.planPrice || 0).toFixed(2)}</td></tr>` : ""}\n          ${(q.addons || []).map(a => `<tr><td>${escapeHtml(a.name)}</td><td style="text-align:right">$${a.price.toFixed(2)}</td></tr>`).join("")}\n          <tr class="pdf-total-row"><td>TOTAL ESTIMADO</td><td style="text-align:right">$${(q.total || 0).toFixed(2)}</td></tr>\n        </tbody>\n      </table>\n    </div>\n    ${q.notes ? `<div class="pdf-section"><h3>Notas</h3><p style="font-size:12px;color:#555">${escapeHtml(q.notes)}</p></div>` : ""}\n    <div class="pdf-footer">\n      Esta cotización es válida por 15 días a partir de la fecha de emisión.<br/>\n      ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}\n    </div>`;
   openModal("pdfModal");
 }
 
@@ -1589,7 +1437,7 @@ function downloadPDF() {
   doc.setFontSize(8);
   doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y);
   y += 5;
-  doc.text(`Fecha: ${JansDate.fmt(JansDate.created(q, "cotizacion"))}  |  Sesión: ${q.sessionDate ? JansDate.fmt(q.sessionDate) : "Por confirmar"} ${q.sessionTime || ""}`, margin, y);
+  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate || "Por confirmar"} ${q.sessionTime || ""}`, margin, y);
   y += 8;
   doc.setFillColor(245, 245, 245);
   doc.roundedRect(margin - 2, y - 4, 210 - margin * 2 + 4, 6, 1, 1, "F");
@@ -1753,7 +1601,7 @@ async function generateQuotePDF(id) {
   const qNum = q.numero || "COT-" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
   const margin = 14;
   const pageW = 210;
-  const today = JansDate.fmt(new Date);
+  const today = (new Date).toLocaleDateString("es-PA");
   let y = 0;
   doc.setFillColor(30, 30, 30);
   doc.rect(0, 0, pageW, 34, "F");
@@ -1977,8 +1825,10 @@ async function generateQuoteInvoicePDF(id) {
   const margin = 14;
   const pageW = 210;
   const facNumStr = await nextFacturaNumero();
-  const _now = new Date;
-  const today = JansDate.fmt(_now) + " " + _now.toLocaleTimeString("es-PA", {
+  const today = (new Date).toLocaleDateString("es-PA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit"
   });
@@ -2036,7 +1886,7 @@ async function generateQuoteInvoicePDF(id) {
   doc.text("DATOS DEL CLIENTE Y SESIÓN", margin, y);
   y += 7;
   const col2 = 115;
-  const clientRows = [ [ "Nombre", q.clientName, "Fecha de sesión", q.sessionDate ? JansDate.fmt(q.sessionDate) : "—" ], [ "Cédula/RUC", q.clientId || "—", "Hora", q.sessionTime || "—" ], [ "Teléfono", q.phone || "—", "Estado", statusLabel(q.status) ], [ "Email", q.email || "—", "Origen", qNum ] ];
+  const clientRows = [ [ "Nombre", q.clientName, "Fecha de sesión", q.sessionDate || "—" ], [ "Cédula/RUC", q.clientId || "—", "Hora", q.sessionTime || "—" ], [ "Teléfono", q.phone || "—", "Estado", statusLabel(q.status) ], [ "Email", q.email || "—", "Origen", qNum ] ];
   clientRows.forEach(([l1, v1, l2, v2]) => {
     doc.setTextColor(120, 120, 120);
     doc.setFont("helvetica", "normal");
@@ -2293,15 +2143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   refreshCotizacionCatalogData();
   initEventoForm();
   const highlightId = new URLSearchParams(location.search).get("highlight");
-  if (highlightId) {
-    const tryOpen = (n) => {
-      if (state.quotes.some(q => q.id === highlightId)) {
-        renderQuotesTable(highlightId);
-        viewQuote(highlightId);
-      } else if (n > 0) setTimeout(() => tryOpen(n - 1), 400);
-    };
-    setTimeout(() => tryOpen(10), 300);
-  }
+  if (highlightId) setTimeout(() => viewQuote(highlightId), 300);
 });</script>
 <script>if (typeof showSection === "function") {
   const __origShowSection = showSection;

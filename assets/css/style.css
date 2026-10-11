@@ -760,3 +760,74 @@ footer {
 .footer-legal a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.2s; }
 .footer-legal a:hover { color: var(--pink, #e91e8c); }
 .footer-legal span { color: rgba(255,255,255,0.2); }
+
+/* ===========================
+   Estados: carga · vacío · error
+   =========================== */
+@keyframes jsShimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.js-skel {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.09) 40%, rgba(255,255,255,0.04) 80%);
+  background-size: 800px 100%;
+  animation: jsShimmer 1.3s linear infinite;
+  border-radius: 12px;
+}
+@media (prefers-reduced-motion: reduce) { .js-skel { animation: none; } }
+.js-skel-line { height: 12px; border-radius: 6px; margin-bottom: 10px; }
+.js-skel-line.w40 { width: 40%; } .js-skel-line.w60 { width: 60%; } .js-skel-line.w80 { width: 80%; }
+.js-skel-title { height: 20px; width: 55%; border-radius: 6px; margin-bottom: 16px; }
+.js-skel-card { min-height: 220px; }
+.js-skel-tile { aspect-ratio: 4 / 5; }
+.js-skel-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.js-skel-row .js-skel { height: 12px; border-radius: 6px; }
+.js-skel-plan { border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 26px; background: rgba(255,255,255,0.02); }
+.js-skel-plan .js-skel-price { height: 34px; width: 45%; border-radius: 8px; margin: 6px 0 20px; }
+.js-skel-plan .js-skel-btn { height: 42px; border-radius: 999px; margin-top: 18px; }
+.js-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.js-state {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  gap: 10px; padding: 42px 24px; border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.7);
+}
+.js-state-icon {
+  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: rgba(233,30,140,0.08); border: 1px solid rgba(233,30,140,0.25); color: var(--pink); margin-bottom: 4px;
+}
+.js-state-icon svg { width: 26px; height: 26px; }
+.js-state h3 { font-family: var(--font-display); font-size: 1.15rem; color: var(--white); font-weight: 700; }
+.js-state p { font-size: 0.9rem; line-height: 1.6; max-width: 420px; color: rgba(255,255,255,0.6); }
+.js-state-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.js-state-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 999px;
+  font: 600 0.86rem var(--font-body); cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease;
+}
+.js-state-btn.primary { background: var(--pink); color: var(--white); }
+.js-state-btn.primary:hover { background: var(--pink-dark); }
+.js-state-btn.ghost { background: transparent; color: var(--white); border-color: rgba(255,255,255,0.2); }
+.js-state-btn.ghost:hover { border-color: var(--pink); color: var(--pink); }
+.js-state.is-error { border-color: rgba(239,68,68,0.25); }
+.js-state.is-error .js-state-icon { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); color: #f87171; }
+.js-state.compact { padding: 22px 18px; }
+
+/* Slider: esqueleto y portada de respaldo */
+.slide-skeleton { position: absolute; inset: 0; }
+.slide-fallback {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(233,30,140,0.18) 0%, transparent 60%), var(--black);
+}
+.slide-fallback h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); margin-bottom: 12px; }
+.slide-fallback p { color: rgba(255,255,255,0.7); margin-bottom: 22px; }
+
+/* Instagram: marco de respaldo si la imagen no está */
+.ig-image-wrap { background: linear-gradient(135deg, rgba(233,30,140,0.12), rgba(255,255,255,0.03)); }
+.ig-image-wrap.ig-missing a::after {
+  content: "Mira nuestras últimas sesiones en Instagram"; display: flex; align-items: center; justify-content: center;
+  height: 100%; padding: 24px; text-align: center; color: rgba(255,255,255,0.65); font-size: 0.9rem;
+}
+
+/* Botón con estado de envío */
+.is-loading { position: relative; pointer-events: none; opacity: 0.85; }
+.btn-spinner { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: jsSpin 0.7s linear infinite; display: inline-block; vertical-align: -2px; margin-right: 8px; }
+@keyframes jsSpin { to { transform: rotate(360deg); } }

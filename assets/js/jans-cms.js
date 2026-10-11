@@ -106,6 +106,51 @@
       } catch (e) { return null; }
     },
 
+    /** URL fija de la imagen para compartir (Open Graph) de una página. */
+    shareUrl: function (key) {
+      return PUBLIC_PREFIX + "og/" + String(key).replace(/[^a-z0-9-]/g, "") + ".jpg";
+    },
+
+    /**
+     * Crea la imagen para compartir (1200×630, JPG liviano) a partir de una foto del catálogo
+     * y la publica en una URL fija (media/og/<key>.jpg) que usan las etiquetas og:image.
+     */
+    makeShareImage: async function (src, key, title) {
+      var img = await new Promise(function (resolve, reject) {
+        var im = new Image();
+        im.crossOrigin = "anonymous";
+        im.onload = function () { resolve(im); };
+        im.onerror = function () { reject(new Error("No se pudo cargar la imagen")); };
+        im.src = src + (src.indexOf("?") < 0 ? "?" : "&") + "og=" + Date.now();
+      });
+      var W = 1200, H = 630;
+      var c = document.createElement("canvas");
+      c.width = W; c.height = H;
+      var g = c.getContext("2d");
+      g.fillStyle = "#0d0d0d"; g.fillRect(0, 0, W, H);
+      // recorte tipo "cover", centrado un poco arriba (rostros en retratos verticales)
+      var scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      var dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+      var dx = (W - dw) / 2, dy = Math.min(0, Math.max(H - dh, (H - dh) * 0.38));
+      g.drawImage(img, dx, dy, dw, dh);
+      var grad = g.createLinearGradient(0, H * 0.45, 0, H);
+      grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,0.78)");
+      g.fillStyle = grad; g.fillRect(0, 0, W, H);
+      g.fillStyle = "#e91e8c"; g.fillRect(56, H - 132, 64, 5);
+      g.fillStyle = "#ffffff";
+      g.font = "700 54px 'Playfair Display', Georgia, serif";
+      g.fillText(String(title || "Jans Photograph").slice(0, 40), 56, H - 66);
+      g.font = "600 22px Inter, Arial, sans-serif";
+      g.fillStyle = "rgba(255,255,255,0.85)";
+      g.fillText("JANS PHOTOGRAPH · PANAMÁ", 56, H - 30);
+      var dataUrl;
+      try { dataUrl = c.toDataURL("image/jpeg", 0.84); }
+      catch (e) { throw new Error("La imagen no permite procesarse (CORS)"); }
+      var url = await JansCMS.uploadBase64("og/" + String(key).replace(/[^a-z0-9-]/g, "") + ".jpg", dataUrl.split(",")[1], "image/jpeg");
+      if (!url) throw new Error("No se pudo subir la imagen");
+      return url;
+    },
+
     /** Marca una nueva versión del sitio (las páginas públicas recargan su caché). */
     bumpVersion: function (note) {
       return JansCMS.putJson("version.json", { v: Date.now(), ts: new Date().toISOString(), note: note || "" });

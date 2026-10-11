@@ -16,15 +16,10 @@
   <meta property="og:title"       content="Blog de Fotografía | Jans Photograph Panamá" />
   <meta property="og:description" content="Consejos de fotografía, inspiración, tendencias y novedades del mundo visual. Blog de Jans Photograph, fotógrafos profesionales en Panamá." />
   <meta property="og:url"         content="https://jansphotograph.com/assets/pages/blogs.html" />
-  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
-
-  
-  <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Blog de Fotografía | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Consejos de fotografía, inspiración, tendencias y novedades del mundo visual. Blog de Jans Photograph, fotógrafos profesionales en Panamá." />
-  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   
   <meta name="geo.region"      content="PA" />
@@ -34,7 +29,15 @@
   <link rel="stylesheet" href="../css/blogs.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600&display=swap" />
-  </head>
+    <meta property="og:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:secure_url" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Blog de Fotografía — Jans Photograph" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+</head>
 <body>
 
   
@@ -85,11 +88,7 @@
   </div>
 
   
-  <div class="blog-main" id="blogMain">
-    <div class="blog-empty">
-      <h3>Cargando publicaciones...</h3>
-    </div>
-  </div>
+  <div class="blog-main" id="blogMain"></div>
 
   <footer>
     <div class="footer-inner">
@@ -194,7 +193,8 @@ function renderBlogs() {
   const main = document.getElementById("blogMain");
   const blogs = activeFilter ? allBlogs.filter(b => b.categoria === activeFilter) : allBlogs;
   if (!blogs.length) {
-    main.innerHTML = `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
+    JansPub.empty(main, { icon: "doc", title: "No hay publicaciones en esta categoría", text: "Prueba con otra categoría o mira todas las publicaciones.",
+      actions: [{ label: "Ver todo", onClick: () => filterBlogs("", document.querySelector(".blog-filter-btn")) }] });
     return;
   }
   let html = "";
@@ -226,27 +226,37 @@ function renderBlogs() {
 }
 
 async function loadBlogs() {
-  try {
-    const local = JSON.parse(localStorage.getItem("jans_blogs") || "[]");
-    if (local.length) {
-      allBlogs = local;
+  const main = document.getElementById("blogMain");
+  const filters = document.getElementById("blogFilters");
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem("jans_blogs") || "[]"); } catch (e) {}
+  if (local.length) {
+    allBlogs = local;
+    buildFilters(allBlogs);
+    renderBlogs();
+  } else {
+    JansPub.loading(main, "blog", 3, "Cargando publicaciones…");
+  }
+  const data = await JansPub.json("blogs");
+  JansPub.done(main);
+  if (Array.isArray(data)) {
+    allBlogs = data;
+    try { localStorage.setItem("jans_blogs", JSON.stringify(data)); } catch (e) {}
+    if (data.length) {
       buildFilters(allBlogs);
       renderBlogs();
+      return;
     }
-  } catch (e) {}
-  try {
-    const data = await JansPub.json("blogs");
-    if (Array.isArray(data)) {
-      if (data.length) {
-        allBlogs = data;
-        localStorage.setItem("jans_blogs", JSON.stringify(data));
-        buildFilters(allBlogs);
-        renderBlogs();
-      }
-    }
-  } catch (e) {}
+  } else if (!allBlogs.length && JansPub.failed("blogs")) {
+    if (filters) filters.style.display = "none";
+    JansPub.error(main, { title: "No pudimos cargar el blog", retry: loadBlogs });
+    return;
+  }
   if (!allBlogs.length) {
-    document.getElementById("blogMain").innerHTML = `<div class="blog-empty"><h3>Sin publicaciones aún</h3><p>Vuelve pronto para ver nuestras novedades.</p></div>`;
+    if (filters) filters.style.display = "none";
+    JansPub.empty(main, { icon: "doc", title: "Pronto publicaremos nuestras historias",
+      text: "Estamos preparando consejos, detrás de cámaras y las sesiones más especiales. Mientras tanto, conoce nuestros planes.",
+      actions: [{ label: "Ver planes", href: "servicios.html" }, { label: "Instagram", href: "https://www.instagram.com/jans_photograph/" }] });
   }
 }
 

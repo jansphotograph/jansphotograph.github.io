@@ -61,10 +61,6 @@
     <a href="master-cotizaciones.html?section=newquote" class="nav-submenu-item" data-section="newquote" onclick="return navSubmenuClick(event,'newquote')">Nueva Cotización</a>
     <a href="master-cotizaciones.html?section=eventoForm" class="nav-submenu-item" data-section="eventoForm" onclick="return navSubmenuClick(event,'eventoForm')">Formulario Evento</a>
   </div>
-  <a href="master-historial.html" id="nav-historial">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
-    Historial
-  </a>
   <a href="master-calendario.html" id="nav-calendario">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendario
@@ -104,6 +100,7 @@
     <a href="master-config.html?section=company" class="nav-submenu-item" data-section="company" onclick="return navSubmenuClick(event,'company')">Empresa</a>
     <a href="master-config.html?section=social" class="nav-submenu-item" data-section="social" onclick="return navSubmenuClick(event,'social')">Redes Sociales</a>
     <a href="master-config.html?section=config" class="nav-submenu-item" data-section="config" onclick="return navSubmenuClick(event,'config')">Facturas</a>
+    <a href="master-config.html?section=tarifas" class="nav-submenu-item" data-section="tarifas" onclick="return navSubmenuClick(event,'tarifas')">Tarifas</a>
     <a href="master-config.html?section=recargar" class="nav-submenu-item" data-section="recargar" onclick="return navSubmenuClick(event,'recargar')">Publicación</a>
   </div>
   <button class="nav-logout" onclick="handleLogout()">
@@ -144,6 +141,9 @@ function navSubmenuClick(event, section) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  (window.jansAdminReady || Promise.resolve(true)).then(ok => {
+    if (ok) setTimeout(() => generateAllShareImages(false).catch(() => {}), 2500);
+  });
   const nav = document.getElementById("masterNav");
   if (nav) nav.querySelectorAll("a:not(.nav-has-sub)").forEach(a => a.addEventListener("click", () => {
     nav.classList.remove("nav-open");
@@ -157,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "master-dashboard": "nav-dashboard",
     "master-reservas": "nav-reservas",
     "master-cotizaciones": "nav-cotizaciones",
-    "master-historial": "nav-historial",
     "master-calendario": "nav-calendario",
     "master-panel": "nav-panel",
     "master-comentarios": "nav-comentarios",
@@ -540,6 +539,18 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     </div>
     <div class="field">
+      <label>Tipo de sesión *</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" role="radiogroup" aria-label="Tipo de sesión">
+        <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:600;font-size:0.85rem">
+          <input type="radio" name="ppUbicacion" value="estudio" checked style="accent-color:var(--pink)" /> 🏠 Estudio
+        </label>
+        <label style="flex:1;min-width:160px;display:flex;align-items:center;gap:8px;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:600;font-size:0.85rem">
+          <input type="radio" name="ppUbicacion" value="exterior" style="accent-color:var(--pink)" /> 🌿 Exterior
+        </label>
+      </div>
+      <div style="font-size:0.75rem;color:var(--gray);margin-top:6px">Si es de estudio y el cliente pide exterior, se suma la tarifa de exterior de <a href="master-config.html?section=tarifas" style="color:var(--pink-l)">Configuración → Tarifas</a>.</div>
+    </div>
+    <div class="field">
       <label>¿Qué incluye? <span style="color:var(--gray);font-weight:400">(una línea por ítem)</span></label>
       <textarea id="ppIncluye" placeholder="30 fotos editadas&#10;Entrega digital en 7 días&#10;1 hora de sesión" style="min-height:120px"></textarea>
     </div>
@@ -575,6 +586,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="modal-header">
       <h3>Gestionar Categorías</h3>
       <button class="modal-close" onclick="closeModal('manageCategoriesModal')">×</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--dark);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:.8rem;color:var(--gray-l)">
+      <span style="flex:1;min-width:200px">🔗 <strong style="color:var(--white)">Vista previa al compartir:</strong> la imagen que aparece al enviar el enlace por WhatsApp, Facebook, etc. Elígela en 🖼 Galería, o genera las que falten.</span>
+      <button class="btn btn-sm btn-outline" id="btnGenOg" onclick="generateAllShareImages(true)">Actualizar vistas previas</button>
     </div>
     <div id="manageCategoriesList" style="display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto"></div>
   </div>
@@ -636,6 +651,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div style="font-size:0.82rem;color:var(--gray-l)" id="galleryAddLabel">Haz clic para añadir una foto nueva a la galería</div>
     </div>
 
+    <p style="font-size:.78rem;color:var(--gray);margin:0 0 8px">Toca <strong style="color:var(--white)">🔗</strong> en una foto para usarla como vista previa al compartir el enlace de esta categoría.</p>
     <div id="galleryManageGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;max-height:50vh;overflow-y:auto"></div>
   </div>
 </div>
@@ -1145,7 +1161,7 @@ function renderPublicPlans() {
     catGrid.innerHTML = plans.map(p => {
       const realIdx = publicPlans.indexOf(p);
       const isPopular = !!p.popular;
-      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">\n        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">\n          <button onclick="togglePopular(${realIdx})" title="${isPopular ? "Quitar Más Popular" : "Marcar como Más Popular"}"\n            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular ? "1" : "0.3"};filter:${isPopular ? "none" : "grayscale(1)"};transition:all 0.2s">⭐</button>\n          <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>\n          <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>\n        </div>\n        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${p.nombre}</div>\n        <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${p.precio}</div>\n        <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">\n          ${(p.incluye || []).map(x => `<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${x}</li>`).join("")}\n        </ul>\n      </div>`;
+      return `<div style="background:var(--dark-mid,#232323);border:1px solid var(--border);border-radius:14px;padding:24px;position:relative">\n        <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;align-items:center">\n          <button onclick="togglePopular(${realIdx})" title="${isPopular ? "Quitar Más Popular" : "Marcar como Más Popular"}"\n            style="background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:2px;opacity:${isPopular ? "1" : "0.3"};filter:${isPopular ? "none" : "grayscale(1)"};transition:all 0.2s">⭐</button>\n          <button class="btn btn-sm btn-outline" onclick="editPubPlan(${realIdx})" title="Editar">✏</button>\n          <button class="btn btn-sm btn-red"     onclick="deletePubPlan(${realIdx})" title="Eliminar">✕</button>\n        </div>\n        <div style="font-weight:700;font-size:1rem;margin-bottom:6px;padding-right:90px">${escapeHtmlCat(p.nombre)}</div>\n        <div style="display:inline-block;font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:999px;margin-bottom:8px;${p.ubicacion === "exterior" ? "background:rgba(34,197,94,0.12);color:#86efac" : "background:rgba(255,255,255,0.07);color:var(--gray-l)"}">${p.ubicacion === "exterior" ? "🌿 Exterior" : "🏠 Estudio"}</div>\n        <div style="font-size:1.4rem;font-weight:700;color:var(--pink-l);margin-bottom:12px">$${escapeHtmlCat(p.precio)}</div>\n        <ul style="list-style:none;font-size:0.83rem;color:rgba(255,255,255,0.6);display:flex;flex-direction:column;gap:5px">\n          ${(p.incluye || []).map(x => `<li style="display:flex;gap:6px"><span style="color:#22c55e">✓</span>${escapeHtmlCat(x)}</li>`).join("")}\n        </ul>\n      </div>`;
     }).join("");
     container.appendChild(catGrid);
   });
@@ -1173,6 +1189,7 @@ function editPubPlan(idx) {
   document.getElementById("ppPrecio").value = p.precio || "";
   document.getElementById("ppCategoria").value = p.categoria || "";
   document.getElementById("ppIncluye").value = (p.incluye || []).join("\n");
+  setPlanUbicacion(p.ubicacion);
   openModal("pubPlanModal");
 }
 
@@ -1195,6 +1212,16 @@ async function togglePopular(idx) {
   showToast(p.popular ? "⭐ Marcado como Más Popular" : 'Ya no es "Más Popular"');
 }
 
+function setPlanUbicacion(v) {
+  const val = v === "exterior" ? "exterior" : "estudio";
+  document.querySelectorAll('input[name="ppUbicacion"]').forEach(r => { r.checked = r.value === val; });
+}
+
+function getPlanUbicacion() {
+  const r = document.querySelector('input[name="ppUbicacion"]:checked');
+  return r && r.value === "exterior" ? "exterior" : "estudio";
+}
+
 function openNewPlanModal() {
   editingPlanIdx = null;
   document.getElementById("pubPlanModalTitle").textContent = "Nuevo Plan";
@@ -1202,6 +1229,7 @@ function openNewPlanModal() {
   document.getElementById("ppPrecio").value = "";
   document.getElementById("ppCategoria").value = "";
   document.getElementById("ppIncluye").value = "";
+  setPlanUbicacion("estudio");
   openModal("pubPlanModal");
 }
 
@@ -1553,6 +1581,66 @@ async function deleteCategory(slug) {
 
 let galleryManageList = [];
 
+// ── Vistas previas al compartir (Open Graph) ──
+let shareChoices = {};
+
+async function loadShareChoices() {
+  const d = await JansCMS.getJson("og.json");
+  shareChoices = d && typeof d === "object" ? d : {};
+  return shareChoices;
+}
+
+async function setCategoryShareImage(id) {
+  const img = galleryManageList.find(x => x.id === id);
+  if (!img) return;
+  const c = categoriasList.find(x => x.slug === img.categoria);
+  showToast("Generando vista previa…");
+  try {
+    await JansCMS.makeShareImage(siteImg(img.imagen), img.categoria, c?.nombre || img.categoria);
+    shareChoices[img.categoria] = img.imagen;
+    await JansCMS.putJson("og.json", shareChoices);
+    renderGalleryManageGrid();
+    showToast("✓ Vista previa actualizada. Puede tardar en verse en WhatsApp/Facebook por su caché.");
+  } catch (e) {
+    console.error("setCategoryShareImage:", e);
+    showToast("No se pudo crear la vista previa: " + e.message, "error");
+  }
+}
+
+async function shareImageExists(key) {
+  try {
+    const r = await fetch(JansCMS.shareUrl(key), { method: "HEAD", cache: "no-store" });
+    return r.ok;
+  } catch (e) { return false; }
+}
+
+// force=false: solo crea las que faltan (se ejecuta sola al abrir el catálogo)
+async function generateAllShareImages(force) {
+  const btn = document.getElementById("btnGenOg");
+  if (btn) { btn.disabled = true; btn.textContent = "Generando…"; }
+  let hechas = 0, fallidas = 0;
+  try {
+    await loadShareChoices();
+    if (!categoriasList.length && typeof syncCategoriasFromSupabase === "function") await syncCategoriasFromSupabase();
+    const gq = sbClient ? await sbClient.from("galeria_categoria").select("categoria,imagen,orden").order("orden", { ascending: true }) : { data: [] };
+    const first = {};
+    (gq.data || []).forEach(g => { if (!first[g.categoria]) first[g.categoria] = g.imagen; });
+    const jobs = categoriasList.map(c => ({ key: c.slug, title: c.nombre, src: shareChoices[c.slug] || first[c.slug] || c.imagen }));
+    const sq = sbClient ? await sbClient.from("sliders").select("imagen,orden").order("orden", { ascending: true }).limit(1) : { data: [] };
+    const homeSrc = shareChoices.home || (sq.data && sq.data[0] && sq.data[0].imagen) || first["retratos"] || (jobs.find(j => j.src) || {}).src;
+    jobs.push({ key: "home", title: "Fotografía profesional", src: homeSrc });
+    for (const j of jobs) {
+      if (!j.src) continue;
+      if (!force && await shareImageExists(j.key)) continue;
+      try { await JansCMS.makeShareImage(siteImg(j.src), j.key, j.title); hechas++; }
+      catch (e) { fallidas++; console.warn("og", j.key, e.message); }
+    }
+    if (force || hechas || fallidas) showToast(fallidas ? `Vistas previas: ${hechas} listas, ${fallidas} con error` : `✓ ${hechas} vista(s) previa(s) actualizada(s)`, fallidas ? "error" : "success");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Actualizar vistas previas"; }
+  }
+}
+
 async function openGalleryManageModal(slug) {
   document.getElementById("galleryManageSlug").value = slug;
   const c = categoriasList.find(x => x.slug === slug);
@@ -1561,6 +1649,7 @@ async function openGalleryManageModal(slug) {
   closeModal("manageCategoriesModal");
   openModal("galleryManageModal");
   galleryManageList = [];
+  await loadShareChoices();
   if (sbClient) {
     const {data: data, error: error} = await sbClient.from("galeria_categoria").select("*").eq("categoria", slug).order("orden", {
       ascending: true
@@ -1576,7 +1665,9 @@ function renderGalleryManageGrid() {
     grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Sin fotos administradas todavía — añade la primera arriba.</div>';
     return;
   }
-  grid.innerHTML = galleryManageList.map((img, i) => `\n    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/5;background:#111">\n      <img src="${siteImg(img.imagen)}"\n        style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.opacity='0.2'" />\n      <button onclick="deleteGalleryImage('${img.id}')" title="Eliminar"\n        style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:#fff;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>\n    </div>`).join("");
+  grid.innerHTML = galleryManageList.map((img, i) => `\n    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/5;background:#111">\n      <img src="${siteImg(img.imagen)}"\n        style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.opacity='0.2'" />\n      <button onclick="setCategoryShareImage('${img.id}')" title="Usar para compartir" aria-label="Usar para compartir"
+        style="position:absolute;top:4px;left:4px;height:24px;padding:0 8px;border-radius:999px;border:none;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:4px;${(shareChoices[img.categoria] || "") === img.imagen ? "background:var(--pink);color:#fff" : "background:rgba(0,0,0,0.65);color:#fff"}">🔗${(shareChoices[img.categoria] || "") === img.imagen ? " Compartir" : ""}</button>
+      <button onclick="deleteGalleryImage('${img.id}')" title="Eliminar"\n        style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(239,68,68,0.9);border:none;color:#fff;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>\n    </div>`).join("");
 }
 
 function handleGalleryUpload(file) {
@@ -2862,6 +2953,7 @@ async function savePubPlanModal() {
     precio: precio,
     categoria: categoria,
     incluye: incluye,
+    ubicacion: getPlanUbicacion(),
     popular: existing?.popular || false,
     orden: orden
   };

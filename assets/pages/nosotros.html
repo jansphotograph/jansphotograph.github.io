@@ -16,15 +16,10 @@
   <meta property="og:title"       content="Sobre Nosotros | Jans Photograph Panamá" />
   <meta property="og:description" content="Conoce a Jans Photograph, fotógrafos apasionados en Panamá. Capturamos tus momentos más especiales con estilo, emoción y profesionalismo." />
   <meta property="og:url"         content="https://jansphotograph.com/assets/pages/nosotros.html" />
-  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
-
-  
-  <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Sobre Nosotros | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Conoce a Jans Photograph, fotógrafos apasionados en Panamá. Capturamos tus momentos más especiales con estilo, emoción y profesionalismo." />
-  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   
   <meta name="geo.region"      content="PA" />
@@ -61,6 +56,14 @@
     @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } .values-grid { grid-template-columns: 1fr 1fr; } .team-grid { grid-template-columns: 1fr; } }
     @media (max-width: 560px) { .values-grid { grid-template-columns: 1fr; } }
   </style>
+  <meta property="og:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:secure_url" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Sobre Nosotros — Jans Photograph" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
 </head>
 <body>
 
@@ -124,8 +127,7 @@
       <h2 class="section-title">Las personas detrás del lente</h2>
       <div class="team-grid" id="teamGrid">
         
-        <div class="team-card team-skeleton" style="aspect-ratio:unset;min-height:260px;animation:pulse 1.4s ease infinite alternate"></div>
-        <div class="team-card team-skeleton" style="aspect-ratio:unset;min-height:260px;animation:pulse 1.4s ease infinite alternate 0.2s"></div>
+
       </div>
     </div>
 
@@ -191,11 +193,15 @@
   const esc = JansPub.esc;
   const grid = document.getElementById("teamGrid");
   if (!grid) return;
+  const section = grid.closest(".team-section");
+  JansPub.loading(grid, "cards", 3, "Cargando equipo…");
   const AVATAR = `<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="0.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
   try {
     const members = await JansPub.json("team");
+    JansPub.done(grid);
     if (!Array.isArray(members) || !members.length) {
-      grid.innerHTML = "";
+      // Sin equipo publicado: se oculta la sección para no dejar un título vacío
+      if (section) section.style.display = "none";
       return;
     }
     grid.innerHTML = members.map(m => {
@@ -218,7 +224,7 @@
       img.addEventListener("error", () => { img.outerHTML = AVATAR; }, { once: true });
     });
   } catch (e) {
-    grid.innerHTML = "";
+    if (section) section.style.display = "none";
   }
 })();
 JansPub.watchVersion();</script>

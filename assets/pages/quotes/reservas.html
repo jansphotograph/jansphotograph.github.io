@@ -16,15 +16,10 @@
   <meta property="og:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta property="og:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
   <meta property="og:url"         content="https://jansphotograph.com/assets/pages/quotes/reservas.html" />
-  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
-
-  
-  <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Reserva tu Sesión Fotográfica | Jans Photograph Panamá" />
   <meta name="twitter:description" content="Reserva tu sesión fotográfica en Panamá. Consulta nuestra disponibilidad y agenda tu sesión de retratos, bodas, XV años, eventos y más." />
-  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   
   <meta name="geo.region"      content="PA" />
@@ -152,8 +147,35 @@
     @media (max-width: 580px) {
       .fab-importante { bottom: 18px; left: 14px; padding: 10px 14px; font-size: 0.78rem; }
     }
-  </style>
+    .cal-sync { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: #999; margin: -4px 0 12px; }
+  .cal-sync .btn-spinner { border-color: rgba(233,30,140,0.3); border-top-color: #e91e8c; width: 13px; height: 13px; }
+  .cal-sync.is-warn { color: #f59e0b; }
+  .cal-sync.is-hidden { display: none; }
+  .ext-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 4px; }
+  .ext-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.88rem; font-weight: 600; color: #fff; }
+  .ext-toggle input, .ext-ack input { width: 17px; height: 17px; accent-color: #e91e8c; cursor: pointer; flex-shrink: 0; }
+  .ext-toggle.is-locked { cursor: default; }
+  .ext-plan-note { margin-top: 10px; font-size: 0.8rem; color: #86efac; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 9px; padding: 8px 12px; }
+  .ext-label { font-size: 0.75rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .ext-input { width: 100%; background: #0d0d0d; border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; color: #fff; font-size: 0.88rem; padding: 10px 14px; outline: none; font-family: inherit; }
+  .ext-aviso { margin-top: 12px; border-radius: 10px; padding: 12px 14px; font-size: 0.82rem; line-height: 1.6; color: #fde68a; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); }
+  .ext-aviso strong { color: #fff; }
+  .ext-aviso ul { margin: 6px 0 6px 18px; padding: 0; }
+  .ext-aviso li { margin: 2px 0; }
+  .ext-ack { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; font-size: 0.82rem; color: #ddd; line-height: 1.5; cursor: pointer; }
+  .ext-ack input { margin-top: 2px; }
+  .ext-ack-error { margin-top: 8px; font-size: 0.78rem; color: #fca5a5; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 8px 12px; }
+  .slots-empty { grid-column: 1 / -1; padding: 16px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.1); color: #bbb; font-size: 0.85rem; text-align: center; }
+</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta property="og:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:secure_url" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Reserva tu Sesión Fotográfica — Jans Photograph" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
 </head>
 <body>
 
@@ -211,6 +233,7 @@
             <span class="cal-month-label" id="calLabel"></span>
             <button onclick="calNext()">&#8594;</button>
           </div>
+          <div class="cal-sync" id="calSync" role="status"><span class="btn-spinner" aria-hidden="true"></span>Actualizando disponibilidad…</div>
           <div class="cal-grid" id="calGrid"></div>
           <div class="cal-legend">
             <div class="cal-legend-item"><div class="leg-dot" style="background:var(--green-l)"></div>Disponible</div>
@@ -259,23 +282,24 @@
             <input type="date" id="rFechaEspecial" style="cursor:pointer" />
           </div>
           
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
-              <input type="checkbox" id="rExterior" onchange="toggleExterior()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
-              ¿Te gustaría hacer las fotos en exterior?
+          <div class="ext-box" id="exteriorBox">
+            <label class="ext-toggle" id="exteriorToggleLabel">
+              <input type="checkbox" id="rExterior" onchange="toggleExterior()" />
+              <span id="exteriorToggleText">¿Te gustaría hacer las fotos en exterior?</span>
             </label>
+            <div id="exteriorPlanNote" class="ext-plan-note" hidden></div>
             <div id="exteriorField" style="display:none;margin-top:12px">
-              <label style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Nombre del lugar</label>
-              <input type="text" id="rLugar" maxlength="200" placeholder="Ej: Parque Omar, Playa Coronado, Escuela de Jujucal..."
-                style="width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#fff;font-size:0.88rem;padding:10px 14px;outline:none;font-family:inherit" />
-              <p style="font-size:0.75rem;color:#f59e0b;margin-top:8px;display:flex;align-items:flex-start;gap:6px">
-                <span style="flex-shrink:0">⚠️</span>
-                Se añadirá un costo adicional dependiendo del lugar seleccionado.
-              </p>
+              <label for="rLugar" class="ext-label">Nombre o dirección del lugar *</label>
+              <input type="text" id="rLugar" maxlength="200" placeholder="Ej: Parque Omar, Playa Coronado, Escuela de Jujucal..." class="ext-input" />
+              <div class="ext-aviso" id="exteriorAviso" role="note" aria-live="polite"></div>
+              <label class="ext-ack" id="exteriorAckWrap">
+                <input type="checkbox" id="rExteriorAcepto" onchange="updateResumen()" />
+                <span id="exteriorAckText">Entiendo que el total final incluirá la tarifa de exterior y el costo de transporte, y que recibiré un PDF con el detalle del valor total de mi sesión.</span>
+              </label>
+              <div id="exteriorAckError" class="ext-ack-error" hidden>Para solicitar una sesión en exterior debes confirmar que entiendes los costos adicionales.</div>
             </div>
           </div>
 
-          
           <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:4px">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.88rem;font-weight:600;color:#fff">
               <input type="checkbox" id="rPersonasCheck" onchange="togglePersonas()" style="width:17px;height:17px;accent-color:#e91e8c;cursor:pointer;flex-shrink:0" />
@@ -316,7 +340,7 @@
             </div>
             <div id="resumenNotaExterior" style="display:none;margin-top:8px;font-size:0.75rem;color:#f59e0b;display:flex;align-items:flex-start;gap:6px">
               <span style="flex-shrink:0">⚠️</span>
-              El precio final puede variar dependiendo del lugar exterior seleccionado. Te notificaremos el costo por WhatsApp.
+              <span id="resumenNotaTexto">El total final incluirá el costo de transporte según la distancia. Te enviaremos un PDF con el detalle final del valor de tu sesión.</span>
             </div>
           </div>
 
@@ -416,7 +440,6 @@
   <script src="../../js/main.js"></script>
   <script src="../../js/jans-public.js"></script>
   <script src="../../js/jans-form.js"></script>
-  <script src="../../js/jans-dates.js"></script>
   <script>document.addEventListener("DOMContentLoaded", () => JansForm.protect(document.getElementById("formCard"), "reservas", { max: 3, windowMin: 60 }));</script>
   <script>const WA_NUMBER = "50768622402";
 
@@ -481,28 +504,26 @@ function showNotas(texto) {
   section.style.display = "block";
 }
 
-// La página pública solo necesita saber qué horarios están ocupados: nunca guarda datos personales
-function availOnly(list) {
-  return (Array.isArray(list) ? list : []).filter(r => r && r.id).map(r => ({
-    id: r.id,
-    fecha: r.fecha,
-    horaVal: r.horaVal,
-    status: r.status,
-    bloqueoAntes: r.bloqueoAntes,
-    bloqueoDespues: r.bloqueoDespues,
-    bloqueoUnidad: r.bloqueoUnidad
-  }));
-}
-
 async function syncAvailabilityFromSupabase() {
-  if (!sbClient) return;
+  const syncEl = document.getElementById("calSync");
+  const setSync = (state, text) => {
+    if (!syncEl) return;
+    syncEl.className = "cal-sync" + (state === "ok" ? " is-hidden" : state === "warn" ? " is-warn" : "");
+    if (text) syncEl.textContent = text;
+  };
+  if (!sbClient) {
+    setSync("warn", "⚠️ No pudimos verificar la disponibilidad en línea. Te confirmaremos el horario por WhatsApp.");
+    return;
+  }
   try {
     // Solo datos de disponibilidad (sin nombres/teléfonos): función pública en Supabase
     const {data: data, error: error} = await sbClient.rpc("disponibilidad_reservas");
     if (error) {
       console.error("syncAvailabilityFromSupabase error:", error.message || JSON.stringify(error));
+      setSync("warn", "⚠️ No pudimos verificar la disponibilidad en línea. Te confirmaremos el horario por WhatsApp.");
       return;
     }
+    setSync("ok");
     if (!data) return;
     const byId = new Map(reservas.map(r => [ r.id, r ]));
     data.forEach(remote => {
@@ -529,48 +550,13 @@ async function syncAvailabilityFromSupabase() {
         });
       }
     });
-    reservas = availOnly(Array.from(byId.values()));
+    reservas = Array.from(byId.values());
     localStorage.setItem("jans_reservas", JSON.stringify(reservas));
     renderCal();
     if (selectedDate) renderTimeSlots(selectedDate);
   } catch (e) {
     console.warn("No se pudo sincronizar disponibilidad desde Supabase:", e);
-  }
-}
-
-// Eventos/bloqueos del calendario (incluye los bloqueos de cotizaciones confirmadas: id "q_...")
-async function refreshCalendarioFromSupabase() {
-  if (!sbClient) return false;
-  try {
-    // Solo las columnas necesarias para bloquear horarios: el título y las notas (que pueden
-    // llevar nombres de clientes) no se piden desde la página pública.
-    const {data: calRows, error: calErr} = await sbClient.from("calendario").select("id,fecha,block_type,hora_inicio,hora_fin,status").order("fecha", {
-      ascending: true
-    });
-    if (calErr || !calRows) return false;
-    const cal = {};
-    calRows.forEach(row => {
-      if (!row.fecha) return;
-      const fecha = String(row.fecha).slice(0, 10);
-      const ev = {
-        id: row.id,
-        type: "event",
-        blockType: row.block_type || "day",
-        horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
-        horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
-        status: row.status || "evento"
-      };
-      if (!cal[fecha]) cal[fecha] = [];
-      cal[fecha].push(ev);
-    });
-    calData = cal;
-    localStorage.setItem("jans_calendar", JSON.stringify(calData));
-    renderCal();
-    if (selectedDate) renderTimeSlots(selectedDate);
-    return true;
-  } catch (e) {
-    console.warn("sync calendario:", e);
-    return false;
+    setSync("warn", "⚠️ No pudimos verificar la disponibilidad en línea. Te confirmaremos el horario por WhatsApp.");
   }
 }
 
@@ -583,21 +569,50 @@ document.addEventListener("DOMContentLoaded", async function() {
     document.getElementById("rPlan").value = p.get("plan") + (p.get("precio") ? " ($" + p.get("precio") + ")" : "");
     window._planPrecio = parseFloat(p.get("precio") || "0") || 0;
   }
+  loadTarifasYPlan(p);
   document.getElementById("rFecha").min = toLocalDateStr(new Date);
   try {
     calData = JSON.parse(localStorage.getItem("jans_calendar") || "{}");
   } catch (e) {}
   try {
-    reservas = availOnly(JSON.parse(localStorage.getItem("jans_reservas") || "[]"));
-    localStorage.setItem("jans_reservas", JSON.stringify(reservas));
+    reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
   } catch (e) {}
   renderCal();
-  const calendarSyncedFromSupabase = await refreshCalendarioFromSupabase();
+  let calendarSyncedFromSupabase = false;
+  if (sbClient) {
+    try {
+      const {data: calRows, error: calErr} = await sbClient.from("calendario").select("*").order("fecha", {
+        ascending: true
+      });
+      if (!calErr && calRows) {
+        const cal = {};
+        calRows.forEach(row => {
+          if (!row.fecha) return;
+          const ev = {
+            id: row.id,
+            type: "event",
+            titulo: row.titulo || "",
+            descripcion: row.notas || "",
+            color: row.color || "pink",
+            blockType: row.block_type || "day",
+            horaInicio: row.hora_inicio != null ? parseInt(row.hora_inicio) : null,
+            horaFin: row.hora_fin != null ? parseInt(row.hora_fin) : null,
+            status: row.status || "evento"
+          };
+          if (!cal[row.fecha]) cal[row.fecha] = [];
+          cal[row.fecha].push(ev);
+        });
+        calData = cal;
+        localStorage.setItem("jans_calendar", JSON.stringify(calData));
+        renderCal();
+        calendarSyncedFromSupabase = true;
+      }
+    } catch (e) {
+      console.warn("sync calendario:", e);
+    }
+  }
   await syncAvailabilityFromSupabase();
-  setInterval(() => {
-    refreshCalendarioFromSupabase();
-    syncAvailabilityFromSupabase();
-  }, 6e4);
+  setInterval(syncAvailabilityFromSupabase, 6e4);
   try {
     const cached = localStorage.getItem("jans_notas_reservas");
     if (cached) {
@@ -783,7 +798,7 @@ function renderTimeSlots(ds) {
     if (isBlocked) cls += " slot-blocked";
     if (isSel) cls += " slot-selected";
     return `<div class="${cls}" onclick="pickHour(${hv},'${label}',${isBlocked})">${label}</div>`;
-  }).join("");
+  }).join("") + (HOUR_VALS.every(hv => blocked.has(hv)) ? '<div class="slots-empty">No quedan horarios disponibles este día. Elige otra fecha en el calendario.</div>' : "");
 }
 
 function pickHour(hv, label, blocked) {
@@ -855,6 +870,93 @@ function updateSubmitBtn() {
 
 let _personasNum = 1;
 
+// ── Tarifario y tipo de plan ──
+window._planUbicacion = "estudio";   // "estudio" | "exterior" (según el plan elegido)
+window._tarifaExterior = 0;          // se carga desde Configuración → Tarifas
+window._planId = "";
+
+function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+
+function cambioAExterior() {
+  // Aplica tarifa solo si el plan es de estudio y el cliente pidió exterior
+  return document.getElementById("rExterior").checked && window._planUbicacion !== "exterior";
+}
+
+function renderExteriorAviso() {
+  const aviso = document.getElementById("exteriorAviso");
+  const ackWrap = document.getElementById("exteriorAckWrap");
+  const ackText = document.getElementById("exteriorAckText");
+  if (!aviso) return;
+  const tarifa = window._tarifaExterior;
+  if (window._planUbicacion === "exterior") {
+    aviso.innerHTML = '<strong>Tu plan ya es en exterior.</strong> Solo se sumará el <strong>costo de transporte</strong>, que depende de la distancia al lugar. ' +
+      'Te enviaremos un <strong>PDF con el detalle final</strong> del valor total de tu sesión.';
+    ackText.textContent = "Entiendo que se sumará el costo de transporte según la distancia y que recibiré un PDF con el detalle del valor total de mi sesión.";
+  } else {
+    aviso.innerHTML = '<strong>Importante:</strong> el plan que elegiste es <strong>de estudio</strong>. Al cambiar la sesión a exterior se suma a tu cuenta:' +
+      "<ul><li><strong>Tarifa de exterior:</strong> " + (tarifa > 0 ? money(tarifa) : "sin costo") + "</li>" +
+      "<li><strong>Costo de transporte:</strong> se calcula según la distancia al lugar de la sesión</li></ul>" +
+      "Te enviaremos un <strong>PDF con el detalle final del valor total</strong> de tu sesión. El total puede variar dependiendo de la distancia.";
+    ackText.textContent = "Entiendo que el total final incluirá la tarifa de exterior" + (tarifa > 0 ? " (" + money(tarifa) + ")" : "") + " y el costo de transporte, y que recibiré un PDF con el detalle del valor total de mi sesión.";
+  }
+  ackWrap.hidden = false;
+}
+
+function applyPlanUbicacion() {
+  const ext = document.getElementById("rExterior");
+  const label = document.getElementById("exteriorToggleLabel");
+  const text = document.getElementById("exteriorToggleText");
+  const note = document.getElementById("exteriorPlanNote");
+  if (window._planUbicacion === "exterior") {
+    ext.checked = true;
+    ext.disabled = true;
+    label.classList.add("is-locked");
+    text.textContent = "Sesión en exterior (incluida en tu plan)";
+    note.hidden = false;
+    note.textContent = "🌿 Este plan es de exterior: indícanos el lugar donde quieres tu sesión.";
+    document.getElementById("exteriorField").style.display = "block";
+  } else {
+    ext.disabled = false;
+    label.classList.remove("is-locked");
+    text.textContent = "¿Te gustaría hacer las fotos en exterior?";
+    note.hidden = true;
+  }
+  renderExteriorAviso();
+  updateResumen();
+}
+
+async function loadTarifasYPlan(params) {
+  try {
+    const cached = JSON.parse(localStorage.getItem("jans_tarifas") || "null");
+    if (cached && Number.isFinite(+cached.exterior)) window._tarifaExterior = +cached.exterior;
+  } catch (e) {}
+  const ub = (params.get("ubicacion") || "").toLowerCase();
+  if (ub === "exterior" || ub === "estudio") window._planUbicacion = ub;
+  window._planId = (params.get("plan_id") || "").slice(0, 80);
+  applyPlanUbicacion();
+  const tareas = [ JansPub.json("tarifas").then(t => {
+    if (t && Number.isFinite(+t.exterior) && +t.exterior >= 0) {
+      window._tarifaExterior = +t.exterior;
+      try { localStorage.setItem("jans_tarifas", JSON.stringify(t)); } catch (e) {}
+    }
+  }) ];
+  if (window._planId) {
+    // El tipo y el precio del plan se confirman con Supabase (no se confía en la URL)
+    tareas.push(JansPub.table("planes_publicos?select=id,nombre,precio,ubicacion&id=eq." + encodeURIComponent(window._planId)).then(rows => {
+      const pl = rows && rows[0];
+      if (!pl) return;
+      window._planUbicacion = pl.ubicacion === "exterior" ? "exterior" : "estudio";
+      const precio = parseFloat(pl.precio) || 0;
+      window._planPrecio = precio;
+      document.getElementById("rPlan").value = pl.nombre + " ($" + precio + ")";
+      const badge = document.getElementById("planBadge");
+      badge.textContent = "Plan: " + pl.nombre + " — $" + precio + (window._planUbicacion === "exterior" ? " · 🌿 Exterior" : " · 🏠 Estudio");
+    }).catch(() => {}));
+  }
+  await Promise.all(tareas);
+  applyPlanUbicacion();
+}
+
 const PRECIO_PERSONA = 5;
 
 function togglePersonas() {
@@ -876,25 +978,24 @@ function changePersonas(delta) {
 function updateResumen() {
   const planPrecio = window._planPrecio || 0;
   const exterior = document.getElementById("rExterior").checked;
+  const cambio = cambioAExterior();
+  const tarifa = cambio ? window._tarifaExterior || 0 : 0;
   const personas = document.getElementById("rPersonasCheck").checked ? _personasNum : 0;
   const costoPersonas = personas * PRECIO_PERSONA;
-  const total = planPrecio + costoPersonas;
-  const mostrar = planPrecio > 0 || personas > 0;
+  const total = planPrecio + costoPersonas + tarifa;
+  const mostrar = planPrecio > 0 || personas > 0 || exterior;
   document.getElementById("resumenPrecio").style.display = mostrar ? "block" : "none";
+  const ackErr = document.getElementById("exteriorAckError");
+  if (ackErr && document.getElementById("rExteriorAcepto")?.checked) ackErr.hidden = true;
   if (!mostrar) return;
+  const row = (label, value, color) => `<div style="display:flex;justify-content:space-between;gap:12px;color:#ccc"><span>${JansPub.esc(label)}</span><span style="font-weight:600;color:${color};white-space:nowrap">${value}</span></div>`;
   let lineas = "";
-  if (planPrecio > 0) {
-    const planVal = document.getElementById("rPlan").value || "Plan seleccionado";
-    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${planVal}</span><span style="font-weight:600;color:#fff">$${planPrecio.toFixed(2)}</span></div>`;
-  }
-  if (personas > 0) {
-    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>${personas} persona${personas > 1 ? "s" : ""} adicional${personas > 1 ? "es" : ""} (×$${PRECIO_PERSONA})</span><span style="font-weight:600;color:#e91e8c">$${costoPersonas.toFixed(2)}</span></div>`;
-  }
-  if (exterior) {
-    lineas += `<div style="display:flex;justify-content:space-between;color:#ccc"><span>Costo exterior</span><span style="font-weight:600;color:#f59e0b">Por confirmar</span></div>`;
-  }
+  if (planPrecio > 0) lineas += row(document.getElementById("rPlan").value || "Plan seleccionado", money(planPrecio), "#fff");
+  if (personas > 0) lineas += row(`${personas} persona${personas > 1 ? "s" : ""} adicional${personas > 1 ? "es" : ""} (×$${PRECIO_PERSONA})`, money(costoPersonas), "#e91e8c");
+  if (cambio) lineas += row("Tarifa de exterior (cambio de estudio a exterior)", tarifa > 0 ? money(tarifa) : "Sin costo", "#e91e8c");
+  if (exterior) lineas += row("Transporte (según distancia)", "Por confirmar", "#f59e0b");
   document.getElementById("resumenLineas").innerHTML = lineas;
-  document.getElementById("resumenTotal").textContent = "$" + total.toFixed(2) + (exterior ? "+" : "");
+  document.getElementById("resumenTotal").textContent = money(total) + (exterior ? " + transporte" : "");
   const notaEl = document.getElementById("resumenNotaExterior");
   if (notaEl) notaEl.style.display = exterior ? "flex" : "none";
 }
@@ -909,7 +1010,14 @@ function updateReservaBtn() {
 function toggleExterior() {
   const checked = document.getElementById("rExterior").checked;
   document.getElementById("exteriorField").style.display = checked ? "block" : "none";
-  if (!checked) document.getElementById("rLugar").value = "";
+  if (!checked) {
+    document.getElementById("rLugar").value = "";
+    const ack = document.getElementById("rExteriorAcepto");
+    if (ack) ack.checked = false;
+    const err = document.getElementById("exteriorAckError");
+    if (err) err.hidden = true;
+  }
+  renderExteriorAviso();
   updateResumen();
 }
 
@@ -943,19 +1051,22 @@ async function submitReserva() {
     alert("Escribe un correo válido.");
     return;
   }
+  const exteriorSel = document.getElementById("rExterior").checked;
+  if (exteriorSel) {
+    if (!JansForm.clean(val("rLugar"), 200)) {
+      alert("Indica el lugar donde quieres la sesión en exterior.");
+      document.getElementById("rLugar").focus();
+      return;
+    }
+    if (!document.getElementById("rExteriorAcepto").checked) {
+      const err = document.getElementById("exteriorAckError");
+      if (err) err.hidden = false;
+      document.getElementById("exteriorBox").scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+  }
   if (!selectedDate || !selectedHour) {
     alert("Selecciona fecha y hora.");
-    return;
-  }
-  // Revalidar contra la agenda más reciente (una cotización pudo confirmarse mientras la página estaba abierta)
-  await refreshCalendarioFromSupabase();
-  await syncAvailabilityFromSupabase();
-  if (isDayBlocked(selectedDate) || getBlockedHours(selectedDate).has(selectedHour)) {
-    alert("Ese horario acaba de ocuparse. Por favor elige otra fecha u hora.");
-    selectedHour = null;
-    document.getElementById("rHora").value = "";
-    renderCal();
-    renderTimeSlots(selectedDate);
     return;
   }
   const terminosOk = document.getElementById("rTerminos").checked;
@@ -995,6 +1106,10 @@ async function submitReserva() {
     notas: notas,
     exterior: exterior,
     lugar: lugar,
+    planId: window._planId || "",
+    planUbicacion: window._planUbicacion,
+    costoExterior: exterior && window._planUbicacion !== "exterior" ? window._tarifaExterior || 0 : 0,
+    costoTransporte: 0,
     personasAdicionales: personasAdicionales,
     costoPersonas: costoPersonas,
     fechaEspecial: fechaEspecial,
@@ -1006,10 +1121,12 @@ async function submitReserva() {
     status: "pending",
     abono: 0,
     origin: "web",
-    // Formato único: ISO "AAAA-MM-DD" (antes "10/08/2026" = MM/DD por el locale es-PA, se confundía con D/M)
-    createdAt: window.JansDate ? JansDate.today() : toLocalDateStr(new Date)
+    createdAt: (new Date).toLocaleDateString("es-PA")
   };
-  const {personasAdicionales: _pa, costoPersonas: _cp, fechaEspecial: _fe, metodoAbono: _ma, ...sbPayload} = reserva;
+  const {personasAdicionales: _pa, costoPersonas: _cp, fechaEspecial: _fe, metodoAbono: _ma, planId: _pid, planUbicacion: _pub, costoExterior: _ce, costoTransporte: _ct, ...sbPayload} = reserva;
+  sbPayload.plan_id = reserva.planId || null;
+  sbPayload.plan_ubicacion = reserva.planUbicacion;
+  sbPayload.costo_exterior = reserva.costoExterior;
   sbPayload.personas_adicionales = personasAdicionales;
   sbPayload.costo_personas = costoPersonas;
   sbPayload.fecha_especial = fechaEspecial;
@@ -1036,15 +1153,8 @@ async function submitReserva() {
     }
   }
   try {
-    // En el navegador del visitante solo se guarda lo necesario para la disponibilidad
-    // (sin nombre, teléfono ni correo), por si usa un equipo compartido.
     const all = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
-    all.push({
-      id: reserva.id,
-      fecha: reserva.fecha,
-      horaVal: reserva.horaVal,
-      status: reserva.status
-    });
+    all.push(reserva);
     localStorage.setItem("jans_reservas", JSON.stringify(all));
   } catch (e) {}
   if (!savedOk) {
@@ -1056,7 +1166,7 @@ async function submitReserva() {
     if (!ey || !em || !ed) return fechaEspecial;
     return parseInt(ed) + " de " + MONTHS[parseInt(em) - 1] + " " + ey;
   })();
-  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + (tutor ? "👨‍👩‍👧 Padre/Madre o tutor: " + tutor + "\n" : "") + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
+  const msg = encodeURIComponent("¡Hola Jans Photograph! 📸\n" + "Quiero solicitar una reserva:\n\n" + "👤 Nombre: " + nombre + "\n" + (tutor ? "👨‍👩‍👧 Padre/Madre o tutor: " + tutor + "\n" : "") + "📱 Teléfono: " + tel + "\n" + "📅 Fecha: " + fechaLabel + "\n" + "🕐 Hora: " + hora + "\n" + (plan ? "📋 Plan: " + plan + "\n" : "") + (exterior ? "📍 Lugar: Sesión exterior" + (lugar ? " — " + lugar : "") + "\n" + (window._planUbicacion !== "exterior" ? "➕ Tarifa de exterior: " + ((window._tarifaExterior || 0) > 0 ? money(window._tarifaExterior) : "sin costo") + "\n" : "") + "🚗 Transporte: por confirmar según la distancia (lo recibiré en el PDF con el total final)\n" : "📍 Lugar: En estudio\n") + (personasAdicionales > 0 ? "👥 Personas adicionales: " + personasAdicionales + " (+$" + costoPersonas.toFixed(2) + ")\n" : "") + (fechaEspecialLabel ? "🎂 Fecha especial (cumpleaños): " + fechaEspecialLabel + "\n" : "") + (metodoAbono ? "💳 Método de abono: " + metodoAbono + "\n" : "") + (email ? "✉️ Email: " + email + "\n" : "") + (notas ? "📝 Notas: " + notas + "\n" : "") + "\n¡Gracias!");
   window.open("https://wa.me/" + WA_NUMBER + "?text=" + msg, "_blank");
   setTimeout(function() {
     if (document.referrer) {

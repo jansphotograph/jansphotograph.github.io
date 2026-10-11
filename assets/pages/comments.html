@@ -55,6 +55,20 @@
     .cm-success .btn-again:hover { border-color:#e91e8c; color:#e91e8c; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Déjanos tu Reseña | Jans Photograph Panamá" />
+  <meta property="og:description" content="Cuéntanos cómo fue tu experiencia con Jans Photograph. Tu opinión ayuda a otros clientes a conocernos mejor." />
+  <meta property="og:url" content="https://jansphotograph.com/assets/pages/comments.html" />
+  <meta property="og:site_name" content="Jans Photograph" />
+  <meta property="og:locale" content="es_PA" />
+  <meta property="og:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:secure_url" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Déjanos tu Reseña — Jans Photograph" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
 </head>
 <body>
 
@@ -110,7 +124,7 @@
         <div class="cm-field">
           <label for="cPlan">Plan seleccionado</label>
           <select id="cPlan" required>
-            <option value="" disabled selected>Elige el plan que reservaste</option>
+            <option value="" disabled selected>Cargando planes…</option>
           </select>
         </div>
         <div class="cm-field">
@@ -219,15 +233,19 @@ try {
   if (local.length) renderPlanOptions(local);
 } catch (e) {}
 
-fetch(`${JansPub.SB_URL}/rest/v1/planes_publicos?select=nombre,categoria&order=orden`, {
-  headers: { apikey: JansPub.SB_KEY, Authorization: "Bearer " + JansPub.SB_KEY }
-}).then(r => r.ok ? r.json() : null).then(plans => {
-  if (!Array.isArray(plans) || !plans.length) return;
-  localStorage.setItem("jans_planes", JSON.stringify(plans));
+if (!planSelect.querySelector("optgroup")) planSelect.setAttribute("aria-busy", "true");
+JansPub.table("planes_publicos?select=*&order=orden.asc").then(plans => {
+  planSelect.removeAttribute("aria-busy");
+  if (!Array.isArray(plans) || !plans.length) {
+    if (!planSelect.querySelector("optgroup")) planSelect.innerHTML = '<option value="" disabled selected>Elige una opción</option><option value="Otro">Otro / No recuerdo el nombre</option>';
+    return;
+  }
+  try { localStorage.setItem("jans_planes", JSON.stringify(plans)); } catch (e) {}
   renderPlanOptions(plans);
 }).catch(() => {
-  if (!planSelect.options.length) {
-    planSelect.innerHTML = '<option value="Otro" selected>Otro / No recuerdo el nombre</option>';
+  planSelect.removeAttribute("aria-busy");
+  if (!planSelect.querySelector("optgroup")) {
+    planSelect.innerHTML = '<option value="" disabled selected>Elige una opción</option><option value="Otro">Otro / No recuerdo el nombre</option>';
   }
 });
 
@@ -294,7 +312,8 @@ form.addEventListener("submit", async function(e) {
     return;
   }
   submitBtn.disabled = true;
-  submitBtn.textContent = "Enviando...";
+  submitBtn.classList.add("is-loading");
+  submitBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Enviando…';
   msgEl.className = "cm-msg";
   const payload = {
     id: "c_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
@@ -317,6 +336,7 @@ form.addEventListener("submit", async function(e) {
     }
   }
   submitBtn.disabled = false;
+  submitBtn.classList.remove("is-loading");
   submitBtn.textContent = "Enviar reseña";
   if (!savedOk) {
     showMsg(serverMsg || "No pudimos enviar tu reseña en este momento. Intenta de nuevo en unos minutos.", "err");

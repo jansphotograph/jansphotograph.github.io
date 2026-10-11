@@ -16,15 +16,10 @@
   <meta property="og:title"       content="Jans Photograph | Fotógrafo Profesional en Panamá" />
   <meta property="og:description" content="Jans Photograph — Fotografía profesional en Panamá. Sesiones de retratos, bodas, XV años, familiares, eventos, graduación y gastronomía. Reserva tu sesión hoy." />
   <meta property="og:url"         content="https://jansphotograph.com/" />
-  <meta property="og:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
   <meta property="og:site_name"   content="Jans Photograph" />
   <meta property="og:locale"      content="es_PA" />
-
-  
-  <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Jans Photograph | Fotógrafo Profesional en Panamá" />
   <meta name="twitter:description" content="Jans Photograph — Fotografía profesional en Panamá. Sesiones de retratos, bodas, XV años, familiares, eventos, graduación y gastronomía. Reserva tu sesión hoy." />
-  <meta name="twitter:image"       content="https://jansphotograph.com/assets/images/icons/Janssocialmedialogo.png" />
 
   
   <meta name="geo.region"      content="PA" />
@@ -77,6 +72,14 @@
   }
   </script>
 
+  <meta property="og:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:secure_url" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Jans Photograph — Jans Photograph" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://qwwotzscuwnduzlralew.supabase.co/storage/v1/object/public/media/og/home.jpg" />
 </head>
 <body>
 
@@ -114,8 +117,9 @@
 
   
   <section class="slider-section" aria-label="Galería de sesiones">
-    <div class="slider-track" id="sliderTrack">
-      
+    <div class="slider-track" id="sliderTrack" aria-busy="true">
+      <div class="slide-skeleton js-skel" style="border-radius:0" aria-hidden="true"></div>
+      <span class="js-sr" role="status">Cargando galería…</span>
     </div>
 
     <div class="slider-dots" id="sliderDots" role="tablist" aria-label="Slides">
@@ -158,7 +162,7 @@
               id="igLastPost"
               alt="Último post de Instagram"
               style="width:100%;height:100%;object-fit:cover;display:block"
-              onerror="this.onerror=null; this.style.display='none'" />
+              onerror="this.onerror=null; this.style.display='none'; this.closest('.ig-image-wrap').classList.add('ig-missing')" />
           </a>
         </div>
         <div class="ig-preview-footer">
@@ -286,52 +290,52 @@
   </footer>
 
   <script src="assets/js/main.js?v=2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/jans-public.js"></script>
   <script>(function() {
   const LS_KEY = "jans_slider";
-  const SUPABASE_URL = "https://qwwotzscuwnduzlralew.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
   const track = document.getElementById("sliderTrack");
   const dotsWrap = document.getElementById("sliderDots");
   if (!track || !dotsWrap) return;
-  function escapeHtml(str) {
-    return String(str || "").replace(/[&<>"']/g, m => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[m]));
-  }
-  function resolveImg(path) {
-    if (!path) return "";
-    if (/^https?:\/\//i.test(path)) return path;
-    return path;
-  }
+  const esc = JansPub.esc;
+  let rendered = false;
   function renderSlides(slides) {
-    if (!Array.isArray(slides) || !slides.length) return;
-    track.innerHTML = slides.map((s, i) => `\n          <div class="slide">\n            <img class="slide-bg" src="${resolveImg(s.imagen)}" alt="${escapeHtml(s.titulo)}" loading="${i === 0 ? "eager" : "lazy"}" />\n            <div class="slide-content">\n              <h2>${escapeHtml(s.titulo)}</h2>\n              <p>${escapeHtml(s.descripcion)}</p>\n              <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>\n            </div>\n          </div>`).join("");
-    dotsWrap.innerHTML = slides.map((s, i) => `<button class="${i === 0 ? "active" : ""}" aria-label="Slide ${i + 1}"></button>`).join("");
+    if (!Array.isArray(slides) || !slides.length) return false;
+    track.removeAttribute("aria-busy");
+    track.innerHTML = slides.map((s, i) => `
+          <div class="slide">
+            <img class="slide-bg" src="${esc(JansPub.img(s.imagen))}" alt="${esc(s.titulo)}" loading="${i === 0 ? "eager" : "lazy"}" />
+            <div class="slide-content">
+              <h2>${esc(s.titulo)}</h2>
+              <p>${esc(s.descripcion)}</p>
+              <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
+            </div>
+          </div>`).join("");
+    dotsWrap.innerHTML = slides.length > 1 ? slides.map((s, i) => `<button class="${i === 0 ? "active" : ""}" aria-label="Slide ${i + 1}"></button>`).join("") : "";
     if (window.initSlider) window.initSlider();
+    rendered = true;
+    return true;
   }
-  try {
-    const local = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-    if (local.length) renderSlides(local);
-  } catch (e) {}
-  function loadFromSupabase() {
-    if (!window.supabase || typeof window.supabase.createClient !== "function") return;
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-    sb.from("sliders").select("*").order("orden", {
-      ascending: true
-    }).then(({data: data, error: error}) => {
-      if (error || !data || !data.length) return;
-      localStorage.setItem(LS_KEY, JSON.stringify(data));
+  function renderFallback() {
+    if (rendered) return;
+    track.removeAttribute("aria-busy");
+    dotsWrap.innerHTML = "";
+    track.innerHTML = `
+          <div class="slide-fallback">
+            <div>
+              <h2>Jans Photograph</h2>
+              <p>Fotografía profesional en Panamá · Retratos, XV años, graduaciones y más.</p>
+              <a href="assets/pages/servicios.html" class="slider-ver-planes">Ver planes</a>
+            </div>
+          </div>`;
+  }
+  try { renderSlides(JSON.parse(localStorage.getItem(LS_KEY) || "[]")); } catch (e) {}
+  JansPub.table("sliders?select=titulo,descripcion,imagen,orden&order=orden.asc").then(data => {
+    if (Array.isArray(data) && data.length) {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) {}
       renderSlides(data);
-    }).catch(() => {});
-  }
-  if (window.supabase) loadFromSupabase(); else window.addEventListener("load", loadFromSupabase);
+    } else renderFallback();
+  }).catch(renderFallback);
 })();</script>
-  <script src="assets/js/jans-public.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function() {
   const esc = JansPub.esc;
   function applyIg(ig) {
@@ -350,7 +354,8 @@
     const img = document.getElementById("igLastPost");
     const src = JansPub.img(ig.igImagePath);
     if (img && src) {
-      img.onerror = function() { this.style.display = "none"; };
+      img.onerror = function() { this.style.display = "none"; this.closest(".ig-image-wrap").classList.add("ig-missing"); };
+      img.closest(".ig-image-wrap").classList.remove("ig-missing");
       img.style.display = "block";
       img.src = src;
       const fx = Number.isFinite(+ig.igFocusX) ? +ig.igFocusX : 50;
@@ -417,55 +422,7 @@
     </svg>
   </a>
 
-  <script>(function() {
-  const SB_URL = "https://qwwotzscuwnduzlralew.supabase.co";
-  const SB_KEY = "sb_publishable_kiy_NJVZUEYTcNkzPDUdWA_7zpTL99g";
-  function escapeHtml(str) {
-    return String(str === null || str === undefined ? "" : str).replace(/[&<>"']/g, m => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[m]));
-  }
-  function renderServAdic(items, categoriasVisibles, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container || !items || !items.length) return;
-    const visibleSet = new Set(categoriasVisibles.map(c => c.nombre));
-    const grouped = {};
-    items.forEach(s => {
-      const cat = s.categoria || "General";
-      if (!visibleSet.has(cat)) return;
-      if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(s);
-    });
-    if (!Object.keys(grouped).length) return;
-    let out = "";
-    Object.entries(grouped).forEach(([cat, svcs]) => {
-      out += '<div class="services-block"><div class="service-group-title">' + escapeHtml(cat) + "</div>";
-      svcs.forEach(s => {
-        out += '<div class="service-row"><span class="service-name">' + escapeHtml(s.nombre || s.name) + '</span><span class="service-price">$' + (s.precio || s.price || 0) + "</span></div>";
-      });
-      out += "</div>";
-    });
-    container.innerHTML = out;
-  }
-  Promise.all([ fetch(SB_URL + "/rest/v1/servicios_categorias?visible=eq.true&select=nombre", {
-    headers: {
-      apikey: SB_KEY,
-      Authorization: "Bearer " + SB_KEY
-    }
-  }).then(r => r.ok ? r.json() : []), fetch(SB_URL + "/rest/v1/servicios_adicionales?order=nombre", {
-    headers: {
-      apikey: SB_KEY,
-      Authorization: "Bearer " + SB_KEY
-    }
-  }).then(r => r.ok ? r.json() : []) ]).then(([categorias, servicios]) => {
-    if (!servicios || !servicios.length || !categorias) return;
-    renderServAdic(servicios, categorias, "servAdicIndex");
-  }).catch(() => {});
-})();</script>
+  <script>JansPub.serviciosAdicionales("servAdicIndex", document.getElementById("serviciosAdicionales"));</script>
   <script src="assets/js/jans-cookies.js"></script>
 </body>
 </html>
