@@ -192,10 +192,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <option value="cotizacion">Solo cotizaciones</option>
       </select>
       <select id="histOrden" aria-label="Ordenar">
+        <option value="reg-desc">Creación: más recientes primero</option>
+        <option value="reg-asc">Creación: más antiguas primero</option>
         <option value="ses-desc">Sesión: más recientes primero</option>
         <option value="ses-asc">Sesión: más antiguas primero</option>
-        <option value="reg-desc">Registro: más recientes primero</option>
-        <option value="reg-asc">Registro: más antiguas primero</option>
       </select>
       <button class="btn btn-sm btn-outline" id="histReload" type="button" title="Volver a cargar desde Supabase">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
@@ -213,6 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <th>Tipo</th>
               <th style="min-width:90px"># / Factura</th>
               <th>Cliente</th>
+              <th style="min-width:100px">Creada</th>
               <th style="min-width:110px">Fecha de sesión</th>
               <th style="min-width:130px">Plan</th>
               <th>Total</th>
@@ -221,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>
           </thead>
           <tbody id="histBody">
-            <tr><td colspan="8" class="hist-empty"><span class="hist-spinner" aria-hidden="true"></span>Cargando historial…</td></tr>
+            <tr><td colspan="9" class="hist-empty"><span class="hist-spinner" aria-hidden="true"></span>Cargando historial…</td></tr>
           </tbody>
         </table>
       </div>
@@ -302,6 +303,10 @@ function fmtDate(k) {
   const [y, mo, d] = k.split("-").map(Number);
   return `${d} ${MESES[mo - 1] || ""} ${y}`;
 }
+function fmtTs(ms) {
+  const d = new Date(ms);
+  return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+}
 function num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 
 // Mismo cálculo que la página de Reservas (resTotal / resPlanPrice)
@@ -360,7 +365,7 @@ async function loadHistorial() {
   const body = document.getElementById("histBody");
   const notice = document.getElementById("histNotice");
   notice.hidden = true;
-  body.innerHTML = '<tr><td colspan="8" class="hist-empty"><span class="hist-spinner" aria-hidden="true"></span>Cargando historial…</td></tr>';
+  body.innerHTML = '<tr><td colspan="9" class="hist-empty"><span class="hist-spinner" aria-hidden="true"></span>Cargando historial…</td></tr>';
   document.getElementById("histPager").innerHTML = "";
   let reservas = null, cotizaciones = null;
   if (sbClient) {
@@ -423,7 +428,7 @@ function renderHistorial() {
   });
   const body = document.getElementById("histBody");
   if (!list.length) {
-    body.innerHTML = `<tr><td colspan="8" class="hist-empty">${histItems.length ? "Ningún registro coincide con la búsqueda. Prueba con otro nombre, cédula o número de factura." : "Todavía no hay reservas ni cotizaciones."}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="9" class="hist-empty">${histItems.length ? "Ningún registro coincide con la búsqueda. Prueba con otro nombre, cédula o número de factura." : "Todavía no hay reservas ni cotizaciones."}</td></tr>`;
     return;
   }
   body.innerHTML = pg.items.map(it => {
@@ -435,7 +440,8 @@ function renderHistorial() {
       <td><span class="hist-type hist-type-${it.tipo}">${it.tipo === "reserva" ? "Reserva" : "Cotización"}</span></td>
       <td><div class="hist-num">${escapeHtml(it.numero) || "—"}</div>${it.factura ? `<div class="hist-fact">Fact. #${highlight(String(it.factura), q)}</div>` : ""}</td>
       <td><div style="font-weight:600">${highlight(it.nombre, q) || "—"}</div>${it.tutor ? `<div class="hist-sub">${highlight(it.tutor, q)}</div>` : ""}${it.cedula ? `<div class="hist-sub">Céd. ${highlight(String(it.cedula), q)}</div>` : ""}</td>
-      <td style="font-size:.86rem">${it.fecha ? escapeHtml(fmtDate(it.fecha)) : "—"}${it.sinSesion && it.fecha ? '<div class="hist-sub">(fecha de registro)</div>' : it.hora ? `<div class="hist-sub">${escapeHtml(it.hora)}</div>` : ""}</td>
+      <td style="font-size:.86rem">${it.reg > 1e11 ? escapeHtml(fmtTs(it.reg)) : "—"}</td>
+      <td style="font-size:.86rem">${it.sinSesion ? "—" : escapeHtml(fmtDate(it.fecha))}${!it.sinSesion && it.hora ? `<div class="hist-sub">${escapeHtml(it.hora)}</div>` : ""}</td>
       <td style="font-size:.82rem;color:var(--gray-l)">${escapeHtml(it.plan) || "—"}</td>
       <td style="font-weight:700;font-size:.86rem">${it.total > 0 ? "$" + it.total.toFixed(2) : '<span style="color:var(--gray);font-weight:400">—</span>'}</td>
       <td><span class="badge-status ${st[1]}">${escapeHtml(st[0])}</span></td>

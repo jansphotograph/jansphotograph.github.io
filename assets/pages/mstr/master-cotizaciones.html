@@ -210,8 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
             <input type="search" id="searchQuotes" placeholder="Buscar por nombre, cédula o # de factura…" aria-label="Buscar cotizaciones por nombre, cédula o número de factura" oninput="quotesPage=1;renderQuotesTable()" style="flex:1;min-width:180px;padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;" />
             <select id="quotesOrden" aria-label="Ordenar" onchange="quotesPage=1;renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
-              <option value="reg-desc">Registro: más recientes primero</option>
-              <option value="reg-asc">Registro: más antiguas primero</option>
+              <option value="reg-desc">Creación: más recientes primero</option>
+              <option value="reg-asc">Creación: más antiguas primero</option>
               <option value="ses-desc">Sesión: más recientes primero</option>
               <option value="ses-asc">Sesión: más antiguas primero</option>
             </select>
