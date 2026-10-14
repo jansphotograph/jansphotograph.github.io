@@ -93,6 +93,12 @@
     }
     .res-field input:focus, .res-field select:focus, .res-field textarea:focus { border-color:#e91e8c; }
     .res-field textarea { min-height:72px; resize:vertical; }
+    .res-field input.is-invalid { border-color:#ef4444 !important; }
+    .field-hint { min-height:0; font-size:.74rem; color:#999; margin-top:5px; line-height:1.4; }
+    .field-hint:empty { display:none; }
+    .field-hint.is-error { color:#fca5a5; }
+    .res-subtitle { font-size:.78rem; font-weight:700; color:#fff; margin:4px 0 8px; }
+    .res-subtitle span { display:block; font-weight:400; color:#888; font-size:.74rem; margin-top:2px; }
     .res-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
     @media(max-width:500px){ .res-row-2{ grid-template-columns:1fr; } }
 
@@ -260,12 +266,20 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Tus datos
           </div>
+          <p class="res-subtitle">¿Quién recibirá la sesión? <span>Un nombre y un apellido, tal como aparecerán en la factura.</span></p>
           <div class="res-row-2">
-            <div class="res-field"><label>Nombre de quien recibirá la sesión *</label><input type="text" id="rNombre" maxlength="120" placeholder="Nombre completo (cliente, niño/a, quinceañera, etc.)" /></div>
-            <div class="res-field"><label>Teléfono *</label><input type="tel" id="rTel" maxlength="25" autocomplete="tel" inputmode="tel" placeholder="+507 6000-0000" /></div>
+            <div class="res-field"><label for="rNombre">Nombre *</label><input type="text" id="rNombre" maxlength="40" autocomplete="given-name" placeholder="Ej: Pedro" /></div>
+            <div class="res-field"><label for="rApellido">Apellido *</label><input type="text" id="rApellido" maxlength="40" autocomplete="family-name" placeholder="Ej: González o De León" /></div>
           </div>
-          <div class="res-field"><label>Nombre del padre/madre o tutor responsable <span style="color:var(--gray);font-weight:400">(si aplica)</span></label><input type="text" id="rTutor" maxlength="120" placeholder="Opcional — solo si la sesión es para un niño/a o quinceañera" /></div>
-          <div class="res-field"><label>Correo *</label><input type="email" id="rEmail" maxlength="160" autocomplete="email" placeholder="tu@correo.com" /></div>
+          <p class="res-subtitle">Padre, madre o tutor responsable <span>Opcional — solo si la sesión es para un niño/a o quinceañera.</span></p>
+          <div class="res-row-2">
+            <div class="res-field"><label for="rTutorNombre">Nombre del tutor</label><input type="text" id="rTutorNombre" maxlength="40" placeholder="Ej: María" /></div>
+            <div class="res-field"><label for="rTutorApellido">Apellido del tutor</label><input type="text" id="rTutorApellido" maxlength="40" placeholder="Ej: Rodríguez" /></div>
+          </div>
+          <div class="res-row-2">
+            <div class="res-field"><label for="rTel">Teléfono *</label><input type="tel" id="rTel" maxlength="25" autocomplete="tel" inputmode="tel" placeholder="+507 6000-0000" /></div>
+            <div class="res-field"><label for="rEmail">Correo *</label><input type="email" id="rEmail" maxlength="160" autocomplete="email" placeholder="tu@correo.com" /></div>
+          </div>
           <div class="res-field"><label>Plan seleccionado</label><input type="text" id="rPlan" maxlength="150" placeholder="Sin plan específico" /></div>
           <div class="res-row-2">
             <div class="res-field">
@@ -440,7 +454,14 @@
   <script src="../../js/main.js"></script>
   <script src="../../js/jans-public.js"></script>
   <script src="../../js/jans-form.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", () => JansForm.protect(document.getElementById("formCard"), "reservas", { max: 3, windowMin: 60 }));</script>
+  <script>document.addEventListener("DOMContentLoaded", () => {
+    JansForm.protect(document.getElementById("formCard"), "reservas", { max: 3, windowMin: 60 });
+    const $ = id => document.getElementById(id);
+    JansForm.bindSingleWord($("rNombre"), "nombre", { otherHint: "El apellido va en su propia casilla." });
+    JansForm.bindSingleWord($("rApellido"), "apellido", { otherHint: "Escribe solo el primer apellido (compuestos como «De León» sí se aceptan)." });
+    JansForm.bindSingleWord($("rTutorNombre"), "nombre", { optional: true, otherHint: "El apellido va en su propia casilla." });
+    JansForm.bindSingleWord($("rTutorApellido"), "apellido", { optional: true, otherHint: "Escribe solo el primer apellido (compuestos como «De León» sí se aceptan)." });
+  });</script>
   <script>const WA_NUMBER = "50768622402";
 
 const MONTHS = [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ];
@@ -1029,7 +1050,7 @@ function toggleExterior() {
 
 async function submitReserva() {
   const val = id => (document.getElementById(id) || {}).value || "";
-  const raw = [ "rNombre", "rTutor", "rTel", "rEmail", "rPlan", "rNotas", "rLugar" ].map(val).join(" ");
+  const raw = [ "rTel", "rEmail", "rPlan", "rNotas", "rLugar" ].map(val).join(" ");
   const guard = JansForm.check("reservas");
   if (guard.bot) return;
   if (!guard.ok) {
@@ -1040,13 +1061,31 @@ async function submitReserva() {
     alert("Algún campo contiene caracteres o código no permitidos. Revisa tus datos.");
     return;
   }
-  const nombre = JansForm.clean(val("rNombre"), 120);
-  const tutor = JansForm.clean(val("rTutor"), 120);
+  // Nombre y apellido: una sola palabra cada uno, solo letras
+  const el = id => document.getElementById(id);
+  const nom = JansForm.checkSingleWord(el("rNombre"), "nombre", { otherHint: "El apellido va en su propia casilla." });
+  const ape = JansForm.checkSingleWord(el("rApellido"), "apellido", { otherHint: "Escribe solo el primer apellido (compuestos como «De León» sí se aceptan)." });
+  const tNom = JansForm.checkSingleWord(el("rTutorNombre"), "nombre", { optional: true });
+  const tApe = JansForm.checkSingleWord(el("rTutorApellido"), "apellido", { optional: true });
+  const firstBad = [ [ nom, "rNombre" ], [ ape, "rApellido" ], [ tNom, "rTutorNombre" ], [ tApe, "rTutorApellido" ] ].find(x => !x[0].ok);
+  if (firstBad) {
+    el(firstBad[1]).focus();
+    el(firstBad[1]).scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  if (!!tNom.value !== !!tApe.value) {
+    const miss = tNom.value ? "rTutorApellido" : "rTutorNombre";
+    el(miss)._jansShow && el(miss)._jansShow("Completa el nombre y el apellido del tutor, o deja ambos vacíos.", true);
+    el(miss).focus();
+    return;
+  }
+  const nombre = nom.value + " " + ape.value;
+  const tutor = tNom.value ? tNom.value + " " + tApe.value : "";
   const tel = JansForm.clean(val("rTel"), 25);
   const email = JansForm.clean(val("rEmail"), 160).toLowerCase();
   const fechaEspecial = document.getElementById("rFechaEspecial")?.value || "";
   if (!nombre || !tel || !email || !fechaEspecial) {
-    alert("Por favor completa el nombre, teléfono, correo y fecha especial — son obligatorios.");
+    alert("Por favor completa el teléfono, correo y fecha especial — son obligatorios.");
     return;
   }
   if (!JansForm.isPhone(tel)) {
