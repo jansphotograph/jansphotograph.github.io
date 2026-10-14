@@ -20,6 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
 <script src="../../js/jans-cms.js"></script>
+<script src="../../js/jans-pdf.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -1267,211 +1268,37 @@ async function generateConfirmationPDF(id) {
   };
   const st = STATUS_PDF[r.status] || STATUS_PDF.pending;
   if (!confirm(`Esta reserva está en estado "${resStatusLabel(r.status)}".\n\nSe generará el PDF reflejando ese estado. ¿Continuar?`)) return;
-  const {jsPDF: jsPDF} = window.jspdf;
-  const doc = new jsPDF({
-    unit: "mm",
-    format: "a4"
-  });
   const company = pdfCompanyInfo();
-  const logoDataUrl = await loadImageAsDataUrl(company.logoPath || "assets/images/icons/Janssocialmedialogo.png");
-  const margin = 18;
-  const pageW = 210;
-  const colW = (pageW - margin * 2 - 8) / 2;
-  const col1X = margin;
-  const col2X = margin + colW + 8;
-  const headerH = 38;
-  doc.setFillColor(20, 20, 20);
-  doc.rect(0, 0, pageW, headerH, "F");
-  let logoTextX = margin;
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, "PNG", margin, 8, 22, 22, undefined, "FAST");
-      logoTextX = margin + 28;
-    } catch (e) {}
-  }
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(15);
-  doc.setFont("helvetica", "bold");
-  doc.text(company.nombre, logoTextX, 16);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(210, 210, 210);
-  let companyLineY = 22;
-  if (company.telefono) {
-    doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY);
-    companyLineY += 4.5;
-  }
-  if (company.email) {
-    doc.text(company.email, logoTextX, companyLineY);
-    companyLineY += 4.5;
-  }
-  if (company.ubicacion) {
-    const locLines = doc.splitTextToSize(company.ubicacion, 95);
-    doc.text(locLines, logoTextX, companyLineY);
-  }
-  if (company.ruc) {
-    doc.setFontSize(7.5);
-    doc.setTextColor(180, 180, 180);
-    doc.text(`RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}`, pageW - margin, 16, {
-      align: "right"
-    });
-  }
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text(`# ${r.numero || "—"}`, pageW - margin, 22, {
-    align: "right"
+  const logo = await loadImageAsDataUrl(company.logoPath || "assets/images/icons/Janssocialmedialogo.png");
+  const P = JansPDF.create({
+    company: company, logo: logo, kind: "#", number: r.numero || "—",
+    meta: [ company.ruc ? `RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}` : "", `Emitido: ${(new Date).toLocaleDateString("es-PA")}` ]
   });
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 180);
-  doc.text(`Emitido: ${(new Date).toLocaleDateString("es-PA")}`, pageW - margin, 27, {
-    align: "right"
-  });
-  let y = headerH + 12;
-  doc.setFillColor(...st.color);
-  doc.roundedRect(margin, y, pageW - margin * 2, 14, 2, 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text(st.label, pageW / 2, y + 9, {
-    align: "center"
-  });
-  y += 24;
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, 7, 1, 1, "F");
-  doc.setTextColor(...st.color);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("DATOS DE LA RESERVA", margin, y);
-  y += 9;
+  P.banner(st.label, st.color);
+  P.section("DATOS DE LA RESERVA", st.color);
   const leftRows = [ [ "Cliente:", r.nombre ], [ "Teléfono:", r.tel || "—" ], [ "Email:", r.email || "—" ], [ "# Cotización:", r.numero || "—" ] ];
-  if (r.tutor) leftRows.splice(1, 0, [ "Padre/Madre o tutor:", r.tutor ]);
+  if (r.tutor) leftRows.splice(1, 0, [ "Tutor:", r.tutor ]);
   const rightRows = [ [ "Fecha de sesión:", r.fechaLabel || r.fecha || "—" ], [ "Hora:", r.hora || "—" ], [ "Plan:", r.plan || "—" ], [ "Estado:", resStatusLabel(r.status) ] ];
-  if (r.exterior) {
-    rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
-  } else if (r.lugar) {
-    rightRows.push([ "Ubicación:", r.lugar ]);
-  }
-  if (r.personasAdicionales > 0) {
-    rightRows.push([ "Personas adicionales:", String(r.personasAdicionales) + " persona(s)" ]);
-  }
-  const startY = y;
-  let yL = startY, yR = startY;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  leftRows.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col1X, yL);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(String(v), colW - 30);
-    doc.text(lines, col1X + 30, yL);
-    doc.setFont("helvetica", "normal");
-    yL += Math.max(6, lines.length * 5);
-  });
-  rightRows.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col2X, yR);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(String(v), colW - 30);
-    doc.text(lines, col2X + 30, yR);
-    doc.setFont("helvetica", "normal");
-    yR += Math.max(6, lines.length * 5);
-  });
-  y = Math.max(yL, yR) + 6;
+  if (r.exterior) rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
+  else if (r.lugar) rightRows.push([ "Ubicación:", r.lugar ]);
+  if (r.personasAdicionales > 0) rightRows.push([ "Personas extra:", String(r.personasAdicionales) + " persona(s)" ]);
+  P.twoCols(leftRows, rightRows, { labelW: 29 });
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
   if (total > 0) {
-    const boxItems = [];
-    if (r.plan) boxItems.push([ "Plan", r.plan, resPlanPrice(r) ]);
-    (r.extras || []).forEach(e => boxItems.push([ "Adicional", e.nombre, parseFloat(e.precio) || 0 ]));
-    if (r.personasAdicionales > 0 && r.costoPersonas > 0) boxItems.push([ "Personas extra", `+${r.personasAdicionales} persona(s)`, parseFloat(r.costoPersonas) || 0 ]);
-    if (r.exterior && r.costoExterior > 0) boxItems.push([ "Tarifa exterior", r.lugar || "Exterior", parseFloat(r.costoExterior) || 0 ]);
-    if (r.exterior && r.costoTransporte > 0) boxItems.push([ "Transporte", r.lugar || "Según distancia", parseFloat(r.costoTransporte) || 0 ]);
-    const lineH = 6;
-    const boxPadY = 8;
-    const boxH = boxPadY * 2 + 7 + boxItems.length * lineH + 4 + lineH * 2 + 9;
-    doc.setDrawColor(199, 30, 95);
-    doc.setLineWidth(.6);
-    doc.roundedRect(margin, y, pageW - margin * 2, boxH, 2, 2, "S");
-    let by = y + boxPadY;
-    doc.setTextColor(199, 30, 95);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("RESUMEN DE PAGO", margin + 6, by);
-    by += 8;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    boxItems.forEach(([tag, name, price]) => {
-      doc.setTextColor(140, 140, 140);
-      doc.text(tag + ":", margin + 6, by);
-      doc.setTextColor(30, 30, 30);
-      doc.text(name, margin + 28, by);
-      doc.text(`$${price.toFixed(2)}`, pageW - margin - 6, by, {
-        align: "right"
-      });
-      by += lineH;
+    const items = [];
+    if (r.plan) items.push([ "Plan: " + r.plan, resPlanPrice(r), true ]);
+    (r.extras || []).forEach(e => items.push([ "Adicional: " + e.nombre, parseFloat(e.precio) || 0 ]));
+    if (r.personasAdicionales > 0 && r.costoPersonas > 0) items.push([ `Personas extra: +${r.personasAdicionales} persona(s)`, parseFloat(r.costoPersonas) || 0 ]);
+    if (r.exterior && r.costoExterior > 0) items.push([ "Tarifa de exterior" + (r.lugar ? " — " + r.lugar : ""), parseFloat(r.costoExterior) || 0 ]);
+    if (r.exterior && r.costoTransporte > 0) items.push([ "Transporte" + (r.lugar ? " — " + r.lugar : ""), parseFloat(r.costoTransporte) || 0 ]);
+    P.table({
+      title: "RESUMEN DE PAGO", items: items,
+      totals: [ { label: "Total:", value: P.money(total) }, { label: "Abonado:", value: P.money(abono), color: JansPDF.GREEN }, { label: "Saldo pendiente:", value: P.money(pend), big: true } ]
     });
-    by += 2;
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(.2);
-    doc.line(margin + 6, by, pageW - margin - 6, by);
-    by += 6;
-    doc.setFontSize(9.5);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Total:", margin + 6, by);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 30, 30);
-    doc.text(`$${total.toFixed(2)}`, pageW - margin - 6, by, {
-      align: "right"
-    });
-    by += lineH;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text("Abonado:", margin + 6, by);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(22, 163, 74);
-    doc.text(`$${abono.toFixed(2)}`, pageW - margin - 6, by, {
-      align: "right"
-    });
-    by += lineH + 2;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(199, 30, 95);
-    doc.text("Saldo pendiente:", margin + 6, by);
-    doc.text(`$${pend.toFixed(2)}`, pageW - margin - 6, by, {
-      align: "right"
-    });
-    y += boxH + 10;
   }
-  if (r.notas) {
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "bold");
-    doc.text("NOTAS:", margin, y);
-    y += 4;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    const lines = doc.splitTextToSize(r.notas, pageW - margin * 2);
-    doc.text(lines, margin, y);
-    y += lines.length * 4 + 4;
-  }
-  doc.setFillColor(20, 20, 20);
-  doc.rect(0, 283, pageW, 14, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Gracias por confiar en nosotros", pageW / 2, 290, {
-    align: "center"
-  });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(190, 190, 190);
-  doc.text(pdfCompanyFooterLine(company), pageW / 2, 294.5, {
-    align: "center"
-  });
-  doc.save(`${st.file}_${r.nombre.replace(/\s/g, "_")}_${r.numero || ""}.pdf`);
+  if (r.exterior && !(r.costoTransporte > 0)) P.paragraph("Sesión en exterior: el costo de transporte se confirmará según la distancia al lugar de la sesión.", { color: [180, 120, 20] });
+  P.notes(r.notas);
+  P.save(`${st.file}_${String(r.nombre || "cliente").replace(/\s/g, "_")}_${r.numero || ""}.pdf`, "Gracias por confiar en nosotros", pdfCompanyFooterLine(company));
   showToast(`PDF (${resStatusLabel(r.status)}) descargado ✓`);
 }
 
@@ -1481,284 +1308,51 @@ async function generateInvoicePDF(id) {
   const facturaNum = await getOrAssignFacturaNumero(r);
   renderReservasTable();
   if (document.getElementById("reservaModal")?.classList.contains("open")) viewReserva(id);
-  const {jsPDF: jsPDF} = window.jspdf;
-  const doc = new jsPDF({
-    unit: "mm",
-    format: "a4"
-  });
   const company = pdfCompanyInfo();
-  const logoDataUrl = await loadImageAsDataUrl(company.logoPath);
-  const margin = 18;
-  const pageW = 210;
-  const colW = (pageW - margin * 2 - 8) / 2;
-  const col1X = margin;
-  const col2X = margin + colW + 8;
+  const logo = await loadImageAsDataUrl(company.logoPath);
   const now = new Date;
-  const fechaHora = now.toLocaleDateString("es-PA") + "  " + now.toLocaleTimeString("es-PA", {
-    hour: "2-digit",
-    minute: "2-digit"
+  const fechaHora = now.toLocaleDateString("es-PA") + "  " + now.toLocaleTimeString("es-PA", { hour: "2-digit", minute: "2-digit" });
+  const P = JansPDF.create({
+    company: company, logo: logo, kind: "FACTURA", number: "#" + facturaNum, pageFooter: false,
+    meta: [ `Emitida: ${fechaHora}`, company.ruc ? `RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}` : "" ]
   });
-  const headerH = 38;
-  doc.setFillColor(20, 20, 20);
-  doc.rect(0, 0, pageW, headerH, "F");
-  let logoTextX = margin;
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, "PNG", margin, 8, 22, 22, undefined, "FAST");
-      logoTextX = margin + 28;
-    } catch (e) {}
-  }
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(15);
-  doc.setFont("helvetica", "bold");
-  doc.text(company.nombre, logoTextX, 16);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(210, 210, 210);
-  let companyLineY = 22;
-  if (company.telefono) {
-    doc.text(`Tel: ${company.telefono}`, logoTextX, companyLineY);
-    companyLineY += 4.5;
-  }
-  if (company.email) {
-    doc.text(company.email, logoTextX, companyLineY);
-    companyLineY += 4.5;
-  }
-  if (company.ubicacion) {
-    const locLines = doc.splitTextToSize(company.ubicacion, 95);
-    doc.text(locLines, logoTextX, companyLineY);
-  }
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text(`FACTURA #${facturaNum}`, pageW - margin, 16, {
-    align: "right"
-  });
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 180);
-  doc.text(`Emitida: ${fechaHora}`, pageW - margin, 22, {
-    align: "right"
-  });
-  if (company.ruc) doc.text(`RUC: ${company.ruc}${company.dv ? "  DV: " + company.dv : ""}`, pageW - margin, 26.5, {
-    align: "right"
-  });
-  let y = headerH + 12;
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, 7, 1, 1, "F");
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("DATOS DEL CLIENTE Y SESIÓN", margin, y);
-  y += 7;
+  P.section("DATOS DEL CLIENTE Y SESIÓN");
   const leftRows = [ [ "Nombre:", r.nombre ], [ "Cédula/RUC:", r.clientId || "—" ], [ "Teléfono:", r.tel || "—" ], [ "Email:", r.email || "—" ] ];
-  if (r.tutor) leftRows.splice(1, 0, [ "Padre/Madre o tutor:", r.tutor ]);
+  if (r.tutor) leftRows.splice(1, 0, [ "Tutor:", r.tutor ]);
   if (r.razonSocial) leftRows.push([ "Razón Social:", r.razonSocial ]);
   if (r.address) leftRows.push([ "Dirección:", r.address ]);
   const rightRows = [ [ "Fecha de sesión:", r.fechaLabel || r.fecha || "—" ], [ "Hora:", r.hora || "—" ], [ "Estado:", resStatusLabel(r.status) ], [ "Origen:", r.numero || "—" ] ];
-  if (r.exterior) {
-    rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
-  } else if (r.lugar) {
-    rightRows.push([ "Ubicación:", r.lugar ]);
-  }
-  if (r.personasAdicionales > 0) {
-    rightRows.push([ "Personas adicionales:", String(r.personasAdicionales) + " persona(s)" ]);
-  }
-  const startY = y;
-  let yL = startY, yR = startY;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  leftRows.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col1X, yL);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(String(v), colW - 32);
-    doc.text(lines, col1X + 32, yL);
-    doc.setFont("helvetica", "normal");
-    yL += Math.max(6, lines.length * 5);
-  });
-  rightRows.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col2X, yR);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    const lines = doc.splitTextToSize(String(v), colW - 32);
-    doc.text(lines, col2X + 32, yR);
-    doc.setFont("helvetica", "normal");
-    yR += Math.max(6, lines.length * 5);
-  });
-  y = Math.max(yL, yR) + 6;
+  if (r.exterior) rightRows.push([ "Sesión exterior:", "Sí" + (r.lugar ? " — " + r.lugar : "") ]);
+  else if (r.lugar) rightRows.push([ "Ubicación:", r.lugar ]);
+  if (r.personasAdicionales > 0) rightRows.push([ "Personas extra:", String(r.personasAdicionales) + " persona(s)" ]);
+  P.twoCols(leftRows, rightRows, { labelW: 29 });
   const total = resTotal(r), abono = resAbono(r), pend = resPendiente(r);
   const items = [];
-  if (r.plan) items.push([ r.plan, resPlanPrice(r) ]);
-  (r.extras || r.addons || []).forEach(a => {
-    items.push([ a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0 ]);
-  });
+  if (r.plan) items.push([ r.plan, resPlanPrice(r), true ]);
+  (r.extras || r.addons || []).forEach(a => items.push([ a.nombre || a.name, parseFloat(a.precio !== undefined ? a.precio : a.price) || 0 ]));
   if (r.personasAdicionales > 0 && r.costoPersonas > 0) items.push([ `Personas adicionales (+${r.personasAdicionales})`, parseFloat(r.costoPersonas) || 0 ]);
-  if (r.exterior && r.costoExterior > 0) items.push([ `Tarifa de exterior — ${r.lugar || ""}`, parseFloat(r.costoExterior) || 0 ]);
+  if (r.exterior && r.costoExterior > 0) items.push([ `Tarifa de exterior${r.lugar ? " — " + r.lugar : ""}`, parseFloat(r.costoExterior) || 0 ]);
   if (r.exterior && r.costoTransporte > 0) items.push([ `Transporte — ${r.lugar || "según distancia"}`, parseFloat(r.costoTransporte) || 0 ]);
-  const rowH = 6.5;
-  const boxPadY = 8;
-  const tableH = 8 + items.length * rowH + 4;
-  const totalsH = rowH * 3 + 6 + 12;
-  const boxH = boxPadY * 2 + 7 + tableH + totalsH;
-  doc.setDrawColor(199, 30, 95);
-  doc.setLineWidth(.6);
-  doc.roundedRect(margin, y, pageW - margin * 2, boxH, 2, 2, "S");
-  let by = y + boxPadY;
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("PLANES Y SERVICIOS", margin + 6, by);
-  by += 8;
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(.2);
-  doc.setTextColor(140, 140, 140);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("DESCRIPCIÓN", margin + 6, by);
-  doc.text("PRECIO", pageW - margin - 6, by, {
-    align: "right"
+  P.table({
+    title: "PLANES Y SERVICIOS", items: items,
+    totals: [
+      { label: "Total de plan(es):", value: P.money(total) },
+      { label: "Abono realizado:", value: P.money(abono), color: JansPDF.GREEN },
+      { label: "Cancelación completa:", value: pend <= 0 ? "PAGADO EN TOTALIDAD" : `Pendiente: ${P.money(pend)}`, color: pend <= 0 ? JansPDF.GREEN : [220, 38, 38] }
+    ],
+    highlight: { label: "TOTAL FACTURADO", value: P.money(total) }
   });
-  by += 3;
-  doc.line(margin + 6, by, pageW - margin - 6, by);
-  by += 5;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(30, 30, 30);
-  items.forEach(([name, price], i) => {
-    if (i === 0 && r.plan) doc.setFont("helvetica", "bold"); else doc.setFont("helvetica", "normal");
-    doc.text(name, margin + 6, by);
-    doc.text(`$${price.toFixed(2)}`, pageW - margin - 6, by, {
-      align: "right"
-    });
-    by += rowH;
+  P.invoiceClose({
+    seal: "Factura que no presente sello es nula",
+    thanksTitle: "Gracias por confiar en nosotros",
+    thanksLine: pdfCompanyFooterLine(company),
+    stub: {
+      title: "CONSTANCIA DE FACTURACIÓN",
+      left: [ [ "Factura:", "#" + facturaNum ], [ "Origen:", r.numero || "—" ] ],
+      right: [ [ "Cliente:", r.nombre ], [ "Plan:", r.plan || "—" ] ]
+    }
   });
-  by += 1;
-  doc.setDrawColor(230, 230, 230);
-  doc.line(margin + 6, by, pageW - margin - 6, by);
-  by += 7;
-  doc.setFontSize(9.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.text("Total de plan(es):", margin + 6, by);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 30, 30);
-  doc.text(`$${total.toFixed(2)}`, pageW - margin - 6, by, {
-    align: "right"
-  });
-  by += rowH;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.text("Abono realizado:", margin + 6, by);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(22, 163, 74);
-  doc.text(`$${abono.toFixed(2)}`, pageW - margin - 6, by, {
-    align: "right"
-  });
-  by += rowH;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.text("Cancelación completa:", margin + 6, by);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(pend <= 0 ? 22 : 220, pend <= 0 ? 163 : 38, pend <= 0 ? 74 : 38);
-  doc.text(pend <= 0 ? "PAGADO EN TOTALIDAD" : `Pendiente: $${pend.toFixed(2)}`, pageW - margin - 6, by, {
-    align: "right"
-  });
-  by += 9;
-  doc.setFillColor(199, 30, 95);
-  doc.roundedRect(margin + 4, by - 5.5, pageW - margin * 2 - 8, 11, 2, 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("TOTAL FACTURADO", margin + 10, by + 1.5);
-  doc.text(`$${total.toFixed(2)}`, pageW - margin - 10, by + 1.5, {
-    align: "right"
-  });
-  y += boxH + 6;
-  const sealY = 196;
-  doc.setDrawColor(199, 30, 95);
-  doc.setLineWidth(.5);
-  doc.roundedRect(margin, sealY, pageW - margin * 2, 16, 2, 2, "S");
-  doc.setGState(new doc.GState({
-    opacity: .22
-  }));
-  doc.setTextColor(120, 120, 120);
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "bolditalic");
-  doc.text("Factura que no presente sello es nula", pageW / 2, sealY + 10, {
-    align: "center"
-  });
-  doc.setGState(new doc.GState({
-    opacity: 1
-  }));
-  const footerY = 216;
-  doc.setFillColor(20, 20, 20);
-  doc.rect(0, footerY, pageW, 18, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Gracias por confiar en nosotros", pageW / 2, footerY + 7, {
-    align: "center"
-  });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(190, 190, 190);
-  doc.text(pdfCompanyFooterLine(company), pageW / 2, footerY + 13, {
-    align: "center"
-  });
-  let cy = footerY + 22;
-  doc.setDrawColor(150, 150, 150);
-  doc.setLineWidth(.2);
-  doc.setLineDashPattern([ 2, 2 ], 0);
-  doc.line(margin, cy, pageW - margin, cy);
-  doc.setLineDashPattern([], 0);
-  cy += 4;
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(150, 150, 150);
-  doc.text("' Constancia — recortar y conservar", pageW / 2, cy, {
-    align: "center"
-  });
-  cy += 7;
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("CONSTANCIA DE FACTURACIÓN", margin, cy);
-  cy += 7;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  const stubLeft = [ [ "Factura:", "#" + facturaNum ], [ "Origen:", r.numero || "—" ] ];
-  const stubRight = [ [ "Cliente:", r.nombre ], [ "Plan:", r.plan || "—" ] ];
-  let syL = cy, syR = cy;
-  stubLeft.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col1X, syL);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(v), col1X + 22, syL);
-    doc.setFont("helvetica", "normal");
-    syL += 6;
-  });
-  stubRight.forEach(([l, v]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l, col2X, syR);
-    doc.setTextColor(30, 30, 30);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(v), col2X + 22, syR);
-    doc.setFont("helvetica", "normal");
-    syR += 6;
-  });
-  cy = Math.max(syL, syR) + 5;
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(.3);
-  doc.line(margin, cy, margin + 80, cy);
-  doc.setFontSize(7.5);
-  doc.setTextColor(120, 120, 120);
-  doc.setFont("helvetica", "normal");
-  doc.text("Firma del cliente", margin, cy + 4.5);
-  doc.save(`Factura_${facturaNum}_${r.nombre.replace(/\s/g, "_")}.pdf`);
+  P.save(`Factura_${facturaNum}_${String(r.nombre || "cliente").replace(/\s/g, "_")}.pdf`, "Gracias por confiar en nosotros", pdfCompanyFooterLine(company));
   showToast("Factura descargada ✓");
 }
 

@@ -456,9 +456,9 @@ async function exportPDF() {
   const {jsPDF: jsPDF} = window.jspdf;
   const doc = new jsPDF({
     unit: "mm",
-    format: "a4"
+    format: "letter"
   });
-  const W = 210, margin = 14;
+  const W = 215.9, margin = 14;
   let y = 0;
   doc.setFillColor(13, 13, 13);
   doc.rect(0, 0, W, 38, "F");
@@ -582,7 +582,7 @@ async function exportPDF() {
     plan: ""
   }));
   rows.forEach((a, i) => {
-    if (y > 270) {
+    if (y > 258) {
       doc.addPage();
       y = 20;
     }

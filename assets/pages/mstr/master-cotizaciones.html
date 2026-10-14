@@ -20,6 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/admin-guard.js"></script>
 <script src="../../js/jans-cms.js"></script>
+<script src="../../js/jans-pdf.js"></script>
 <header class="topbar">
 <div style="display:flex;align-items:center;gap:12px">
 <a href="../master.html" style="display:flex;align-items:center;gap:8px;text-decoration:none">
@@ -1410,133 +1411,26 @@ function showPDF(id) {
   openModal("pdfModal");
 }
 
-function downloadPDF() {
+async function downloadPDF() {
   const q = state.currentPDFQuote;
   if (!q) return;
-  const {jsPDF: jsPDF} = window.jspdf;
-  const doc = new jsPDF({
-    unit: "mm",
-    format: "a4"
-  });
   const qNum = String(state.quotes.indexOf(q) + 1).padStart(4, "0");
-  const margin = 18;
-  let y = 20;
-  doc.setFillColor(199, 30, 95);
-  doc.rect(0, 0, 210, 14, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(CONFIG.COMPANY_NAME, margin, 9.5);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text(`COTIZACIÓN #${qNum}`, 210 - margin, 9.5, {
-    align: "right"
+  const comp = pdfCompanyInfo();
+  const P = JansPDF.create({
+    company: comp, logo: await loadLogoForPDF(), kind: "COTIZACIÓN", number: "#" + qNum,
+    meta: [ "Fecha: " + (q.createdAt || ""), "Sesión: " + (q.sessionDate || "Por confirmar") + " " + (q.sessionTime || "") ]
   });
-  y = 24;
-  doc.setTextColor(120, 120, 120);
-  doc.setFontSize(8);
-  doc.text(`${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL} · ${CONFIG.COMPANY_WEB}`, margin, y);
-  y += 5;
-  doc.text(`Fecha: ${q.createdAt}  |  Sesión: ${q.sessionDate || "Por confirmar"} ${q.sessionTime || ""}`, margin, y);
-  y += 8;
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin - 2, y - 4, 210 - margin * 2 + 4, 6, 1, 1, "F");
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("DATOS DEL CLIENTE", margin, y);
-  y += 6;
-  doc.setTextColor(30, 30, 30);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  const clientData = [ [ "Nombre:", q.clientName ], [ "Cédula/RUC:", q.clientId || "—" ], ...q.clientType === "juridica" ? [ [ "Razón Social:", q.razonSocial || "—" ], [ "DV:", q.dv || "—" ] ] : [], [ "Teléfono:", q.phone || "—" ], [ "Email:", q.email || "—" ], [ "Dirección:", q.address || "—" ], [ "Lugar:", q.location || "—" ] ];
-  clientData.forEach(([l, v], i) => {
-    const col = i % 2 === 0 ? margin : 110;
-    if (i % 2 === 0) {
-      doc.setTextColor(120, 120, 120);
-      doc.text(l, col, y);
-      doc.setTextColor(30, 30, 30);
-      doc.text(v, col + 28, y);
-    } else {
-      doc.setTextColor(120, 120, 120);
-      doc.text(l, col, y);
-      doc.setTextColor(30, 30, 30);
-      doc.text(v, col + 28, y);
-      y += 5;
-    }
-  });
-  if (clientData.length % 2 !== 0) y += 5;
-  y += 6;
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin - 2, y - 4, 210 - margin * 2 + 4, 6, 1, 1, "F");
-  doc.setTextColor(199, 30, 95);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("DETALLE DE SERVICIOS", margin, y);
-  y += 7;
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(.2);
-  doc.setTextColor(120, 120, 120);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("DESCRIPCIÓN", margin, y);
-  doc.text("PRECIO", 210 - margin, y, {
-    align: "right"
-  });
-  y += 4;
-  doc.line(margin, y, 210 - margin, y);
-  y += 4;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(30, 30, 30);
-  if (q.plan) {
-    doc.setFont("helvetica", "bold");
-    doc.text(q.plan, margin, y);
-    doc.text(`$${(q.planPrice || 0).toFixed(2)}`, 210 - margin, y, {
-      align: "right"
-    });
-    doc.setFont("helvetica", "normal");
-    y += 5;
-  }
-  (q.addons || []).forEach(a => {
-    doc.text(a.name, margin + 4, y);
-    doc.text(`$${a.price.toFixed(2)}`, 210 - margin, y, {
-      align: "right"
-    });
-    y += 5;
-  });
-  y += 2;
-  doc.line(margin, y, 210 - margin, y);
-  y += 6;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(199, 30, 95);
-  doc.text("TOTAL ESTIMADO", margin, y);
-  doc.text(`$${(q.total || 0).toFixed(2)}`, 210 - margin, y, {
-    align: "right"
-  });
-  y += 10;
-  if (q.notes) {
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "bold");
-    doc.text("NOTAS:", margin, y);
-    y += 4;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    const lines = doc.splitTextToSize(q.notes, 170);
-    doc.text(lines, margin, y);
-    y += lines.length * 4 + 4;
-  }
-  doc.setFillColor(199, 30, 95);
-  doc.rect(0, 287, 210, 10, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Esta cotización es válida por 15 días · ${CONFIG.COMPANY_NAME} · ${CONFIG.COMPANY_PHONE} · ${CONFIG.COMPANY_EMAIL}`, 105, 293, {
-    align: "center"
-  });
-  doc.save(`Cotizacion_${q.clientName.replace(/\s/g, "_")}_${qNum}.pdf`);
+  P.section("DATOS DEL CLIENTE");
+  const left = [ [ "Nombre:", q.clientName ], [ "Cédula/RUC:", q.clientId || "—" ], [ "Teléfono:", q.phone || "—" ], [ "Email:", q.email || "—" ] ];
+  const right = [ [ "Dirección:", q.address || "—" ], [ "Lugar:", q.location || "—" ] ];
+  if (q.clientType === "juridica") right.unshift([ "Razón Social:", q.razonSocial || "—" ], [ "DV:", q.dv || "—" ]);
+  P.twoCols(left, right, { labelW: 24 });
+  const items = [];
+  if (q.plan) items.push([ q.plan, q.planPrice || 0, true ]);
+  (q.addons || []).forEach(a => items.push([ a.name, a.price || 0 ]));
+  P.table({ title: "DETALLE DE SERVICIOS", items: items, highlight: { label: "TOTAL ESTIMADO", value: P.money(q.total || 0) } });
+  P.notes(q.notes);
+  P.save(`Cotizacion_${String(q.clientName || "cliente").replace(/\s/g, "_")}_${qNum}.pdf`, "Esta cotización es válida por 15 días a partir de la fecha de emisión", `${comp.nombre} · ${comp.telefono} · ${comp.email}`);
   showToast("PDF descargado ✓");
 }
 
@@ -1591,477 +1485,78 @@ function fmtFechaPDF(str) {
 async function generateQuotePDF(id) {
   const q = state.quotes.find(x => x.id === id);
   if (!q) return;
-  const {jsPDF: jsPDF} = window.jspdf;
-  const doc = new jsPDF({
-    unit: "mm",
-    format: "a4"
-  });
   const comp = pdfCompanyInfo();
-  const footer = pdfCompanyFooterLine(comp);
   const qNum = q.numero || "COT-" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
-  const margin = 14;
-  const pageW = 210;
-  const today = (new Date).toLocaleDateString("es-PA");
-  let y = 0;
-  doc.setFillColor(30, 30, 30);
-  doc.rect(0, 0, pageW, 34, "F");
-  const logo = await loadLogoForPDF();
-  if (logo) {
-    try {
-      doc.addImage(logo, "PNG", margin, 5, 22, 22);
-    } catch (e) {}
-  } else {
-    doc.setFillColor(199, 30, 95);
-    doc.roundedRect(margin, 6, 20, 20, 2, 2, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.text("JP", margin + 10, 18, {
-      align: "center"
-    });
-  }
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(comp.nombre, 40, 13);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(200, 200, 200);
-  doc.text("Tel: " + comp.telefono, 40, 18);
-  doc.text(comp.email, 40, 22);
-  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
-  doc.setTextColor(180, 180, 180);
-  doc.setFontSize(6.5);
-  doc.setFont("helvetica", "normal");
-  if (comp.ruc) doc.text("RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : ""), pageW - margin, 9, {
-    align: "right"
+  const P = JansPDF.create({
+    company: comp, logo: await loadLogoForPDF(), kind: "#", number: qNum,
+    meta: [ comp.ruc ? "RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : "") : "", "Emitido: " + (new Date).toLocaleDateString("es-PA") ]
   });
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text("# " + qNum, pageW - margin, 18, {
-    align: "right"
-  });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 180);
-  doc.text("Emitido: " + today, pageW - margin, 24, {
-    align: "right"
-  });
-  y = 40;
   const statusBanner = {
-    pending: {
-      color: [ 245, 158, 11 ],
-      text: "COTIZACIÓN PENDIENTE"
-    },
-    confirmed: {
-      color: [ 34, 197, 94 ],
-      text: "COTIZACIÓN CONFIRMADA"
-    },
-    completed: {
-      color: [ 34, 197, 94 ],
-      text: "COTIZACIÓN COMPLETADA"
-    },
-    postponed: {
-      color: [ 139, 92, 246 ],
-      text: "COTIZACIÓN APLAZADA"
-    },
-    cancelled: {
-      color: [ 239, 68, 68 ],
-      text: "COTIZACIÓN CANCELADA"
-    }
-  }[q.status] || {
-    color: [ 245, 158, 11 ],
-    text: "COTIZACIÓN PENDIENTE"
-  };
-  doc.setFillColor(...statusBanner.color);
-  doc.roundedRect(margin - 2, y, pageW - margin * 2 + 4, 12, 2, 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text(statusBanner.text, pageW / 2, y + 8, {
-    align: "center"
-  });
-  y += 26;
-  const col2 = 112;
-  const dataRows = [ [ "Cliente", q.clientName, "Fecha de sesión", fmtFechaPDF(q.sessionDate) ], [ "Teléfono", q.phone || "—", "Hora", q.sessionTime || "—" ], [ "Email", q.email || "—", "Plan", q.plan || "—" ], [ "# Cotización", qNum, "Estado", statusLabel(q.status) ] ];
-  const dataH = 14 + dataRows.length * 9 + 4;
-  doc.setFillColor(250, 250, 250);
-  doc.setDrawColor(228, 228, 228);
-  doc.setLineWidth(.3);
-  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, dataH, 3, 3, "FD");
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("DATOS DE LA RESERVA", margin + 2, y);
-  y += 9;
-  dataRows.forEach(([l1, v1, l2, v2]) => {
-    doc.setTextColor(130, 130, 130);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(l1 + ":", margin + 2, y);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text(String(v1 || "—"), margin + 30, y);
-    doc.setTextColor(130, 130, 130);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(l2 + ":", col2, y);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text(String(v2 || "—"), col2 + 34, y);
-    y += 9;
-  });
-  y += 14;
-  const total = parseFloat(q.total) || 0;
-  const abono = parseFloat(q.abono) || 0;
-  const pagado = parseFloat(q.pagado) || 0;
+    pending: { color: [ 245, 158, 11 ], text: "COTIZACIÓN PENDIENTE" },
+    confirmed: { color: [ 34, 197, 94 ], text: "COTIZACIÓN CONFIRMADA" },
+    completed: { color: [ 34, 197, 94 ], text: "COTIZACIÓN COMPLETADA" },
+    postponed: { color: [ 139, 92, 246 ], text: "COTIZACIÓN APLAZADA" },
+    cancelled: { color: [ 239, 68, 68 ], text: "COTIZACIÓN CANCELADA" }
+  }[q.status] || { color: [ 245, 158, 11 ], text: "COTIZACIÓN PENDIENTE" };
+  P.banner(statusBanner.text, statusBanner.color);
+  P.section("DATOS DE LA RESERVA");
+  P.twoCols(
+    [ [ "Cliente:", q.clientName ], [ "Teléfono:", q.phone || "—" ], [ "Email:", q.email || "—" ], [ "# Cotización:", qNum ] ],
+    [ [ "Fecha de sesión:", fmtFechaPDF(q.sessionDate) ], [ "Hora:", q.sessionTime || "—" ], [ "Plan:", q.plan || "—" ], [ "Estado:", statusLabel(q.status) ] ].concat(q.location ? [ [ "Lugar:", q.location ] ] : []),
+    { labelW: 29 }
+  );
+  const total = parseFloat(q.total) || 0, abono = parseFloat(q.abono) || 0, pagado = parseFloat(q.pagado) || 0;
   const pend = Math.max(0, total - abono - pagado);
-  const planPrice = parseFloat(q.planPrice) || 0;
-  const addonsPos = (q.addons || []).filter(a => parseFloat(a.price || 0) > 0);
-  const pagoH = 14 + 11 + addonsPos.length * 8 + 8 + (abono > 0 ? 8 : 0) + (pagado > 0 ? 8 : 0) + 12;
-  doc.setFillColor(250, 250, 250);
-  doc.setDrawColor(228, 228, 228);
-  doc.setLineWidth(.3);
-  doc.roundedRect(margin - 2, y - 5, pageW - margin * 2 + 4, pagoH, 3, 3, "FD");
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("RESUMEN DE PAGO", margin + 2, y);
-  y += 10;
-  doc.setTextColor(20, 20, 20);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("Plan:", margin + 4, y);
-  doc.text(q.plan || "—", margin + 22, y);
-  doc.text("$" + planPrice.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  y += 9;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(70, 70, 70);
-  addonsPos.forEach(a => {
-    doc.text(a.name || "", margin + 6, y);
-    doc.text("$" + parseFloat(a.price || 0).toFixed(2), pageW - margin, y, {
-      align: "right"
-    });
-    y += 8;
-  });
-  y += 2;
-  doc.setDrawColor(220, 220, 220);
-  doc.line(margin + 4, y, pageW - margin - 2, y);
-  y += 8;
-  doc.setFontSize(9.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  doc.text("Total:", margin + 4, y);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(20, 20, 20);
-  doc.text("$" + total.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  y += 8;
-  if (abono > 0) {
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text("Abonado:", margin + 4, y);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(22, 163, 74);
-    doc.text("$" + abono.toFixed(2), pageW - margin, y, {
-      align: "right"
-    });
-    y += 8;
-  }
-  if (pagado > 0) {
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-    doc.text("Pago adicional:", margin + 4, y);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(22, 163, 74);
-    doc.text("$" + pagado.toFixed(2), pageW - margin, y, {
-      align: "right"
-    });
-    y += 8;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(199, 30, 95);
-  doc.text("Saldo pendiente:", margin + 4, y);
-  doc.text("$" + pend.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  doc.setFillColor(30, 30, 30);
-  doc.rect(0, 272, pageW, 25, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Gracias por confiar en nosotros", pageW / 2, 282, {
-    align: "center"
-  });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(180, 180, 180);
-  doc.text(footer, pageW / 2, 290, {
-    align: "center"
-  });
-  doc.save("Confirmacion_" + (q.clientName || "cliente").replace(/\s+/g, "_") + "_" + qNum + ".pdf");
+  const items = [ [ "Plan: " + (q.plan || "—"), parseFloat(q.planPrice) || 0, true ] ];
+  (q.addons || []).filter(a => parseFloat(a.price || 0) > 0).forEach(a => items.push([ a.name || "", parseFloat(a.price || 0) ]));
+  const totals = [ { label: "Total:", value: P.money(total) } ];
+  if (abono > 0) totals.push({ label: "Abonado:", value: P.money(abono), color: JansPDF.GREEN });
+  if (pagado > 0) totals.push({ label: "Pago adicional:", value: P.money(pagado), color: JansPDF.GREEN });
+  totals.push({ label: "Saldo pendiente:", value: P.money(pend), big: true });
+  P.table({ title: "RESUMEN DE PAGO", items: items, totals: totals });
+  P.notes(q.notes);
+  P.save("Confirmacion_" + (q.clientName || "cliente").replace(/\s+/g, "_") + "_" + qNum + ".pdf", "Gracias por confiar en nosotros", pdfCompanyFooterLine(comp));
   showToast("PDF de confirmación descargado ✓");
 }
 
 async function generateQuoteInvoicePDF(id) {
   const q = state.quotes.find(x => x.id === id);
   if (!q) return;
-  const {jsPDF: jsPDF} = window.jspdf;
-  const doc = new jsPDF({
-    unit: "mm",
-    format: "a4"
-  });
   const comp = pdfCompanyInfo();
-  const footer = pdfCompanyFooterLine(comp);
   const qNum = q.numero || "COT-" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
-  const margin = 14;
-  const pageW = 210;
   const facNumStr = await nextFacturaNumero();
-  const today = (new Date).toLocaleDateString("es-PA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
+  const today = (new Date).toLocaleDateString("es-PA", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const P = JansPDF.create({
+    company: comp, logo: await loadLogoForPDF(), kind: "FACTURA", number: "#" + facNumStr, pageFooter: false,
+    meta: [ "Emitida: " + today, comp.ruc ? "RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : "") : "" ]
   });
-  let y = 0;
-  doc.setFillColor(30, 30, 30);
-  doc.rect(0, 0, pageW, 34, "F");
-  const logo = await loadLogoForPDF();
-  if (logo) {
-    try {
-      doc.addImage(logo, "PNG", margin, 5, 22, 22);
-    } catch (e) {}
-  } else {
-    doc.setFillColor(199, 30, 95);
-    doc.roundedRect(margin, 6, 20, 20, 2, 2, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.text("JP", margin + 10, 18, {
-      align: "center"
-    });
-  }
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(comp.nombre, 40, 13);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(200, 200, 200);
-  doc.text("Tel: " + comp.telefono, 40, 18);
-  doc.text(comp.email, 40, 22);
-  if (comp.ubicacion) doc.text(comp.ubicacion, 40, 26);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text("FACTURA #" + facNumStr, pageW - margin, 13, {
-    align: "right"
-  });
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(180, 180, 180);
-  doc.text("Emitida: " + today, pageW - margin, 19, {
-    align: "right"
-  });
-  if (comp.ruc) doc.text("RUC: " + comp.ruc + (comp.dv ? "  DV: " + comp.dv : ""), pageW - margin, 25, {
-    align: "right"
-  });
-  y = 42;
-  doc.setFillColor(248, 248, 248);
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(.3);
-  doc.rect(margin - 2, y - 4, pageW - margin * 2 + 4, 48, "FD");
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("DATOS DEL CLIENTE Y SESIÓN", margin, y);
-  y += 7;
-  const col2 = 115;
-  const clientRows = [ [ "Nombre", q.clientName, "Fecha de sesión", q.sessionDate || "—" ], [ "Cédula/RUC", q.clientId || "—", "Hora", q.sessionTime || "—" ], [ "Teléfono", q.phone || "—", "Estado", statusLabel(q.status) ], [ "Email", q.email || "—", "Origen", qNum ] ];
-  clientRows.forEach(([l1, v1, l2, v2]) => {
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(l1 + ":", margin, y);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(v1 || "—"), margin + 26, y);
-    doc.setTextColor(120, 120, 120);
-    doc.setFont("helvetica", "normal");
-    doc.text(l2 + ":", col2, y);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(v2 || "—"), col2 + 30, y);
-    y += 7;
-  });
-  y += 14;
-  const servicesBoxTop = y - 4;
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("PLANES Y SERVICIOS", margin, y);
-  y += 6;
-  doc.setTextColor(120, 120, 120);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.text("DESCRIPCIÓN", margin + 4, y);
-  doc.text("PRECIO", pageW - margin, y, {
-    align: "right"
-  });
-  doc.setDrawColor(200, 200, 200);
-  doc.line(margin + 2, y + 2, pageW - margin, y + 2);
-  y += 7;
-  const planPrice = parseFloat(q.planPrice) || 0;
-  doc.setTextColor(20, 20, 20);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9.5);
-  doc.text(q.plan || "—", margin + 4, y);
-  doc.text("$" + planPrice.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  y += 7;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(60, 60, 60);
-  (q.addons || []).forEach(a => {
-    if (parseFloat(a.price || 0) > 0) {
-      doc.text(a.name || "", margin + 4, y);
-      doc.text("$" + parseFloat(a.price || 0).toFixed(2), pageW - margin, y, {
-        align: "right"
-      });
-      y += 5;
+  P.section("DATOS DEL CLIENTE Y SESIÓN");
+  const left = [ [ "Nombre:", q.clientName ], [ "Cédula/RUC:", q.clientId || "—" ], [ "Teléfono:", q.phone || "—" ], [ "Email:", q.email || "—" ] ];
+  if (q.clientType === "juridica" && q.razonSocial) left.push([ "Razón Social:", q.razonSocial ]);
+  if (q.address) left.push([ "Dirección:", q.address ]);
+  const right = [ [ "Fecha de sesión:", fmtFechaPDF(q.sessionDate) ], [ "Hora:", q.sessionTime || "—" ], [ "Estado:", statusLabel(q.status) ], [ "Origen:", qNum ] ];
+  if (q.location) right.push([ "Lugar:", q.location ]);
+  P.twoCols(left, right, { labelW: 29 });
+  const total = parseFloat(q.total) || 0, abono = parseFloat(q.abono) || 0, pagado = parseFloat(q.pagado) || 0;
+  const pend = Math.max(0, total - abono - pagado);
+  const items = [ [ q.plan || "—", parseFloat(q.planPrice) || 0, true ] ];
+  (q.addons || []).forEach(a => { if (parseFloat(a.price || 0) > 0) items.push([ a.name || "", parseFloat(a.price || 0) ]); });
+  const totals = [ { label: "Total de plan(es):", value: P.money(total) } ];
+  if (abono > 0) totals.push({ label: "Abono realizado:", value: P.money(abono), color: JansPDF.GREEN });
+  if (pagado > 0) totals.push({ label: "Pago adicional:", value: P.money(pagado), color: JansPDF.GREEN });
+  totals.push({ label: "Cancelación completa:", value: pend <= 0 ? "PAGADO EN TOTALIDAD" : "Pendiente: " + P.money(pend), color: pend <= 0 ? JansPDF.GREEN : JansPDF.PINK });
+  P.table({ title: "PLANES Y SERVICIOS", items: items, totals: totals, highlight: { label: "TOTAL FACTURADO", value: P.money(total) } });
+  P.invoiceClose({
+    seal: "Factura que no presente sello es nula",
+    thanksTitle: "Gracias por confiar en nosotros",
+    thanksLine: pdfCompanyFooterLine(comp),
+    stub: {
+      title: "CONSTANCIA DE FACTURACIÓN",
+      left: [ [ "Factura:", "#" + facNumStr ], [ "Origen:", qNum ], [ "Plan:", q.plan || "—" ] ],
+      right: [ [ "Cliente:", q.clientName ], [ "Teléfono:", q.phone || "—" ], [ "Total:", P.money(total) ] ]
     }
   });
-  y += 4;
-  const servicesBoxHeight = y - 4 - servicesBoxTop;
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(.3);
-  doc.roundedRect(margin - 2, servicesBoxTop, pageW - margin * 2 + 4, servicesBoxHeight, 3, 3, "D");
-  const total = parseFloat(q.total) || 0;
-  const abono = parseFloat(q.abono) || 0;
-  const pagado = parseFloat(q.pagado) || 0;
-  const pend = Math.max(0, total - abono - pagado);
-  doc.setDrawColor(220, 220, 220);
-  doc.line(margin + 2, y, pageW - margin, y);
-  y += 5;
-  doc.setTextColor(60, 60, 60);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Total de plan(es):", margin + 4, y);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(20, 20, 20);
-  doc.text("$" + total.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  y += 6;
-  if (abono > 0) {
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 60);
-    doc.text("Abono realizado:", margin + 4, y);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(34, 197, 94);
-    doc.text("$" + abono.toFixed(2), pageW - margin, y, {
-      align: "right"
-    });
-    y += 6;
-  }
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(60, 60, 60);
-  doc.text("Cancelación completa:", margin + 4, y);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(199, 30, 95);
-  doc.text("Pendiente: $" + pend.toFixed(2), pageW - margin, y, {
-    align: "right"
-  });
-  y += 8;
-  doc.setFillColor(199, 30, 95);
-  doc.roundedRect(margin - 2, y - 4, pageW - margin * 2 + 4, 11, 2, 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("TOTAL FACTURADO", margin + 4, y + 3);
-  doc.text("$" + total.toFixed(2), pageW - margin, y + 3, {
-    align: "right"
-  });
-  y += 18;
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(.3);
-  doc.roundedRect(margin - 2, y, pageW - margin * 2 + 4, 14, 2, 2, "D");
-  doc.setTextColor(160, 160, 160);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "italic");
-  doc.text("Factura que no presente sello es nula", pageW / 2, y + 9, {
-    align: "center"
-  });
-  y += 20;
-  const footerY = Math.max(230, y + 6);
-  doc.setFillColor(30, 30, 30);
-  doc.rect(0, footerY, pageW, 18, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("Gracias por confiar en nosotros", pageW / 2, footerY + 7, {
-    align: "center"
-  });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(180, 180, 180);
-  doc.text(footer, pageW / 2, footerY + 13, {
-    align: "center"
-  });
-  let cy = footerY + 22;
-  doc.setDrawColor(140, 140, 140);
-  doc.setLineWidth(.2);
-  for (let x = margin; x < pageW - margin; x += 4) doc.line(x, cy, x + 2, cy);
-  doc.setTextColor(140, 140, 140);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "italic");
-  doc.text("' Constancia — recortar y conservar", pageW / 2, cy + 5, {
-    align: "center"
-  });
-  cy += 10;
-  doc.setTextColor(199, 30, 95);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("CONSTANCIA DE FACTURACIÓN", margin, cy);
-  cy += 7;
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  const constLeft = [ [ "Factura", "#" + facNumStr ], [ "Origen", qNum ], [ "Plan", q.plan || "—" ] ];
-  const constRight = [ [ "Cliente", q.clientName ], [ "Teléfono", q.phone || "—" ], [ "Total", "$" + total.toFixed(2) ] ];
-  constLeft.forEach(([l, v], i) => {
-    doc.setTextColor(120, 120, 120);
-    doc.text(l + ":", margin, cy);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(v || "—"), margin + 20, cy);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(120, 120, 120);
-    doc.text(constRight[i][0] + ":", col2, cy);
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("helvetica", "bold");
-    doc.text(String(constRight[i][1] || "—"), col2 + 22, cy);
-    doc.setFont("helvetica", "normal");
-    cy += 6;
-  });
-  cy += 4;
-  doc.setDrawColor(150, 150, 150);
-  doc.line(margin, cy, margin + 70, cy);
-  doc.setTextColor(120, 120, 120);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("Firma del cliente", margin, cy + 4);
-  doc.save("Factura_" + facNumStr + "_" + (q.clientName || "cliente").replace(/\s+/g, "_") + ".pdf");
+  P.save("Factura_" + facNumStr + "_" + (q.clientName || "cliente").replace(/\s+/g, "_") + ".pdf", "Gracias por confiar en nosotros", pdfCompanyFooterLine(comp));
   showToast("Factura #" + facNumStr + " descargada ✓");
 }
 
