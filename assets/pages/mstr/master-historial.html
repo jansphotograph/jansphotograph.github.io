@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <div id="view-historial">
     <div class="page-header">
       <h2>Historial</h2>
-      <p>Todas las reservas y cotizaciones, ordenadas por fecha de sesión</p>
+      <p>Todas las reservas y cotizaciones en un solo lugar</p>
     </div>
 
     <div class="hist-toolbar">
@@ -191,9 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <option value="reserva">Solo reservas</option>
         <option value="cotizacion">Solo cotizaciones</option>
       </select>
-      <select id="histOrden" aria-label="Orden">
-        <option value="desc">Más recientes primero</option>
-        <option value="asc">Más antiguas primero</option>
+      <select id="histOrden" aria-label="Ordenar">
+        <option value="ses-desc">Sesión: más recientes primero</option>
+        <option value="ses-asc">Sesión: más antiguas primero</option>
+        <option value="reg-desc">Registro: más recientes primero</option>
+        <option value="reg-asc">Registro: más antiguas primero</option>
       </select>
       <button class="btn btn-sm btn-outline" id="histReload" type="button" title="Volver a cargar desde Supabase">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
@@ -331,7 +333,9 @@ function fromReserva(r) {
     nombre: r.nombre || "", tutor: r.tutor || "",
     cedula: r.clientId || r.client_id || "", factura: r.facturaNumero || r.factura_numero || "",
     fecha: sesion || creada, sinSesion: !sesion, hora: r.hora || "",
-    plan: r.plan || "", total: reservaTotal(r), status: r.status || "pending"
+    plan: r.plan || "", total: reservaTotal(r), status: r.status || "pending",
+    reg: JansPager.createdTs(r),
+    ses: JansPager.sessionKey(r.fecha, r.horaVal != null && r.horaVal !== "" ? +r.horaVal : r.hora)
   };
 }
 function fromCotizacion(q) {
@@ -342,7 +346,9 @@ function fromCotizacion(q) {
     nombre: q.client_name || q.clientName || "", tutor: q.razon_social || q.razonSocial || "",
     cedula: q.client_id || q.clientId || "", factura: q.factura_numero || q.facturaNumero || "",
     fecha: sesion || creada, sinSesion: !sesion, hora: q.session_time || q.sessionTime || "",
-    plan: q.plan || "", total: num(q.total), status: q.status || "pending"
+    plan: q.plan || "", total: num(q.total), status: q.status || "pending",
+    reg: JansPager.createdTs(q) || (parseInt(String(q.numero || "").replace(/\D/g, ""), 10) || 0),
+    ses: JansPager.sessionKey(q.session_date || q.sessionDate, q.session_time || q.sessionTime)
   };
 }
 
@@ -372,6 +378,9 @@ async function loadHistorial() {
   // Lo guardado en este navegador completa lo que Supabase no tenga (p. ej. nº de factura aún sin sincronizar)
   const localQ = new Map(readLocal("jans_quotes").map(q => [ q.id, q ]));
   const localR = new Map(readLocal("jans_reservas").map(r => [ r.id, r ]));
+  // Las copias de cotizaciones guardadas como reservas se omiten: la cotización ya aparece una vez
+  const quoteIds = new Set(cotizaciones.map(q => q.id));
+  reservas = reservas.filter(r => !JansPager.isQuoteCopy(r, quoteIds));
   histItems = [
     ...reservas.map(r => { const it = fromReserva(r); const l = localR.get(it.id); if (l) { it.factura = it.factura || l.facturaNumero || ""; it.cedula = it.cedula || l.clientId || ""; } return it; }),
     ...cotizaciones.map(q => { const it = fromCotizacion(q); const l = localQ.get(it.id); if (l) { it.factura = it.factura || l.facturaNumero || ""; } return it; })
@@ -399,16 +408,13 @@ function renderHistorial() {
   const orden = document.getElementById("histOrden").value;
   const list = histItems
     .filter(it => !tipo || it.tipo === tipo)
-    .filter(it => JansPager.matches(q, [ it.nombre, it.tutor, it.cedula, it.factura ]))
-    .sort((a, b) => {
-      const c = (a.fecha || "").localeCompare(b.fecha || "");
-      return orden === "asc" ? c : -c;
-    });
+    .filter(it => JansPager.matches(q, [ it.nombre, it.tutor, it.cedula, it.factura ]));
+  const sorted = JansPager.sortBy(list, orden, { reg: it => it.reg, ses: it => it.ses });
   const nRes = list.filter(i => i.tipo === "reserva").length;
   document.getElementById("histCounts").textContent = histItems.length
     ? `${list.length} resultado${list.length === 1 ? "" : "s"} · ${nRes} reserva${nRes === 1 ? "" : "s"} · ${list.length - nRes} cotizaci${list.length - nRes === 1 ? "ón" : "ones"}`
     : "";
-  const pg = JansPager.paginate(list, histPage);
+  const pg = JansPager.paginate(sorted, histPage);
   histPage = pg.page;
   JansPager.render(document.getElementById("histPager"), pg, p => {
     histPage = p;

@@ -106,5 +106,66 @@
     });
   }
 
-  window.JansPager = { PER_PAGE: PER_PAGE, paginate: paginate, render: render, matches: matches, pageOf: pageOf, norm: norm };
+  /** Momento de registro (ms): del id "r_<ms>_…" / "q_<ms>", o de created_at en formato ISO. */
+  function createdTs(o) {
+    if (!o) return 0;
+    var m = String(o.id || "").match(/^[a-z]+_(\d{12,13})(?:_|$)/i);
+    if (m) return +m[1];
+    var iso = o.created_at || o.createdIso || "";
+    if (/^\d{4}-\d{2}-\d{2}/.test(iso)) { var t = Date.parse(iso); if (!isNaN(t)) return t; }
+    return 0;
+  }
+
+  /** "2026-11-20" + hora ("3:00 PM", "15:00" o número) → clave ordenable "2026-11-20 15:00". */
+  function sessionKey(fecha, hora) {
+    var f = String(fecha || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)) return "";
+    var h = 0, mi = 0;
+    if (typeof hora === "number") h = hora;
+    else {
+      var m = String(hora || "").match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.\s*m\.|p\.\s*m\.)?/i);
+      if (m) {
+        h = +m[1]; mi = +(m[2] || 0);
+        var ap = (m[3] || "").toLowerCase().replace(/[\s.]/g, "");
+        if (ap === "pm" && h < 12) h += 12;
+        if (ap === "am" && h === 12) h = 0;
+      }
+    }
+    return f + " " + String(h).padStart(2, "0") + ":" + String(mi).padStart(2, "0");
+  }
+
+  /**
+   * Ordena una lista según el selector de orden:
+   *   "reg-desc" registro más reciente primero · "reg-asc" · "ses-desc" sesión más reciente primero · "ses-asc"
+   * `get.reg(x)` → número (ms) y `get.ses(x)` → texto "AAAA-MM-DD HH:MM". Sin dato: quedan al final.
+   * Empates: se respeta el orden original (posición en la lista = orden de registro).
+   */
+  function sortBy(list, orden, get) {
+    var desc = /desc$/.test(orden || "reg-desc");
+    var bySes = /^ses/.test(orden || "");
+    return (list || []).map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) {
+      var c;
+      if (bySes) {
+        var ka = get.ses(a.x) || "", kb = get.ses(b.x) || "";
+        if (!ka !== !kb) return ka ? -1 : 1;
+        c = ka < kb ? -1 : ka > kb ? 1 : 0;
+      } else {
+        c = (get.reg(a.x) || 0) - (get.reg(b.x) || 0);
+      }
+      if (!c) c = a.i - b.i;
+      return desc ? -c : c;
+    }).map(function (o) { return o.x; });
+  }
+
+  /** Reservas que en realidad son copias de una cotización (las creaba el formulario de cotizaciones). */
+  function isQuoteCopy(r, quoteIds) {
+    if (!r) return false;
+    return r.origin === "manual" || /^q_/.test(String(r.id || "")) || /^COT-/i.test(String(r.numero || "")) ||
+      !!(quoteIds && quoteIds.has && quoteIds.has(r.id));
+  }
+
+  window.JansPager = {
+    PER_PAGE: PER_PAGE, paginate: paginate, render: render, matches: matches, pageOf: pageOf, norm: norm,
+    createdTs: createdTs, sessionKey: sessionKey, sortBy: sortBy, isQuoteCopy: isQuoteCopy
+  };
 })();

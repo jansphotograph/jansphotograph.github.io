@@ -209,6 +209,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="card">
           <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
             <input type="search" id="searchQuotes" placeholder="Buscar por nombre, cédula o # de factura…" aria-label="Buscar cotizaciones por nombre, cédula o número de factura" oninput="quotesPage=1;renderQuotesTable()" style="flex:1;min-width:180px;padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;" />
+            <select id="quotesOrden" aria-label="Ordenar" onchange="quotesPage=1;renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
+              <option value="reg-desc">Registro: más recientes primero</option>
+              <option value="reg-asc">Registro: más antiguas primero</option>
+              <option value="ses-desc">Sesión: más recientes primero</option>
+              <option value="ses-asc">Sesión: más antiguas primero</option>
+            </select>
             <select id="filterStatus" onchange="quotesPage=1;renderQuotesTable()" style="padding:9px 14px;background:var(--dark);border:1px solid var(--border);border-radius:9px;color:var(--white);font-family:var(--font);outline:none;">
               <option value="">Todos</option>
               <option value="pending">Pendiente</option>
@@ -642,6 +648,7 @@ async function fetchQuotes() {
           pagado: parseFloat(r.pagado) || 0,
           notes: r.notes || "",
           facturaNumero: r.factura_numero || "",
+          createdIso: r.created_at || "",
           status: r.status,
           createdAt: function(iso) {
             if (!iso) return "";
@@ -701,14 +708,28 @@ function quoteNumLabel(q) {
   return q.numero || "#" + String(state.quotes.indexOf(q) + 1).padStart(3, "0");
 }
 
-function renderQuotesTable() {
-  const search = document.getElementById("searchQuotes").value || "";
-  const filter = document.getElementById("filterStatus").value;
-  let quotes = state.quotes.filter(q => {
+/** Cotizaciones filtradas y ordenadas como en la tabla (por defecto: la más reciente primero). */
+function quotesFilteredSorted() {
+  const search = document.getElementById("searchQuotes")?.value || "";
+  const filter = document.getElementById("filterStatus")?.value || "";
+  const orden = document.getElementById("quotesOrden")?.value || "reg-desc";
+  const filtered = state.quotes.filter(q => {
     const matchSearch = JansPager.matches(search, [ q.clientName, q.razonSocial, q.clientId, q.facturaNumero, q.numero ]);
     const matchStatus = !filter || q.status === filter;
     return matchSearch && matchStatus;
-  }).reverse();
+  });
+  const numOf = q => parseInt(String(q.numero || "").replace(/\D/g, ""), 10) || 0;
+  return JansPager.sortBy(filtered, orden, {
+    // Registro: momento exacto del id (q_<ms>) o created_at; si falta, el número de cotización
+    reg: q => JansPager.createdTs(q) || numOf(q),
+    ses: q => JansPager.sessionKey(q.sessionDate, q.sessionTime)
+  });
+}
+
+function renderQuotesTable() {
+  const search = document.getElementById("searchQuotes").value || "";
+  const filter = document.getElementById("filterStatus").value;
+  let quotes = quotesFilteredSorted();
   const tbody = document.getElementById("quotesTable");
   const pg = JansPager.paginate(quotes, quotesPage);
   quotesPage = pg.page;
@@ -723,6 +744,9 @@ function renderQuotesTable() {
   }
   tbody.innerHTML = pg.items.map(q => `\n    <tr>\n      <td style="color:var(--gray-l);font-size:0.78rem">${escapeHtml(quoteNumLabel(q))}${q.facturaNumero ? `<div style="font-size:0.68rem;color:#86efac;margin-top:2px">Fact. #${escapeHtml(q.facturaNumero)}</div>` : ""}</td>\n      <td><div style="font-weight:600">${escapeHtml(q.clientName)}</div><div style="font-size:0.75rem;color:var(--gray-l)">${escapeHtml(q.email) || ""}</div>${q.clientId ? `<div style="font-size:0.72rem;color:var(--gray)">Céd./RUC ${escapeHtml(q.clientId)}</div>` : ""}</td>\n      <td>${q.clientType === "juridica" ? "Jurídica" : "Natural"}</td>\n      <td>${escapeHtml(q.plan) || "—"}</td>\n      <td style="font-weight:700">$${(q.total || 0).toFixed(2)}</td>\n      <td><span class="badge-status status-${q.status}">${statusLabel(q.status)}</span></td>\n      <td style="font-size:0.8rem;color:var(--gray-l)">${escapeHtml(q.createdAt) || "—"}</td>\n      <td>\n        <button class="btn btn-sm btn-outline" onclick="viewQuote('${escapeJsAttr(q.id)}')">Ver</button>\n      </td>\n    </tr>`).join("");
 }
+
+// El resumen vive en la página Dashboard; aquí no hay nada que actualizar.
+function updateDashboard() {}
 
 async function deleteQuote(id) {
   if (!confirm("¿Eliminar esta cotización?")) return;
@@ -928,51 +952,13 @@ async function saveQuote() {
       total: quote.total,
       notes: quote.notes || "",
       status: quote.status,
-      created_at: quote.createdAt
+      created_at: new Date(+quote.id.slice(2) || Date.now()).toISOString()
     } ]).then(({error: error}) => {
       if (error) console.error("Supabase cotizacion error:", error);
     });
   }
   localStorage.setItem("jans_quotes", JSON.stringify(state.quotes));
-  try {
-    const reservas = JSON.parse(localStorage.getItem("jans_reservas") || "[]");
-    const [y, m, d] = (quote.sessionDate || "").split("-");
-    const fechaLabel = y && m && d ? parseInt(d) + " de " + [ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" ][parseInt(m) - 1] + " " + y : "";
-    const reservaRecord = {
-      id: quote.id,
-      numero: numero,
-      nombre: name,
-      tel: phone,
-      email: quote.email,
-      plan: planName,
-      notas: quote.notes,
-      fecha: quote.sessionDate || "",
-      fechaLabel: fechaLabel,
-      hora: quote.sessionTime || "",
-      horaVal: quote.sessionTime ? parseInt(quote.sessionTime.split(":")[0]) : null,
-      status: "pending",
-      abono: 0,
-      totalManual: total,
-      clientId: cid,
-      clientType: clientType,
-      razonSocial: quote.razonSocial,
-      repLegal: "",
-      address: quote.address,
-      extras: addons.map(a => ({
-        nombre: a.name,
-        precio: a.price
-      })),
-      origin: "manual",
-      createdAt: quote.createdAt
-    };
-    reservas.push(reservaRecord);
-    localStorage.setItem("jans_reservas", JSON.stringify(reservas));
-    if (sbClient) {
-      sbClient.from("reservas").insert([ reservaRecord ]).then(({error: error}) => {
-        if (error) console.error("Supabase insert (manual quote) error:", error);
-      });
-    }
-  } catch (e) {}
+  // Las cotizaciones ya no se copian a la tabla de reservas: cada cosa en su página (Historial muestra ambas).
   showToast("Cotización " + numero + " guardada ✓");
   clearQuoteForm();
   updateDashboard();
@@ -1680,8 +1666,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const open = () => {
       const q = state.quotes.find(x => x.id === highlightId);
       if (!q) return false;
-      const list = [ ...state.quotes ].reverse();
-      quotesPage = JansPager.pageOf(list, x => x.id === highlightId);
+      quotesPage = JansPager.pageOf(quotesFilteredSorted(), x => x.id === highlightId);
       renderQuotesTable();
       viewQuote(highlightId);
       return true;
